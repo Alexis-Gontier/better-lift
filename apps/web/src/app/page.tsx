@@ -1,3 +1,4 @@
+import { SessionPanel } from "@/features/auth/session-panel";
 import { ApiStatus } from "@/features/health/api-status";
 import { CoreCheck } from "@/features/health/core-check";
 
@@ -25,6 +26,13 @@ export default function HomePage() {
           Logique métier partagée
         </h2>
         <CoreCheck />
+      </section>
+
+      <section className="rounded-xl bg-surface-raised p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+          Session Better Auth
+        </h2>
+        <SessionPanel />
       </section>
     </main>
   );

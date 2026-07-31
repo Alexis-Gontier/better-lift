@@ -32,7 +32,9 @@ export const requireAuth = createMiddleware(async (c, next) => {
 });
 ```
 
-Providers OAuth : Google et Apple. Apple est **obligatoire** sur iOS dès lors qu'un autre login social est proposé (règle App Store 4.8) — à prévoir avant la première soumission, pas après un refus.
+Providers OAuth : **GitHub d'abord** (V1), puis Google et Apple. Apple est **obligatoire** sur iOS dès lors qu'un autre login social est proposé (règle App Store 4.8) — donc avant la première soumission mobile, pas avant. Tant que l'app n'est pas soumise, GitHub seul ne pose aucun problème.
+
+Le fournisseur n'est enregistré que si `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET` sont renseignés : sans OAuth App, l'API démarre quand même et l'e-mail/mot de passe continue de fonctionner.
 
 ## Format d'erreur
 
