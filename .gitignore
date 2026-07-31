@@ -21,6 +21,9 @@ CLAUDE.local.md
 # Turborepo
 .turbo/
 
+# Sorties de Playwright MCP (captures, snapshots, logs de console)
+.playwright-mcp/
+
 # Expo
 .expo/
 

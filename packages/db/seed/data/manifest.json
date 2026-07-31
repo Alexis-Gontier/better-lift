@@ -1,0 +1,16 @@
+{
+  "source": "https://github.com/hasaneyldrm/exercises-dataset",
+  "ref": "main",
+  "fetchedAt": "2026-07-31T05:48:46.383Z",
+  "count": 1324,
+  "locales": [
+    "fr",
+    "en"
+  ],
+  "sourceSha256": "656634224b8977b99a6d765470ee123260d4979715eaa4e7c0b7c8bb0d79f93d",
+  "license": {
+    "metadata": "MIT",
+    "media": "© Gym visual — https://gymvisual.com/",
+    "note": "Médias conservés avec attribution tant que l'app est gratuite (D17)."
+  }
+}

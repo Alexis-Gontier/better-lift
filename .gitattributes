@@ -1,0 +1,11 @@
+# Fins de ligne LF partout, y compris dans les copies de travail Windows :
+# sans ça, `prettier --check` (configuré en `endOfLine: "lf"`) échoue en local
+# alors qu'il passe en CI.
+* text=auto eol=lf
+
+# Fichiers binaires ou générés : pas de normalisation, pas de diff.
+*.png binary
+*.jpg binary
+*.gif binary
+pnpm-lock.yaml linguist-generated=true -diff
+packages/db/seed/data/*.json linguist-generated=true -diff

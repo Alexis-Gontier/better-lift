@@ -1,0 +1,38 @@
+{
+  "name": "better-lift",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.13.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
+    "format": "biome format --write .",
+    "knip": "knip",
+    "db:generate": "pnpm --filter @better-lift/db run generate",
+    "db:migrate": "pnpm --filter @better-lift/db run migrate",
+    "db:seed": "pnpm --filter @better-lift/db run seed",
+    "db:studio": "pnpm --filter @better-lift/db run studio",
+    "db:reset": "pnpm --filter @better-lift/db run reset",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@commitlint/types": "^21.2.0",
+    "knip": "catalog:",
+    "lefthook": "catalog:",
+    "turbo": "^2.10.7",
+    "typescript": "catalog:"
+  }
+}

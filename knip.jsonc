@@ -1,0 +1,34 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+
+  // Knip déduit seul la plupart des entrées : src/index.ts, tests Vitest, pages
+  // Next, et — via ses plugins — le seed et prisma.config.ts de packages/db.
+  // Ne sont déclarés ici que les cas qu'il ne peut pas deviner.
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.mjs"],
+      "project": ["scripts/**/*.mjs"]
+    },
+    "apps/mobile": {
+      // Routage par fichiers d'Expo Router : chaque écran est un point d'entrée.
+      "entry": ["app/**/*.tsx"]
+    }
+  },
+
+  // `@public` en JSDoc marque un export volontairement conservé avant son
+  // premier usage. Sans ce réglage, Knip le signalerait comme code mort.
+  "tags": ["-public"],
+
+  "ignoreDependencies": [
+    // Le client Prisma généré (packages/db/src/generated, non versionné donc
+    // hors du champ d'analyse) importe `@prisma/client/runtime/client` : la
+    // dépendance est bien utilisée à l'exécution.
+    "@prisma/client",
+
+    // Réclamés par le plugin Expo à cause de `userInterfaceStyle` dans
+    // app.json. À installer via `npx expo install` le jour où le thème système
+    // et les mises à jour OTA seront réellement traités — pas en V0.
+    "expo-system-ui",
+    "expo-updates"
+  ]
+}

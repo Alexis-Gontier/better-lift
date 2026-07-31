@@ -1,0 +1,25 @@
+# Hooks Git. Remplace husky + lint-staged (doc 09 D19).
+# Posés automatiquement par `pnpm install`, via le script `prepare`.
+#
+# Pas de typecheck ni de tests ici : trop lent pour un commit, c'est le rôle
+# de la CI. Le pré-commit ne fait que ce qui est instantané et corrigeable.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css}"
+      run: pnpm exec biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+    # Le binaire `prisma` n'existe que dans packages/db : lancé depuis la
+    # racine il est introuvable. Le chemin du schéma vient de prisma.config.ts.
+    - name: prisma
+      glob: "*.prisma"
+      run: pnpm --filter @better-lift/db exec prisma format
+      stage_fixed: true
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}

@@ -1,0 +1,9 @@
+{
+  "extends": "@better-lift/config/tsconfig/react-library",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "dist", "node_modules"]
+}

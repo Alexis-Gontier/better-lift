@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Tailwind 4 : configuration CSS-first. Les tokens de design partagés avec le
+   mobile arriveront en V1, quand il y aura une interface à habiller. */
+@theme {
+  --color-surface: oklch(0.16 0.01 260);
+  --color-surface-raised: oklch(0.21 0.012 260);
+  --color-ink: oklch(0.97 0.005 260);
+  --color-ink-muted: oklch(0.72 0.015 260);
+  --color-accent: oklch(0.72 0.17 150);
+  --color-danger: oklch(0.68 0.19 25);
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
