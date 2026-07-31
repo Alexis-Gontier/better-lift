@@ -91,7 +91,8 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 - [x] Première migration appliquée et catalogue semé sur Neon Francfort.
 - [x] `packages/core` consommé par les trois apps — c'est le test réel du partage de code.
 - [x] CI GitHub Actions : format + lint + typecheck + test + build, plus un job de bundle Metro et un audit de dépendances.
-- [x] Valider pnpm 11 + Metro (aucun `node-linker=hoisted` requis) et Prisma 7 en ESM. **Better Auth partagé reste à valider** : il n'y a pas d'authentification en V0, voir [doc 09](09-decisions.md).
+- [x] Valider pnpm 11 + Metro (aucun `node-linker=hoisted` requis) et Prisma 7 en ESM.
+- [x] Spike Better Auth : instance unique côté API, session par cookie validée de bout en bout sur le web. **Le versant mobile (bearer + plugin Expo) reste à valider**, voir [doc 09](09-decisions.md).
 
 **Critère de sortie :** un développeur clone le repo et a les trois apps qui tournent en moins de 10 minutes, en suivant uniquement le README.
 

@@ -90,6 +90,7 @@ model Exercise {
 
 /// Nom et instructions traduits. Le dataset fournit 10 langues ; on n'importe
 /// que celles réellement servies (fr, en) pour limiter la taille.
+
 model ExerciseTranslation {
   id           String   @id @default(cuid())
   exerciseId   String
@@ -101,4 +102,76 @@ model ExerciseTranslation {
 
   @@unique([exerciseId, locale])
   @@index([locale])
+}
+
+// ─────────────────────────────────────────────
+// Auth — modèles Better Auth
+//
+// Écrits par `npx @better-auth/cli generate` depuis apps/api (doc 03).
+// **Ne pas les éditer à la main** : les régénérer après tout ajout de plugin,
+// le plugin Expo au premier chef. Les champs applicatifs de `User` (unité,
+// locale, fuseau, visibilité par défaut) viendront avec la V1, en plus.
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }

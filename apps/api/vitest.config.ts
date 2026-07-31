@@ -11,6 +11,10 @@ export default defineConfig({
       DATABASE_URL: "postgresql://test:test@localhost:5432/betterlift_test",
       CORS_ORIGINS: "http://localhost:3000",
       APP_VERSION: "0.0.0-test",
+      // Better Auth valide la longueur du secret au démarrage. Valeur de test,
+      // sans rapport avec celle du `.env`.
+      BETTER_AUTH_SECRET: "secret-de-test-uniquement-32-caracteres-minimum",
+      BETTER_AUTH_URL: "http://localhost:3001",
     },
   },
 });

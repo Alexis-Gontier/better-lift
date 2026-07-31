@@ -11,7 +11,10 @@ import {
 // d'intégration (doc 07).
 const checkDatabaseConnection = vi.hoisted(() => vi.fn());
 
-vi.mock("@better-lift/db", () => ({ checkDatabaseConnection }));
+// `prisma` doit figurer dans le mock même si ces tests ne s'en servent pas :
+// `app.ts` charge l'instance Better Auth, qui le passe à son adaptateur au
+// moment de l'import.
+vi.mock("@better-lift/db", () => ({ checkDatabaseConnection, prisma: {} }));
 
 const { createApp } = await import("../app.js");
 

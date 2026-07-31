@@ -1,6 +1,8 @@
 import { type ZodType } from "zod";
 
 import {
+  type CurrentUser,
+  currentUserSchema,
   type HealthResponse,
   healthResponseSchema,
   type VersionResponse,
@@ -24,6 +26,8 @@ export interface ApiClientOptions {
 export interface ApiClient {
   getHealth: (signal?: AbortSignal) => Promise<HealthResponse>;
   getVersion: (signal?: AbortSignal) => Promise<VersionResponse>;
+  /** Lève une `ApiClientError` 401 quand aucune session n'est établie. */
+  getMe: (signal?: AbortSignal) => Promise<CurrentUser>;
 }
 
 export function createApiClient(options: ApiClientOptions): ApiClient {
@@ -86,5 +90,6 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   return {
     getHealth: (signal) => request("/health", healthResponseSchema, signal),
     getVersion: (signal) => request("/v1/version", versionResponseSchema, signal),
+    getMe: (signal) => request("/v1/me", currentUserSchema, signal),
   };
 }

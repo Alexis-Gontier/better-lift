@@ -23,6 +23,9 @@ catalog:
   lefthook: ^2.1.10
   vitest: ^4.1.10
 
+  # Auth — une seule instance côté API, un client côté web (doc 04).
+  better-auth: ^1.6.25
+
   # API
   hono: ^4.12.32
   "@hono/node-server": ^2.0.12

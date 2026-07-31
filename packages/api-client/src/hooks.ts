@@ -1,6 +1,10 @@
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 
-import { type HealthResponse, type VersionResponse } from "@better-lift/validators";
+import {
+  type CurrentUser,
+  type HealthResponse,
+  type VersionResponse,
+} from "@better-lift/validators";
 
 import { type ApiClient } from "./client.js";
 
@@ -11,6 +15,7 @@ import { type ApiClient } from "./client.js";
 export const queryKeys = {
   health: ["health"] as const,
   version: ["version"] as const,
+  me: ["me"] as const,
 };
 
 export function useHealth(client: ApiClient): UseQueryResult<HealthResponse, Error> {
@@ -21,6 +26,21 @@ export function useHealth(client: ApiClient): UseQueryResult<HealthResponse, Err
     // rassurante alors que le service vient de tomber.
     staleTime: 5_000,
     retry: 1,
+  });
+}
+
+/**
+ * Utilisateur de la session courante, vu **par l'API** et non par le client
+ * d'authentification : c'est ce qui prouve que le cookie voyage jusqu'à une
+ * route protégée, pas seulement qu'une session existe côté navigateur.
+ */
+export function useMe(client: ApiClient): UseQueryResult<CurrentUser, Error> {
+  return useQuery({
+    queryKey: queryKeys.me,
+    queryFn: ({ signal }) => client.getMe(signal),
+    // Un 401 est une réponse, pas une panne : le réessayer n'apporte rien.
+    retry: false,
+    staleTime: 30_000,
   });
 }
 
