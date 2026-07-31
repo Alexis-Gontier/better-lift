@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Turborepo télémétrie désactivée : rien à envoyer depuis la CI.
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  quality:
+    name: Biome · typecheck · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Prisma 7 a supprimé la génération implicite : sans cette étape, les
+      # packages qui dépendent du client compilent contre un client absent.
+      - name: Générer le client Prisma
+        run: pnpm db:generate
+
+      # `biome ci` = format + lint + tri des imports, sans jamais écrire.
+      - run: pnpm lint:ci
+      - run: pnpm typecheck
+
+      # Dépendances inutilisées, fichiers et exports morts. Passe après la
+      # génération du client Prisma, qu'il a besoin de résoudre.
+      - run: pnpm knip
+
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          # Le build Next inline cette variable ; sa valeur réelle est injectée
+          # au déploiement, pas ici.
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+
+  mobile-bundle:
+    name: Bundle Metro
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Metro consomme le `dist/` des packages du workspace, jamais leurs
+      # sources : sans cette étape il résout `@better-lift/api-client` vers un
+      # fichier absent. `mobile^...` construit les dépendances de l'app, pas
+      # l'app elle-même (elle n'a pas de tâche `build`).
+      - name: Construire les packages du workspace
+        run: pnpm exec turbo run build --filter=mobile^...
+
+      # La résolution des packages du workspace par Metro est le point le plus
+      # fragile du monorepo (doc 09) : un bundle réel est la seule vérification
+      # qui vaille, un typecheck ne l'attraperait pas.
+      - name: Bundler l'application mobile
+        working-directory: apps/mobile
+        run: pnpm exec expo export --platform android --output-dir .expo/ci-bundle
+
+  audit:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm audit --audit-level=high

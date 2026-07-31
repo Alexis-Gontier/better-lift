@@ -1,0 +1,104 @@
+// better-lift — schéma Prisma 7
+//
+// Périmètre V0 : le catalogue d'exercices seul, de quoi éprouver la chaîne
+// migration → seed → API. Les modèles d'authentification, de routines, de
+// séances et de records arrivent en V1 (doc 03 porte le schéma cible complet).
+//
+// Prisma 7 (doc 10) : générateur `prisma-client` et non `prisma-client-js`,
+// `output` obligatoire, pas d'`url` dans `datasource` — elle vit dans
+// prisma.config.ts —, et driver adapter requis à l'instanciation.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Énumérations
+// ─────────────────────────────────────────────
+
+/// Détermine les champs saisissables pour une série.
+/// Doit rester aligné sur `ExerciseType` dans packages/core.
+enum ExerciseType {
+  WEIGHT_REPS // développé couché : charge + reps
+  BODYWEIGHT_REPS // pompes : reps seules
+  WEIGHTED_BODYWEIGHT // traction lestée : charge additionnelle + reps
+  ASSISTED_BODYWEIGHT // traction assistée : charge soustraite + reps
+  REPS_ONLY // reps seules, sans notion de poids de corps
+  DURATION // gainage : durée
+  DURATION_WEIGHT // farmer walk statique : durée + charge
+  DISTANCE_DURATION // course, rameur : distance + durée
+}
+
+enum BodyPart {
+  CHEST
+  BACK
+  SHOULDERS
+  UPPER_ARMS
+  LOWER_ARMS
+  UPPER_LEGS
+  LOWER_LEGS
+  WAIST
+  CARDIO
+  NECK
+}
+
+// ─────────────────────────────────────────────
+// Catalogue d'exercices
+// ─────────────────────────────────────────────
+
+model Exercise {
+  id String @id @default(cuid())
+
+  /// Identifiant d'origine du dataset ("0001"). Sert de clé d'idempotence au
+  /// seed. Nullable dès la V1 pour les exercices créés par un utilisateur.
+  externalId String? @unique
+  slug       String  @unique
+  name       String
+
+  type             ExerciseType @default(WEIGHT_REPS)
+  bodyPart         BodyPart
+  /// Chaîne libre issue du dataset : "barbell", "dumbbell", "body weight"…
+  equipment        String
+  /// Muscle cible principal : "pectorals", "lats"…
+  target           String
+  secondaryMuscles String[]     @default([])
+
+  thumbnailUrl String?
+  animationUrl String?
+  /// Mention de copyright à conserver et à afficher partout où le média
+  /// apparaît (doc 08, D17).
+  attribution  String?
+
+  /// Permet de retirer un exercice du catalogue sans casser l'historique :
+  /// un exercice référencé par une séance n'est jamais supprimé.
+  isArchived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ExerciseTranslation[]
+
+  @@index([bodyPart])
+  @@index([equipment])
+  @@index([isArchived])
+}
+
+/// Nom et instructions traduits. Le dataset fournit 10 langues ; on n'importe
+/// que celles réellement servies (fr, en) pour limiter la taille.
+model ExerciseTranslation {
+  id           String   @id @default(cuid())
+  exerciseId   String
+  locale       String // "fr", "en"
+  name         String
+  instructions String[] @default([])
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([exerciseId, locale])
+  @@index([locale])
+}

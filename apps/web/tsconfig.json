@@ -1,0 +1,12 @@
+{
+  "extends": "@better-lift/config/tsconfig/next",
+  "compilerOptions": {
+    // Pas de `baseUrl` : déprécié en TS 6, supprimé en TS 7. Depuis TS 5,
+    // `paths` se résout relativement à l'emplacement de ce fichier.
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", ".next"]
+}

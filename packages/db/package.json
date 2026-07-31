@@ -1,0 +1,43 @@
+{
+  "name": "@better-lift/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "prisma"
+  ],
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "prisma generate && tsc --build",
+    "typecheck": "tsc --noEmit -p tsconfig.seed.json",
+    "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:status": "prisma migrate status",
+    "seed": "prisma db seed",
+    "studio": "prisma studio",
+    "reset": "prisma migrate reset",
+    "clean": "node -e \"fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('src/generated',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true})\""
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "catalog:",
+    "@prisma/client": "catalog:"
+  },
+  "devDependencies": {
+    "@better-lift/config": "workspace:*",
+    "@types/node": "catalog:",
+    "dotenv": "catalog:",
+    "prisma": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  }
+}

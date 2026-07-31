@@ -60,8 +60,7 @@ better-lift/
 │   ├── core/                   # logique métier pure, sans I/O
 │   ├── api-client/             # client typé + hooks TanStack Query
 │   ├── ui/                     # composants web (shadcn/ui) — web uniquement
-│   └── config/                 # tsconfig, eslint, tailwind, prettier
-├── docker-compose.yml
+│   └── config/                 # tsconfig partagés, tokens de design
 ├── turbo.json
 ├── pnpm-workspace.yaml
 ├── .npmrc
@@ -169,7 +168,7 @@ Attention à un détail qui fait perdre du temps : le `z` doit être importé de
 
 | Environnement | Web | API | Base | Mobile |
 |---|---|---|---|---|
-| Local | `:3000` | `:3001` | Docker Postgres | Expo dev client |
+| Local | `:3000` | `:3001` | Neon (branche de dev) | Expo dev client |
 | Preview | Vercel (par PR) | Railway (par PR) | Neon branch | EAS preview channel |
 | Production | Vercel | Railway / Fly.io | Neon (région UE) | Stores + EAS Update |
 
@@ -179,8 +178,8 @@ Attention à un détail qui fait perdre du temps : le `z` doit être importé de
 
 ```bash
 # Base (lue par prisma.config.ts en v7, plus par schema.prisma)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/betterlift"
-SHADOW_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/betterlift_shadow"
+DATABASE_URL="postgresql://…@ep-xxxx-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+DIRECT_URL="postgresql://…@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require"
 
 # API
 PORT=3001

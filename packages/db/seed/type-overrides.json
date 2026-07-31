@@ -1,0 +1,3 @@
+{
+  "$comment": "Corrections manuelles de la déduction de ExerciseType (doc 08). Clé = externalId du dataset, valeur = ExerciseType. Alimenté au fil des signalements plutôt qu'en complexifiant l'heuristique."
+}
