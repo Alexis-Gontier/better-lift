@@ -44,11 +44,29 @@ L'interdiction d'importer Prisma hors de l'API (D3) est portée par `noRestricte
 
 **Knip est ajouté**, il ne remplace rien. Il détecte dépendances, fichiers et exports morts — angle mort réel d'un monorepo, où une dépendance retirée d'un import reste dans le `package.json` pour toujours. Il tourne en CI, pas en pré-commit : trop lent, et sans intérêt sur un diff partiel. Un export volontairement conservé avant son premier usage se marque `@public` en JSDoc.
 
+### D20 — E-mails transactionnels : Resend, derrière une interface d'un seul appel
+
+Deux e-mails seulement en V1 — vérification d'adresse et réinitialisation de mot de passe — mais tous les deux sur le chemin critique du compte.
+
+**Resend** plutôt que SES ou Postmark : mise en route en quelques minutes contre une demi-journée de configuration IAM, et un SDK qui ne réserve pas de surprise. Le volume attendu tient très largement dans l'offre gratuite.
+
+Trois points à connaître avant d'y toucher :
+
+- **Le SDK ne lève pas d'exception.** Il renvoie `{ data, error }`. Un `try/catch` seul laisse passer les échecs en silence — c'est le piège n°1 de leur propre documentation.
+- **La clé d'idempotence porte le jeton, pas l'utilisateur.** Resend déduplique sur 24 h : une clé du type `reset-password/<userId>` ferait disparaître la seconde demande de réinitialisation d'une même personne, ce qui est exactement le cas où elle en a besoin.
+- **Aucun envoi ne peut faire échouer la requête qui le déclenche.** Tout passe par `sendEmailSafely`, qui journalise et n'propage jamais. Deux raisons : la vérification est non bloquante par décision (D6), et sur `request-password-reset`, une erreur propagée répondrait 500 pour une adresse connue et 200 pour une inconnue — le formulaire deviendrait un oracle d'existence de comptes.
+
+**Ce qui reste à trancher avant la production, et qui est le vrai point faible de ce choix :** Resend est une société américaine. Les adresses e-mail transitant chez elle sont des données personnelles, et l'hébergement UE est un objectif affiché (doc 01). Leur résidence des données en Europe existe mais n'est pas sur l'offre gratuite. **À vérifier et à arbitrer avant la mise en production**, au même titre que les conditions Gym visual (D17) — le repli étant un fournisseur européen, ce qui est précisément ce que l'interface à un seul appel de `apps/api/src/lib/mailer.ts` rend peu coûteux.
+
+**Limitation assumée du rate limiting.** Les quotas d'authentification de la doc 04 sont appliqués par Better Auth avec un stockage **en mémoire**, donc par instance d'API. Suffisant tant qu'elle tourne sur un seul processus. Le jour où elle est répliquée, il faudra passer au stockage base (modèle `rateLimit` et migration) ou à un stockage secondaire — sans quoi le quota réel devient le quota multiplié par le nombre d'instances.
+
 ## Produit
 
 ### D6 — Vérification d'e-mail non bloquante en V1
 
 L'e-mail part, l'accès n'est pas conditionné. La friction sur le premier parcours coûte plus que les faux comptes à ce stade. À rendre bloquant si l'abus apparaît.
+
+**Mis en œuvre le 1er août 2026.** Concrètement : `emailVerification.sendOnSignUp: true` et `emailAndPassword.requireEmailVerification: false` — c'est la combinaison des deux qui fait la « vérification non bloquante », l'une sans l'autre donne soit un envoi qui enferme, soit un compte jamais vérifié. Corollaire à ne pas oublier : puisque rien n'oblige à confirmer, quelque chose doit le rappeler, sinon « non bloquant » revient en pratique à « jamais vérifié ». D'où le bandeau permanent du tableau de bord, avec renvoi de l'e-mail.
 
 ### D7 — La saisie de séance existe aussi sur le web
 

@@ -98,7 +98,7 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 
 ### V1 — MVP utilisable
 
-- [ ] Auth Better Auth complète (e-mail/mot de passe, Google, Apple, sessions partagées web/mobile).
+- [x] Auth Better Auth : e-mail/mot de passe, vérification d'adresse non bloquante (D6), réinitialisation de mot de passe, quotas d'authentification, `proxy.ts` protégeant la zone connectée, écrans web dédiés. GitHub et Google sont câblés — **il reste à créer les OAuth Apps** pour les éprouver. Apple attend un compte Apple Developer, exigé seulement à la première soumission iOS (doc 04).
 - [ ] Catalogue d'exercices : recherche, filtres, fiche détail.
 - [ ] Routines : CRUD complet + dossiers, éditeur web soigné, consultation mobile.
 - [ ] Séance : démarrage depuis routine ou à vide, saisie complète, minuteur de repos, enregistrement.

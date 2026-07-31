@@ -21,6 +21,7 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "hono": "catalog:",
+    "resend": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

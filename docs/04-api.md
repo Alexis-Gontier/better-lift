@@ -32,9 +32,24 @@ export const requireAuth = createMiddleware(async (c, next) => {
 });
 ```
 
-Providers OAuth : **GitHub d'abord** (V1), puis Google et Apple. Apple est **obligatoire** sur iOS dès lors qu'un autre login social est proposé (règle App Store 4.8) — donc avant la première soumission mobile, pas avant. Tant que l'app n'est pas soumise, GitHub seul ne pose aucun problème.
+Providers OAuth : **GitHub et Google** sont câblés en V1, Apple viendra. Apple est **obligatoire** sur iOS dès lors qu'un autre login social est proposé (règle App Store 4.8) — donc avant la première soumission mobile, pas avant, et il exige un compte Apple Developer payant.
 
-Le fournisseur n'est enregistré que si `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET` sont renseignés : sans OAuth App, l'API démarre quand même et l'e-mail/mot de passe continue de fonctionner.
+Un fournisseur n'est enregistré que si ses deux variables sont renseignées : sans OAuth App, l'API démarre quand même et l'e-mail/mot de passe continue de fonctionner. Côté web les boutons restent affichés dans tous les cas — le navigateur n'a pas moyen de savoir ce qui est configuré côté serveur, et une erreur explicite se diagnostique mieux qu'un bouton absent.
+
+### Routes servies par Better Auth
+
+Elles sont hors du contrat OpenAPI de l'application : Better Auth publie le sien via son plugin `openAPI` si besoin.
+
+| Chemin (`/api/auth/…`) | Rôle |
+|---|---|
+| `sign-up/email`, `sign-in/email`, `sign-out` | Cycle de vie e-mail/mot de passe |
+| `sign-in/social`, `callback/:provider` | OAuth |
+| `send-verification-email`, `verify-email` | Vérification d'adresse, **non bloquante** (D6) |
+| `request-password-reset`, `reset-password` | Réinitialisation de mot de passe |
+
+**Le parcours de réinitialisation fait un détour volontaire par l'API.** Le lien de l'e-mail pointe sur `/reset-password/:token`, qui valide le jeton *avant* de rediriger vers le web — avec `?token=` si valide, `?error=INVALID_TOKEN` sinon. On n'affiche donc jamais un formulaire dont on sait déjà qu'il échouera.
+
+**Aucun envoi d'e-mail ne peut faire échouer la requête qui le déclenche** (D20). Sur `request-password-reset`, propager une erreur d'envoi répondrait 500 pour une adresse connue et 200 pour une inconnue : le formulaire deviendrait un moyen d'énumérer les comptes.
 
 ## Format d'erreur
 
@@ -290,11 +305,15 @@ Les records sont calculés **serveur**, jamais client : c'est la seule façon de
 
 ## Limitation de débit
 
-| Portée | Limite |
-|---|---|
-| `/api/auth/sign-in`, `/sign-up` | 10 / 15 min / IP |
-| `/v1/*` authentifié | 300 / min / utilisateur |
-| `/v1/exercises` (recherche) | 60 / min / utilisateur |
+| Portée | Limite | État |
+|---|---|---|
+| `/api/auth/sign-in/email`, `sign-up/email` | 10 / 15 min / IP | ✅ appliqué |
+| `/api/auth/request-password-reset`, `send-verification-email` | 5 / 15 min / IP | ✅ appliqué |
+| Reste de `/api/auth/*` | 100 / min / IP | ✅ appliqué |
+| `/v1/*` authentifié | 300 / min / utilisateur | à faire |
+| `/v1/exercises` (recherche) | 60 / min / utilisateur | à faire |
+
+Les quotas d'authentification sont ceux de Better Auth, **activés dans tous les environnements** — il ne les applique qu'en production par défaut, ce qui reviendrait à ne jamais les éprouver avant d'en avoir besoin. Leur stockage est en mémoire, donc par instance : voir la limitation notée en D20 avant de répliquer l'API.
 
 ## Versionnement
 

@@ -38,6 +38,12 @@ app/
 
 Le `proxy.ts` Next protège `(app)/*` : session absente → redirection vers `/login?next=<chemin>`. En Next 16 le fichier s'appelle `proxy.ts`, plus `middleware.ts`, et l'export nommé est `proxy` (voir [doc 10](10-versions.md)).
 
+**Ce n'est pas une frontière de sécurité**, et il ne faut pas le lire comme telle. Il constate la *présence* d'un cookie de session pour éviter d'afficher une coquille vide à un visiteur anonyme ; il ne vérifie ni signature ni expiration, ce qui imposerait un aller-retour vers l'API à chaque navigation pour une garantie que l'API redonne de toute façon. L'autorisation réelle est côté API, et nulle part ailleurs. Un cookie forgé n'obtient qu'un écran qui se remplira d'erreurs 401.
+
+Deux détails qui ont coûté du temps et sont détaillés en [doc 10](10-versions.md) : les chemins du `matcher` s'écrivent en toutes lettres (un groupe `(app)` n'apparaît jamais dans une URL), et le cookie change de nom en HTTPS (`__Secure-`).
+
+Le paramètre `next` est **filtré avant redirection** (`safeNextPath`) : il vient de l'URL, donc de n'importe qui, et un `/login?next=https://exemple.test` ferait de l'écran de connexion un tremplin de redirection ouverte.
+
 ## Dashboard
 
 C'est l'écran d'accueil de la zone connectée. Il doit répondre en un coup d'œil à : **est-ce que je suis régulier, est-ce que je progresse, qu'est-ce que je fais aujourd'hui ?**

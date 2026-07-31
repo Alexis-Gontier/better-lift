@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start --port 3000",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "clean": "node -e \"fs.rmSync('.next',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true})\""
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "^19.2.4",
     "tailwindcss": "^4.3.3",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

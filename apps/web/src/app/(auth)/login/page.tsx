@@ -1,28 +1,26 @@
-import Link from "next/link";
+import { type Metadata } from "next";
+import { Suspense } from "react";
 
-import { LoginForm } from "@/features/auth/login-form";
+import { SignInForm } from "@/features/auth/sign-in-form";
 
-export const metadata = { title: "Connexion — better-lift" };
+export const metadata: Metadata = { title: "Connexion — better-lift" };
 
 /**
- * Emplacement prévu par la doc 05 : `(auth)/login`. Le groupe n'a pas encore
- * de layout propre, la V1 lui en donnera un.
+ * `SignInForm` lit `?next=` avec `useSearchParams()`, ce qui impose une
+ * frontière `<Suspense>` : sans elle, Next refuse de prérendre la page et le
+ * build échoue.
  */
 export default function LoginPage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-8 px-6 py-16">
+    <>
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Connexion</h1>
-        <p className="text-sm text-ink-muted">
-          Spike d’authentification : une seule instance Better Auth, servie par l’API.
-        </p>
+        <h1 className="text-xl font-semibold">Se connecter</h1>
+        <p className="text-sm text-ink-muted">Reprenez là où vous en étiez.</p>
       </header>
 
-      <LoginForm />
-
-      <Link href="/" className="text-center text-sm text-ink-muted underline underline-offset-4">
-        Retour
-      </Link>
-    </main>
+      <Suspense fallback={<p className="text-sm text-ink-muted">…</p>}>
+        <SignInForm />
+      </Suspense>
+    </>
   );
 }

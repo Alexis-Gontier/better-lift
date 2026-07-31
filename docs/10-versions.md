@@ -35,6 +35,7 @@ Vérifié le **31 juillet 2026**. À revalider à chaque démarrage de phase (V0
 | `@prisma/adapter-pg` | 7.x       | **Obligatoire** : `new PrismaClient()` sans adaptateur est invalide en v7.                                                                                                                                                            |
 | Better Auth          | **1.6.x** |                                                                                                                                                                                                                                       |
 | `@better-auth/expo`  | **1.6.x** | Nécessite `expo-secure-store` **et** `expo-network` — donc un development build, Expo Go ne suffit plus. Deux pièges : ses types sont **incompatibles avec `better-auth` de la même version** (`getActions` déclare un `BetterFetch` plus étroit que `BetterAuthClientPlugin` n'accepte) — ce n'est pas une duplication pnpm, les deux résolvent bien la même copie ; un `@ts-expect-error` sur le plugin vaut mieux qu'un cast, il préserve l'inférence de session et sautera quand la lib corrigera. Et `getCookie()` renvoie un en-tête `Cookie` complet, **pas** le jeton nu : il faut en extraire `better-auth.session_token` pour le présenter en `Authorization: Bearer`. |
+| Resend               | **6.x**   | E-mails transactionnels (D20). Le SDK **ne lève pas** d'exception : il renvoie `{ data, error }`, à tester explicitement. Chargé paresseusement — sans `RESEND_API_KEY`, il n'est jamais importé.                                       |
 | PostgreSQL           | **18**    | Neon, région **Francfort** (`aws-eu-central-1`). La cible initiale était la 17 ; Neon provisionne désormais en 18 par défaut, et rien dans le schéma ne justifiait de forcer la version inférieure. Migration et seed validés dessus. |
 
 ## Front
@@ -125,14 +126,31 @@ Turbopack par défaut n'est pas la seule rupture de la 16. Le fichier `middlewar
 - **Le runtime `edge` n'est pas supporté par `proxy`** : il tourne en `nodejs`, et ce n'est pas configurable. Un besoin d'edge oblige à rester sur `middleware.ts`.
 
 ```ts
-// proxy.ts (racine)
+// src/proxy.ts
 export function proxy(request: NextRequest) {
   /* … */
 }
-export const config = { matcher: ["/(app)/:path*"] };
+export const config = { matcher: ["/dashboard/:path*", "/routines/:path*" /* … */] };
 ```
 
-Migration automatique si l'on part d'un projet existant : `npx @next/codemod middleware-to-proxy .`. Ici on démarre à neuf : écrire directement `proxy.ts`. Ce projet n'a aucun besoin d'edge — la protection des routes `(app)/*` interroge Better Auth côté Node.
+Migration automatique si l'on part d'un projet existant : `npx @next/codemod middleware-to-proxy .`. Ici on démarre à neuf : écrire directement `proxy.ts`.
+
+Deux points constatés à l'écriture, le 1er août 2026 :
+
+- **Un groupe de routes ne s'écrit pas dans le `matcher`.** `"/(app)/:path*"` ne correspond à rien : `(app)` est une convention de dossier qui n'apparaît **jamais** dans l'URL. Il faut lister les chemins réels (`/dashboard/:path*`, `/routines/:path*`, …), et donc penser à compléter la liste à chaque nouvelle section. Un test vérifie l'alignement.
+- **Le `matcher` est analysé statiquement au build.** Pas de spread, pas de constante réutilisée : un tableau de littéraux, sinon Next ne le voit pas.
+
+### Better Auth — trois pièges de cookie côté `proxy.ts`
+
+Rencontrés en câblant la protection des routes web. Aucun n'est visible en développement, ce qui est précisément le problème.
+
+- **Le nom du cookie change en HTTPS.** Better Auth préfixe de `__Secure-` dès qu'il émet en sécurisé : `better-auth.session_token` en local devient `__Secure-better-auth.session_token` en production. Un `proxy.ts` qui ne cherche qu'un seul des deux noms marche en local et déconnecte tout le monde en production — et la CI ne le voit pas.
+- **Les cookies ne sont pas cloisonnés par port, mais bien par hôte.** En développement, le cookie posé par l'API sur `:3001` arrive tel quel sur le web en `:3000` : rien à configurer, ça marche « tout seul ». En production ce sont deux hôtes (`better-lift.app` et `api.better-lift.app`, D2) et le cookie reste rattaché à celui de l'API. Il faut `advanced.crossSubDomainCookies`, activé ici en comparant les hôtes de `WEB_APP_URL` et `BETTER_AUTH_URL`.
+- **`callbackURL` doit être absolue.** C'est l'API qui effectue la redirection de fin d'OAuth et de vérification d'e-mail : un chemin relatif se résout sur **son** origine, et l'utilisateur atterrit sur du JSON. Le web les construit depuis `window.location.origin`.
+
+### `useSearchParams()` impose une frontière `<Suspense>`
+
+Tout composant client qui lit les paramètres d'URL doit être enveloppé dans un `<Suspense>` par la page qui l'affiche, sinon Next refuse de prérendre et **le build échoue**. Concerne ici les écrans de connexion, d'inscription et de réinitialisation, qui lisent `?next=` et `?token=`.
 
 ### NativeWind et Tailwind 4 — décalage à assumer
 
