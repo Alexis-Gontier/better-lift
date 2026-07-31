@@ -22,7 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
+      # v6 : la v4 tourne sur Node 20, que GitHub force déjà sur Node 24 en
+      # émettant un avertissement de dépréciation. La v5 est passée à Node 24,
+      # la v6 ajoute la prise en charge de pnpm 11 — celui du dépôt.
+      # La version de pnpm continue de venir du champ `packageManager`.
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v5
         with:
@@ -59,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v5
         with:
@@ -90,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v5
         with:
