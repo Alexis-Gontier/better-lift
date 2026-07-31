@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "skills": {
+    "expo-dev-client": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-dev-client/SKILL.md",
+      "computedHash": "f2bd068657f6a65d532fe68ab28b1d279e9428de5197134e84f53df05a5c7269"
+    },
+    "expo-router": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-router/SKILL.md",
+      "computedHash": "98deca5b1707e9f38de17c1ab33448f54a9cb200518dc69a995ffab934d9b603"
+    },
+    "hono": {
+      "source": "yusukebe/hono-skill",
+      "sourceType": "github",
+      "skillPath": "skills/hono/SKILL.md",
+      "computedHash": "24bad73932f309cec73a5a9171b838f59050990a634d8590c2d2c204507e64f9"
+    },
+    "neon-postgres": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-postgres/SKILL.md",
+      "computedHash": "7cbf89e1135f27f482ca7e18bb6df15ec38307848d35364ed058fb9f5c0b7e99"
+    },
+    "neon-postgres-branches": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-postgres-branches/SKILL.md",
+      "computedHash": "121751d8def064c0342288a3e3c281faab5deca8b191651f679dfbc5d63a6813"
+    },
+    "react-email": {
+      "source": "resend/react-email",
+      "sourceType": "github",
+      "skillPath": "skills/react-email/SKILL.md",
+      "computedHash": "aafd7a5f1e1e44dae83dc545eb2fac7c45d5eb20c1dd47afbebd879eb825fa64"
+    },
+    "resend": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/resend/SKILL.md",
+      "computedHash": "c3cdd88cbb852c9f56f103ae624e7f0d53d00292335322442338936fc6258b7f"
+    },
+    "tanstack-query-best-practices": {
+      "source": "deckardger/tanstack-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tanstack-query/SKILL.md",
+      "computedHash": "addf4358803d7746f7fe0475a3370d835775217e00dd5fc7bbd8a7d6c53d81e5"
+    },
+    "vitest": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vitest/SKILL.md",
+      "computedHash": "3594bf6d97ca50836c611d8b1907322888c03d2c41b2f26761e644b8e67fe106"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+# Fichiers gitignorés à recopier dans chaque worktree créé par Claude Code.
+# Sans ça, un worktree démarre sans configuration locale et rien ne tourne.
+
+.env
+.env.local
+apps/api/.env
+apps/web/.env.local
+apps/mobile/.env.local
