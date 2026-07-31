@@ -6,6 +6,12 @@ node_modules/
 dist/
 build/
 
+# Cache incrémental de `tsc --build`. À ne surtout pas versionner : avec `dist/`
+# ignoré, un .tsbuildinfo commité fait croire à tsc que tout est à jour et il
+# n'émet plus rien sur une machine neuve — la CI compile alors contre un `dist`
+# qui n'existe pas.
+*.tsbuildinfo
+
 # Prisma 7 : client généré, reconstruit par `pnpm db:generate`
 packages/db/src/generated/
 

@@ -68,6 +68,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Metro consomme le `dist/` des packages du workspace, jamais leurs
+      # sources : sans cette étape il résout `@better-lift/api-client` vers un
+      # fichier absent. `mobile^...` construit les dépendances de l'app, pas
+      # l'app elle-même (elle n'a pas de tâche `build`).
+      - name: Construire les packages du workspace
+        run: pnpm exec turbo run build --filter=mobile^...
+
       # La résolution des packages du workspace par Metro est le point le plus
       # fragile du monorepo (doc 09) : un bundle réel est la seule vérification
       # qui vaille, un typecheck ne l'attraperait pas.
