@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 import { useHealth, useVersion } from "@better-lift/api-client";
 import { estimate1RM, kgToLb, setVolume } from "@better-lift/core";
 
+import { SessionPanel } from "@/features/auth/session-panel";
 import { API_URL, apiClient } from "@/lib/api";
 
 const SAMPLE_SET = { type: "NORMAL", completed: true, reps: 5, weightKg: "102.50" } as const;
@@ -85,6 +86,11 @@ export default function HomeScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Logique métier partagée</Text>
           <CoreCheck />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Session Better Auth</Text>
+          <SessionPanel />
         </View>
       </ScrollView>
     </>

@@ -10,7 +10,7 @@ paths:
 - **`platforms: ["ios", "android"]` dans `app.json` — ne pas ajouter `"web"`.** La plateforme web d'Expo repose sur `react-native-web`, interdit par la règle non négociable n°2. Sans cette restriction, une simple requête d'un navigateur sur le port de Metro déclenche un bundle web qui échoue sur `react-native-web/dist/exports/...` **et arrête le serveur de développement** — l'erreur ne ressemble alors en rien à sa cause.
 - `localhost` désigne le téléphone, pas la machine de dev. L'URL d'API vient de `EXPO_PUBLIC_API_URL` (IP LAN). Émulateur Android : `10.0.2.2`.
 - **`EXPO_PUBLIC_*` doit vivre dans `apps/mobile/.env`, pas à la racine du monorepo.** Expo ne lit que le `.env` de son propre dossier ; une valeur placée à la racine est ignorée sans avertissement et le bundle retombe sur la valeur de repli du code. Après tout changement, relancer Metro avec `--clear` : le cache conserve les valeurs inlinées précédentes.
-- En V0, aucune dépendance native ne sort de ce qu'embarque Expo Go. Le development build redevient obligatoire dès que Better Auth, SecureStore ou MMKV entrent en jeu.
+- **Le development build est désormais obligatoire** : `expo-secure-store` est installé depuis le spike d'authentification (31 juillet 2026). Expo Go ne suffit plus.
 - `FlashList` pour les longues listes (le catalogue fait 1 324 exercices).
 
 ## Séance active — le cœur du produit

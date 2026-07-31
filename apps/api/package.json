@@ -16,6 +16,7 @@
     "@better-lift/db": "workspace:*",
     "@better-lift/validators": "workspace:*",
     "@hono/node-server": "catalog:",
+    "@better-auth/expo": "catalog:",
     "@hono/zod-openapi": "catalog:",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
