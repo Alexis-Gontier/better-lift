@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Prisma 7 : client généré, reconstruit par `pnpm db:generate`
+packages/db/src/generated/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Config Claude Code locale — personnelle, jamais partagée
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Turborepo
+.turbo/
+
+# Expo
+.expo/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
