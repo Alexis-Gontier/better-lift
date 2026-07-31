@@ -65,6 +65,16 @@ allowBuilds:
   # `lefthook install` n'a rien à exécuter et les hooks ne sont jamais posés.
   lefthook: true
 
+# Failles hautes tirées transitivement par Next 16.2.12, que `pnpm audit`
+# bloque en CI. Les deux sont des montées de patch, sans rupture d'API :
+#   - postcss < 8.5.18 : lecture de fichier arbitraire via `sourceMappingURL`
+#     dans un commentaire CSS (GHSA-6g55-p6wh-862q, GHSA-r28c-9q8g-f849)
+#   - sharp < 0.35.0 : vulnérabilités héritées de libvips (GHSA-f88m-g3jw-g9cj)
+# À retirer dès que Next relève ses propres bornes.
+overrides:
+  postcss: ^8.5.18
+  sharp: ^0.35.0
+
 minimumReleaseAgeExclude:
   - "@types/react@19.2.18"
   - "@types/react-dom@19.2.4"
