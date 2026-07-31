@@ -10,6 +10,9 @@
       "Bash(pnpm dev *)",
       "Bash(pnpm build *)",
       "Bash(pnpm lint *)",
+      "Bash(pnpm lint:fix)",
+      "Bash(pnpm format)",
+      "Bash(pnpm knip)",
       "Bash(pnpm typecheck *)",
       "Bash(pnpm test *)",
       "Bash(pnpm db:generate)",
@@ -20,8 +23,6 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git add *)",
-      "Bash(docker compose ps)",
-      "Bash(docker compose up -d)",
       "Bash(npx expo install *)"
     ],
     "deny": [
@@ -29,11 +30,7 @@
       "Bash(git push --force *)",
       "Bash(pnpm db:reset *)",
       "Bash(prisma migrate reset *)",
-      "Bash(prisma migrate deploy *)",
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./**/.env)",
-      "Read(./**/.env.*)"
+      "Bash(prisma migrate deploy *)"
     ]
   },
   "hooks": {
@@ -44,8 +41,8 @@
           {
             "type": "command",
             "shell": "bash",
-            "command": "node -e 'let s=\"\";process.stdin.on(\"data\",d=>s+=d).on(\"end\",()=>{try{const p=JSON.parse(s).tool_input.file_path||\"\";if(/\\.(ts|tsx|js|jsx|json|md|prisma)$/.test(p))console.log(p)}catch(e){}})' | { read -r f; [ -n \"$f\" ] && npx --no-install prettier --write --ignore-unknown \"$f\"; } 2>/dev/null || true",
-            "statusMessage": "Prettier"
+            "command": "node -e 'let s=\"\";process.stdin.on(\"data\",d=>s+=d).on(\"end\",()=>{try{const p=JSON.parse(s).tool_input.file_path||\"\";if(/\\.(ts|tsx|js|jsx|mjs|cjs|json|jsonc|css)$/.test(p))console.log(p)}catch(e){}})' | { read -r f; [ -n \"$f\" ] && npx --no-install biome check --write --no-errors-on-unmatched --files-ignore-unknown=true \"$f\"; } 2>/dev/null || true",
+            "statusMessage": "Biome"
           }
         ]
       }

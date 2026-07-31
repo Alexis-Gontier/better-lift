@@ -28,19 +28,25 @@ datasource db {
 `packages/db/prisma.config.ts`, à la racine du package :
 
 ```ts
-import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
+import { config as loadEnv } from "dotenv";
+import { defineConfig } from "prisma/config";
+
+// Le .env vit à la racine du monorepo, la CLI Prisma tourne dans packages/db.
+loadEnv({ path: [".env", "../../.env"], quiet: true });
+
+// Neon : DIRECT_URL pour les migrations, DATABASE_URL (poolée) au runtime.
+const migrationUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
-    seed: "tsx prisma/seed/index.ts",
+    seed: "tsx seed/index.ts", // seed/ à la racine du package, pas sous prisma/
   },
-  datasource: {
-    url: env("DATABASE_URL"),
-    shadowDatabaseUrl: env("SHADOW_DATABASE_URL"),
-  },
+  // Bloc conditionnel : `prisma generate` charge la config entière alors qu'il
+  // ne se connecte à rien. Un `env("DATABASE_URL")` inconditionnel casse
+  // `pnpm db:generate` en CI, où aucune base n'est branchée.
+  ...(migrationUrl ? { datasource: { url: migrationUrl } } : {}),
 });
 ```
 
@@ -55,6 +61,10 @@ export const prisma = new PrismaClient({ adapter });
 ```
 
 `new PrismaClient()` sans adaptateur échoue. `import { PrismaClient } from "@prisma/client"` échoue.
+
+**Mais `@prisma/client` reste une dépendance obligatoire de `packages/db`** : le client généré importe `@prisma/client/runtime/client`. Sans lui, pnpm ne résout pas le runtime et **les types s'effondrent silencieusement en `{}`** — symptôme trompeur, des `TS7006 implicitly any` sur des callbacks pourtant bien typés.
+
+Le client est instancié **paresseusement** (`Proxy` sur le premier accès) : sinon tout consommateur devrait garantir que son chargement de `.env` précède l'import du package, une contrainte d'ordre d'imports que le moindre tri automatique — celui de Biome, par exemple — casserait sans bruit.
 
 ## Autres ruptures v7
 

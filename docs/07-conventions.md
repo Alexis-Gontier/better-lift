@@ -6,7 +6,6 @@
 |---|---|
 | Node | **24 LTS** « Krypton » (fixée dans `.nvmrc`). Node 20 est EOL depuis avril 2026. |
 | pnpm | **11.x** (via `packageManager` dans le `package.json` racine), avec catalogs |
-| Docker | pour Postgres en local |
 | EAS CLI | pour les builds mobiles |
 
 ## Installation
@@ -15,8 +14,7 @@
 git clone git@github.com:<org>/better-lift.git
 cd better-lift
 pnpm install
-cp .env.example .env
-docker compose up -d
+cp .env.example .env      # DATABASE_URL et DIRECT_URL : voir la console Neon
 pnpm db:migrate
 pnpm db:seed              # importe le catalogue d'exercices (explicite : Prisma 7 ne le fait plus seul)
 pnpm dev
@@ -56,9 +54,15 @@ Le périmètre correspond au package ou au domaine, ce qui rend le changelog exp
 ## Qualité de code
 
 - **TypeScript `strict`**, plus `noUncheckedIndexedAccess`. `any` interdit — `unknown` puis affinage.
-- **ESLint** avec configuration partagée dans `packages/config`, `import/order` activé.
-- **Prettier**, 100 colonnes, pas de point-virgule optionnel laissé au hasard.
-- **Hooks pré-commit** : `lint-staged` (Prettier + ESLint sur les fichiers modifiés) et `commitlint`. Pas de typecheck complet en pré-commit — trop lent, c'est le rôle de la CI.
+- **Biome** pour le formatage, le lint et le tri des imports : un seul `biome.json` à la racine, aucune configuration par package (doc 09 D19). 100 colonnes, guillemets doubles, virgule finale, point-virgule systématique. Les imports sont groupés `node:` → paquets tiers → `@better-lift/*` → chemins relatifs, séparés par une ligne vide.
+- **Knip** pour les dépendances, fichiers et exports morts. Un export conservé avant son premier usage se marque `@public` en JSDoc, sinon Knip le signale.
+- **Hooks pré-commit** via **Lefthook** : Biome et `prisma format` sur les seuls fichiers indexés, `commitlint` sur le message. Ni typecheck ni Knip en pré-commit — trop lent, c'est le rôle de la CI.
+
+```bash
+pnpm lint       # biome check .          — vérifie sans écrire
+pnpm lint:fix   # biome check --write .  — applique les corrections sûres
+pnpm knip       # dépendances et code morts
+```
 
 **Nommage.** Fichiers en `kebab-case`, composants React en `PascalCase`, hooks préfixés `use`, constantes en `SCREAMING_SNAKE_CASE`. Domaines métier au singulier dans le code (`routine.service.ts`), au pluriel dans les URL (`/v1/routines`).
 
@@ -94,8 +98,9 @@ jobs:
     steps:
       - pnpm install --frozen-lockfile
       - pnpm db:generate      # Prisma 7 : plus de generate implicite
-      - pnpm lint
+      - pnpm lint:ci          # biome ci — format + lint, sans jamais écrire
       - pnpm typecheck
+      - pnpm knip
       - pnpm test
       - pnpm build
 ```

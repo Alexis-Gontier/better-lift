@@ -4,45 +4,48 @@ Vérifié le **31 juillet 2026**. À revalider à chaque démarrage de phase (V0
 
 ## Socle
 
-| Brique | Version | Note |
-|---|---|---|
-| Node.js | **24 LTS** (« Krypton ») | LTS jusqu'à mai 2028. **Node 20 est EOL depuis avril 2026**, Node 22 tient jusqu'à avril 2027. Fixer dans `.nvmrc`. |
-| pnpm | **11.x** | Utiliser les **catalogs** (voir plus bas). |
-| Turborepo | **2.10.x** | Champ `tasks` (le `pipeline` de la 1.x est mort depuis longtemps). |
-| TypeScript | 5.9+ | Prisma 7 impose un minimum ; Next 16 supporte TS 7 en backport. |
+| Brique     | Version                  | Note                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js    | **24 LTS** (« Krypton ») | LTS jusqu'à mai 2028. **Node 20 est EOL depuis avril 2026**, Node 22 tient jusqu'à avril 2027. Fixer dans `.nvmrc`.                                                                                                                                                                                                                                                                             |
+| pnpm       | **11.x**                 | Utiliser les **catalogs** (voir plus bas).                                                                                                                                                                                                                                                                                                                                                      |
+| Turborepo  | **2.10.x**               | Champ `tasks` (le `pipeline` de la 1.x est mort depuis longtemps).                                                                                                                                                                                                                                                                                                                              |
+| TypeScript | **6.0.3**                | Version attendue par Expo SDK 57 (`expo install --check`). **Pas la 7**, pourtant disponible : c'est Expo seul qui borne désormais — la contrainte `typescript-eslint` (`>=4.8.4 <6.1.0`) est tombée avec ESLint (D19). Rupture de la 6 à connaître : `baseUrl` est déprécié et disparaît en 7 — n'utiliser que `paths`, qui se résout relativement au `tsconfig`.                                                                                                                                                                                                                                                                     |
+| Biome      | **2.5.6**                | Remplace ESLint et Prettier (D19). Trois pièges : `linter.rules.recommended` est **déprécié**, écrire `"preset": "recommended"` ; le parseur CSS refuse `@theme` tant que `css.parser.tailwindDirectives` n'est pas à `true` ; `useImportType` produit `import type { X }` par défaut, il faut `"style": "inlineType"` pour garder la forme `import { type X }` du dépôt. Pas de règles typées : le domaine `types` existe mais reste trop jeune pour qu'on s'appuie dessus. |
+| Lefthook   | **2.1.10**               | Remplace husky et lint-staged. Son postinstall doit être autorisé dans `allowBuilds` de `pnpm-workspace.yaml`, sinon `lefthook install` n'a rien à poser et **aucun hook n'est actif, sans erreur**. Si husky est passé par là : `git config --unset-all --local core.hooksPath` d'abord, l'installation échoue tant que le chemin pointe sur `.husky/_`. |
+| Knip       | **6.30.0**               | Dépendances, fichiers et exports morts. Tourne en CI, pas en pré-commit. Configuration en `knip.jsonc` — le format JSON simple interdit les commentaires. |
 
 ## Applications
 
-| Brique | Version | Note |
-|---|---|---|
-| Next.js | **16.2.x** | Active LTS jusqu'à oct. 2027. Turbopack par défaut, `middleware.ts` renommé `proxy.ts` — voir ci-dessous. Next 15 est en Maintenance LTS jusqu'à oct. 2026 — ne pas démarrer dessus. |
-| React | **19.2.x** | Aligné web et mobile. |
-| Hono | **4.12.x** | |
-| `@hono/node-server` | **2.0.x** | Adaptateur Node. |
-| `@hono/zod-openapi` | **1.5.x** | La 1.0 est la migration Zod v4. |
-| Zod | **4.x** | |
-| Expo SDK | **57** | Sorti le 30 juin 2026. RN 0.86, React 19.2. Support ~1 an ; SDK 58 attendu vers sept./oct. 2026. |
-| React Native | **0.86** | Porté par Expo 57. |
+| Brique              | Version    | Note                                                                                                                                                                                 |
+| ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Next.js             | **16.2.x** | Active LTS jusqu'à oct. 2027. Turbopack par défaut, `middleware.ts` renommé `proxy.ts` — voir ci-dessous. Next 15 est en Maintenance LTS jusqu'à oct. 2026 — ne pas démarrer dessus. |
+| React               | **19.2.x** | Aligné web et mobile.                                                                                                                                                                |
+| Hono                | **4.12.x** |                                                                                                                                                                                      |
+| `@hono/node-server` | **2.0.x**  | Adaptateur Node.                                                                                                                                                                     |
+| `@hono/zod-openapi` | **1.5.x**  | La 1.0 est la migration Zod v4.                                                                                                                                                      |
+| Zod                 | **4.x**    |                                                                                                                                                                                      |
+| Expo SDK            | **57**     | Sorti le 30 juin 2026. RN 0.86, React 19.2. Support ~1 an ; SDK 58 attendu vers sept./oct. 2026.                                                                                     |
+| React Native        | **0.86**   | Porté par Expo 57.                                                                                                                                                                   |
 
 ## Données & auth
 
-| Brique | Version | Note |
-|---|---|---|
-| Prisma ORM | **7.x** | Rupture majeure vs 6 — voir ci-dessous. |
-| `@prisma/adapter-pg` | 7.x | **Obligatoire** : `new PrismaClient()` sans adaptateur est invalide en v7. |
-| Better Auth | **1.6.x** | |
-| `@better-auth/expo` | **1.6.x** | Nécessite `expo-secure-store` **et** `expo-network`. |
-| PostgreSQL | 17 | Neon, région UE. |
+| Brique               | Version   | Note                                                                                                                                                                                                                                  |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prisma ORM           | **7.x**   | Rupture majeure vs 6 — voir ci-dessous.                                                                                                                                                                                               |
+| `@prisma/adapter-pg` | 7.x       | **Obligatoire** : `new PrismaClient()` sans adaptateur est invalide en v7.                                                                                                                                                            |
+| Better Auth          | **1.6.x** |                                                                                                                                                                                                                                       |
+| `@better-auth/expo`  | **1.6.x** | Nécessite `expo-secure-store` **et** `expo-network`.                                                                                                                                                                                  |
+| PostgreSQL           | **18**    | Neon, région **Francfort** (`aws-eu-central-1`). La cible initiale était la 17 ; Neon provisionne désormais en 18 par défaut, et rien dans le schéma ne justifiait de forcer la version inférieure. Migration et seed validés dessus. |
 
 ## Front
 
-| Brique | Version | Note |
-|---|---|---|
-| TanStack Query | **5.101.x** | |
-| Tailwind CSS | **4.x** | Web. Config CSS-first. |
-| NativeWind | **v4 stable** (Tailwind 3.x) | ⚠️ voir le point ci-dessous |
-| shadcn/ui | courant | Web uniquement. |
-| dnd-kit, Recharts, FlashList | courants | |
+| Brique                       | Version                      | Note                        |
+| ---------------------------- | ---------------------------- | --------------------------- |
+| TanStack Query               | **5.101.x**                  |                             |
+| Tailwind CSS                 | **4.x**                      | Web. Config CSS-first.      |
+| NativeWind                   | **v4 stable** (Tailwind 3.x) | ⚠️ voir le point ci-dessous |
+| shadcn/ui                    | courant                      | Web uniquement.             |
+| dnd-kit, Recharts, FlashList | courants                     |                             |
 
 ---
 
@@ -58,6 +61,12 @@ La v7 casse quatre choses par rapport à tout ce qu'on trouve encore dans les tu
 4. **Driver adapter obligatoire.** `new PrismaClient()` nu échoue ; il faut passer un adaptateur (`PrismaPg` pour Postgres).
 
 Ont aussi disparu : le middleware client (`$use`), le seed automatique pendant les migrations (il faut lancer `prisma db seed` explicitement), et les métriques.
+
+**Deux pièges découverts au montage de la V0**, absents de la documentation amont :
+
+1. **`@prisma/client` reste une dépendance obligatoire.** L'import direct `import { PrismaClient } from "@prisma/client"` a bien disparu, mais le client _généré_ fait `import * as runtime from "@prisma/client/runtime/client"`. Sans le paquet dans les dépendances, pnpm (isolation stricte) ne le résout pas : la compilation ne plante pas franchement, **les types s'effondrent silencieusement en `{}`** et tout `findMany` devient `any`. Symptôme trompeur : des `TS7006 implicitly has an 'any' type` sur des callbacks parfaitement typés.
+
+2. **`prisma.config.ts` ne doit pas exiger `DATABASE_URL`.** `prisma generate` charge la configuration entière, y compris le bloc `datasource` — alors qu'il ne se connecte à rien. Avec `env("DATABASE_URL")` inconditionnel, `pnpm db:generate` échoue en CI, là où aucune base n'est branchée. Rendre le bloc `datasource` conditionnel à la présence de l'URL ; les commandes de migration, elles, échoueront explicitement si elle manque.
 
 Configuration cible :
 
@@ -117,7 +126,9 @@ Turbopack par défaut n'est pas la seule rupture de la 16. Le fichier `middlewar
 
 ```ts
 // proxy.ts (racine)
-export function proxy(request: NextRequest) { /* … */ }
+export function proxy(request: NextRequest) {
+  /* … */
+}
 export const config = { matcher: ["/(app)/:path*"] };
 ```
 
@@ -156,6 +167,25 @@ catalog:
 
 Cas particulier : les versions des paquets `expo-*` sont pilotées par `npx expo install`, qui les aligne sur le SDK. Ne pas les mettre au catalog, laisser Expo décider.
 
+### React s'épingle **exactement**, jamais en plage
+
+Piège coûteux, rencontré en V0. pnpm indexe chaque paquet à peer React par la version de React résolue : `@tanstack+react-query@5.101.4_react@19.2.3` et `…_react@19.2.8` sont deux répertoires, donc **deux instances du module**, donc deux contextes React distincts.
+
+Symptôme : `No QueryClient set, use QueryClientProvider to set one`, alors que le `QueryClientProvider` est manifestement en place — il alimente le contexte d'une instance, et les hooks de `packages/api-client` lisent celui de l'autre. Rien dans le message ne pointe vers une histoire de versions.
+
+Cause en V0 : catalog en `react: ^19.2.0` (résolu en 19.2.8) tandis qu'`apps/mobile` épinglait `19.2.3`, la version qu'impose Expo. **Un `^` sur React dans un monorepo pnpm suffit à créer la divergence.**
+
+Règle : `react` et `react-dom` sont épinglés au catalog à la version exacte attendue par Expo SDK, et **aucune application ne redéclare sa propre version** — toutes utilisent `catalog:`.
+
+Vérification, quand un doute survient :
+
+```bash
+# Doit renvoyer un seul et même chemin pour les trois consommateurs.
+node -e "console.log(require('fs').realpathSync('apps/mobile/node_modules/@tanstack/react-query'))"
+```
+
+Une entrée `react@19.2.8` peut subsister dans `node_modules/.pnpm` : elle vient des dépendances optionnelles de **Prisma Studio** (Radix, visx) et n'atteint jamais le bundle des applications.
+
 ### Expo et pnpm
 
 Metro a longtemps mal supporté les node_modules symboliques. Si la résolution des packages du workspace échoue depuis `apps/mobile`, le contournement connu est :
@@ -173,12 +203,12 @@ Sa fin de support est passée en avril 2026. Toute doc ou tutoriel qui la mentio
 
 ## Politique de mise à jour
 
-| Type | Cadence |
-|---|---|
-| Correctifs de sécurité | immédiat (Dependabot/Renovate en auto-merge si la CI passe) |
-| Patchs et mineures | hebdomadaire, groupés |
-| Majeures | décision explicite, une PR par majeure, jamais deux en même temps |
-| Expo SDK | dans les 2 mois suivant la sortie — le support ne dure qu'environ un an |
-| Next.js | rester sur l'Active LTS |
+| Type                   | Cadence                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- |
+| Correctifs de sécurité | immédiat (Dependabot/Renovate en auto-merge si la CI passe)             |
+| Patchs et mineures     | hebdomadaire, groupés                                                   |
+| Majeures               | décision explicite, une PR par majeure, jamais deux en même temps       |
+| Expo SDK               | dans les 2 mois suivant la sortie — le support ne dure qu'environ un an |
+| Next.js                | rester sur l'Active LTS                                                 |
 
 Next.js a eu un cluster d'avis de sécurité en mai 2026 (contournement d'autorisation dans le middleware, SSRF, empoisonnement de cache). C'est une dépendance à tenir à jour sérieusement, pas au fil de l'eau.

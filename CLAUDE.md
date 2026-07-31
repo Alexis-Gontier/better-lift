@@ -7,11 +7,12 @@ Tracker de musculation (type Hevy). Monorepo TypeScript : app web (atelier), app
 ```bash
 pnpm dev                      # web :3000 · api :3001 · mobile (Expo)
 pnpm dev --filter=api         # une seule app
-pnpm build | lint | typecheck | test
+pnpm build | typecheck | test # via Turborepo
+pnpm lint | lint:fix          # Biome, depuis la racine — pas de tâche Turborepo
+pnpm knip                     # dépendances, fichiers et exports morts
 pnpm db:migrate               # prisma migrate dev
 pnpm db:seed                  # explicite : Prisma 7 ne seed plus automatiquement
 pnpm db:studio
-docker compose up -d          # Postgres local
 ```
 
 ## Structure
@@ -25,7 +26,7 @@ packages/core        logique métier pure — aucun I/O, aucun React, aucun Pris
 packages/validators  schémas Zod partagés (source de vérité des contrats)
 packages/api-client  client typé + hooks TanStack Query
 packages/ui          composants shadcn/ui — web uniquement
-packages/config      tsconfig, eslint, tailwind, design tokens
+packages/config      tsconfig partagés, design tokens
 ```
 
 ## Règles non négociables
@@ -60,9 +61,12 @@ Ces quatre points contredisent la majorité de ce qui traîne en ligne. Vérifie
 
 **Zod 4.** Dans les routes API, importer `z` depuis `@hono/zod-openapi`, pas depuis `zod`, sinon `.openapi()` n'existe pas.
 
+**Biome 2.5** : dans `biome.json`, `linter.rules.recommended` est **déprécié** — écrire `"preset": "recommended"`. Le parseur CSS rejette `@theme` de Tailwind 4 tant que `css.parser.tailwindDirectives` n'est pas à `true`.
+
 ## Conventions
 
 - TypeScript `strict` + `noUncheckedIndexedAccess`. `any` interdit, utiliser `unknown` puis affiner.
+- Qualité : **Biome** (format + lint + tri des imports), **Lefthook** (hooks), **Knip** (code mort). Ni ESLint ni Prettier — ne pas recréer de `eslint.config.js`, `.prettierrc` ni de configuration par package.
 - Fichiers en `kebab-case`, composants en `PascalCase`, hooks préfixés `use`.
 - Découpage **par domaine métier**, pas par type technique : `features/routines/{components,hooks,api}` plutôt qu'un dossier `components/` global.
 - Domaines au singulier dans le code (`routine.service.ts`), au pluriel dans les URL (`/v1/routines`).
