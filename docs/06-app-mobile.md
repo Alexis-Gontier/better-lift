@@ -119,6 +119,8 @@ Statistiques, réglages, unités, langue, déconnexion.
 
 **Better Auth en mode bearer.** Le plugin `@better-auth/expo` (1.6.x) stocke le token dans `expo-secure-store` et l'ajoute aux requêtes. Il faut installer `expo-secure-store` **et** `expo-network`, et déclarer le scheme de l'app dans `trustedOrigins` côté serveur (`betterlift://`). Le rafraîchissement doit être géré dans l'intercepteur du client API, avec une file d'attente pour éviter les rafraîchissements concurrents.
 
+Attention à une nuance de nommage : le plugin stocke la session sous forme d'en-tête `Cookie` complet et `getCookie()` renvoie cette chaîne, **pas** le jeton nu. `apps/mobile/src/lib/auth-client.ts` en extrait `better-auth.session_token` pour le passer en `Authorization: Bearer` à `packages/api-client`, ce que le plugin `bearer()` du serveur attend.
+
 **URL d'API en développement.** `localhost` désigne le téléphone. Utiliser l'IP LAN via `EXPO_PUBLIC_API_URL`. À écrire dans le README, cette question revient systématiquement.
 
 **Performance des listes.** `FlashList` (Shopify) pour le catalogue de 1 324 exercices. Une `FlatList` classique tient, mais le défilement est perceptiblement moins fluide.

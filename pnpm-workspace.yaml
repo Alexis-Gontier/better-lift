@@ -23,8 +23,13 @@ catalog:
   lefthook: ^2.1.10
   vitest: ^4.1.10
 
-  # Auth — une seule instance côté API, un client côté web (doc 04).
+  # Auth — une seule instance côté API, un client par plateforme (doc 04).
+  # `@better-auth/expo` s'installe des deux côtés : le plugin serveur et le
+  # plugin client viennent du même paquet. C'est la seule exception à la règle
+  # « les paquets liés à Expo passent par npx expo install » — il n'embarque
+  # aucun natif, ce sont `expo-secure-store` et `expo-network` qui en ont.
   better-auth: ^1.6.25
+  "@better-auth/expo": ^1.6.25
 
   # API
   hono: ^4.12.32

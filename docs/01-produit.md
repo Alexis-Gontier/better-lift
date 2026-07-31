@@ -92,7 +92,7 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 - [x] `packages/core` consommé par les trois apps — c'est le test réel du partage de code.
 - [x] CI GitHub Actions : format + lint + typecheck + test + build, plus un job de bundle Metro et un audit de dépendances.
 - [x] Valider pnpm 11 + Metro (aucun `node-linker=hoisted` requis) et Prisma 7 en ESM.
-- [x] Spike Better Auth : instance unique côté API, session par cookie validée de bout en bout sur le web. **Le versant mobile (bearer + plugin Expo) reste à valider**, voir [doc 09](09-decisions.md).
+- [x] Spike Better Auth : instance unique côté API, servant le cookie web **et** le bearer token mobile sur la même route protégée. **Reste à éprouver sur appareil** — `expo-secure-store` et le deep link OAuth exigent un development build, voir [doc 09](09-decisions.md).
 
 **Critère de sortie :** un développeur clone le repo et a les trois apps qui tournent en moins de 10 minutes, en suivant uniquement le README.
 

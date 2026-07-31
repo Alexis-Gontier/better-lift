@@ -1,5 +1,7 @@
+import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { bearer } from "better-auth/plugins/bearer";
 
 import { prisma } from "@better-lift/db";
 
@@ -51,12 +53,29 @@ export const auth = betterAuth({
   socialProviders,
 
   /**
+   * Les deux transports de session de la doc 04, sur la **même** instance :
+   *
+   *   - `expo()` gère le retour de redirection OAuth vers le scheme de l'app
+   *     et le stockage de session côté client ;
+   *   - `bearer()` accepte `Authorization: Bearer <token>`, ce que le web
+   *     n'utilise pas et ce dont le mobile a besoin — il n'a pas de bocal à
+   *     cookies partagé avec l'API.
+   *
+   * Rien ici n'est spécifique à une plateforme : c'est le point que la doc 09
+   * demandait de vérifier.
+   */
+  plugins: [expo(), bearer()],
+
+  /**
    * Le web est sur une autre origine que l'API (`:3000` contre `:3001`) : sans
    * cette liste, Better Auth rejette la requête au contrôle CSRF. En
    * production ce sera `https://better-lift.app` face à
    * `https://api.better-lift.app` (D2).
+   *
+   * `betterlift://` est le scheme de l'app mobile (`app.json`) : sans lui, la
+   * redirection de fin d'OAuth n'a nulle part où revenir.
    */
-  trustedOrigins: env.CORS_ORIGINS,
+  trustedOrigins: [...env.CORS_ORIGINS, "betterlift://"],
 });
 
 /** Session et utilisateur tels que Better Auth les renvoie, sans les redéclarer. */
