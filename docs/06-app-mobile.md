@@ -133,3 +133,5 @@ Statistiques, réglages, unités, langue, déconnexion.
 - **Android** : Data Safety à remplir dans la Play Console.
 - **EAS Update** pour les correctifs JavaScript sans revue de store — utile pour les bugs de saisie découverts en production.
 - Canaux `preview` (interne) et `production`.
+
+**En V0, `updates.enabled` est à `false` dans `app.json`** : `expo-updates` n'est pas installé, et laisser la clé absente revient à déclarer un OTA qui n'existe pas. À basculer en même temps que l'installation du paquet, au moment de la première distribution EAS.
