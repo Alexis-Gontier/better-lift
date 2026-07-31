@@ -9,6 +9,9 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "platforms": ["ios", "android"],
+    "updates": {
+      "enabled": false
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.betterlift.mobile"
