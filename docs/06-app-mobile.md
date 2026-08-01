@@ -123,7 +123,7 @@ Attention à une nuance de nommage : le plugin stocke la session sous forme d'en
 
 **URL d'API en développement.** `localhost` désigne le téléphone. Utiliser l'IP LAN via `EXPO_PUBLIC_API_URL`. À écrire dans le README, cette question revient systématiquement.
 
-**Performance des listes.** `FlashList` (Shopify) pour le catalogue de 1 324 exercices. Une `FlatList` classique tient, mais le défilement est perceptiblement moins fluide.
+**Performance des listes.** `FlashList` (Shopify) dès qu'une liste monte en mémoire des centaines de lignes. Ce n'est **pas** le cas du catalogue, paginé par curseur : il reste en `FlatList`, voir [D21](09-decisions.md). Le jour où une liste non paginée apparaît, `FlashList` reprend sa place.
 
 **Précision des nombres.** Les charges circulent en chaînes décimales. Ne jamais utiliser `parseFloat` pour un calcul métier : passer par les helpers de `packages/core`.
 

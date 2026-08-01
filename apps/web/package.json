@@ -14,6 +14,7 @@
   "dependencies": {
     "@better-lift/api-client": "workspace:*",
     "@better-lift/core": "workspace:*",
+    "@better-lift/validators": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "better-auth": "catalog:",
     "next": "16.2.12",

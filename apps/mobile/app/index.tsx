@@ -1,5 +1,5 @@
-import { Stack } from "expo-router";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Link, Stack } from "expo-router";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useHealth, useVersion } from "@better-lift/api-client";
 import { estimate1RM, kgToLb, setVolume } from "@better-lift/core";
@@ -77,6 +77,13 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.screen}>
         <Text style={styles.subtitle}>Socle technique V0 — outil de terrain</Text>
 
+        <Link href="/exercises" asChild>
+          <Pressable style={styles.action}>
+            <Text style={styles.actionLabel}>Catalogue d’exercices</Text>
+            <Text style={styles.actionChevron}>›</Text>
+          </Pressable>
+        </Link>
+
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Chaîne mobile → API</Text>
           <ApiStatus />
@@ -101,6 +108,17 @@ const styles = StyleSheet.create({
   screen: { padding: 20, gap: 16 },
   subtitle: { color: "#9aa3ad", fontSize: 14 },
   card: { backgroundColor: "#1a1f25", borderRadius: 14, padding: 16, gap: 12 },
+  action: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#1a1f25",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  actionLabel: { color: "#f2f4f6", fontSize: 15, fontWeight: "500" },
+  actionChevron: { color: "#9aa3ad", fontSize: 20 },
   cardTitle: {
     color: "#9aa3ad",
     fontSize: 11,

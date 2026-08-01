@@ -14,6 +14,7 @@
     "@better-lift/api-client": "workspace:*",
     "@better-auth/expo": "catalog:",
     "@better-lift/core": "workspace:*",
+    "@better-lift/validators": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "better-auth": "catalog:",
     "expo": "~57.0.9",
