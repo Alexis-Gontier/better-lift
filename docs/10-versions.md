@@ -115,6 +115,15 @@ export * from "./generated/prisma/client";
 
 **Bonne nouvelle collatérale :** le bug connu entre le générateur `prisma-client` et Turbopack (SSR Next.js 16) ne nous concerne pas, puisque le web ne touche jamais Prisma — seule l'API l'importe. C'est un bénéfice concret de la règle « tout passe par l'API ».
 
+**`migrate dev` exige un terminal interactif** dès qu'il a un avertissement à faire confirmer — l'ajout d'une contrainte d'unicité, par exemple. Il échoue sinon, `--create-only` compris. Pour produire une migration hors terminal, passer par `migrate diff`, dont les options ont été **renommées en v7** :
+
+```bash
+# v6 : --from-schema-datasource / --to-schema-datamodel — supprimées
+prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
+```
+
+Le SQL obtenu se dépose dans `prisma/migrations/<horodatage>_<nom>/migration.sql`, puis `migrate deploy` l'applique. Vérifier le SQL avant : c'est le seul contrôle qu'on garde en se passant du mode interactif.
+
 ### Next.js 16 — `middleware.ts` devient `proxy.ts`
 
 Turbopack par défaut n'est pas la seule rupture de la 16. Le fichier `middleware.ts` est **déprécié et renommé `proxy.ts`**, pour marquer qu'il s'agit d'une frontière réseau et non d'un middleware applicatif.

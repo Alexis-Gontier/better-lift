@@ -75,6 +75,11 @@ Elles sont hors du contrat OpenAPI de l'application : Better Auth publie le sien
 
 **Une ressource appartenant à autrui renvoie `404`, pas `403`** — inutile de révéler son existence.
 
+Deux points de mise en œuvre, appris en câblant les premières routes qui valident des entrées :
+
+- Les erreurs de validation passent par un `defaultHook` posé sur chaque `OpenAPIHono`. Sans lui, `@hono/zod-openapi` répond **400 dans son propre format**, et un client qui aiguille sur `error.code` ne verrait jamais passer un `VALIDATION_FAILED`. Le crochet **ne s'hérite pas** des routeurs montés : le repasser à chaque nouveau routeur.
+- **Un corps illisible est une erreur du client, pas une panne.** Hono lève un 400 sur un JSON tronqué ; il est traduit en `VALIDATION_FAILED` / 422. Le classer en `INTERNAL` laissait croire à un incident serveur, et le contrat ne connaît pas le 400.
+
 ## Pagination
 
 ```
@@ -97,12 +102,22 @@ GET /v1/workouts?limit=20&cursor=cm3x8k2p0000...
 
 ### Compte
 
-| Méthode | Chemin | Description |
-|---|---|---|
-| `GET` | `/v1/me` | Profil + préférences |
-| `PATCH` | `/v1/me` | Modifier préférences (`unitSystem`, `locale`, `defaultRestSec`, `username`, `bio`) |
-| `POST` | `/v1/me/export` | Déclenche l'export RGPD (JSON), envoyé par e-mail |
-| `DELETE` | `/v1/me` | Suppression de compte, cascade complète. Exige la confirmation du mot de passe. |
+| Méthode | Chemin | Description | État |
+|---|---|---|---|
+| `GET` | `/v1/me` | Profil + préférences | ✅ |
+| `PATCH` | `/v1/me` | Modifier profil et préférences | ✅ |
+| `POST` | `/v1/me/export` | Déclenche l'export RGPD (JSON), envoyé par e-mail | à faire |
+| `DELETE` | `/v1/me` | Suppression de compte, cascade complète. Exige la confirmation du mot de passe. | à faire |
+
+Champs modifiables par `PATCH /v1/me` : `name`, `username`, `bio`, `unitSystem`, `locale`, `timezone`, `defaultRestSec`, `defaultVisibility`.
+
+Trois particularités de cette route, toutes délibérées :
+
+- **Le corps est strict**, alors que l'API tolère les champs inconnus partout ailleurs. Sur une écriture, un champ mal orthographié serait silencieusement ignoré et l'utilisateur croirait avoir enregistré son réglage : un `422` explicite vaut mieux. La tolérance existe pour les vieux clients mobiles en lecture, pas pour un formulaire de réglages.
+- **`username` et `bio` acceptent `null`** pour être effacés — ce qu'une simple absence de clé ne permet pas d'exprimer, `PATCH` traitant l'absence comme « ne pas toucher ».
+- **`username` est unique**, et le conflit est détecté par la contrainte de base, pas par une lecture préalable : entre un `SELECT` et l'`UPDATE`, deux clients peuvent choisir le même pseudo. La violation `P2002` est traduite en `409 CONFLICT`. C'est la seule version sans fenêtre de course.
+
+**`unitSystem` est une préférence d'affichage, jamais une donnée de stockage.** Les charges restent en kg dans l'API et en base (règle non négociable n°3) ; la conversion appartient au client, via un composant unique.
 
 ### Exercices
 

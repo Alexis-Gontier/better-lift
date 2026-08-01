@@ -27,8 +27,21 @@ export const errorHandler: ErrorHandler = (error, c: Context) => {
   }
 
   if (error instanceof HTTPException) {
-    const code = error.status === 404 ? "NOT_FOUND" : "INTERNAL";
-    return c.json(body(code, error.message), error.status);
+    if (error.status === 404) {
+      return c.json(body("NOT_FOUND", error.message), 404);
+    }
+
+    /**
+     * Hono lève un 400 quand il n'arrive pas à lire le corps — un JSON tronqué,
+     * typiquement. C'est une erreur du client, pas une panne : la classer en
+     * `INTERNAL` était trompeur pour qui aiguille sur le code, et le contrat ne
+     * connaît de toute façon pas le 400 (doc 04).
+     */
+    if (error.status === 400) {
+      return c.json(body("VALIDATION_FAILED", error.message), 422);
+    }
+
+    return c.json(body("INTERNAL", error.message), error.status);
   }
 
   const requestId = c.get("requestId") ?? crypto.randomUUID();
