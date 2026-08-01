@@ -31,6 +31,10 @@ catalog:
   better-auth: ^1.6.25
   "@better-auth/expo": ^1.6.25
 
+  # E-mails transactionnels (doc 09 D20). Le SDK est chargé paresseusement par
+  # `apps/api/src/lib/mailer.ts` : sans `RESEND_API_KEY`, il n'est jamais importé.
+  resend: ^6.14.0
+
   # API
   hono: ^4.12.32
   "@hono/node-server": ^2.0.12

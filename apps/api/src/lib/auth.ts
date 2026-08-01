@@ -5,7 +5,9 @@ import { bearer } from "better-auth/plugins/bearer";
 
 import { prisma } from "@better-lift/db";
 
+import { resetPasswordEmail, verificationEmail } from "./emails.js";
 import { env } from "./env.js";
+import { sendEmailSafely } from "./mailer.js";
 
 /**
  * Instance **unique** de Better Auth (doc 04).
@@ -19,19 +21,35 @@ import { env } from "./env.js";
  */
 
 /**
- * GitHub n'est enregistré que si l'OAuth App existe. Sans ce garde-fou, l'API
- * refuserait de démarrer tant que les identifiants ne sont pas renseignés,
- * alors que l'e-mail/mot de passe, lui, n'en a pas besoin.
+ * Un fournisseur n'est enregistré que si son OAuth App existe. Sans ce
+ * garde-fou, l'API refuserait de démarrer tant que les identifiants ne sont pas
+ * renseignés, alors que l'e-mail/mot de passe, lui, n'en a pas besoin.
+ *
+ * Apple est volontairement absent : il exige un compte Apple Developer payant,
+ * qui reste une action ouverte de la doc 09. La règle App Store 4.8 ne le rend
+ * obligatoire qu'à la première soumission iOS (doc 04), pas avant.
  */
-const socialProviders =
-  env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+const socialProviders = {
+  ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
     ? {
         github: {
           clientId: env.GITHUB_CLIENT_ID,
           clientSecret: env.GITHUB_CLIENT_SECRET,
         },
       }
-    : {};
+    : {}),
+  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+    ? {
+        google: {
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
+      }
+    : {}),
+};
+
+/** Durée de validité du lien de réinitialisation. Reprise telle quelle dans l'e-mail. */
+const RESET_PASSWORD_TTL_SECONDS = 60 * 60;
 
 export const auth = betterAuth({
   appName: "better-lift",
@@ -45,12 +63,84 @@ export const auth = betterAuth({
   emailAndPassword: {
     // La vérification d'e-mail est volontairement non bloquante (doc 09 D6) :
     // on n'enferme pas un inscrit derrière sa boîte mail dès la première
-    // minute. L'envoi arrivera avec le service d'e-mail, en V1.
+    // minute.
     enabled: true,
     requireEmailVerification: false,
+    minPasswordLength: 8,
+
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_TTL_SECONDS,
+
+    /**
+     * `url` est construite par Better Auth à partir du `redirectTo` envoyé par
+     * le client : elle pointe sur `/reset-password/:token` de l'API, qui
+     * valide le jeton puis renvoie sur la page web avec le jeton en query.
+     * C'est ce détour qui évite d'afficher un formulaire pour un lien déjà
+     * expiré.
+     */
+    sendResetPassword: async ({ user, url, token }) => {
+      await sendEmailSafely(
+        {
+          to: user.email,
+          // La clé porte le jeton, pas l'utilisateur : deux demandes
+          // successives sont deux envois distincts (voir `mailer.ts`).
+          idempotencyKey: `reset-password/${token}`,
+          ...resetPasswordEmail({
+            url,
+            name: user.name,
+            expiresInMinutes: RESET_PASSWORD_TTL_SECONDS / 60,
+          }),
+        },
+        "reset-password",
+      );
+    },
+  },
+
+  emailVerification: {
+    /**
+     * L'e-mail part à l'inscription, mais l'accès n'y est pas conditionné
+     * (D6). `requireEmailVerification` reste à `false` juste au-dessus : c'est
+     * la combinaison des deux qui fait la « vérification non bloquante ».
+     */
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+
+    sendVerificationEmail: async ({ user, url, token }) => {
+      await sendEmailSafely(
+        {
+          to: user.email,
+          idempotencyKey: `verify-email/${token}`,
+          ...verificationEmail({ url, name: user.name }),
+        },
+        "verify-email",
+      );
+    },
   },
 
   socialProviders,
+
+  /**
+   * Quotas de la doc 04. Better Auth ne l'active que sur `NODE_ENV=production`
+   * par défaut : on l'active partout, sinon la règle n'est jamais éprouvée
+   * avant la mise en production.
+   *
+   * Le stockage est **en mémoire**, donc par instance. Suffisant tant que
+   * l'API tourne sur un seul processus ; le jour où elle est répliquée, il
+   * faudra passer `storage` à `"database"` (et ajouter le modèle `rateLimit`)
+   * ou brancher un stockage secondaire. Noté en D20.
+   */
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 15 * 60, max: 10 },
+      "/sign-up/email": { window: 15 * 60, max: 10 },
+      // Les deux routes qui déclenchent un envoi d'e-mail : les serrer évite
+      // autant le bourrage de comptes que de servir de relais de spam.
+      "/request-password-reset": { window: 15 * 60, max: 5 },
+      "/send-verification-email": { window: 15 * 60, max: 5 },
+    },
+  },
 
   /**
    * Les deux transports de session de la doc 04, sur la **même** instance :
@@ -76,6 +166,29 @@ export const auth = betterAuth({
    * redirection de fin d'OAuth n'a nulle part où revenir.
    */
   trustedOrigins: [...env.CORS_ORIGINS, "betterlift://"],
+
+  advanced: {
+    /**
+     * Le `proxy.ts` du web lit le cookie de session côté serveur Next pour
+     * décider d'une redirection. Encore faut-il que le navigateur le lui
+     * envoie, et la règle diffère selon l'environnement :
+     *
+     *   - en développement, le web et l'API partagent l'hôte `localhost` et ne
+     *     se distinguent que par le port. **Les cookies ne sont pas cloisonnés
+     *     par port** : celui posé par `:3001` arrive tel quel sur `:3000`,
+     *     rien à faire ;
+     *   - en production ce sont deux hôtes, `better-lift.app` et
+     *     `api.better-lift.app` (D2). Sans cette option, le cookie reste
+     *     rattaché au seul hôte de l'API et le web ne le voit jamais — le
+     *     `proxy.ts` renverrait alors tout le monde sur `/login`, y compris
+     *     les sessions valides.
+     *
+     * Le domaine n'est pas forcé : Better Auth le déduit de `baseURL`.
+     */
+    crossSubDomainCookies: {
+      enabled: new URL(env.WEB_APP_URL).hostname !== new URL(env.BETTER_AUTH_URL).hostname,
+    },
+  },
 });
 
 /** Session et utilisateur tels que Better Auth les renvoie, sans les redéclarer. */

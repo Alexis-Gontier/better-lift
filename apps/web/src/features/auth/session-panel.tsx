@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useMe } from "@better-lift/api-client";
 
@@ -30,6 +31,7 @@ function Row({ label, value }: { label: string; value: string }) {
  */
 export function SessionPanel() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const session = useSession();
   const me = useMe(apiClient);
 
@@ -69,6 +71,9 @@ export function SessionPanel() {
             // Le cache TanStack survit à la déconnexion : sans invalidation,
             // l'écran continuerait d'afficher l'utilisateur précédent.
             await queryClient.invalidateQueries();
+            // Cette page est protégée : rester dessus déclencherait de toute
+            // façon la redirection de `proxy.ts` à la navigation suivante.
+            router.push("/login");
           })
         }
         className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-surface-raised"
