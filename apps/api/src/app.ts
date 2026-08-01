@@ -7,6 +7,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { type AppEnv, auth } from "./lib/auth.js";
 import { env } from "./lib/env.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
+import { exercisesRouter } from "./routes/exercises.js";
 import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
 
@@ -45,6 +46,7 @@ export function createApp(): OpenAPIHono<AppEnv> {
 
   app.route("/", healthRouter);
   app.route("/", meRouter);
+  app.route("/", exercisesRouter);
 
   // Contrat OpenAPI publiable — le bénéfice attendu de @hono/zod-openapi (D1).
   app.doc("/openapi.json", {

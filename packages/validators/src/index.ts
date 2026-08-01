@@ -6,6 +6,8 @@
  */
 
 export * from "./error.js";
+export * from "./exercise.js";
 export * from "./health.js";
 export * from "./locale.js";
+export * from "./pagination.js";
 export * from "./session.js";

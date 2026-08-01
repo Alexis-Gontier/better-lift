@@ -20,10 +20,9 @@ export class ApiError extends Error {
 }
 
 /**
- * Une ressource appartenant à autrui renvoie 404, pas 403 (doc 04).
- *
- * @public exporté pour les services à venir : aucun endpoint de la V0 ne
- * manipule encore de ressource utilisateur.
+ * Une ressource inexistante, hors périmètre, ou appartenant à autrui renvoie
+ * 404 — jamais 403 (doc 04). Révéler qu'une ressource existe mais qu'elle est
+ * interdite est déjà une fuite d'information.
  */
 export function notFound(resource: string): ApiError {
   return new ApiError("NOT_FOUND", `${resource} introuvable.`);

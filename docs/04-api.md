@@ -121,27 +121,37 @@ Trois particularités de cette route, toutes délibérées :
 
 ### Exercices
 
-| Méthode | Chemin | Description |
-|---|---|---|
-| `GET` | `/v1/exercises` | Catalogue + exercices custom de l'utilisateur |
-| `GET` | `/v1/exercises/:id` | Fiche détaillée avec instructions localisées |
-| `POST` | `/v1/exercises` | Créer un exercice personnalisé |
-| `PATCH` | `/v1/exercises/:id` | Modifier — exercices custom uniquement |
-| `DELETE` | `/v1/exercises/:id` | Archiver — exercices custom uniquement |
-| `GET` | `/v1/exercises/:id/history` | Séries réalisées sur cet exercice, antéchronologique |
-| `GET` | `/v1/exercises/:id/records` | Records personnels sur cet exercice |
+| Méthode | Chemin | Description | État |
+|---|---|---|---|
+| `GET` | `/v1/exercises` | Catalogue + exercices custom de l'utilisateur | ✅ |
+| `GET` | `/v1/exercises/:id` | Fiche détaillée avec instructions localisées | ✅ |
+| `POST` | `/v1/exercises` | Créer un exercice personnalisé | à faire |
+| `PATCH` | `/v1/exercises/:id` | Modifier — exercices custom uniquement | à faire |
+| `DELETE` | `/v1/exercises/:id` | Archiver — exercices custom uniquement | à faire |
+| `GET` | `/v1/exercises/:id/history` | Séries réalisées sur cet exercice, antéchronologique | après les séances |
+| `GET` | `/v1/exercises/:id/records` | Records personnels sur cet exercice | après les séances |
+
+**Les exercices personnalisés demandent une migration** : `Exercise` n'a pas encore de propriétaire. Le champ `isCustom` de la réponse est déjà calculé — il vaut `externalId === null`, seuls les exercices du catalogue en ayant un — et vaut donc `false` partout tant que la migration n'est pas faite. C'est un calcul, pas une constante en attente.
 
 Paramètres de `GET /v1/exercises` :
 
 ```
 ?q=bench          recherche sur le nom (locale courante)
 &bodyPart=CHEST   filtre, répétable
-&equipment=barbell
-&type=WEIGHT_REPS
-&custom=true|false
-&locale=fr
-&limit=&cursor=
+&equipment=barbell  répétable, insensible à la casse
+&type=WEIGHT_REPS   répétable
+&custom=true|false  à venir avec les exercices personnalisés
+&locale=fr          "fr" par défaut
+&limit=&cursor=     limit 20 par défaut, 100 au maximum
 ```
+
+**La recherche et le tri portent sur le nom traduit**, pas sur le nom de base du catalogue. Conséquence sur l'implémentation, qui n'est pas un détail : la requête part de `ExerciseTranslation` filtrée par locale, et non de `Exercise` joint à ses traductions. Interroger `Exercise` donnerait un catalogue trié sur l'anglais pendant qu'on affiche du français, et une recherche aveugle aux noms traduits.
+
+Cela suppose que **chaque exercice ait une traduction dans chaque locale servie**, sans quoi il disparaîtrait du catalogue. C'est ce que garantit le seed, qui écrit `fr` et `en` pour tous ; un test fige le lien entre les locales du contrat et celles du seed.
+
+Le `cursor` est l'identifiant de la **traduction**, pas de l'exercice : c'est la ligne sur laquelle porte l'ordre. Il reste opaque pour le client, qui le renvoie tel quel.
+
+Les paramètres répétables acceptent une occurrence unique (`?bodyPart=CHEST`) comme plusieurs (`?bodyPart=CHEST&bodyPart=BACK`) : Hono livre une chaîne dans le premier cas, un tableau dans le second.
 
 Réponse (extrait) :
 

@@ -3,8 +3,14 @@ import { type ZodType } from "zod";
 import {
   type CurrentUser,
   currentUserSchema,
+  type ExerciseDetail,
+  type ExerciseListQuery,
+  type ExerciseListResponse,
+  exerciseDetailSchema,
+  exerciseListResponseSchema,
   type HealthResponse,
   healthResponseSchema,
+  type Locale,
   type UpdateMeInput,
   type VersionResponse,
   versionResponseSchema,
@@ -31,6 +37,40 @@ export interface ApiClient {
   getMe: (signal?: AbortSignal) => Promise<CurrentUser>;
   /** Lève une `ApiClientError` 409 quand le pseudo demandé est déjà pris. */
   updateMe: (input: UpdateMeInput, signal?: AbortSignal) => Promise<CurrentUser>;
+  listExercises: (
+    query?: Partial<ExerciseListQuery>,
+    signal?: AbortSignal,
+  ) => Promise<ExerciseListResponse>;
+  /** Lève une `ApiClientError` 404 quand l'exercice est inconnu ou archivé. */
+  getExercise: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<ExerciseDetail>;
+}
+
+/**
+ * Sérialise les paramètres de liste. Les tableaux deviennent des clés
+ * **répétées** (`?bodyPart=CHEST&bodyPart=BACK`), forme attendue par l'API ;
+ * les valeurs absentes sont omises plutôt qu'envoyées vides, un
+ * `?q=` déclencherait sinon une erreur de validation.
+ */
+function toSearchParams(query: Partial<ExerciseListQuery>): string {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        params.append(key, String(entry));
+      }
+    } else {
+      params.set(key, String(value));
+    }
+  }
+
+  const serialized = params.toString();
+
+  return serialized ? `?${serialized}` : "";
 }
 
 export function createApiClient(options: ApiClientOptions): ApiClient {
@@ -105,5 +145,13 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     getMe: (signal) => request("/v1/me", currentUserSchema, signal),
     updateMe: (input, signal) =>
       request("/v1/me", currentUserSchema, signal, { method: "PATCH", body: input }),
+    listExercises: (query = {}, signal) =>
+      request(`/v1/exercises${toSearchParams(query)}`, exerciseListResponseSchema, signal),
+    getExercise: (id, locale, signal) =>
+      request(
+        `/v1/exercises/${encodeURIComponent(id)}${locale ? `?locale=${locale}` : ""}`,
+        exerciseDetailSchema,
+        signal,
+      ),
   };
 }
