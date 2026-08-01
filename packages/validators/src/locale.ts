@@ -14,6 +14,17 @@ import { z } from "zod";
  */
 export const localeSchema = z.enum(["fr", "en"]);
 
+/**
+ * Les locales servies, sous forme de tableau parcourable.
+ *
+ * Elle a un usage précis : tout exercice doit avoir une traduction dans
+ * **chacune** d'elles, sans quoi il disparaît des listes, qui sont enracinées
+ * sur la table de traduction. Le seed le fait pour le catalogue, le service
+ * pour les exercices personnalisés — et les deux itèrent sur cette liste plutôt
+ * que d'énumérer les locales à la main.
+ */
+export const LOCALES = localeSchema.options;
+
 export const DEFAULT_LOCALE = "fr";
 
 export type Locale = z.infer<typeof localeSchema>;

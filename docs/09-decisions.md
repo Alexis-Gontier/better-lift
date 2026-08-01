@@ -132,6 +132,16 @@ Ce qu'on évite en attendant : un module natif de plus dans une application dont
 
 Le jour où une liste non paginée apparaît — l'historique complet, le sélecteur d'exercices d'une séance en cours —, ou si le défilement se dégrade à la mesure, `FlashList` reprend sa place. La décision est donc un report, pas un renoncement.
 
+### D22 — Un exercice personnalisé se reconnaît à son propriétaire, pas à un booléen
+
+La [doc 03](03-modele-de-donnees.md) prévoyait deux colonnes sur `Exercise` : `ownerId` et `isCustom`. La seconde a été écartée à la migration.
+
+Un booléen qui double une clé étrangère est une invitation à la contradiction : rien n'empêche `isCustom = false` avec un `ownerId` renseigné, et la ligne devient alors invisible d'un côté, modifiable de l'autre, selon la colonne que le code interroge. Ce sont des incohérences qui ne se voient qu'en production, sur les seules lignes concernées.
+
+`ownerId IS NULL` dit exactement la même chose, sans possibilité d'écart. Le champ `isCustom` reste dans la réponse de l'API — c'est le contrat, et il est plus lisible qu'un identifiant de propriétaire côté client — mais il est **calculé**, jamais stocké.
+
+L'index composite `[isCustom, isArchived]` disparaît avec la colonne. `[ownerId]` le remplace : c'est lui que sert la clause de visibilité présente sur chaque lecture, et Postgres indexe les `NULL`, donc le cas « catalogue commun » en profite aussi.
+
 ## Actions à mener (pas des décisions)
 
 - [ ] **Nom et disponibilité** : vérifier le domaine `better-lift.app`, les identifiants App Store et Play Store, et l'absence de conflit de marque.

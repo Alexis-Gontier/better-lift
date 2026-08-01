@@ -76,6 +76,36 @@ describe("createApiClient", () => {
     await expect(client.getHealth()).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
   });
 
+  it("n'appelle pas .json() sur une réponse 204", async () => {
+    // `DELETE /v1/exercises/:id` ne renvoie aucun corps. Le passer au parseur du
+    // contrat ferait échouer un archivage pourtant réussi.
+    const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const client = createApiClient({ baseUrl: "https://api.test", fetch });
+
+    await expect(client.archiveExercise("exo_1")).resolves.toBeUndefined();
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.test/v1/exercises/exo_1",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+
+  it("remonte le 403 d'un exercice du catalogue commun", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(
+          { error: { code: "FORBIDDEN", message: "Le catalogue commun n'est pas modifiable." } },
+          403,
+        ),
+      );
+    const client = createApiClient({ baseUrl: "https://api.test", fetch });
+
+    await expect(client.archiveExercise("exo_1")).rejects.toMatchObject({
+      status: 403,
+      code: "FORBIDDEN",
+    });
+  });
+
   it("joint le bearer token quand il y en a un", async () => {
     const fetch = vi.fn().mockResolvedValue(jsonResponse({ api: "1.0.0", core: "1.0.0" }));
     const client = createApiClient({

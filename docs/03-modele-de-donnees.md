@@ -188,10 +188,11 @@ model Exercise {
   /// Mention de copyright à conserver et à afficher (voir doc 08).
   attribution  String?
 
-  /// Un exercice custom appartient à un utilisateur et n'est visible que par lui.
-  isCustom Boolean @default(false)
-  ownerId  String?
-  owner    User?   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  /// Un exercice custom appartient à un utilisateur et n'est visible que par
+  /// lui. `ownerId` est la **seule** marque de cette appartenance : le champ
+  /// `isCustom` de l'API en est calculé, il n'a pas de colonne (D22).
+  ownerId String?
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   /// Permet de retirer un exercice du catalogue sans casser l'historique.
   isArchived Boolean @default(false)
@@ -206,8 +207,8 @@ model Exercise {
 
   @@index([bodyPart])
   @@index([equipment])
+  @@index([isArchived])
   @@index([ownerId])
-  @@index([isCustom, isArchived])
 }
 
 /// Nom et instructions traduits. Le dataset fournit 10 langues ;
@@ -465,7 +466,9 @@ Ces règles sont vérifiées côté service API, dans une transaction, et couver
 5. **Records.** Recalculés à la fin d'une séance, uniquement à partir des séries `completed` et non `WARMUP`. Un record n'est mis à jour que si la valeur est strictement supérieure. `WorkoutSet.isPr` est positionné en conséquence.
 6. **Suppression de routine.** `deletedAt` est renseigné ; les `Workout.routineId` associés basculent à `NULL` (`onDelete: SetNull`) uniquement en cas de purge physique.
 7. **Modification d'une séance passée** (D10). Autorisée. Elle déclenche un **recalcul intégral** des records de chaque exercice touché, reconstruit depuis l'historique complet — pas un ajustement incrémental. C'est le seul moyen correct d'invalider un record devenu caduc, puisqu'il faut alors retrouver le second meilleur. L'opération est rare, sa lenteur est acceptable.
-8. **Exercice référencé.** `onDelete: Restrict` sur `Exercise` : on ne supprime jamais un exercice utilisé dans un historique. Utiliser `isArchived`.
+8. **Exercice référencé.** `onDelete: Restrict` sur `Exercise` : on ne supprime jamais un exercice utilisé dans un historique. Utiliser `isArchived`. C'est pourquoi `DELETE /v1/exercises/:id` **archive** — le verbe HTTP dit l'intention de l'utilisateur, pas ce que fait la base.
+9. **Visibilité d'un exercice.** `ownerId IS NULL` = catalogue commun, visible de tous ; renseigné = visible de ce seul utilisateur. La clause est appliquée dans le service, à **chaque** lecture, et un exercice d'autrui répond 404 comme s'il n'existait pas (règle non négociable n°8). Un exercice du catalogue, lui, est visible de tous : tenter de le modifier répond 403, pas 404 — 404 contredirait le `GET` qui vient de réussir, et son existence n'est pas un secret.
+10. **Traductions complètes.** Tout exercice a une ligne de `ExerciseTranslation` dans **chaque** locale servie. Les listes étant enracinées sur cette table, un exercice sans traduction dans une locale y devient invisible, sans erreur. Le seed le garantit pour le catalogue, `createExercise` pour les exercices personnalisés — en écrivant le nom saisi à l'identique dans toutes les locales.
 
 ## Calcul du 1RM estimé
 
