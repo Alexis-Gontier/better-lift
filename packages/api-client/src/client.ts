@@ -5,6 +5,7 @@ import {
   currentUserSchema,
   type HealthResponse,
   healthResponseSchema,
+  type UpdateMeInput,
   type VersionResponse,
   versionResponseSchema,
 } from "@better-lift/validators";
@@ -28,23 +29,34 @@ export interface ApiClient {
   getVersion: (signal?: AbortSignal) => Promise<VersionResponse>;
   /** Lève une `ApiClientError` 401 quand aucune session n'est établie. */
   getMe: (signal?: AbortSignal) => Promise<CurrentUser>;
+  /** Lève une `ApiClientError` 409 quand le pseudo demandé est déjà pris. */
+  updateMe: (input: UpdateMeInput, signal?: AbortSignal) => Promise<CurrentUser>;
 }
 
 export function createApiClient(options: ApiClientOptions): ApiClient {
   const baseUrl = options.baseUrl.replace(/\/+$/, "");
   const doFetch = options.fetch ?? globalThis.fetch;
 
-  async function request<T>(path: string, schema: ZodType<T>, signal?: AbortSignal): Promise<T> {
+  async function request<T>(
+    path: string,
+    schema: ZodType<T>,
+    signal?: AbortSignal,
+    /** Absent pour une lecture ; renseigné, il fait de la requête une écriture. */
+    write?: { method: "POST" | "PATCH" | "PUT" | "DELETE"; body?: unknown },
+  ): Promise<T> {
     const token = await options.getAuthToken?.();
 
     let response: Response;
 
     try {
       response = await doFetch(`${baseUrl}${path}`, {
+        method: write?.method ?? "GET",
         headers: {
           Accept: "application/json",
+          ...(write?.body === undefined ? {} : { "Content-Type": "application/json" }),
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        ...(write?.body === undefined ? {} : { body: JSON.stringify(write.body) }),
         // Le web s'authentifie par cookie ; l'API autorise explicitement
         // l'origine et les credentials (doc 02).
         credentials: "include",
@@ -91,5 +103,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     getHealth: (signal) => request("/health", healthResponseSchema, signal),
     getVersion: (signal) => request("/v1/version", versionResponseSchema, signal),
     getMe: (signal) => request("/v1/me", currentUserSchema, signal),
+    updateMe: (input, signal) =>
+      request("/v1/me", currentUserSchema, signal, { method: "PATCH", body: input }),
   };
 }

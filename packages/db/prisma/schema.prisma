@@ -34,6 +34,22 @@ enum ExerciseType {
   DISTANCE_DURATION // course, rameur : distance + durée
 }
 
+/// Unité d'affichage du profil. Les données restent en métrique quoi qu'il
+/// arrive (règle non négociable n°3) : le kg/lb ne se persiste jamais.
+enum UnitSystem {
+  METRIC
+  IMPERIAL
+}
+
+/// Visibilité d'une séance. `FOLLOWERS` n'a aucune interface avant la V2 —
+/// le social est repoussé (D15) —, mais la valeur existe dès maintenant pour
+/// que l'ouvrir plus tard ne demande pas de migration de données.
+enum Visibility {
+  PRIVATE
+  FOLLOWERS
+  PUBLIC
+}
+
 enum BodyPart {
   CHEST
   BACK
@@ -109,8 +125,8 @@ model ExerciseTranslation {
 //
 // Écrits par `npx @better-auth/cli generate` depuis apps/api (doc 03).
 // **Ne pas les éditer à la main** : les régénérer après tout ajout de plugin,
-// le plugin Expo au premier chef. Les champs applicatifs de `User` (unité,
-// locale, fuseau, visibilité par défaut) viendront avec la V1, en plus.
+// le plugin Expo au premier chef. Seuls les champs applicatifs de `User`,
+// clairement délimités ci-dessous, sont à réintroduire après régénération.
 // ─────────────────────────────────────────────
 
 model User {
@@ -123,6 +139,30 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+
+  // ── Champs applicatifs (hors Better Auth) ──
+  // Tous ont une valeur par défaut ou sont nullables : un compte créé par
+  // Better Auth, qui ne connaît pas ces colonnes, reste valide.
+  username String? @unique
+  bio      String? @db.VarChar(300)
+
+  /// Unité d'**affichage** seulement. Tout reste stocké en métrique (règle non
+  /// négociable n°3) : la conversion est l'affaire du client.
+  unitSystem     UnitSystem @default(METRIC)
+  /// Locale du profil, pas celle du navigateur : elle pilote le formatage et
+  /// la langue des instructions d'exercice.
+  locale         String     @default("fr")
+  timezone       String     @default("Europe/Paris")
+  /// Repos par défaut d'un exercice qui n'en définit pas, en secondes.
+  defaultRestSec Int        @default(120)
+
+  /// Visibilité appliquée aux nouvelles séances. `FOLLOWERS` existe dès la V1
+  /// sans interface : le social est repoussé hors V2 (D15), mais avoir la
+  /// valeur évite une migration de données le jour où il arrive.
+  defaultVisibility Visibility @default(PRIVATE)
+
+  /// Renseigné à la fin du parcours d'accueil. Nul tant qu'il n'a pas eu lieu.
+  onboardedAt DateTime?
 
   @@unique([email])
   @@map("user")

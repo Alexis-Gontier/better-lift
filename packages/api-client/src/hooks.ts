@@ -1,8 +1,15 @@
-import { type UseQueryResult, useQuery } from "@tanstack/react-query";
+import {
+  type UseMutationResult,
+  type UseQueryResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   type CurrentUser,
   type HealthResponse,
+  type UpdateMeInput,
   type VersionResponse,
 } from "@better-lift/validators";
 
@@ -41,6 +48,27 @@ export function useMe(client: ApiClient): UseQueryResult<CurrentUser, Error> {
     // Un 401 est une réponse, pas une panne : le réessayer n'apporte rien.
     retry: false,
     staleTime: 30_000,
+  });
+}
+
+/**
+ * Mise à jour du profil.
+ *
+ * Le cache de `me` est écrit directement depuis la réponse plutôt
+ * qu'invalidé : l'API renvoie le profil complet après écriture, refaire un
+ * `GET` derrière serait un aller-retour pour une donnée qu'on tient déjà — et
+ * l'écran clignoterait entre-temps.
+ */
+export function useUpdateMe(
+  client: ApiClient,
+): UseMutationResult<CurrentUser, Error, UpdateMeInput> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateMeInput) => client.updateMe(input),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.me, user);
+    },
   });
 }
 
