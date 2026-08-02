@@ -101,7 +101,7 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 - [x] Auth Better Auth : e-mail/mot de passe, vérification d'adresse non bloquante (D6), réinitialisation de mot de passe, quotas d'authentification, `proxy.ts` protégeant la zone connectée, écrans web dédiés. GitHub et Google sont câblés — **il reste à créer les OAuth Apps** pour les éprouver. Apple attend un compte Apple Developer, exigé seulement à la première soumission iOS (doc 04).
 - [x] Catalogue d'exercices : recherche, filtres, fiche détail. API en lecture, écrans web (filtres persistés dans l'URL) et mobile. **Les médias ne sont pas encore hébergés** : `MEDIA_BASE_URL` est vide, les deux interfaces basculent donc sur un repli sans visuel (D17).
 - [x] Exercices personnalisés : création, modification et archivage. Le web crée et modifie ; le mobile crée et archive, l'édition restant l'affaire de l'atelier. Un filtre d'origine (tous / catalogue / les miens) sépare les deux ensembles sur les deux surfaces.
-- [ ] Routines : CRUD complet + dossiers, éditeur web soigné, consultation mobile. **API et web faits** : dossiers, remplacement intégral, duplication, réordonnancement, et l'éditeur avec son glisser-déposer piloté aussi au clavier. Reste la consultation mobile.
+- [x] Routines : CRUD complet + dossiers, éditeur web soigné, consultation mobile. L'éditeur web se pilote aussi au clavier. Restent, et les deux attendent les séances : l'édition simplifiée sur mobile (D9) et « démarrer cette routine ».
 - [ ] Séance : démarrage depuis routine ou à vide, saisie complète, minuteur de repos, enregistrement.
 - [ ] Historique : liste + détail d'une séance.
 - [ ] Dashboard web : les 4 cartes KPI + volume hebdo + séances récentes.

@@ -77,6 +77,13 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.screen}>
         <Text style={styles.subtitle}>Socle technique V0 — outil de terrain</Text>
 
+        <Link href="/routines" asChild>
+          <Pressable style={styles.action}>
+            <Text style={styles.actionLabel}>Mes routines</Text>
+            <Text style={styles.actionChevron}>›</Text>
+          </Pressable>
+        </Link>
+
         <Link href="/exercises" asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionLabel}>Catalogue d’exercices</Text>
