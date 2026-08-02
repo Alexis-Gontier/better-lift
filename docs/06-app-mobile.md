@@ -154,6 +154,18 @@ Deux chemins, aucun `eas.json` n'existant encore :
 
 Sur Windows sans Android Studio, EAS demande nettement moins de mise en place.
 
+**Le monorepo impose une étape que la documentation d'Expo ne mentionne pas.** `@better-lift/core`, `@better-lift/validators` et `@better-lift/api-client` se résolvent vers leur `dist/`, produit par `tsc --build` et **gitignoré**. Le nuage clone le dépôt, installe les dépendances… et Metro ne trouve rien à résoudre. D'où le crochet `eas-build-post-install` dans `apps/mobile/package.json`, qui rejoue exactement la commande de la CI :
+
+```
+cd ../.. && pnpm exec turbo run build --filter=mobile^...
+```
+
+`mobile^...` construit les **dépendances** de l'app, pas l'app elle-même — elle n'a pas de tâche `build`.
+
+Le profil `development` d'`eas.json` porte `developmentClient: true` et `buildType: "apk"` : un APK s'installe directement sur un téléphone, là où l'AAB de production passe obligatoirement par le Play Store.
+
+`EXPO_PUBLIC_API_URL` n'est **pas** déclarée dans `eas.json`, et c'est voulu : un development build charge son JavaScript depuis le serveur Metro, donc la valeur qui compte est celle d'`apps/mobile/.env` sur la machine de développement au moment du `pnpm dev`. La figer à la construction donnerait une URL périmée au premier changement d'IP.
+
 **Cycle de vie du SDK.** Un SDK Expo est supporté environ un an. Le 57 date de fin juin 2026, le 58 est attendu vers septembre/octobre. Planifier la montée de version plutôt que de la subir quand un correctif de sécurité l'imposera.
 
 **Better Auth en mode bearer.** Le plugin `@better-auth/expo` (1.6.x) stocke le token dans `expo-secure-store` et l'ajoute aux requêtes. Il faut installer `expo-secure-store` **et** `expo-network`, et déclarer le scheme de l'app dans `trustedOrigins` côté serveur (`betterlift://`). Le rafraîchissement doit être géré dans l'intercepteur du client API, avec une file d'attente pour éviter les rafraîchissements concurrents.
