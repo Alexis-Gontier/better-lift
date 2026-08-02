@@ -10,4 +10,5 @@ export * from "./exercise.js";
 export * from "./health.js";
 export * from "./locale.js";
 export * from "./pagination.js";
+export * from "./routine.js";
 export * from "./session.js";

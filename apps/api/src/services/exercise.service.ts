@@ -50,10 +50,17 @@ type TranslationWithExercise = Prisma.ExerciseTranslationGetPayload<{
 
 /**
  * Le nom traduit est passé à part plutôt que déduit d'une ligne de traduction :
- * la liste et la fiche ne l'obtiennent pas de la même façon, et une signature
- * qui accepte les deux évite un cast à l'une des deux.
+ * la liste, la fiche et les routines ne l'obtiennent pas de la même façon, et
+ * une signature qui accepte les trois évite un cast à l'une d'elles.
+ *
+ * Exporté pour le service des routines, qui embarque le résumé de chaque
+ * exercice dans sa réponse. Le dupliquer là-bas ferait diverger deux
+ * représentations du même contrat au premier champ ajouté.
  */
-function toSummary(exercise: TranslationWithExercise["exercise"], name: string): ExerciseSummary {
+export function toExerciseSummary(
+  exercise: TranslationWithExercise["exercise"],
+  name: string,
+): ExerciseSummary {
   return {
     id: exercise.id,
     // Repli sur le nom de base : une traduction vide vaut absence de traduction.
@@ -154,7 +161,7 @@ export async function listExercises(
   const page = hasMore ? rows.slice(0, query.limit) : rows;
 
   return {
-    data: page.map((row) => toSummary(row.exercise, row.name)),
+    data: page.map((row) => toExerciseSummary(row.exercise, row.name)),
     // Le curseur est l'identifiant de la **traduction**, pas de l'exercice :
     // c'est la ligne sur laquelle porte l'ordre.
     nextCursor: hasMore ? (page.at(-1)?.id ?? null) : null,
@@ -192,7 +199,7 @@ export async function getExerciseById(
     exercise.translations.find((row) => row.locale === locale) ?? exercise.translations[0];
 
   return {
-    ...toSummary(exercise, translation?.name ?? exercise.name),
+    ...toExerciseSummary(exercise, translation?.name ?? exercise.name),
     instructions: translation?.instructions ?? [],
     locale,
   };
@@ -262,7 +269,7 @@ export async function createExercise(
   const translation = exercise.translations.find((row) => row.locale === locale);
 
   return {
-    ...toSummary(exercise, translation?.name ?? exercise.name),
+    ...toExerciseSummary(exercise, translation?.name ?? exercise.name),
     instructions: translation?.instructions ?? [],
     locale,
   };

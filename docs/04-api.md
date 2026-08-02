@@ -188,26 +188,38 @@ Réponse (extrait) :
 
 ### Dossiers de routines
 
-| Méthode | Chemin | Description |
-|---|---|---|
-| `GET` | `/v1/routine-folders` | Dossiers avec compteur de routines |
-| `POST` | `/v1/routine-folders` | Créer |
-| `PATCH` | `/v1/routine-folders/:id` | Renommer |
-| `DELETE` | `/v1/routine-folders/:id` | Supprimer — les routines remontent à la racine |
-| `POST` | `/v1/routine-folders/reorder` | `{ "ids": ["a","b","c"] }` — ordre complet |
+| Méthode | Chemin | Description | État |
+|---|---|---|---|
+| `GET` | `/v1/routine-folders` | Dossiers avec compteur de routines | ✅ |
+| `POST` | `/v1/routine-folders` | Créer | ✅ |
+| `PATCH` | `/v1/routine-folders/:id` | Renommer | ✅ |
+| `DELETE` | `/v1/routine-folders/:id` | Supprimer — les routines remontent à la racine | ✅ |
+| `POST` | `/v1/routine-folders/reorder` | `{ "ids": ["a","b","c"] }` — ordre complet | ✅ |
+
+`routineCount` **exclut les routines supprimées**. La suppression étant logique, compter la ligne restée en base ferait annoncer trois routines à un dossier qui n'en montre qu'une.
+
+Supprimer un dossier ne supprime jamais son contenu : les routines remontent à la racine, et c'est `onDelete: SetNull` en base qui le garantit — pas une ligne de code qu'un appel pourrait oublier.
 
 ### Routines
 
-| Méthode | Chemin | Description |
-|---|---|---|
-| `GET` | `/v1/routines` | Liste (`?folderId=`, `?sort=recent\|name\|position`) |
-| `POST` | `/v1/routines` | Créer avec ses exercices et séries |
-| `GET` | `/v1/routines/:id` | Détail complet |
-| `PUT` | `/v1/routines/:id` | **Remplacement complet** de la structure |
-| `PATCH` | `/v1/routines/:id` | Métadonnées seules (nom, notes, dossier) |
-| `DELETE` | `/v1/routines/:id` | Suppression logique |
-| `POST` | `/v1/routines/:id/duplicate` | Copie, suffixée « (copie) » |
-| `POST` | `/v1/routines/reorder` | Réordonner dans un dossier |
+| Méthode | Chemin | Description | État |
+|---|---|---|---|
+| `GET` | `/v1/routines` | Liste (`?folderId=`, `?sort=recent\|name\|position`) | ✅ |
+| `POST` | `/v1/routines` | Créer avec ses exercices et séries | ✅ |
+| `GET` | `/v1/routines/:id` | Détail complet | ✅ |
+| `PUT` | `/v1/routines/:id` | **Remplacement complet** de la structure | ✅ |
+| `PATCH` | `/v1/routines/:id` | Métadonnées seules (nom, notes, dossier) | ✅ |
+| `DELETE` | `/v1/routines/:id` | Suppression logique | ✅ |
+| `POST` | `/v1/routines/:id/duplicate` | Copie, suffixée « (copie) » | ✅ |
+| `POST` | `/v1/routines/reorder` | Réordonner | ✅ |
+
+**`GET /v1/routines` n'est pas paginée**, contrairement au catalogue. Le nombre de routines est borné par l'effort de leur auteur — quelques dizaines, jamais des milliers — et l'écran les affiche toutes, groupées par dossier. Un curseur imposerait en prime une clé composite dès qu'on trie par nom ou par dernière utilisation, deux colonnes non uniques : de la complexité pour une liste qui tient à l'écran.
+
+Le tri `recent` place les routines **jamais faites en dernier**, pas en premier : sans `NULLS LAST`, Postgres remonte les `NULL` en tête d'un tri descendant.
+
+Les deux `reorder` prennent la liste **complète** des identifiants dans leur nouvel ordre, jamais un déplacement relatif. Un « monte de deux » appliqué à une liste qui a bougé entre-temps range l'élément ailleurs, sans erreur. Ce qui n'appartient pas à l'appelant est ignoré plutôt que de faire échouer tout le geste : la requête vient d'un glisser-déposer, et une routine supprimée dans un autre onglet ne doit pas annuler le reste.
+
+Le détail **embarque le résumé de chaque exercice**, dans la locale demandée, plutôt qu'un simple identifiant : sinon afficher une routine demanderait une requête par exercice, ou le catalogue entier chargé côté client pour résoudre des références.
 
 **Le `PUT` remplace intégralement** la liste d'exercices et de séries. Un PATCH granulaire sur des sous-ressources imbriquées (exercice 3, série 2) multiplierait les allers-retours et les états intermédiaires incohérents. L'éditeur travaille sur un brouillon local et envoie l'ensemble en une transaction.
 
@@ -233,7 +245,14 @@ Réponse (extrait) :
 }
 ```
 
-L'ordre du tableau porte la position : le client n'envoie pas de champ `position`, le serveur l'assigne. Une source d'incohérence en moins.
+L'ordre du tableau porte la position : le client n'envoie pas de champ `position`, le serveur l'assigne. Une source d'incohérence en moins — et le corps étant strict, un `position` envoyé quand même répond 422 plutôt que d'être ignoré.
+
+Deux contrôles à connaître avant d'appeler ces routes :
+
+- **Tout `exerciseId` doit être visible de l'appelant** et non archivé, sinon 422. Sans cela, glisser l'identifiant d'un exercice personnalisé d'autrui dans le corps suffirait à le lire ensuite dans sa propre routine : la clé étrangère l'accepterait sans broncher.
+- **Un `supersetGroup` resté seul est ramené à `null`** (invariant 4, doc 03). Le cas arrive tout seul : on crée un superset de deux exercices, puis on en supprime un — le survivant garderait sinon une marque de groupe invisible et fausse.
+
+Le `PUT` supprime les exercices existants avant de les recréer. Les identifiants de `RoutineExercise` et de `RoutineSet` changent donc à chaque enregistrement, et personne ne doit s'y référer — une séance copie les valeurs, elle ne pointe pas ces lignes. Rapprocher les lignes une à une demanderait une clé stable que l'éditeur n'a pas, et un échange de positions violerait `@@unique([routineId, position])` en cours de route.
 
 ### Séances
 
