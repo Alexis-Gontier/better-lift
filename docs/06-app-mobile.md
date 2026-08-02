@@ -55,6 +55,10 @@ C'est l'écran qui fait ou défait le produit.
 └─────────────────────────────────┘
 ```
 
+**Fait au 2026-08-02** : la grille de saisie, la coche, le chrono, la colonne « PRÉC. », le minuteur de repos, la sortie sans perte, et l'enregistrement. La séance se démarre depuis l'aperçu d'une routine.
+
+**Pas encore** : le retour haptique et les notifications de fin de repos (`expo-haptics`, `expo-notifications` — deux modules natifs de plus, à ajouter quand le development build aura tourné) ; le balayage sur une série (`react-native-gesture-handler`), remplacé en attendant par un appui simple qui change de type et un appui long qui supprime — le geste destructeur est le plus difficile des deux, jamais celui qu'on déclenche en visant mal ; l'ajout d'un exercice en cours de séance et la **séance libre**, qui demandent tous deux un sélecteur d'exercices ; la barre persistante « Séance en cours » ; `expo-keep-awake`.
+
 ### Ce qui doit être irréprochable
 
 **La colonne « PRÉC. »** affiche la performance de la dernière séance sur cet exercice. C'est le repère qui permet de décider de sa charge sans réfléchir, et le champ de saisie est **pré-rempli** avec cette valeur. Dans le cas nominal, l'utilisateur ne tape rien : il coche.
@@ -88,6 +92,14 @@ Fin       → POST /v1/workouts (id généré localement)
 ```
 
 **MMKV plutôt qu'AsyncStorage** : les écritures sont synchrones, donc aucune fenêtre de perte si l'app est tuée entre deux séries.
+
+**Fait au 2026-08-02.** Le brouillon vit dans `src/features/workouts/draft-store.ts`, une seule clé (`draft/active`) : on ne fait pas deux séances en parallèle. Chaque mutation le réécrit, sans regroupement ni délai — étaler les écritures pour économiser quelques microsecondes rouvrirait exactement la fenêtre qu'on ferme.
+
+Trois conséquences à connaître :
+
+- **MMKV 4 casse l'API de la 3** : `createMMKV({ id })` et non `new MMKV()`, `remove()` et non `delete()`. La v4 est bâtie sur **Nitro Modules**, qui devient une dépendance de plus (voir [doc 10](10-versions.md)). Elle n'expose **pas** de config plugin, contrairement à ce que son `package.json` laisse croire : l'ajouter à `plugins` dans `app.json` fait échouer `expo export` sur une résolution ESM.
+- **Le brouillon passe par le disque, jamais par un paramètre de route.** « Démarrer cette routine » l'écrit puis navigue ; l'écran de séance le relit au montage, exactement comme il relirait une séance interrompue. Un seul chemin d'entrée, donc un seul à éprouver — et la reprise après crash cesse d'être un cas particulier.
+- **Une séance en cours n'est jamais écrasée.** Si un brouillon existe, « Démarrer » devient « Reprendre la séance en cours ». Le cas arrive tout seul : on quitte l'écran par mégarde, on retombe sur ses routines, on appuie. Écraser silencieusement détruirait la seule donnée de l'app qui n'existe nulle part ailleurs.
 
 **Reprise après crash.** Au démarrage, l'app cherche un brouillon actif ; s'il existe, elle propose de reprendre la séance. À tester explicitement en tuant l'app en cours de séance — c'est la garantie de confiance la plus importante du produit.
 

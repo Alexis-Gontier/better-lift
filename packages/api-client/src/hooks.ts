@@ -11,11 +11,13 @@ import {
 
 import {
   type CreateExerciseInput,
+  type CreateWorkoutInput,
   type CurrentUser,
   type ExerciseDetail,
   type ExerciseListQuery,
   type ExerciseListResponse,
   type HealthResponse,
+  type LastPerformance,
   type Locale,
   type RoutineDetail,
   type RoutineFolder,
@@ -27,6 +29,11 @@ import {
   type UpdateMeInput,
   type UpdateRoutineInput,
   type VersionResponse,
+  type WorkoutDetail,
+  type WorkoutListQuery,
+  type WorkoutListResponse,
+  type WorkoutSaveResponse,
+  type WorkoutStructureInput,
 } from "@better-lift/validators";
 
 import { type ApiClient } from "./client.js";
@@ -58,6 +65,20 @@ export const queryKeys = {
   /** Racine des listes de routines : cible des invalidations après écriture. */
   routinesAll: ["routines"] as const,
   routine: (id: string, locale?: Locale) => ["routine", id, locale ?? null] as const,
+
+  workouts: (query: Partial<WorkoutListQuery> = {}) => ["workouts", query] as const,
+  /** Racine de l'historique : cible des invalidations après écriture. */
+  workoutsAll: ["workouts"] as const,
+  workout: (id: string, locale?: Locale) => ["workout", id, locale ?? null] as const,
+  /**
+   * Les identifiants sont **triés** dans la clé : deux écrans qui demandent les
+   * mêmes exercices dans un ordre différent posent la même question, et doivent
+   * partager la même entrée de cache.
+   */
+  lastPerformance: (exerciseIds: readonly string[]) =>
+    ["last-performance", [...exerciseIds].sort()] as const,
+  /** Les dernières performances changent à chaque séance enregistrée. */
+  lastPerformanceAll: ["last-performance"] as const,
 };
 
 export function useHealth(client: ApiClient): UseQueryResult<HealthResponse, Error> {
@@ -382,6 +403,124 @@ export function useReorderRoutines(
   return useMutation({
     mutationFn: (ids: string[]) => client.reorderRoutines(ids),
     onSuccess: () => invalidateRoutineViews(queryClient),
+  });
+}
+
+// ── Séances ───────────────────────────────────────────────────────────────
+
+/**
+ * Enregistrer une séance touche presque tout : l'historique, les compteurs de
+ * la routine d'origine, les dernières performances qui pré-remplissent le
+ * prochain entraînement, et les records de la fiche exercice.
+ *
+ * Tout est invalidé d'un bloc. Invalider finement demanderait de rejouer côté
+ * client la logique des compteurs et des records — celle-là même que l'API
+ * calcule serveur pour qu'elle ne soit écrite qu'une fois (règle non
+ * négociable n°6).
+ */
+async function invalidateWorkoutViews(queryClient: ReturnType<typeof useQueryClient>) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.workoutsAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.lastPerformanceAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.routinesAll }),
+  ]);
+}
+
+export function useWorkouts(
+  client: ApiClient,
+  query: Partial<WorkoutListQuery> = {},
+): UseInfiniteQueryResult<InfiniteData<WorkoutListResponse>, Error> {
+  return useInfiniteQuery({
+    queryKey: queryKeys.workouts(query),
+    queryFn: ({ pageParam, signal }) =>
+      client.listWorkouts({ ...query, cursor: pageParam }, signal),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    staleTime: 30_000,
+  });
+}
+
+export function useWorkout(
+  client: ApiClient,
+  id: string,
+  locale?: Locale,
+): UseQueryResult<WorkoutDetail, Error> {
+  return useQuery({
+    queryKey: queryKeys.workout(id, locale),
+    queryFn: ({ signal }) => client.getWorkout(id, locale, signal),
+    // Un 404 est une réponse, pas une panne.
+    retry: false,
+  });
+}
+
+/**
+ * Valeurs de la dernière séance, pour pré-remplir l'écran de saisie.
+ *
+ * Chargées **une fois** au démarrage d'une séance et gardées fraîches toute sa
+ * durée : ce qui s'affiche dans la colonne « PRÉC. » ne doit pas changer sous
+ * les yeux de quelqu'un qui a la barre en main.
+ */
+export function useLastPerformance(
+  client: ApiClient,
+  exerciseIds: readonly string[],
+): UseQueryResult<LastPerformance[], Error> {
+  return useQuery({
+    queryKey: queryKeys.lastPerformance(exerciseIds),
+    queryFn: ({ signal }) => client.getLastPerformance([...exerciseIds], signal),
+    enabled: exerciseIds.length > 0,
+    staleTime: 30 * 60_000,
+  });
+}
+
+/**
+ * Enregistrement d'une séance terminée.
+ *
+ * La mutation est **rejouable sans précaution** : l'identifiant vient de
+ * l'appelant, et l'API renvoie la séance existante plutôt que d'en créer une
+ * seconde. C'est ce qui permet à la file de synchronisation hors ligne de
+ * réessayer sans tenir de registre de ce qui est déjà parti.
+ */
+export function useCreateWorkout(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<WorkoutSaveResponse, Error, CreateWorkoutInput> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateWorkoutInput) => client.createWorkout(input, locale),
+    onSuccess: async (workout) => {
+      queryClient.setQueryData(queryKeys.workout(workout.id, locale), workout);
+      await invalidateWorkoutViews(queryClient);
+    },
+  });
+}
+
+export function useUpdateWorkout(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<WorkoutSaveResponse, Error, { id: string; input: WorkoutStructureInput }> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }) => client.updateWorkout(id, input, locale),
+    onSuccess: async (workout) => {
+      queryClient.setQueryData(queryKeys.workout(workout.id, locale), workout);
+      await invalidateWorkoutViews(queryClient);
+    },
+  });
+}
+
+export function useDeleteWorkout(client: ApiClient): UseMutationResult<void, Error, string> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => client.deleteWorkout(id),
+    onSuccess: async (_result, id) => {
+      // La séance répond désormais 404 : garder sa dernière version en cache
+      // ferait afficher un écran qui n'existe plus.
+      queryClient.removeQueries({ queryKey: ["workout", id] });
+      await invalidateWorkoutViews(queryClient);
+    },
   });
 }
 

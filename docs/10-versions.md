@@ -224,6 +224,21 @@ node-linker=hoisted
 
 À tester en V0 avant d'en faire une règle : la situation s'est améliorée côté Metro et pnpm 11, et le mode hoisted a ses propres inconvénients (il annule une partie de l'isolation qui fait l'intérêt de pnpm). Ne l'activer que si le problème se manifeste réellement.
 
+### MMKV 4 — API différente de tout ce qui traîne en ligne
+
+`react-native-mmkv` **4.3.2**, la version que `expo install` retient pour le SDK 57. Trois écarts avec la quasi-totalité des exemples publiés, tous écrits pour la 3 :
+
+| La 3 disait | La 4 dit |
+|---|---|
+| `new MMKV({ id })` | `createMMKV({ id })` — le constructeur a disparu, `MMKV` n'est plus qu'un **type** |
+| `storage.delete(key)` | `storage.remove(key)` |
+| rien | `react-native-nitro-modules` est une **dépendance de pair obligatoire** |
+
+Deux pièges de plus, découverts en bundlant :
+
+- **Il n'y a pas de config plugin.** Le `package.json` liste pourtant `app.plugin.js` dans ses `files`, et le fichier n'existe pas dans le paquet publié. L'ajouter à `plugins` dans `app.json` fait échouer `expo export` sur une erreur ESM/CJS dont le message ne mentionne jamais `app.json` — l'autolinking suffit.
+- **Les chaînes accentuées sont en UTF-16 dans le bytecode Hermes.** Chercher « Démarrer la séance » dans un `.hbc` lu en latin-1 ne donne rien alors que le code est bien embarqué. Vérifier un bundle avec `Buffer.from(texte, "utf16le")`, sinon on conclut à une absence qui n'existe pas.
+
 ### Node 20 est mort
 
 Sa fin de support est passée en avril 2026. Toute doc ou tutoriel qui la mentionne comme cible est périmé. Next.js 16 exige Node 20+ au minimum, mais viser directement la 24.

@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ApiClientError, useRoutine } from "@better-lift/api-client";
 import { type RoutineExercise } from "@better-lift/validators";
@@ -7,6 +7,7 @@ import { type RoutineExercise } from "@better-lift/validators";
 import { formatRest, SET_TYPE_SHORT, SET_TYPE_TONE } from "./labels";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
 import { BODY_PART_LABELS, equipmentLabel } from "@/features/exercises/labels";
+import { useStartWorkout } from "@/features/workouts/use-start-workout";
 import { apiClient } from "@/lib/api";
 
 /**
@@ -57,6 +58,7 @@ function ExerciseBlock({ exercise, index }: { exercise: RoutineExercise; index: 
 export function RoutinePreview({ id }: { id: string }) {
   const locale = useProfileLocale();
   const routine = useRoutine(apiClient, id, locale);
+  const { start, starting, inProgress } = useStartWorkout(apiClient);
 
   if (routine.isPending) {
     return <ActivityIndicator color="#7ad6a5" style={styles.spacer} />;
@@ -92,6 +94,21 @@ export function RoutinePreview({ id }: { id: string }) {
         </Text>
         {data.notes ? <Text style={styles.notes}>{data.notes}</Text> : null}
       </View>
+
+      {data.exercises.length === 0 ? null : (
+        <Pressable
+          onPress={() => {
+            void start(data);
+          }}
+          disabled={starting}
+          style={styles.start}
+          accessibilityRole="button"
+        >
+          <Text style={styles.startLabel}>
+            {inProgress ? "Reprendre la séance en cours" : "Démarrer la séance"}
+          </Text>
+        </Pressable>
+      )}
 
       {data.exercises.length === 0 ? (
         <Text style={styles.emptyHint}>Cette routine ne contient aucun exercice.</Text>
@@ -131,4 +148,11 @@ const styles = StyleSheet.create({
   emptyHint: { color: "#9aa3ad", fontSize: 13, textAlign: "center" },
   link: { color: "#7ad6a5", marginTop: 8 },
   spacer: { paddingVertical: 24 },
+  start: {
+    backgroundColor: "#7ad6a5",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  startLabel: { color: "#11161b", fontSize: 15, fontWeight: "600" },
 });
