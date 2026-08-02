@@ -10,12 +10,12 @@ export default async function RoutinePage({ params }: { params: Promise<{ id: st
   const { id } = await params;
 
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link href="/routines" className="text-sm text-muted-foreground hover:text-foreground">
         ← Routines
       </Link>
 
       <RoutinePreview id={id} />
-    </main>
+    </div>
   );
 }

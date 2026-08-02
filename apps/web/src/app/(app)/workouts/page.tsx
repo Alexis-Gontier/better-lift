@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Historique — better-lift" };
 
 export default function WorkoutsPage() {
   return (
-    <main className="space-y-8">
+    <div className="space-y-8">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Historique</h1>
         <p className="text-muted-foreground">
@@ -22,6 +22,6 @@ export default function WorkoutsPage() {
       <Suspense fallback={<p className="text-sm text-muted-foreground">Chargement…</p>}>
         <WorkoutHistory />
       </Suspense>
-    </main>
+    </div>
   );
 }

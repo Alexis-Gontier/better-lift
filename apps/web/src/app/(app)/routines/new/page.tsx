@@ -7,12 +7,12 @@ export const metadata: Metadata = { title: "Nouvelle routine — better-lift" };
 
 export default function NewRoutinePage() {
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link href="/routines" className="text-sm text-muted-foreground hover:text-foreground">
         ← Routines
       </Link>
 
       <RoutineEditor />
-    </main>
+    </div>
   );
 }

@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Exercices — better-lift" };
  */
 export default function ExercisesPage() {
   return (
-    <main className="space-y-8">
+    <div className="space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Exercices</h1>
@@ -36,6 +36,6 @@ export default function ExercisesPage() {
       <Suspense fallback={null}>
         <ExerciseCatalog />
       </Suspense>
-    </main>
+    </div>
   );
 }

@@ -202,9 +202,16 @@ export function ExerciseCatalog() {
             {exercises.hasNextPage ? " — la liste continue" : ""}
           </p>
 
+          {/*
+            `min-w-0` sur le `<li>` : un élément de grille vaut `min-width: auto`
+            par défaut, donc il refuse de descendre sous la largeur de son
+            contenu. Le `truncate` de la carte ne s'applique jamais, le nom
+            d'exercice pousse la colonne, et c'est la page entière qui défile
+            latéralement sur mobile — un échec du critère WCAG 1.4.10.
+          */}
           <ul className="grid gap-3 sm:grid-cols-2">
             {items.map((exercise) => (
-              <li key={exercise.id}>
+              <li key={exercise.id} className="min-w-0">
                 <ExerciseCard exercise={exercise} />
               </li>
             ))}

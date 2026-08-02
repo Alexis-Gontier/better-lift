@@ -1,6 +1,14 @@
 import { type Metadata } from "next";
 import { Suspense } from "react";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@better-lift/ui/components/card";
+
 import { SessionPanel } from "@/features/auth/session-panel";
 import { VerificationNotice } from "@/features/auth/verification-notice";
 
@@ -14,9 +22,9 @@ export const metadata: Metadata = { title: "Tableau de bord — better-lift" };
  */
 export default function DashboardPage() {
   return (
-    <main className="space-y-8">
+    <div className="space-y-8">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Tableau de bord</h1>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">Tableau de bord</h1>
         <p className="text-muted-foreground">
           Zone authentifiée. Les cartes de la doc 05 arriveront avec les séances.
         </p>
@@ -26,12 +34,22 @@ export default function DashboardPage() {
         <VerificationNotice />
       </Suspense>
 
-      <section className="rounded-xl bg-card p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Session
-        </h2>
-        <SessionPanel />
-      </section>
-    </main>
+      {/*
+        `max-w-xl` : ce bloc de contrôle est une liste de paires libellé/valeur,
+        pas un tableau de bord. Étalé sur les 1152 px de la coquille, l'œil
+        devrait traverser l'écran entre l'intitulé et sa valeur.
+      */}
+      <Card className="max-w-xl">
+        <CardHeader>
+          <CardTitle>Session</CardTitle>
+          <CardDescription>
+            Deux lectures indépendantes de la même session, dont une via l’API.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SessionPanel />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

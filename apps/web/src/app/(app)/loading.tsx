@@ -2,7 +2,7 @@ import { Skeleton } from "@better-lift/ui/components/skeleton";
 
 /**
  * Squelette de la zone authentifiée. Il s'affiche **dans** le layout `(app)`,
- * donc l'en-tête et la navigation restent visibles pendant le chargement : le
+ * donc la sidebar et la barre haute restent visibles pendant le chargement : le
  * cadre ne clignote pas, seul le contenu se remplit.
  *
  * La forme reprend celle que partagent toutes les pages du groupe — un titre,
@@ -19,11 +19,19 @@ export default function Loading() {
         <Skeleton className="h-4 w-80 max-w-full" />
       </div>
 
-      <div className="space-y-3">
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
+      {/*
+        Deux colonnes à partir de `md`, comme les écrans qui viennent derrière :
+        la coquille fait désormais 1152 px de large, et trois blocs pleine
+        largeur y annonceraient une mise en page que plus aucune page n'a.
+      */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
       </div>
+
+      <Skeleton className="h-64 w-full rounded-xl" />
     </div>
   );
 }

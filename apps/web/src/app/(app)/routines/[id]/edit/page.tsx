@@ -9,7 +9,7 @@ export default async function EditRoutinePage({ params }: { params: Promise<{ id
   const { id } = await params;
 
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link
         href={`/routines/${id}`}
         className="text-sm text-muted-foreground hover:text-foreground"
@@ -18,6 +18,6 @@ export default async function EditRoutinePage({ params }: { params: Promise<{ id
       </Link>
 
       <RoutineEdit id={id} />
-    </main>
+    </div>
   );
 }

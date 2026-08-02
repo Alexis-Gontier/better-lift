@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Nouvel exercice — better-lift" };
 
 export default function NewExercisePage() {
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link href="/exercises" className="text-sm text-muted-foreground hover:text-foreground">
         ← Catalogue
       </Link>
@@ -21,6 +21,6 @@ export default function NewExercisePage() {
       </header>
 
       <ExerciseForm />
-    </main>
+    </div>
   );
 }

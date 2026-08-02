@@ -46,10 +46,24 @@ app/
     │       └── edit/               # exercices personnalisés uniquement
     ├── stats/
     └── settings/
+        ├── layout.tsx              # titre + les trois onglets
+        ├── page.tsx                # redirige vers profile/
         ├── profile/
         ├── preferences/
         └── account/
 ```
+
+## La coquille `(app)`
+
+`(app)/layout.tsx` monte `SidebarProvider` → `AppSidebar` + `SidebarInset` (barre haute, puis contenu en `max-w-6xl`). Les composants vivent dans `features/navigation/`, la liste des destinations dans `nav-items.ts` et la règle d'état actif — testée — dans `active.ts`.
+
+**Le layout est `async` et lit le cookie `sidebar_state` côté serveur.** La primitive persiste l'état replié dans ce cookie ; sans lecture serveur, le premier rendu montre toujours la colonne dépliée, puis l'hydratation la replie — 16 rem qui sautent à chaque chargement, précisément pour qui a choisi de la replier.
+
+**`SidebarInset` *est* l'élément `<main>`.** Les pages du groupe rendent donc du contenu nu : un `<main>` dans une page produirait un second repère imbriqué, ce qui est du balisage invalide et laisse un lecteur d'écran devant deux « contenus principaux ». De même, `SidebarContent` ne rend qu'un `<div>` — le repère `<nav aria-label="Navigation principale">` est ajouté explicitement, sinon la colonne n'en est plus un.
+
+**L'état actif reste celui de la primitive, et il est ténu.** `bg-sidebar-accent` s'applique à l'entrée active **et** au survol ; seule la graisse du libellé les sépare, si bien que « où je suis » et « ce que je pointe » se ressemblent. Le renforcer demanderait une couleur d'accent, que la palette n'a pas (D25). `aria-current="page"` porte l'information de façon non ambiguë là où elle compte le plus, et le sujet se rouvrira avec la reteinte.
+
+`collapsible="icon"` : replier réduit aux pictogrammes plutôt que de faire disparaître la navigation, et chaque entrée porte un `tooltip` qui redonne son libellé dans cet état. Sous `md`, la primitive bascule seule en tiroir `Sheet`. Les libellés des commandes de repli (`SidebarTrigger`, `SidebarRail`) sont réécrits en français depuis l'app : le registre les livre en anglais et en dur.
 
 Le `proxy.ts` Next protège `(app)/*` : session absente → redirection vers `/login?next=<chemin>`. En Next 16 le fichier s'appelle `proxy.ts`, plus `middleware.ts`, et l'export nommé est `proxy` (voir [doc 10](10-versions.md)).
 
@@ -258,7 +272,7 @@ Profil (nom, pseudo, avatar, bio) · Préférences (unités, langue, repos par d
 
 **Thème.** Clair et sombre, `next-themes` en `attribute="class"` (la classe `.dark` sur `<html>`, ce qu'attend `@custom-variant dark` côté CSS). Le premier chargement suit `prefers-color-scheme` — `defaultTheme="system"`. Le « sombre par défaut » que visait le produit décrit l'identité visuelle, pas un forçage : imposer le sombre à quelqu'un dont le système est clair, ce serait précisément ne pas respecter la préférence. `<html>` porte `suppressHydrationWarning`, requis parce que le script de next-themes pose la classe avant l'hydratation pour éviter le flash — c'est le seul endroit où l'avertissement est légitime.
 
-**Il n'y a pas encore de sélecteur de thème dans l'interface.** Il ira dans Réglages › Préférences, avec les unités et la langue.
+**Le sélecteur de thème vit dans le menu du compte**, en pied de sidebar (trois choix : système, clair, sombre). Il était initialement prévu dans Réglages › Préférences ; on le règle en regardant l'écran qu'il transforme, pas depuis un formulaire au bout de deux clics. Il sera **aussi** proposé dans Réglages › Préférences avec les unités et la langue, les deux commandes écrivant la même valeur — c'est un doublon assumé, pas un oubli. Les écrans d'authentification gardent leur propre bascule (`ThemeToggle`), seul endroit où elle est atteignable avant d'avoir un compte.
 
 **Graphiques.** Recharts. Toujours accompagnés d'une table de données accessible en lecteur d'écran, ou d'un `aria-label` décrivant la tendance.
 

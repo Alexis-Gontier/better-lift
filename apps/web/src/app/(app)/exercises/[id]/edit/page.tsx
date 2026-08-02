@@ -10,7 +10,7 @@ export default async function EditExercisePage({ params }: { params: Promise<{ i
   const { id } = await params;
 
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link
         href={`/exercises/${id}`}
         className="text-sm text-muted-foreground hover:text-foreground"
@@ -21,6 +21,6 @@ export default async function EditExercisePage({ params }: { params: Promise<{ i
       <h1 className="text-2xl font-semibold tracking-tight">Modifier l’exercice</h1>
 
       <ExerciseEdit id={id} />
-    </main>
+    </div>
   );
 }

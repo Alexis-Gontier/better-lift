@@ -91,6 +91,25 @@ Les deux retirent le `size` natif d'`<input>` du typage (une largeur en caractè
 
 **Le coût, et il est réel :** `npx shadcn add input --overwrite` écrase ces fichiers et fait disparaître les variantes **en silence**. Les appels `size="lg"` cesseraient d'avoir un effet sans erreur de compilation, `size` étant un attribut légal sur `<input>`. À vérifier après toute réinstallation d'`input`, et après tout `add` d'un composant qui en dépend (`input-group`, `field`).
 
+### D25 — Typographie : Geist Sans et Geist Mono, la palette reste achromatique
+
+Adopté le 2 août 2026, avec la coquille applicative.
+
+**Geist Sans et Geist Mono, via `next/font/google`** — pas de dépendance `geist` supplémentaire. Une seule famille pour le corps et les titres : `--font-heading` reste un alias de `--font-sans`, la hiérarchie vient de la taille et de la graisse. Le token est conservé bien qu'il ne fasse rien de plus, parce qu'il est déjà employé sur plusieurs écrans — le jour où les titres changeront de police, ils suivront sans qu'on les touche.
+
+Les polices sont branchées en `variable`, pas en `className` : elles sont consommées par les tokens `--font-sans` et `--font-mono`, donc par les utilitaires Tailwind. Poser la classe directement court-circuiterait ces tokens.
+
+Deux défauts silencieux corrigés au passage : `--font-sans` s'auto-référençait (`--font-sans: var(--font-sans)`), un no-op qui retombait sur la police système, et `--font-mono` n'existait pas alors que `font-mono` était déjà utilisé.
+
+**La palette reste celle du preset : achromatique.** Un accent de marque a été essayé — un bleu de teinte 245 — puis retiré : l'app tient sur des gris neutres, et `destructive` est la seule couleur, ce qui est précisément ce qui la rend lisible comme signal. La reteinte que D24 laissait ouverte (« quitte à reteinter plus tard ») reste donc à faire, et n'est pas urgente.
+
+Une seule valeur change : `--sidebar-primary` portait en mode sombre un `oklch(0.488 0.243 264.376)`, un bleu venu du thème de démonstration de shadcn et sans rapport avec l'app. Aligné sur `--primary`.
+
+**Ce que cet essai a appris, et qui vaudra pour la prochaine tentative :**
+
+- **Rester dans le gamut sRGB.** À une teinte franche, un chroma au-delà de ~0.13 déborde : le navigateur écrête, la couleur rendue n'est plus celle qu'on croit, et tout contraste calculé dessus est faux. À vérifier avant de retenir une valeur.
+- **Le contraste se calcule, il ne s'estime pas.** WCAG 2.1 AA, que la doc 01 impose, demande 4,5:1 sur le texte — dont le libellé d'un bouton sur son fond `primary`, dans les deux thèmes.
+
 **Le `tooltip.tsx` du preset n'embarque pas son `Provider`.** `<Tooltip>` monté sans `TooltipProvider` au-dessus lève à l'exécution. Le provider est donc global, dans `apps/web/src/providers/` — sans lui, `<SidebarMenuButton tooltip="…" />` casse la page dès que la sidebar est repliée, ce qui est précisément le mode où les libellés disparaissent.
 
 ## Produit

@@ -24,7 +24,7 @@ import {
  */
 export default function AppNotFound() {
   return (
-    <main className="flex flex-1 flex-col justify-center">
+    <div className="flex flex-1 flex-col justify-center">
       <Empty>
         <EmptyHeader>
           <EmptyTitle>Introuvable</EmptyTitle>
@@ -39,6 +39,6 @@ export default function AppNotFound() {
           </Button>
         </EmptyContent>
       </Empty>
-    </main>
+    </div>
   );
 }
