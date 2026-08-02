@@ -21,6 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <nav aria-label="Navigation principale" className="flex gap-1 text-sm">
           <NavLink href="/dashboard">Tableau de bord</NavLink>
+          <NavLink href="/routines">Routines</NavLink>
           <NavLink href="/exercises">Exercices</NavLink>
         </nav>
       </header>

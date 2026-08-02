@@ -60,6 +60,13 @@ catalog:
   react-dom: 19.2.3
   "@types/react": ^19.2.18
   "@tanstack/react-query": ^5.101.4
+  # Glisser-déposer de l'éditeur de routines (doc 05), **web uniquement**.
+  # dnd-kit plutôt que react-dnd ou une solution HTML5 native : il fournit une
+  # alternative clavier complète, ce qui est la condition de l'objectif WCAG
+  # 2.1 AA — un éditeur qui ne se pilote qu'à la souris n'est pas accessible.
+  "@dnd-kit/core": ^6.3.1
+  "@dnd-kit/sortable": ^10.0.0
+  "@dnd-kit/utilities": ^3.2.2
   # `tailwindcss` est absent volontairement : le web est en Tailwind 4 et le
   # mobile en Tailwind 3 (NativeWind v4 stable), décalage assumé — doc 10.
 
