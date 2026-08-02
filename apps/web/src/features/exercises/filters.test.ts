@@ -20,7 +20,20 @@ describe("parseFilters", () => {
       q: "curl",
       bodyPart: ["BACK", "CHEST"],
       equipment: ["barbell"],
+      custom: undefined,
     });
+  });
+
+  it("distingue les trois origines possibles", () => {
+    expect(parseFilters(params("custom=true")).custom).toBe(true);
+    expect(parseFilters(params("custom=false")).custom).toBe(false);
+    expect(parseFilters(params("")).custom).toBeUndefined();
+  });
+
+  it("retombe sur les deux origines devant une valeur d'origine incomprise", () => {
+    // Montrer plus est moins surprenant que de vider l'écran sur un `?custom=1`
+    // écrit à la main ou tronqué par un partage.
+    expect(parseFilters(params("custom=1")).custom).toBeUndefined();
   });
 
   it("rend des filtres vides sur une URL nue", () => {
@@ -60,9 +73,14 @@ describe("serializeFilters", () => {
   });
 
   it("répète la clé pour un filtre multiple", () => {
-    const filters: CatalogFilters = { q: "", bodyPart: ["BACK", "CHEST"], equipment: [] };
+    const filters: CatalogFilters = { ...EMPTY_FILTERS, bodyPart: ["BACK", "CHEST"] };
 
     expect(serializeFilters(filters)).toBe("bodyPart=BACK&bodyPart=CHEST");
+  });
+
+  it("écrit une origine explicite, y compris quand elle vaut false", () => {
+    // `false` n'est pas « non renseigné » : c'est « le catalogue commun seul ».
+    expect(serializeFilters({ ...EMPTY_FILTERS, custom: false })).toBe("custom=false");
   });
 
   it("fait un aller-retour fidèle avec parseFilters", () => {
@@ -70,6 +88,7 @@ describe("serializeFilters", () => {
       q: "développé couché",
       bodyPart: ["CHEST"],
       equipment: ["barbell"],
+      custom: true,
     };
 
     expect(parseFilters(params(serializeFilters(filters)))).toEqual(filters);
@@ -84,6 +103,10 @@ describe("toListQuery", () => {
   it("nettoie la recherche avant de l'envoyer", () => {
     expect(toListQuery({ ...EMPTY_FILTERS, q: "  squat  " })).toEqual({ q: "squat" });
   });
+
+  it("transmet une origine à false plutôt que de la confondre avec une absence", () => {
+    expect(toListQuery({ ...EMPTY_FILTERS, custom: false })).toEqual({ custom: false });
+  });
 });
 
 describe("hasActiveFilters", () => {
@@ -93,6 +116,11 @@ describe("hasActiveFilters", () => {
 
   it("détecte un filtre coché", () => {
     expect(hasActiveFilters({ ...EMPTY_FILTERS, bodyPart: ["CHEST"] })).toBe(true);
+  });
+
+  it("compte l'origine comme un filtre actif", () => {
+    // Sans cela, « Les miens » resterait sélectionné sans bouton pour en sortir.
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, custom: true })).toBe(true);
   });
 });
 

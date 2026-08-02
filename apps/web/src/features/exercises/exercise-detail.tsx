@@ -1,14 +1,83 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { ApiClientError, useExercise } from "@better-lift/api-client";
+import { ApiClientError, useArchiveExercise, useExercise } from "@better-lift/api-client";
 
 import { ExerciseMedia, MediaAttribution } from "./exercise-media";
 import { BODY_PART_LABELS, equipmentLabel } from "./labels";
 import { resolveMediaUrl } from "./media";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
 import { apiClient } from "@/lib/api";
+
+/**
+ * Actions réservées aux exercices personnalisés.
+ *
+ * L'archivage demande une confirmation **en place**, en deux temps, plutôt
+ * qu'une `confirm()` du navigateur : celle-ci est bloquante, non stylable, et
+ * certains navigateurs la suppriment purement et simplement dans les iframes.
+ * Deux clics volontaires suffisent à écarter le geste accidentel, qui est le
+ * seul risque réel — l'opération reste réversible en base, l'exercice n'étant
+ * qu'archivé.
+ */
+function CustomExerciseActions({ id }: { id: string }) {
+  const router = useRouter();
+  const archive = useArchiveExercise(apiClient);
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Link
+        href={`/exercises/${id}/edit`}
+        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+      >
+        Modifier
+      </Link>
+
+      {confirming ? (
+        <>
+          <button
+            type="button"
+            disabled={archive.isPending}
+            onClick={() =>
+              archive.mutate(id, {
+                // La fiche répond désormais 404 : y rester afficherait une
+                // erreur pour une opération pourtant réussie.
+                onSuccess: () => router.push("/exercises?custom=true"),
+              })
+            }
+            className="rounded-lg bg-danger px-3 py-1.5 text-sm font-medium text-surface disabled:opacity-50"
+          >
+            {archive.isPending ? "Archivage…" : "Confirmer l’archivage"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className="text-sm text-ink-muted hover:text-ink"
+          >
+            Annuler
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          className="rounded-lg px-3 py-1.5 text-sm text-ink-muted ring-1 ring-white/15 hover:text-ink"
+        >
+          Archiver
+        </button>
+      )}
+
+      {archive.isError && (
+        <p role="alert" className="text-sm text-danger">
+          {archive.error.message}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
@@ -70,12 +139,21 @@ export function ExerciseDetail({ id }: { id: string }) {
 
   return (
     <article className="space-y-8">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
+      <header className="space-y-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
+          {data.isCustom && (
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">
+              Personnalisé
+            </span>
+          )}
+        </div>
         <p className="text-ink-muted">
           {BODY_PART_LABELS[data.bodyPart]} · {equipmentLabel(data.equipment)}
         </p>
       </header>
+
+      {data.isCustom && <CustomExerciseActions id={data.id} />}
 
       <div className="space-y-2">
         <ExerciseMedia

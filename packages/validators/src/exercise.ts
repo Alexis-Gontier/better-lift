@@ -60,8 +60,8 @@ function repeatable<T extends z.ZodTypeAny>(item: T) {
 export const equipmentValueSchema = z
   .string()
   .trim()
-  .min(1)
-  .max(50)
+  .min(1, "L'équipement est requis.")
+  .max(50, "50 caractères au maximum.")
   .transform((value) => value.toLowerCase().replace(/\s+/g, "_"));
 
 export const exerciseListQuerySchema = paginationQuerySchema.extend({
@@ -135,16 +135,34 @@ export const exerciseDetailQuerySchema = z.object({
  * l'exercice disparaîtrait dès que le profil change de langue, la liste étant
  * enracinée sur `ExerciseTranslation`.
  */
+/**
+ * Les messages sont rédigés, et en français, comme sur le profil.
+ *
+ * Ce ne sont pas des libellés de débogage : ils sont affichés tels quels sous
+ * le champ fautif par les formulaires web et mobile, qui valident avec **ce**
+ * schéma avant d'appeler l'API. Les laisser au défaut de Zod donnerait un
+ * « Too small: expected string to have >=1 characters » sous un formulaire par
+ * ailleurs entièrement en français.
+ */
 const exerciseFields = {
-  name: z.string().trim().min(1).max(100),
+  name: z.string().trim().min(1, "Le nom est requis.").max(100, "100 caractères au maximum."),
   type: exerciseTypeSchema,
   bodyPart: bodyPartSchema,
   equipment: equipmentValueSchema,
   /** Muscle cible principal : "pectorals", "lats"… */
-  target: z.string().trim().min(1).max(50).toLowerCase(),
-  secondaryMuscles: z.array(z.string().trim().min(1).max(50).toLowerCase()).max(10),
+  target: z
+    .string()
+    .trim()
+    .min(1, "Le muscle cible est requis.")
+    .max(50, "50 caractères au maximum.")
+    .toLowerCase(),
+  secondaryMuscles: z
+    .array(z.string().trim().min(1).max(50).toLowerCase())
+    .max(10, "10 muscles secondaires au maximum."),
   /** Étapes numérotées, comme celles du catalogue. */
-  instructions: z.array(z.string().trim().min(1).max(500)).max(20),
+  instructions: z
+    .array(z.string().trim().min(1).max(500, "500 caractères par étape au maximum."))
+    .max(20, "20 étapes au maximum."),
 };
 
 export const createExerciseSchema = z
