@@ -20,6 +20,12 @@ export function ExerciseCard({ exercise }: { exercise: ExerciseSummary }) {
       <div className="min-w-0">
         <p className="truncate font-medium">{exercise.name}</p>
         <p className="truncate text-sm text-ink-muted">
+          {/*
+            La provenance est dite sur la carte, pas seulement derrière le
+            filtre : sans elle, un exercice personnalisé et son homonyme du
+            catalogue seraient indiscernables dans une liste mêlée.
+          */}
+          {exercise.isCustom ? "Personnalisé · " : ""}
           {BODY_PART_LABELS[exercise.bodyPart]} · {equipmentLabel(exercise.equipment)}
         </p>
       </div>

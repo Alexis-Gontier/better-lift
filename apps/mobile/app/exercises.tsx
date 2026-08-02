@@ -1,4 +1,5 @@
-import { Stack } from "expo-router";
+import { Link, Stack } from "expo-router";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 import { ExerciseList } from "@/features/exercises/exercise-list";
 
@@ -11,8 +12,25 @@ import { ExerciseList } from "@/features/exercises/exercise-list";
 export default function ExercisesScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: "Exercices" }} />
+      <Stack.Screen
+        options={{
+          title: "Exercices",
+          // Dans l'en-tête plutôt qu'en bouton flottant : la liste défile sur
+          // toute la hauteur, un flottant masquerait une ligne en permanence.
+          headerRight: () => (
+            <Link href="/exercise/new" asChild>
+              <Pressable accessibilityRole="button" accessibilityLabel="Créer un exercice">
+                <Text style={styles.action}>Créer</Text>
+              </Pressable>
+            </Link>
+          ),
+        }}
+      />
       <ExerciseList />
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  action: { color: "#7ad6a5", fontSize: 16, fontWeight: "600" },
+});

@@ -28,7 +28,10 @@ app/
     │   └── [id]/
     ├── exercises/
     │   ├── page.tsx                # catalogue
-    │   └── [id]/                   # fiche + historique + records
+    │   ├── new/                    # créer un exercice personnalisé
+    │   └── [id]/
+    │       ├── page.tsx            # fiche + historique + records
+    │       └── edit/               # exercices personnalisés uniquement
     ├── stats/
     └── settings/
         ├── profile/
@@ -125,6 +128,17 @@ Résumé (durée, volume, séries, records), puis les exercices avec leurs séri
 
 ### Catalogue d'exercices
 Grille avec vignettes, recherche instantanée (debounce 250 ms), filtres persistés dans l'URL — un filtre doit être partageable et survivre à un rechargement.
+
+Le catalogue commun et les exercices personnalisés y sont **mêlés**, un sélecteur d'origine (tous / catalogue / les miens) permettant de n'en garder qu'un. La provenance est écrite sur chaque carte : sans elle, un exercice personnalisé et son homonyme du catalogue seraient indiscernables.
+
+**« Les miens » sans résultat n'est pas un échec de recherche** : c'est le seul moment où l'on sait que rien n'a été créé. L'état vide propose alors de créer, il ne conseille pas d'élargir les filtres.
+
+### Exercice personnalisé
+Un formulaire unique sert la création et la modification — deux composants finiraient par valider différemment. Il valide avec **le schéma de l'API** (`packages/validators`), jamais avec des règles réécrites : sinon l'utilisateur découvre la vraie contrainte en recevant un 422.
+
+Un exercice du catalogue ouvert en modification est refusé **avant la saisie**, et non à l'enregistrement : le `GET` réussit puisqu'il est visible de tous, un formulaire pré-rempli s'afficherait donc sans problème apparent pour échouer en 403 une fois rempli.
+
+L'archivage demande une confirmation en place, en deux temps, plutôt qu'une `confirm()` : bloquante, non stylable, et supprimée par certains navigateurs dans les iframes.
 
 ### Fiche exercice
 GIF d'animation, muscles primaires et secondaires, instructions numérotées dans la langue de l'utilisateur, courbe de progression, records, dernières séries réalisées. Mention d'attribution du média obligatoire (voir doc 08).

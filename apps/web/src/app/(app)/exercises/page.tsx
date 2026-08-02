@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { ExerciseCatalog } from "@/features/exercises/exercise-catalog";
@@ -16,12 +17,20 @@ export const metadata: Metadata = { title: "Exercices — better-lift" };
 export default function ExercisesPage() {
   return (
     <main className="space-y-8">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Exercices</h1>
-        <p className="text-ink-muted">
-          Le catalogue commun, dans la langue du profil. Les exercices personnalisés arriveront avec
-          leur migration.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Exercices</h1>
+          <p className="text-ink-muted">
+            Le catalogue commun et vos exercices personnalisés, dans la langue du profil.
+          </p>
+        </div>
+
+        <Link
+          href="/exercises/new"
+          className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-surface"
+        >
+          Créer un exercice
+        </Link>
       </header>
 
       <Suspense fallback={null}>

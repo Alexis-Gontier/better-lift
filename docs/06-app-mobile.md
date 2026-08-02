@@ -21,7 +21,9 @@ app/
 ├── routine/
 │   ├── [id].tsx
 │   └── edit/[id].tsx      # édition simplifiée
-└── exercise/[id].tsx
+└── exercise/
+    ├── new.tsx            # créer un exercice personnalisé
+    └── [id].tsx
 ```
 
 Cinq onglets, dont un seul compte vraiment. **Une barre persistante « Séance en cours »** flotte au-dessus des onglets tant qu'une séance est active : le chrono reste visible et un tap ramène à l'écran de saisie. Sans elle, l'utilisateur qui consulte une fiche exercice perd le fil de sa séance.
@@ -106,7 +108,13 @@ Liste par dossiers, aperçu d'une routine (exercices et séries cibles), démarr
 Liste antéchronologique infinie, résumé par carte (nom, date, durée, volume, records). Détail identique au web.
 
 ### Exercices
-Recherche, filtres par partie du corps et équipement, fiche avec GIF, instructions, records et historique personnel.
+Recherche, filtres par partie du corps et équipement, fiche avec GIF, instructions, records et historique personnel. Un sélecteur d'origine sépare le catalogue commun des exercices personnalisés.
+
+**Le mobile crée et archive, il ne modifie pas.** Le besoin de terrain est de nommer sur place un mouvement que le catalogue ignore, entre deux séries ; retoucher un exercice existant se fait sur le web, qui est l'atelier. Éviter un second formulaire ici, c'est autant de saisie tactile en moins à soigner.
+
+Les choix se font par pastilles et non par un sélecteur natif : `@react-native-picker/picker` serait un module natif de plus, et le development build n'a toujours pas tourné sur appareil (même raisonnement que [D21](09-decisions.md)).
+
+L'archivage se confirme en place plutôt que par une `Alert.alert` : une boîte système, sur un écran qu'on consulte d'un pouce en salle, se valide par réflexe.
 
 ### Profil
 Statistiques, réglages, unités, langue, déconnexion.

@@ -15,11 +15,22 @@ import { type BodyPart, bodyPartSchema, type ExerciseListQuery } from "@better-l
 export interface CatalogFilters {
   q: string;
   bodyPart: BodyPart[];
-  /** Chaîne libre issue du dataset ("barbell", "body weight"…), toujours en minuscules. */
+  /** Chaîne libre issue du dataset ("barbell", "body_weight"…), toujours en minuscules. */
   equipment: string[];
+  /**
+   * Origine des exercices. `true` : les siens seulement ; `false` : le catalogue
+   * commun seulement ; `undefined` : les deux, qui est le cas courant — on
+   * cherche un exercice, pas une provenance.
+   */
+  custom: boolean | undefined;
 }
 
-export const EMPTY_FILTERS: CatalogFilters = { q: "", bodyPart: [], equipment: [] };
+export const EMPTY_FILTERS: CatalogFilters = {
+  q: "",
+  bodyPart: [],
+  equipment: [],
+  custom: undefined,
+};
 
 /** Longueur maximale acceptée pour `q` côté API : on tronque plutôt que d'envoyer un 422. */
 const MAX_QUERY_LENGTH = 100;
@@ -57,11 +68,25 @@ function sortUnique<T extends string>(values: T[]): T[] {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b));
 }
 
+/**
+ * Seules `"true"` et `"false"` comptent. Toute autre valeur — un `?custom=1`
+ * écrit à la main, un paramètre tronqué — retombe sur « les deux origines »,
+ * qui est le choix le moins surprenant : on montre plus, jamais moins.
+ */
+function parseCustom(value: string | null): boolean | undefined {
+  if (value === "true") {
+    return true;
+  }
+
+  return value === "false" ? false : undefined;
+}
+
 export function parseFilters(params: URLSearchParams): CatalogFilters {
   return {
     q: (params.get("q") ?? "").slice(0, MAX_QUERY_LENGTH),
     bodyPart: parseBodyParts(params.getAll("bodyPart")),
     equipment: parseEquipment(params.getAll("equipment")),
+    custom: parseCustom(params.get("custom")),
   };
 }
 
@@ -86,6 +111,10 @@ export function serializeFilters(filters: CatalogFilters): string {
     params.append("equipment", value);
   }
 
+  if (filters.custom !== undefined) {
+    params.set("custom", String(filters.custom));
+  }
+
   return params.toString();
 }
 
@@ -97,11 +126,19 @@ export function toListQuery(filters: CatalogFilters): Partial<ExerciseListQuery>
     ...(q ? { q } : {}),
     ...(filters.bodyPart.length ? { bodyPart: filters.bodyPart } : {}),
     ...(filters.equipment.length ? { equipment: filters.equipment } : {}),
+    // `false` est une valeur significative ici : ne pas la confondre avec
+    // « non renseigné », qui veut dire « les deux origines ».
+    ...(filters.custom === undefined ? {} : { custom: filters.custom }),
   };
 }
 
 export function hasActiveFilters(filters: CatalogFilters): boolean {
-  return filters.q.trim().length > 0 || filters.bodyPart.length > 0 || filters.equipment.length > 0;
+  return (
+    filters.q.trim().length > 0 ||
+    filters.bodyPart.length > 0 ||
+    filters.equipment.length > 0 ||
+    filters.custom !== undefined
+  );
 }
 
 /** Ajoute ou retire une valeur d'un filtre multiple, en conservant l'ordre stable. */

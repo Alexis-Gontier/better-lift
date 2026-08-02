@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -24,6 +25,44 @@ import { apiClient } from "@/lib/api";
 
 const SEARCH_DEBOUNCE_MS = 250;
 const SKELETON_COUNT = 6;
+
+/**
+ * Trois vides bien différents, et les confondre serait une occasion manquée.
+ *
+ * « Les miens » sans résultat n'est pas un échec de recherche : c'est le seul
+ * moment où l'on sait avec certitude que l'utilisateur n'a encore rien créé.
+ * L'écran doit alors proposer de créer, pas conseiller d'élargir les filtres.
+ */
+function EmptyState({ filters }: { filters: Filters }) {
+  if (filters.custom === true && !filters.q.trim() && !filters.bodyPart.length) {
+    return (
+      <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+        <p className="font-medium">Aucun exercice personnalisé pour l’instant.</p>
+        <p className="text-sm text-ink-muted">
+          Utile quand le catalogue ne connaît pas un mouvement de votre salle, ou une variante que
+          vous êtes seul à faire.
+        </p>
+        <Link
+          href="/exercises/new"
+          className="inline-block rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-surface"
+        >
+          Créer un exercice
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+      <p className="font-medium">Aucun exercice ne correspond.</p>
+      <p className="text-sm text-ink-muted">
+        {hasActiveFilters(filters)
+          ? "Essayer avec moins de filtres, ou une autre orthographe."
+          : "Le catalogue semble vide : vérifier que le seed a bien été joué."}
+      </p>
+    </div>
+  );
+}
 
 /**
  * Catalogue d'exercices (doc 05, § Catalogue).
@@ -123,6 +162,7 @@ export function ExerciseCatalog() {
         onToggleEquipment={(value: string) =>
           applyFilters({ ...filters, equipment: toggleValue(filters.equipment, value) })
         }
+        onOriginChange={(value) => applyFilters({ ...filters, custom: value })}
         onReset={() => {
           setDraftQuery("");
           applyFilters(EMPTY_FILTERS);
@@ -151,16 +191,7 @@ export function ExerciseCatalog() {
         </div>
       )}
 
-      {exercises.isSuccess && items.length === 0 && (
-        <div className="space-y-3 rounded-xl bg-surface-raised p-5">
-          <p className="font-medium">Aucun exercice ne correspond.</p>
-          <p className="text-sm text-ink-muted">
-            {hasActiveFilters(filters)
-              ? "Essayer avec moins de filtres, ou une autre orthographe."
-              : "Le catalogue semble vide : vérifier que le seed a bien été joué."}
-          </p>
-        </div>
-      )}
+      {exercises.isSuccess && items.length === 0 && <EmptyState filters={filters} />}
 
       {items.length > 0 && (
         <>

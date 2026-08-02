@@ -42,6 +42,12 @@ function ExerciseRow({ exercise }: { exercise: ExerciseSummary }) {
             {exercise.name}
           </Text>
           <Text style={styles.rowMeta} numberOfLines={1}>
+            {/*
+              La provenance est dite sur la ligne : dans une liste qui mêle les
+              deux, un exercice personnalisé et son homonyme du catalogue
+              seraient sinon indiscernables.
+            */}
+            {exercise.isCustom ? "Personnalisé · " : ""}
             {BODY_PART_LABELS[exercise.bodyPart]} · {equipmentLabel(exercise.equipment)}
           </Text>
         </View>
@@ -68,9 +74,17 @@ function ExerciseRow({ exercise }: { exercise: ExerciseSummary }) {
  * de plus à embarquer, et le development build n'est pas encore éprouvé sur
  * appareil — il sera temps quand la mesure le justifiera.
  */
+/** Les trois origines possibles, dans l'ordre où on les propose. */
+const ORIGINS: ReadonlyArray<{ value: boolean | undefined; label: string }> = [
+  { value: undefined, label: "Tous" },
+  { value: false, label: "Catalogue" },
+  { value: true, label: "Les miens" },
+];
+
 export function ExerciseList() {
   const [draftQuery, setDraftQuery] = useState("");
   const [bodyParts, setBodyParts] = useState<BodyPart[]>([]);
+  const [custom, setCustom] = useState<boolean | undefined>(undefined);
 
   const q = useDebouncedValue(draftQuery, SEARCH_DEBOUNCE_MS).trim();
   const locale = useProfileLocale();
@@ -79,9 +93,12 @@ export function ExerciseList() {
     () => ({
       ...(q ? { q } : {}),
       ...(bodyParts.length ? { bodyPart: bodyParts } : {}),
+      // `false` est une valeur significative — « le catalogue seul » — à ne pas
+      // confondre avec « non renseigné », qui veut dire « les deux ».
+      ...(custom === undefined ? {} : { custom }),
       locale,
     }),
-    [q, bodyParts, locale],
+    [q, bodyParts, custom, locale],
   );
 
   const exercises = useExercises(apiClient, query);
@@ -134,6 +151,31 @@ export function ExerciseList() {
           accessibilityLabel="Rechercher un exercice"
         />
 
+        {/*
+          Un choix parmi trois, et non trois bascules : les origines s'excluent.
+          `radio` le dit aux lecteurs d'écran, là où des bascules laisseraient
+          croire qu'on peut les cumuler.
+        */}
+        <View style={styles.origins} accessibilityRole="radiogroup">
+          {ORIGINS.map((origin) => {
+            const active = custom === origin.value;
+
+            return (
+              <Pressable
+                key={origin.label}
+                onPress={() => setCustom(origin.value)}
+                style={[styles.origin, active && styles.originActive]}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.originLabel, active && styles.originLabelActive]}>
+                  {origin.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -184,6 +226,23 @@ export function ExerciseList() {
                 <Text style={styles.retryLabel}>Réessayer</Text>
               </Pressable>
             </View>
+          ) : custom === true && !q && bodyParts.length === 0 ? (
+            /*
+             * « Les miens » sans résultat n'est pas un échec de recherche :
+             * c'est le seul moment où l'on sait que rien n'a encore été créé.
+             * L'écran propose donc de créer, il ne conseille pas d'élargir.
+             */
+            <View style={styles.empty}>
+              <Text style={styles.emptyTitle}>Aucun exercice personnalisé</Text>
+              <Text style={styles.emptyHint}>
+                Utile quand le catalogue ignore un mouvement de votre salle.
+              </Text>
+              <Link href="/exercise/new" asChild>
+                <Pressable style={styles.retry} accessibilityRole="button">
+                  <Text style={styles.retryLabel}>Créer un exercice</Text>
+                </Pressable>
+              </Link>
+            </View>
           ) : (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>Aucun exercice ne correspond</Text>
@@ -218,6 +277,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: "#f2f4f6",
   },
+  origins: { flexDirection: "row", gap: 6 },
+  origin: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  originActive: { backgroundColor: "#1a1f25" },
+  originLabel: { color: "#6d7680", fontSize: 13 },
+  originLabelActive: { color: "#f2f4f6", fontWeight: "600" },
   chips: { gap: 8, paddingRight: 16 },
   chip: {
     backgroundColor: "#1a1f25",

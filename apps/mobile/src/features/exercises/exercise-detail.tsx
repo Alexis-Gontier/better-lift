@@ -1,11 +1,85 @@
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { ApiClientError, useExercise } from "@better-lift/api-client";
+import { ApiClientError, useArchiveExercise, useExercise } from "@better-lift/api-client";
 
 import { BODY_PART_LABELS, equipmentLabel } from "./labels";
 import { resolveMediaUrl } from "./media";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
 import { apiClient } from "@/lib/api";
+
+/**
+ * Archivage d'un exercice personnalisé, en deux temps.
+ *
+ * Pas d'`Alert.alert` : une boîte système au milieu d'une salle de sport, sur
+ * un écran qu'on consulte d'un pouce, se valide par réflexe. Une confirmation
+ * en place, qui remplace le bouton, demande un geste dirigé — et c'est le geste
+ * accidentel qui est le seul risque, l'opération restant réversible en base.
+ *
+ * La **modification** n'est pas proposée ici : elle se fait sur le web, qui est
+ * l'atelier (doc 01).
+ */
+function ArchiveAction({ id }: { id: string }) {
+  const router = useRouter();
+  const archive = useArchiveExercise(apiClient);
+  const [confirming, setConfirming] = useState(false);
+
+  if (!confirming) {
+    return (
+      <Pressable
+        style={styles.ghostButton}
+        onPress={() => setConfirming(true)}
+        accessibilityRole="button"
+      >
+        <Text style={styles.ghostLabel}>Archiver cet exercice</Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.confirm}>
+      <Text style={styles.emptyHint}>
+        Il disparaîtra des recherches. Les séances qui le citent restent lisibles.
+      </Text>
+
+      <Pressable
+        style={[styles.dangerButton, archive.isPending && styles.disabled]}
+        disabled={archive.isPending}
+        accessibilityRole="button"
+        onPress={() =>
+          archive.mutate(id, {
+            // La fiche répond désormais 404 : y rester afficherait une erreur
+            // pour une opération pourtant réussie.
+            onSuccess: () => router.back(),
+          })
+        }
+      >
+        <Text style={styles.dangerLabel}>
+          {archive.isPending ? "Archivage…" : "Confirmer l’archivage"}
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.ghostButton}
+        onPress={() => setConfirming(false)}
+        accessibilityRole="button"
+      >
+        <Text style={styles.ghostLabel}>Annuler</Text>
+      </Pressable>
+
+      {archive.isError && <Text style={styles.error}>{archive.error.message}</Text>}
+    </View>
+  );
+}
 
 /**
  * Fiche d'un exercice (doc 06, § Exercices).
@@ -45,6 +119,7 @@ export function ExerciseDetail({ id }: { id: string }) {
       <View>
         <Text style={styles.title}>{data.name}</Text>
         <Text style={styles.subtitle}>
+          {data.isCustom ? "Personnalisé · " : ""}
           {BODY_PART_LABELS[data.bodyPart]} · {equipmentLabel(data.equipment)}
         </Text>
       </View>
@@ -84,6 +159,8 @@ export function ExerciseDetail({ id }: { id: string }) {
           <Text style={styles.emptyHint}>Aucune instruction dans cette langue.</Text>
         )}
       </View>
+
+      {data.isCustom && <ArchiveAction id={data.id} />}
     </ScrollView>
   );
 }
@@ -113,4 +190,22 @@ const styles = StyleSheet.create({
   emptyTitle: { color: "#f2f4f6", fontWeight: "600" },
   emptyHint: { color: "#9aa3ad", fontSize: 13 },
   spacer: { paddingVertical: 24 },
+  confirm: { gap: 10 },
+  ghostButton: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#2a323b",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  ghostLabel: { color: "#9aa3ad" },
+  dangerButton: {
+    backgroundColor: "#f2777a",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  dangerLabel: { color: "#101418", fontWeight: "600" },
+  disabled: { opacity: 0.5 },
+  error: { color: "#f2777a", fontSize: 13 },
 });

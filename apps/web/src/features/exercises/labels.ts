@@ -1,4 +1,4 @@
-import { type BodyPart } from "@better-lift/validators";
+import { type BodyPart, type ExerciseType } from "@better-lift/validators";
 
 /**
  * Libellés d'affichage du catalogue.
@@ -27,6 +27,22 @@ export const BODY_PART_LABELS: Record<BodyPart, string> = {
   WAIST: "Abdominaux",
   CARDIO: "Cardio",
   NECK: "Cou",
+};
+
+/**
+ * Le type détermine les champs saisissables d'une série (doc 03). Les libellés
+ * décrivent donc **ce qu'on notera pendant la séance**, pas une catégorie
+ * abstraite : c'est la seule formulation qui permette de choisir sans deviner.
+ */
+export const EXERCISE_TYPE_LABELS: Record<ExerciseType, string> = {
+  WEIGHT_REPS: "Charge et répétitions",
+  BODYWEIGHT_REPS: "Poids du corps, répétitions",
+  WEIGHTED_BODYWEIGHT: "Poids du corps lesté",
+  ASSISTED_BODYWEIGHT: "Poids du corps assisté",
+  REPS_ONLY: "Répétitions seules",
+  DURATION: "Durée",
+  DURATION_WEIGHT: "Durée et charge",
+  DISTANCE_DURATION: "Distance et durée",
 };
 
 /**

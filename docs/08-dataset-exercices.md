@@ -143,6 +143,12 @@ Le dépôt source évolue. Procédure :
 
 ## Exercices personnalisés
 
-Un utilisateur peut créer son propre exercice : nom, `ExerciseType`, partie du corps, équipement, muscle cible, notes. `isCustom = true`, `ownerId` renseigné, aucun média.
+Un utilisateur peut créer son propre exercice : nom, `ExerciseType`, partie du corps, équipement, muscle cible, muscles secondaires et instructions numérotées — les mêmes champs que le catalogue, moins les médias. `ownerId` est renseigné, et c'est lui seul qui marque l'appartenance (D22) ; `isCustom` est calculé, pas stocké.
 
-Ils n'apparaissent que dans le catalogue de leur propriétaire et se comportent comme les autres partout ailleurs (routines, séances, records). La requête catalogue filtre donc sur `isCustom = false OR ownerId = :userId`.
+**Aucun média, jamais.** Rien n'héberge d'image d'utilisateur, et les visuels du catalogue viennent d'un dataset sous licence qui n'a aucun rapport. `thumbnailUrl`, `animationUrl` et `attribution` restent nuls, et les interfaces ont déjà leur repli.
+
+**Le nom est écrit dans chaque locale servie.** L'utilisateur n'en saisit qu'un ; le service le réplique. Les listes étant enracinées sur `ExerciseTranslation` filtrée par locale, un exercice sans ligne en anglais disparaîtrait pour un profil anglophone — sans erreur, sans trace.
+
+**L'équipement est normalisé comme au seed** (minuscules, espaces en tirets bas) : « Body Weight » devient `body_weight`. Sans cela l'exercice existerait sans jamais répondre au filtre `?equipment=body_weight`.
+
+Ils n'apparaissent que dans le catalogue de leur propriétaire et se comportent comme les autres partout ailleurs (routines, séances, records). La requête catalogue filtre donc sur `ownerId IS NULL OR ownerId = :userId`.
