@@ -1,20 +1,21 @@
 import { type Metadata } from "next";
 
+import { AuthScreen } from "@/features/auth/auth-screen";
 import { ForgotPasswordForm } from "@/features/auth/forgot-password-form";
 
 export const metadata: Metadata = { title: "Mot de passe oublié — better-lift" };
 
+/**
+ * Seul écran d'authentification sans `<Suspense>` : il ne lit aucun paramètre
+ * d'URL, donc rien n'empêche son prérendu.
+ */
 export default function ForgotPasswordPage() {
   return (
-    <>
-      <header className="space-y-1">
-        <h1 className="text-xl font-semibold">Mot de passe oublié</h1>
-        <p className="text-sm text-ink-muted">
-          Indiquez votre adresse, nous vous envoyons un lien pour en choisir un nouveau.
-        </p>
-      </header>
-
+    <AuthScreen
+      title="Mot de passe oublié"
+      description="Indiquez votre adresse, nous vous envoyons un lien pour en choisir un nouveau."
+    >
       <ForgotPasswordForm />
-    </>
+    </AuthScreen>
   );
 }

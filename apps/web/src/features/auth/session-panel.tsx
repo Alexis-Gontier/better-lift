@@ -12,7 +12,7 @@ import { signOut, useSession } from "@/lib/auth-client";
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-1.5">
-      <dt className="text-sm text-ink-muted">{label}</dt>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="truncate font-mono text-sm">{value}</dd>
     </div>
   );
@@ -36,16 +36,16 @@ export function SessionPanel() {
   const me = useMe(apiClient);
 
   if (session.isPending) {
-    return <p className="text-sm text-ink-muted">Lecture de la session…</p>;
+    return <p className="text-sm text-muted-foreground">Lecture de la session…</p>;
   }
 
   if (!session.data) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-ink-muted">Aucune session.</p>
+        <p className="text-sm text-muted-foreground">Aucune session.</p>
         <Link
           href="/login"
-          className="inline-block rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-surface"
+          className="inline-block rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
         >
           Se connecter
         </Link>
@@ -55,7 +55,7 @@ export function SessionPanel() {
 
   return (
     <div className="space-y-4">
-      <dl className="divide-y divide-white/5">
+      <dl className="divide-y divide-border">
         <Row label="Session (client)" value={session.data.user.email} />
         <Row
           label="Session (via l’API)"
@@ -76,7 +76,7 @@ export function SessionPanel() {
             router.push("/login");
           })
         }
-        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-surface-raised"
+        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-card"
       >
         Se déconnecter
       </button>

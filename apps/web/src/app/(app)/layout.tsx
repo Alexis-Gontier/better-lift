@@ -4,9 +4,9 @@ import { NavLink } from "@/features/navigation/nav-link";
 
 /**
  * Layout de la zone authentifiée. La sidebar de la doc 05 viendra avec les
- * écrans qu'elle a à porter — routines, historique, statistiques ; à deux
- * destinations, une barre de liens suffit et une colonne latérale ne serait
- * qu'un décor.
+ * écrans qu'elle a à porter — statistiques et réglages manquent encore ; à
+ * quatre destinations, une barre de liens suffit et une colonne latérale ne
+ * serait qu'un décor.
  *
  * Aucune vérification de session ici : c'est `proxy.ts` qui écarte les
  * visiteurs anonymes en amont, et l'API qui fait autorité en aval.
@@ -22,6 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav aria-label="Navigation principale" className="flex gap-1 text-sm">
           <NavLink href="/dashboard">Tableau de bord</NavLink>
           <NavLink href="/routines">Routines</NavLink>
+          <NavLink href="/workouts">Historique</NavLink>
           <NavLink href="/exercises">Exercices</NavLink>
         </nav>
       </header>

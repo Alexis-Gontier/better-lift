@@ -31,7 +31,7 @@ function CustomExerciseActions({ id }: { id: string }) {
     <div className="flex flex-wrap items-center gap-3">
       <Link
         href={`/exercises/${id}/edit`}
-        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
       >
         Modifier
       </Link>
@@ -48,14 +48,14 @@ function CustomExerciseActions({ id }: { id: string }) {
                 onSuccess: () => router.push("/exercises?custom=true"),
               })
             }
-            className="rounded-lg bg-danger px-3 py-1.5 text-sm font-medium text-surface disabled:opacity-50"
+            className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
           >
             {archive.isPending ? "Archivage…" : "Confirmer l’archivage"}
           </button>
           <button
             type="button"
             onClick={() => setConfirming(false)}
-            className="text-sm text-ink-muted hover:text-ink"
+            className="text-sm text-muted-foreground hover:text-foreground"
           >
             Annuler
           </button>
@@ -64,14 +64,14 @@ function CustomExerciseActions({ id }: { id: string }) {
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className="rounded-lg px-3 py-1.5 text-sm text-ink-muted ring-1 ring-white/15 hover:text-ink"
+          className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:text-foreground"
         >
           Archiver
         </button>
       )}
 
       {archive.isError && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-sm text-destructive">
           {archive.error.message}
         </p>
       )}
@@ -82,7 +82,7 @@ function CustomExerciseActions({ id }: { id: string }) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-1.5">
-      <dt className="text-sm text-ink-muted">{label}</dt>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="text-right text-sm">{value}</dd>
     </div>
   );
@@ -102,8 +102,8 @@ export function ExerciseDetail({ id }: { id: string }) {
   if (exercise.isPending) {
     return (
       <div className="space-y-4" aria-busy>
-        <div className="h-8 w-2/3 animate-pulse rounded bg-white/5" />
-        <div className="h-40 animate-pulse rounded-xl bg-white/5" />
+        <div className="h-8 w-2/3 animate-pulse rounded bg-muted/50" />
+        <div className="h-40 animate-pulse rounded-xl bg-muted/50" />
       </div>
     );
   }
@@ -117,16 +117,16 @@ export function ExerciseDetail({ id }: { id: string }) {
     const missing = exercise.error instanceof ApiClientError && exercise.error.status === 404;
 
     return (
-      <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+      <div className="space-y-3 rounded-xl bg-card p-5">
         <p className="font-medium">
           {missing ? "Cet exercice n’est plus au catalogue." : "Fiche indisponible."}
         </p>
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-muted-foreground">
           {missing ? "Il a pu être archivé depuis la création du lien." : exercise.error.message}
         </p>
         <Link
           href="/exercises"
-          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
         >
           Retour au catalogue
         </Link>
@@ -143,12 +143,12 @@ export function ExerciseDetail({ id }: { id: string }) {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
           {data.isCustom && (
-            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">
+            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
               Personnalisé
             </span>
           )}
         </div>
-        <p className="text-ink-muted">
+        <p className="text-muted-foreground">
           {BODY_PART_LABELS[data.bodyPart]} · {equipmentLabel(data.equipment)}
         </p>
       </header>
@@ -164,11 +164,11 @@ export function ExerciseDetail({ id }: { id: string }) {
         {hasMedia && <MediaAttribution attribution={data.attribution} />}
       </div>
 
-      <section className="rounded-xl bg-surface-raised p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+      <section className="rounded-xl bg-card p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Muscles
         </h2>
-        <dl className="divide-y divide-white/5">
+        <dl className="divide-y divide-border">
           <Fact label="Muscle cible" value={data.target} />
           <Fact
             label="Muscles secondaires"
@@ -178,7 +178,7 @@ export function ExerciseDetail({ id }: { id: string }) {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Instructions
         </h2>
         {data.instructions.length > 0 ? (
@@ -188,7 +188,9 @@ export function ExerciseDetail({ id }: { id: string }) {
             ))}
           </ol>
         ) : (
-          <p className="text-sm text-ink-muted">Aucune instruction disponible dans cette langue.</p>
+          <p className="text-sm text-muted-foreground">
+            Aucune instruction disponible dans cette langue.
+          </p>
         )}
       </section>
     </article>

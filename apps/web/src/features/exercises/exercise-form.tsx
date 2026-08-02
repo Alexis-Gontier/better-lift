@@ -55,7 +55,7 @@ function splitList(value: string, separator: string | RegExp): string[] {
 }
 
 const INPUT_CLASS =
-  "w-full rounded-lg bg-surface-raised px-3 py-2 text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+  "w-full rounded-lg bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 function Field({
   htmlFor,
@@ -77,9 +77,9 @@ function Field({
         {label}
       </label>
       {children}
-      {hint && !error && <p className="text-xs text-ink-muted">{hint}</p>}
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
       {error && (
-        <p role="alert" className="text-xs text-danger">
+        <p role="alert" className="text-xs text-destructive">
           {error}
         </p>
       )}
@@ -257,7 +257,7 @@ export function ExerciseForm({ exercise }: { exercise?: ExerciseDetail }) {
       </Field>
 
       {mutation.isError && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-sm text-destructive">
           {mutation.error instanceof ApiClientError && mutation.error.status === 403
             ? "Les exercices du catalogue commun ne sont pas modifiables."
             : mutation.error.message}
@@ -268,7 +268,7 @@ export function ExerciseForm({ exercise }: { exercise?: ExerciseDetail }) {
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-surface disabled:opacity-50"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
           {mutation.isPending ? "Enregistrement…" : exercise ? "Enregistrer" : "Créer l’exercice"}
         </button>
@@ -276,7 +276,7 @@ export function ExerciseForm({ exercise }: { exercise?: ExerciseDetail }) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg px-4 py-2 text-sm ring-1 ring-white/15 hover:bg-white/5"
+          className="rounded-lg px-4 py-2 text-sm ring-1 ring-border hover:bg-accent"
         >
           Annuler
         </button>

@@ -17,7 +17,7 @@ export function NavLink({
   href,
   children,
 }: {
-  href: "/dashboard" | "/routines" | "/exercises";
+  href: "/dashboard" | "/routines" | "/workouts" | "/exercises";
   children: string;
 }) {
   const pathname = usePathname();
@@ -28,7 +28,7 @@ export function NavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={`rounded-lg px-3 py-1.5 transition ${
-        active ? "bg-surface-raised text-ink" : "text-ink-muted hover:text-ink"
+        active ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {children}

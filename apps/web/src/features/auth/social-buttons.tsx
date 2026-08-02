@@ -1,5 +1,11 @@
 "use client";
 
+import { useState } from "react";
+
+import { Button } from "@better-lift/ui/components/button";
+import { Spinner } from "@better-lift/ui/components/spinner";
+
+import { GitHubMark, GoogleMark } from "./provider-marks";
 import { signIn } from "@/lib/auth-client";
 
 /**
@@ -15,9 +21,11 @@ import { signIn } from "@/lib/auth-client";
  * Apple viendra avant la première soumission iOS, pas avant (doc 04).
  */
 const PROVIDERS = [
-  { id: "github", label: "Continuer avec GitHub" },
-  { id: "google", label: "Continuer avec Google" },
+  { id: "github", label: "Continuer avec GitHub", Mark: GitHubMark },
+  { id: "google", label: "Continuer avec Google", Mark: GoogleMark },
 ] as const;
+
+type ProviderId = (typeof PROVIDERS)[number]["id"];
 
 /**
  * `callbackURL` doit être **absolue**. C'est l'API qui effectue la redirection
@@ -27,22 +35,51 @@ const PROVIDERS = [
  * est client, `window` est disponible.
  */
 export function SocialButtons({ callbackPath }: { callbackPath: string }) {
+  /**
+   * `signIn.social` déclenche une navigation plein écran vers le fournisseur,
+   * mais pas instantanément : il faut d'abord un aller-retour vers l'API pour
+   * obtenir l'URL d'autorisation. Sans retour visuel, ce délai se lit comme un
+   * bouton mort, et on reclique.
+   *
+   * L'état n'est relâché qu'en cas d'échec : sinon la page part, et le remettre
+   * à zéro ferait clignoter le bouton juste avant qu'elle disparaisse.
+   */
+  const [pending, setPending] = useState<ProviderId | null>(null);
+
+  async function start(provider: ProviderId) {
+    setPending(provider);
+
+    const result = await signIn.social({
+      provider,
+      callbackURL: new URL(callbackPath, window.location.origin).toString(),
+    });
+
+    if (result.error) {
+      setPending(null);
+    }
+  }
+
   return (
-    <div className="space-y-2">
-      {PROVIDERS.map((provider) => (
-        <button
-          key={provider.id}
+    // `gap-2` : 8 px entre deux cibles tactiles, sinon le pouce attrape l'autre.
+    <div className="flex flex-col gap-2">
+      {PROVIDERS.map(({ id, label, Mark }) => (
+        <Button
+          key={id}
           type="button"
-          onClick={() =>
-            void signIn.social({
-              provider: provider.id,
-              callbackURL: new URL(callbackPath, window.location.origin).toString(),
-            })
-          }
-          className="w-full rounded-lg px-3 py-2 font-medium ring-1 ring-white/15 hover:bg-surface-raised"
+          variant="outline"
+          size="lg"
+          disabled={pending !== null}
+          aria-busy={pending === id}
+          onClick={() => void start(id)}
+          className="w-full"
         >
-          {provider.label}
-        </button>
+          {pending === id ? (
+            <Spinner data-icon="inline-start" />
+          ) : (
+            <Mark data-icon="inline-start" />
+          )}
+          {label}
+        </Button>
       ))}
     </div>
   );

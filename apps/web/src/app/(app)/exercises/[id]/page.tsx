@@ -17,7 +17,7 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
 
   return (
     <main className="space-y-6">
-      <Link href="/exercises" className="text-sm text-ink-muted hover:text-ink">
+      <Link href="/exercises" className="text-sm text-muted-foreground hover:text-foreground">
         ← Catalogue
       </Link>
 

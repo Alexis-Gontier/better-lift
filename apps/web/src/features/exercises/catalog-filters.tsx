@@ -24,10 +24,10 @@ function FilterChip({
       type="button"
       aria-pressed={pressed}
       onClick={onToggle}
-      className={`rounded-full px-3 py-1.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+      className={`rounded-full px-3 py-1.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
         pressed
-          ? "bg-accent font-medium text-surface"
-          : "bg-surface-raised text-ink-muted hover:text-ink"
+          ? "bg-primary font-medium text-primary-foreground"
+          : "bg-card text-muted-foreground hover:text-foreground"
       }`}
     >
       {label}
@@ -75,7 +75,7 @@ export function CatalogFilters({
           onChange={(event) => onDraftQueryChange(event.target.value)}
           placeholder="Rechercher un exercice…"
           autoComplete="off"
-          className="w-full rounded-lg bg-surface-raised px-4 py-2.5 text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="w-full rounded-lg bg-card px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 
@@ -90,7 +90,7 @@ export function CatalogFilters({
         {ORIGINS.map((origin) => (
           <label
             key={origin.label}
-            className="cursor-pointer rounded-lg px-3 py-1.5 text-ink-muted transition hover:text-ink has-checked:bg-surface-raised has-checked:text-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
+            className="cursor-pointer rounded-lg px-3 py-1.5 text-muted-foreground transition hover:text-foreground has-checked:bg-card has-checked:text-foreground has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring"
           >
             <input
               type="radio"
@@ -132,7 +132,7 @@ export function CatalogFilters({
         <button
           type="button"
           onClick={onReset}
-          className="text-sm text-ink-muted underline underline-offset-4 hover:text-ink"
+          className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
           Réinitialiser les filtres
         </button>

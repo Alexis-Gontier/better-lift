@@ -39,13 +39,14 @@ better-lift/
 │   │   └── package.json
 │   ├── web/                    # Next.js 16 App Router (Turbopack)
 │   │   ├── src/
-│   │   │   ├── app/
+│   │   │   ├── app/            # routes + fichiers de convention SEULEMENT
 │   │   │   │   ├── (marketing)/
 │   │   │   │   ├── (auth)/
 │   │   │   │   └── (app)/      # zone authentifiée
-│   │   │   ├── components/
 │   │   │   ├── features/       # découpage par domaine métier
-│   │   │   └── lib/
+│   │   │   ├── providers/      # providers globaux, un fichier chacun
+│   │   │   ├── lib/            # api-client, auth-client, env
+│   │   │   └── proxy.ts        # ex-middleware.ts (Next 16)
 │   │   └── package.json
 │   └── mobile/                 # Expo + Expo Router
 │       ├── app/                # routing par fichiers
@@ -59,8 +60,8 @@ better-lift/
 │   ├── validators/             # schémas Zod partagés (source de vérité des contrats)
 │   ├── core/                   # logique métier pure, sans I/O
 │   ├── api-client/             # client typé + hooks TanStack Query
-│   ├── ui/                     # composants web (shadcn/ui) — web uniquement
-│   └── config/                 # tsconfig partagés, tokens de design
+│   ├── ui/                     # primitives shadcn/ui + globals.css — web uniquement, exporté en source (D24)
+│   └── config/                 # tsconfig partagés
 ├── turbo.json
 ├── pnpm-workspace.yaml
 ├── .npmrc
@@ -77,7 +78,7 @@ Le piège classique du monorepo mobile + web est de vouloir partager l'UI. **On 
 | `validators` | ✅ | ✅ | ✅ | Schémas Zod des payloads |
 | `api-client` | ✅ | ✅ | — | Fetch typé + hooks React Query |
 | `db` | — | — | ✅ | Prisma uniquement |
-| `ui` | ✅ | — | — | shadcn/ui + Tailwind |
+| `ui` | ✅ | — | — | shadcn/ui (base `radix`, preset `vega`) + la feuille Tailwind 4 |
 
 `packages/core` ne doit **jamais** importer Prisma, React ou une API de plateforme. C'est du TypeScript pur, testable en isolation avec Vitest. Exemples de ce qui y vit :
 
@@ -122,7 +123,8 @@ Attention à un détail qui fait perdre du temps : le `z` doit être importé de
 - App Router, Server Components par défaut, `"use client"` uniquement pour l'interactif (éditeur de routines, formulaires).
 - Turbopack est le bundler par défaut depuis la 16 : ne pas repartir d'une configuration webpack.
 - TanStack Query 5 pour l'état serveur côté client, `dnd-kit` pour le glisser-déposer, `Recharts` pour les graphiques.
-- shadcn/ui + **Tailwind 4** (configuration CSS-first). Les composants vivent dans `packages/ui` dès qu'ils sont réutilisés deux fois.
+- shadcn/ui (base **`radix`**, preset **`vega`**) + **Tailwind 4** (configuration CSS-first). Les primitives et `globals.css` vivent dans `packages/ui`, qui **n'a pas d'étape de build** : Next transpile ses `.tsx` (D24). Les composants métier restent dans `apps/web/src/features/<domaine>`.
+- `shadcn add` se lance depuis `apps/web` (`-c apps/web`) : c'est là qu'est le `components.json` qui route les primitives vers `packages/ui`.
 - `proxy.ts` pour la protection des routes `(app)/*` — en Next 16 ce fichier remplace `middleware.ts` (voir doc 10).
 
 ### Mobile — Expo SDK 57

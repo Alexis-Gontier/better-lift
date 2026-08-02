@@ -11,7 +11,7 @@ import { SortableRow, setDndId } from "./sortable";
 import { BODY_PART_LABELS, equipmentLabel } from "@/features/exercises/labels";
 
 const CELL_CLASS =
-  "w-full rounded bg-surface px-2 py-1 text-sm text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+  "w-full rounded bg-background px-2 py-1 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
  * Une série du brouillon.
@@ -59,7 +59,7 @@ function SetRow({
             className={`w-full bg-transparent text-xs font-medium ${SET_TYPE_TONE[set.type]}`}
           >
             {setTypeSchema.options.map((type) => (
-              <option key={type} value={type} className="text-ink">
+              <option key={type} value={type} className="text-foreground">
                 {SET_TYPE_LABELS[type]}
               </option>
             ))}
@@ -103,7 +103,7 @@ function SetRow({
           disabled={!canRemove}
           aria-label={`Supprimer la série ${index + 1}`}
           title={canRemove ? undefined : "Un exercice garde au moins une série."}
-          className="rounded px-1 text-ink-muted hover:text-danger disabled:opacity-30"
+          className="rounded px-1 text-muted-foreground hover:text-destructive disabled:opacity-30"
         >
           ×
         </button>
@@ -125,14 +125,14 @@ export function EditorExercise({
   const setIds = exercise.sets.map((set) => setDndId(exercise.key, set.key));
 
   return (
-    <section className="rounded-xl bg-surface-raised p-4" aria-label={exercise.exercise.name}>
+    <section className="rounded-xl bg-card p-4" aria-label={exercise.exercise.name}>
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate font-medium">
-            <span className="mr-2 text-ink-muted">{index + 1}.</span>
+            <span className="mr-2 text-muted-foreground">{index + 1}.</span>
             {exercise.exercise.name}
           </h3>
-          <p className="truncate text-sm text-ink-muted">
+          <p className="truncate text-sm text-muted-foreground">
             {BODY_PART_LABELS[exercise.exercise.bodyPart]} ·{" "}
             {equipmentLabel(exercise.exercise.equipment)}
           </p>
@@ -141,7 +141,7 @@ export function EditorExercise({
         <button
           type="button"
           onClick={() => dispatch({ type: "removeExercise", key: exercise.key })}
-          className="rounded-lg px-2 py-1 text-sm text-ink-muted ring-1 ring-white/15 hover:text-danger"
+          className="rounded-lg px-2 py-1 text-sm text-muted-foreground ring-1 ring-border hover:text-destructive"
         >
           Retirer
         </button>
@@ -149,7 +149,7 @@ export function EditorExercise({
 
       <div className="mb-3 grid gap-3 sm:grid-cols-[8rem_1fr]">
         <div>
-          <label htmlFor={`${fieldId}-rest`} className="mb-1 block text-xs text-ink-muted">
+          <label htmlFor={`${fieldId}-rest`} className="mb-1 block text-xs text-muted-foreground">
             Repos (s)
           </label>
           <input
@@ -171,7 +171,7 @@ export function EditorExercise({
         </div>
 
         <div>
-          <label htmlFor={`${fieldId}-notes`} className="mb-1 block text-xs text-ink-muted">
+          <label htmlFor={`${fieldId}-notes`} className="mb-1 block text-xs text-muted-foreground">
             Notes
           </label>
           <input
@@ -194,7 +194,7 @@ export function EditorExercise({
 
       {/* En-tête de colonnes, aligné sur la grille des lignes — la poignée
           occupe la première gouttière, d'où le décalage. */}
-      <div className="ml-7 grid grid-cols-[3rem_1fr_1fr_1fr_2rem] gap-2 pb-1 text-xs text-ink-muted">
+      <div className="ml-7 grid grid-cols-[3rem_1fr_1fr_1fr_2rem] gap-2 pb-1 text-xs text-muted-foreground">
         <span>Type</span>
         <span>kg</span>
         <span>Reps</span>
@@ -203,7 +203,7 @@ export function EditorExercise({
       </div>
 
       <SortableContext items={setIds} strategy={verticalListSortingStrategy}>
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-border">
           {exercise.sets.map((set, setIndex) => (
             <SetRow
               key={set.key}
@@ -221,14 +221,14 @@ export function EditorExercise({
         <button
           type="button"
           onClick={() => dispatch({ type: "addSet", exerciseKey: exercise.key })}
-          className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+          className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
         >
           + Ajouter une série
         </button>
         <button
           type="button"
           onClick={() => dispatch({ type: "duplicateLastSet", exerciseKey: exercise.key })}
-          className="rounded-lg px-3 py-1.5 text-sm text-ink-muted ring-1 ring-white/15 hover:text-ink"
+          className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:text-foreground"
         >
           Dupliquer la dernière
         </button>

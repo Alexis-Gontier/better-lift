@@ -27,8 +27,8 @@ export const SET_TYPE_SHORT: Record<SetType, string> = {
  */
 export const SET_TYPE_TONE: Record<SetType, string> = {
   WARMUP: "text-amber-400",
-  NORMAL: "text-ink-muted",
-  FAILURE: "text-danger",
+  NORMAL: "text-muted-foreground",
+  FAILURE: "text-destructive",
   DROP: "text-sky-400",
 };
 

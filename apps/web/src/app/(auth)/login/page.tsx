@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
 import { Suspense } from "react";
 
+import { AuthScreen } from "@/features/auth/auth-screen";
+import { FormSkeleton } from "@/features/auth/form-skeleton";
 import { SignInForm } from "@/features/auth/sign-in-form";
 
 export const metadata: Metadata = { title: "Connexion — better-lift" };
@@ -12,15 +14,10 @@ export const metadata: Metadata = { title: "Connexion — better-lift" };
  */
 export default function LoginPage() {
   return (
-    <>
-      <header className="space-y-1">
-        <h1 className="text-xl font-semibold">Se connecter</h1>
-        <p className="text-sm text-ink-muted">Reprenez là où vous en étiez.</p>
-      </header>
-
-      <Suspense fallback={<p className="text-sm text-ink-muted">…</p>}>
+    <AuthScreen title="Se connecter" description="Reprenez là où vous en étiez.">
+      <Suspense fallback={<FormSkeleton fields={2} />}>
         <SignInForm />
       </Suspense>
-    </>
+    </AuthScreen>
   );
 }

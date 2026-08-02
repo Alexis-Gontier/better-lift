@@ -24,8 +24,8 @@ export function ExerciseEdit({ id }: { id: string }) {
   if (exercise.isPending) {
     return (
       <div className="space-y-4" aria-busy>
-        <div className="h-10 animate-pulse rounded-lg bg-white/5" />
-        <div className="h-40 animate-pulse rounded-lg bg-white/5" />
+        <div className="h-10 animate-pulse rounded-lg bg-muted/50" />
+        <div className="h-40 animate-pulse rounded-lg bg-muted/50" />
       </div>
     );
   }
@@ -64,12 +64,12 @@ function Refusal({
   action?: { href: "/exercises/new" | "/exercises"; label: string };
 }) {
   return (
-    <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+    <div className="space-y-3 rounded-xl bg-card p-5">
       <p className="font-medium">{title}</p>
-      <p className="text-sm text-ink-muted">{detail}</p>
+      <p className="text-sm text-muted-foreground">{detail}</p>
       <Link
         href={action?.href ?? "/exercises"}
-        className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+        className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
       >
         {action?.label ?? "Retour au catalogue"}
       </Link>

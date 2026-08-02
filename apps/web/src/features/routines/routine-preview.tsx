@@ -23,8 +23,8 @@ export function RoutinePreview({ id }: { id: string }) {
   if (routine.isPending) {
     return (
       <div className="space-y-3" aria-busy>
-        <div className="h-8 w-2/3 animate-pulse rounded bg-white/5" />
-        <div className="h-32 animate-pulse rounded-xl bg-white/5" />
+        <div className="h-8 w-2/3 animate-pulse rounded bg-muted/50" />
+        <div className="h-32 animate-pulse rounded-xl bg-muted/50" />
       </div>
     );
   }
@@ -33,16 +33,16 @@ export function RoutinePreview({ id }: { id: string }) {
     const missing = routine.error instanceof ApiClientError && routine.error.status === 404;
 
     return (
-      <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+      <div className="space-y-3 rounded-xl bg-card p-5">
         <p className="font-medium">
           {missing ? "Cette routine n’existe plus." : "Routine indisponible."}
         </p>
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-muted-foreground">
           {missing ? "Elle a pu être supprimée depuis." : routine.error.message}
         </p>
         <Link
           href="/routines"
-          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
         >
           Retour aux routines
         </Link>
@@ -57,7 +57,7 @@ export function RoutinePreview({ id }: { id: string }) {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
-          <p className="text-ink-muted">
+          <p className="text-muted-foreground">
             {data.exercises.length} exercice{data.exercises.length > 1 ? "s" : ""}
             {data.notes ? ` · ${data.notes}` : ""}
           </p>
@@ -65,39 +65,41 @@ export function RoutinePreview({ id }: { id: string }) {
 
         <Link
           href={`/routines/${data.id}/edit`}
-          className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-surface"
+          className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
         >
           Modifier
         </Link>
       </header>
 
       {data.exercises.length === 0 ? (
-        <p className="rounded-xl bg-surface-raised p-5 text-sm text-ink-muted">
+        <p className="rounded-xl bg-card p-5 text-sm text-muted-foreground">
           Cette routine ne contient encore aucun exercice.
         </p>
       ) : (
         <ol className="space-y-3">
           {data.exercises.map((exercise, index) => (
-            <li key={exercise.id} className="rounded-xl bg-surface-raised p-4">
+            <li key={exercise.id} className="rounded-xl bg-card p-4">
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="font-medium">
-                  <span className="mr-2 text-ink-muted">{index + 1}.</span>
+                  <span className="mr-2 text-muted-foreground">{index + 1}.</span>
                   <Link href={`/exercises/${exercise.exercise.id}`} className="hover:underline">
                     {exercise.exercise.name}
                   </Link>
                 </h2>
-                <p className="text-sm text-ink-muted">
+                <p className="text-sm text-muted-foreground">
                   {BODY_PART_LABELS[exercise.exercise.bodyPart]} ·{" "}
                   {equipmentLabel(exercise.exercise.equipment)}
                   {exercise.restSec === null ? "" : ` · repos ${formatRest(exercise.restSec)}`}
                 </p>
               </div>
 
-              {exercise.notes && <p className="mb-2 text-sm text-ink-muted">{exercise.notes}</p>}
+              {exercise.notes && (
+                <p className="mb-2 text-sm text-muted-foreground">{exercise.notes}</p>
+              )}
 
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-ink-muted">
+                  <tr className="text-left text-xs text-muted-foreground">
                     <th scope="col" className="w-12 font-normal">
                       #
                     </th>
@@ -112,7 +114,7 @@ export function RoutinePreview({ id }: { id: string }) {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-border">
                   {exercise.sets.map((set, setIndex) => (
                     <tr key={set.id}>
                       <td className={`py-1 ${SET_TYPE_TONE[set.type]}`}>

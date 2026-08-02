@@ -12,19 +12,19 @@ export function CoreCheck() {
   const volume = setVolume(SAMPLE_SET, "WEIGHT_REPS");
 
   return (
-    <dl className="divide-y divide-white/5">
+    <dl className="divide-y divide-border">
       <div className="flex items-baseline justify-between gap-4 py-1.5">
-        <dt className="text-sm text-ink-muted">
+        <dt className="text-sm text-muted-foreground">
           Série de référence — {SAMPLE_SET.reps} × {SAMPLE_SET.weightKg} kg
         </dt>
         <dd className="font-mono text-sm">{kgToLb(SAMPLE_SET.weightKg)} lb</dd>
       </div>
       <div className="flex items-baseline justify-between gap-4 py-1.5">
-        <dt className="text-sm text-ink-muted">Volume de la série</dt>
+        <dt className="text-sm text-muted-foreground">Volume de la série</dt>
         <dd className="font-mono text-sm">{volume} kg</dd>
       </div>
       <div className="flex items-baseline justify-between gap-4 py-1.5">
-        <dt className="text-sm text-ink-muted">1RM estimé (Epley)</dt>
+        <dt className="text-sm text-muted-foreground">1RM estimé (Epley)</dt>
         <dd className="font-mono text-sm">{oneRepMax} kg</dd>
       </div>
     </dl>
