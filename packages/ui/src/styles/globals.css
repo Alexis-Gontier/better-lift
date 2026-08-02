@@ -18,6 +18,20 @@
 @source "../../../../apps/web/src/**/*.{ts,tsx}";
 
 @theme inline {
+  /*
+    Les trois familles viennent de `next/font` (`app/layout.tsx`), qui pose ses
+    variables sur `<html>`. Les replis ne sont pas décoratifs : `next/font`
+    n'expose sa variable qu'une fois la feuille de la police chargée, et
+    `global-error.tsx` rend son propre `<html>` sans passer par le layout
+    racine — donc sans aucune de ces variables.
+
+    `--font-heading` reste un alias de `--font-sans` : une seule famille, la
+    hiérarchie vient de la taille et de la graisse. Le token existe pour que le
+    jour où les titres changent de police, les cinq écrans qui l'emploient déjà
+    suivent sans être touchés.
+  */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -57,9 +71,19 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-sans: var(--font-sans);
 }
 
+/*
+  Palette entièrement achromatique : tous les tokens sont en `oklch(L 0 0)`,
+  chroma nul. La hiérarchie ne vient que de la luminosité.
+
+  `--destructive` est la seule couleur de l'interface, et c'est voulu : une
+  alerte doit se distinguer de tout le reste, ce qu'elle ne ferait plus si
+  d'autres teintes circulaient à côté.
+
+  Rappel du faux ami de la doc 09 D24 : `accent` est la surface de survol, la
+  couleur d'action est `primary`.
+*/
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -102,6 +126,11 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
+  /*
+    `primary` et son texte s'inversent d'un thème à l'autre : le quasi-noir du
+    mode clair disparaîtrait sur un fond sombre. Ce n'est pas la même valeur
+    atténuée, c'est la même *fonction* rejouée pour l'autre fond.
+  */
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
@@ -121,8 +150,13 @@
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  /*
+    Le gabarit de shadcn laisse ici un bleu, `oklch(0.488 0.243 264.376)`, seul
+    reste coloré d'un thème de démonstration. Aligné sur `--primary` : il
+    n'avait aucun rapport avec l'app, et la palette est achromatique.
+  */
+  --sidebar-primary: oklch(0.922 0 0);
+  --sidebar-primary-foreground: oklch(0.205 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);

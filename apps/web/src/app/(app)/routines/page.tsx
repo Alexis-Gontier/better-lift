@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Routines — better-lift" };
 
 export default function RoutinesPage() {
   return (
-    <main className="space-y-8">
+    <div className="space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Routines</h1>
@@ -25,6 +25,6 @@ export default function RoutinesPage() {
       </header>
 
       <RoutineList />
-    </main>
+    </div>
   );
 }

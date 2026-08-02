@@ -33,7 +33,7 @@ export default function AppError({
   }, [error]);
 
   return (
-    <main className="flex flex-1 flex-col justify-center">
+    <div className="flex flex-1 flex-col justify-center">
       <Empty>
         <EmptyHeader>
           <EmptyTitle>Cet écran n’a pas pu s’afficher</EmptyTitle>
@@ -49,6 +49,6 @@ export default function AppError({
           ) : null}
         </EmptyContent>
       </Empty>
-    </main>
+    </div>
   );
 }

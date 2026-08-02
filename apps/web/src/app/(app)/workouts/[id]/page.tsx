@@ -10,12 +10,12 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
 
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link href="/workouts" className="text-sm text-muted-foreground hover:text-foreground">
         ← Historique
       </Link>
 
       <WorkoutDetail id={id} />
-    </main>
+    </div>
   );
 }
