@@ -25,6 +25,13 @@ import {
   type RoutineListQuery,
   type RoutineStructureInput,
   type RoutineSummary,
+  type StatsMuscleDistributionResponse,
+  type StatsRange,
+  type StatsRecord,
+  type StatsStreakResponse,
+  type StatsSummary,
+  type StatsVolumeQuery,
+  type StatsVolumeResponse,
   type UpdateExerciseInput,
   type UpdateMeInput,
   type UpdateRoutineInput,
@@ -79,6 +86,20 @@ export const queryKeys = {
     ["last-performance", [...exerciseIds].sort()] as const,
   /** Les dernières performances changent à chaque séance enregistrée. */
   lastPerformanceAll: ["last-performance"] as const,
+
+  statsSummary: (range?: StatsRange) => ["stats", "summary", range ?? null] as const,
+  statsVolume: (query: Partial<StatsVolumeQuery> = {}) => ["stats", "volume", query] as const,
+  statsMuscleDistribution: (range?: StatsRange) =>
+    ["stats", "muscle-distribution", range ?? null] as const,
+  statsStreak: (weeks?: number) => ["stats", "streak", weeks ?? null] as const,
+  statsRecords: (query: { limit?: number; locale?: Locale } = {}) =>
+    ["stats", "records", query] as const,
+  /**
+   * Racine des statistiques. Toute écriture de séance les périme **toutes** —
+   * volume, régularité, records — sans qu'on sache depuis la mutation quelles
+   * fenêtres sont affichées.
+   */
+  statsAll: ["stats"] as const,
 };
 
 export function useHealth(client: ApiClient): UseQueryResult<HealthResponse, Error> {
@@ -423,6 +444,9 @@ async function invalidateWorkoutViews(queryClient: ReturnType<typeof useQueryCli
     queryClient.invalidateQueries({ queryKey: queryKeys.workoutsAll }),
     queryClient.invalidateQueries({ queryKey: queryKeys.lastPerformanceAll }),
     queryClient.invalidateQueries({ queryKey: queryKeys.routinesAll }),
+    // Enregistrer, corriger ou supprimer une séance change le volume, la
+    // régularité et les records. Le tableau de bord doit suivre.
+    queryClient.invalidateQueries({ queryKey: queryKeys.statsAll }),
   ]);
 }
 
@@ -521,6 +545,74 @@ export function useDeleteWorkout(client: ApiClient): UseMutationResult<void, Err
       queryClient.removeQueries({ queryKey: ["workout", id] });
       await invalidateWorkoutViews(queryClient);
     },
+  });
+}
+
+/**
+ * Statistiques du tableau de bord.
+ *
+ * Cinq requêtes indépendantes plutôt qu'une : la doc 05 veut un `<Suspense>`
+ * par bloc, et les blocs ne doivent pas se bloquer mutuellement. Une réponse
+ * unique ferait attendre les quatre cartes que la heatmap soit prête.
+ *
+ * `staleTime` long et volontaire : ces chiffres ne bougent qu'à l'écriture
+ * d'une séance, qui invalide déjà `statsAll`. Les rafraîchir au retour d'onglet
+ * ne ferait que payer cinq requêtes pour le même résultat.
+ */
+const STATS_STALE_TIME = 5 * 60_000;
+
+export function useStatsSummary(
+  client: ApiClient,
+  range?: StatsRange,
+): UseQueryResult<StatsSummary, Error> {
+  return useQuery({
+    queryKey: queryKeys.statsSummary(range),
+    queryFn: ({ signal }) => client.getStatsSummary(range, signal),
+    staleTime: STATS_STALE_TIME,
+  });
+}
+
+export function useStatsVolume(
+  client: ApiClient,
+  query: Partial<StatsVolumeQuery> = {},
+): UseQueryResult<StatsVolumeResponse, Error> {
+  return useQuery({
+    queryKey: queryKeys.statsVolume(query),
+    queryFn: ({ signal }) => client.getStatsVolume(query, signal),
+    staleTime: STATS_STALE_TIME,
+  });
+}
+
+export function useStatsMuscleDistribution(
+  client: ApiClient,
+  range?: StatsRange,
+): UseQueryResult<StatsMuscleDistributionResponse, Error> {
+  return useQuery({
+    queryKey: queryKeys.statsMuscleDistribution(range),
+    queryFn: ({ signal }) => client.getStatsMuscleDistribution(range, signal),
+    staleTime: STATS_STALE_TIME,
+  });
+}
+
+export function useStatsStreak(
+  client: ApiClient,
+  weeks?: number,
+): UseQueryResult<StatsStreakResponse, Error> {
+  return useQuery({
+    queryKey: queryKeys.statsStreak(weeks),
+    queryFn: ({ signal }) => client.getStatsStreak(weeks, signal),
+    staleTime: STATS_STALE_TIME,
+  });
+}
+
+export function useStatsRecords(
+  client: ApiClient,
+  query: { limit?: number; locale?: Locale } = {},
+): UseQueryResult<StatsRecord[], Error> {
+  return useQuery({
+    queryKey: queryKeys.statsRecords(query),
+    queryFn: ({ signal }) => client.getStatsRecords(query, signal),
+    staleTime: STATS_STALE_TIME,
   });
 }
 

@@ -25,6 +25,18 @@ import {
   routineFolderListResponseSchema,
   routineFolderSchema,
   routineListResponseSchema,
+  type StatsMuscleDistributionResponse,
+  type StatsRange,
+  type StatsRecord,
+  type StatsStreakResponse,
+  type StatsSummary,
+  type StatsVolumeQuery,
+  type StatsVolumeResponse,
+  statsMuscleDistributionResponseSchema,
+  statsRecordsResponseSchema,
+  statsStreakResponseSchema,
+  statsSummarySchema,
+  statsVolumeResponseSchema,
   type UpdateExerciseInput,
   type UpdateMeInput,
   type UpdateRoutineInput,
@@ -159,6 +171,27 @@ export interface ApiClient {
    * exercice jamais fait est **absent** de la réponse.
    */
   getLastPerformance: (exerciseIds: string[], signal?: AbortSignal) => Promise<LastPerformance[]>;
+
+  /**
+   * Chiffres clés du tableau de bord. `previousPeriod` évite un second appel
+   * pour afficher les variations ; il vaut `null` pour `range=all`.
+   */
+  getStatsSummary: (range?: StatsRange, signal?: AbortSignal) => Promise<StatsSummary>;
+  /** Les périodes sans séance sont **présentes** avec un volume à zéro. */
+  getStatsVolume: (
+    query?: Partial<StatsVolumeQuery>,
+    signal?: AbortSignal,
+  ) => Promise<StatsVolumeResponse>;
+  getStatsMuscleDistribution: (
+    range?: StatsRange,
+    signal?: AbortSignal,
+  ) => Promise<StatsMuscleDistributionResponse>;
+  /** `days` porte une entrée par jour de la fenêtre, jours vides compris. */
+  getStatsStreak: (weeks?: number, signal?: AbortSignal) => Promise<StatsStreakResponse>;
+  getStatsRecords: (
+    query?: { limit?: number; locale?: Locale },
+    signal?: AbortSignal,
+  ) => Promise<StatsRecord[]>;
 }
 
 /**
@@ -430,5 +463,26 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
       return data;
     },
+
+    getStatsSummary: (range, signal) =>
+      request(`/v1/stats/summary${toSearchParams({ range })}`, statsSummarySchema, signal),
+    getStatsVolume: (query = {}, signal) =>
+      request(`/v1/stats/volume${toSearchParams(query)}`, statsVolumeResponseSchema, signal),
+    getStatsMuscleDistribution: (range, signal) =>
+      request(
+        `/v1/stats/muscle-distribution${toSearchParams({ range })}`,
+        statsMuscleDistributionResponseSchema,
+        signal,
+      ),
+    getStatsStreak: (weeks, signal) =>
+      request(`/v1/stats/streak${toSearchParams({ weeks })}`, statsStreakResponseSchema, signal),
+    getStatsRecords: async (query = {}, signal) =>
+      (
+        await request(
+          `/v1/stats/records${toSearchParams(query)}`,
+          statsRecordsResponseSchema,
+          signal,
+        )
+      ).data,
   };
 }
