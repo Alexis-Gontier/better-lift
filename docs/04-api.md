@@ -330,12 +330,14 @@ Cinq particularités de ces routes, apprises en les câblant :
 | `GET` | `/v1/stats/volume?groupBy=week\|month&from=&to=` | Séries temporelles de volume |
 | `GET` | `/v1/stats/muscle-distribution?range=30d` | Répartition des séries par partie du corps |
 | `GET` | `/v1/stats/streak` | Régularité (semaines consécutives avec ≥ 1 séance) |
-| `GET` | `/v1/stats/records?limit=10` | Records les plus récents |
+| `GET` | `/v1/stats/records?limit=10&locale=fr` | Records les plus récents |
 
 ```json
 // GET /v1/stats/summary?range=30d
 {
   "range": "30d",
+  "from": "2026-07-03T22:00:00.000Z",
+  "to": "2026-08-02T22:00:00.000Z",
   "workoutCount": 14,
   "totalVolumeKg": "84250.00",
   "totalDurationSec": 61200,
@@ -346,7 +348,16 @@ Cinq particularités de ces routes, apprises en les câblant :
 }
 ```
 
-`previousPeriod` permet d'afficher les variations sans second appel.
+`previousPeriod` permet d'afficher les variations sans second appel. Il vaut **`null` pour `range=all`** : il n'existe rien avant l'inscription, et renvoyer des zéros ferait afficher une chute de 100 %. `from` est nul dans le même cas.
+
+Quatre points qui valent pour toutes ces routes :
+
+- **Le découpage se fait dans le fuseau du profil, jamais en UTC.** À Paris, une séance du samedi 21 h est déjà dimanche en UTC pendant l'heure d'été : rangée en UTC, elle tombe dans la mauvaise case de la heatmap et rompt la série de semaines sans que rien ne le signale. D'où les bornes à 22 h dans l'exemple ci-dessus. L'arithmétique vit dans `packages/core` (`calendar.ts`), où elle se teste sans base. Un fuseau invalide en base retombe sur UTC plutôt que de faire échouer le tableau de bord.
+- **Ces routes sont bon marché.** `Workout` porte ses agrégats dénormalisés (doc 03, §3) : quatre des cinq lectures ne touchent jamais `WorkoutSet` et tournent sur l'index `[userId, startedAt desc]`. La répartition musculaire est l'exception — il n'existe pas d'agrégat par partie du corps, et en fabriquer un demanderait une colonne de plus à tenir à chaque écriture pour un seul écran.
+- **`/v1/stats/volume` rend les périodes vides avec un volume à zéro.** Un graphique qui les saute ment sur le rythme, et c'est précisément la déload involontaire qu'on cherche à voir. Sans bornes, la fenêtre couvre les douze dernières périodes.
+- **`/v1/stats/streak`** rend `days`, une entrée par jour de la fenêtre, jours vides compris, pour une heatmap. La fenêtre **commence toujours un lundi**, sinon les colonnes ne s'alignent pas. `longestWeeks` se mesure sur tout l'historique et non sur la fenêtre affichée : un record de régularité vieux d'un an reste un record. La semaine en cours ne rompt jamais la série tant qu'elle n'est pas finie — sans cette tolérance, tout le monde verrait zéro le lundi matin.
+
+Les séries d'échauffement et non validées sont exclues de la répartition musculaire, comme partout ailleurs (doc 03).
 
 ### Mensurations — V2
 

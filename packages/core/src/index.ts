@@ -6,6 +6,7 @@
  * monorepo.
  */
 
+export * from "./calendar.js";
 export * from "./decimal.js";
 export * from "./one-rep-max.js";
 export * from "./records.js";
