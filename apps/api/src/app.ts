@@ -12,6 +12,7 @@ import { healthRouter } from "./routes/health.js";
 import { meRouter } from "./routes/me.js";
 import { routineFoldersRouter } from "./routes/routine-folders.js";
 import { routinesRouter } from "./routes/routines.js";
+import { workoutsRouter } from "./routes/workouts.js";
 
 /**
  * Construit l'application sans l'écouter : `index.ts` s'occupe du serveur,
@@ -51,6 +52,7 @@ export function createApp(): OpenAPIHono<AppEnv> {
   app.route("/", exercisesRouter);
   app.route("/", routineFoldersRouter);
   app.route("/", routinesRouter);
+  app.route("/", workoutsRouter);
 
   // Contrat OpenAPI publiable — le bénéfice attendu de @hono/zod-openapi (D1).
   app.doc("/openapi.json", {

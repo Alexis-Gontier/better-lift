@@ -142,6 +142,16 @@ Un booléen qui double une clé étrangère est une invitation à la contradicti
 
 L'index composite `[isCustom, isArchived]` disparaît avec la colonne. `[ownerId]` le remplace : c'est lui que sert la clause de visibilité présente sur chaque lecture, et Postgres indexe les `NULL`, donc le cas « catalogue commun » en profite aussi.
 
+### D23 — Un seul chemin pour les records : le recalcul complet, même à l'ajout
+
+La [doc 03](03-modele-de-donnees.md) distinguait deux traitements : les records sont « recalculés à la fin d'une séance » (invariant 5) et une correction déclenche « un recalcul intégral » (invariant 7). Le premier suggère un ajustement incrémental — comparer les séries qui arrivent au record en place —, le second une reconstruction depuis l'historique.
+
+**Les deux passent désormais par la reconstruction.** L'ajustement incrémental sait ajouter un record, jamais en retirer un : il n'a aucun moyen de connaître le second meilleur. Il faut donc de toute façon écrire le chemin complet pour les corrections et les suppressions. Garder les deux, c'était entretenir un chemin rapide et un chemin correct sur la même donnée, avec la certitude qu'ils finiraient par ne plus dire la même chose — et que l'écart n'apparaîtrait que sur les comptes ayant corrigé une séance.
+
+Le coût redouté n'existe pas à cette échelle. La reconstruction ne lit que les séries des **exercices touchés** par l'écriture, pas tout l'historique : pour une séance de huit exercices, c'est huit lectures d'index sur `WorkoutExercise[exerciseId]`, quelques milliers de lignes après des années de pratique, une fois par séance enregistrée. La transaction reste sous la seconde en pratique ; son budget est relevé à 20 s pour absorber une base distante, échouer après coup revenant à perdre une séance réelle.
+
+Ce qui distingue encore les appels est un paramètre, pas un chemin : l'ajout et la correction **créditent** la séance écrite et renvoient ses `newRecords`, la suppression ne crédite personne.
+
 ## Actions à mener (pas des décisions)
 
 - [ ] **Nom et disponibilité** : vérifier le domaine `better-lift.app`, les identifiants App Store et Play Store, et l'absence de conflit de marque.

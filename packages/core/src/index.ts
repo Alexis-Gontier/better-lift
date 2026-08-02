@@ -9,6 +9,7 @@
 export * from "./decimal.js";
 export * from "./one-rep-max.js";
 export * from "./records.js";
+export * from "./supersets.js";
 export * from "./types.js";
 export * from "./units.js";
 export * from "./volume.js";
