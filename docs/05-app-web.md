@@ -109,16 +109,22 @@ L'écran le plus important du web, et celui qui justifie l'existence de l'app we
 - **Glisser-déposer** sur les exercices et sur les séries, via `dnd-kit`. Poignée dédiée (`⠿`) : rendre toute la ligne draggable rend la sélection de texte impossible.
 - **Ajout en un clic** depuis le panneau latéral, qui reste ouvert — on ajoute rarement un seul exercice.
 - **Duplication de série** : la plupart des séries d'un exercice sont identiques. Un bouton « dupliquer la dernière » économise l'essentiel des saisies.
-- **Menu `⋯` par exercice** : remplacer l'exercice, créer un superset avec le suivant, ajouter des notes, régler le repos, supprimer.
-- **Brouillon local.** L'état de l'éditeur vit dans un store client (Zustand ou `useReducer`). Rien n'est envoyé avant l'enregistrement, qui fait un unique `PUT /v1/routines/:id`.
-- **Protection contre la perte.** `beforeunload` si le brouillon est modifié, plus une sauvegarde automatique en `localStorage` restaurée au retour.
-- **Raccourcis clavier** : `⌘S` enregistrer, `⌘K` ouvrir la recherche d'exercices, `Échap` fermer le panneau.
-- **Accessibilité.** `dnd-kit` fournit une alternative clavier au glisser-déposer : la câbler, ne pas la laisser par défaut sans annonce.
+- **Notes et repos par exercice**, en clair sur la carte plutôt que derrière un menu `⋯` : deux champs qu'on remplit en construisant, pas des actions rares. Restent à faire, quand elles auront un usage : remplacer un exercice, et créer un superset avec le suivant — le modèle porte `supersetGroup` mais l'interface est repoussée en V2 (D8).
+- **Brouillon local.** L'état de l'éditeur vit dans un `useReducer` — pas de Zustand : un seul écran le consomme, et le réducteur se teste sans monter un composant. Rien n'est envoyé avant l'enregistrement, qui fait un unique `POST` ou `PUT /v1/routines/:id`.
+- **Protection contre la perte.** `beforeunload` si le brouillon est modifié, plus une sauvegarde automatique en `localStorage`, **proposée** au retour et jamais imposée : l'écran ne doit pas se remplir tout seul d'un état que l'utilisateur ne reconnaîtrait pas.
+- **Raccourcis clavier** : `⌘S` / `Ctrl+S` enregistre. `⌘K` n'existe pas — le panneau de recherche est toujours ouvert, il n'y a rien à invoquer ni à fermer.
+- **Accessibilité.** L'alternative clavier de `dnd-kit` est câblée et annoncée en français : la poignée est un `<button>` focalisable, Espace saisit, les flèches déplacent, Entrée dépose, Échap annule.
+
+**Un piège de `dnd-kit` qui ne se voit pas à la souris.** Un seul `DndContext` couvre les exercices et les séries — imbriquer deux contextes rend le routage des événements dépendant de l'ordre de montage. Les identifiants sont donc préfixés (`ex:` / `set:`), et la détection de collision **filtre les cibles de même nature** avant de déléguer à `closestCenter`. Sans ce filtre, la cible la plus proche du centre d'un exercice est une ligne de série, le déposé est rejeté, et le déplacement ne se produit tout simplement pas — sans erreur. C'est l'essai au clavier qui l'a révélé.
 
 ## Autres écrans
 
 ### Routines (liste)
-Dossiers repliables, cartes de routine affichant le nom, le nombre d'exercices, la date de dernière exécution. Actions : démarrer, modifier, dupliquer, déplacer, supprimer. Glisser-déposer entre dossiers.
+Cartes de routine affichant le nom, le nombre d'exercices et la date de dernière exécution. Actions : modifier, dupliquer, supprimer — « démarrer » attend les séances.
+
+Le **regroupement par dossier se fait côté client** : la liste n'est pas paginée et arrive entière, donc un appel par dossier serait du trafic pur. Les dossiers vides restent affichés — c'est le seul endroit d'où on peut les supprimer, et un dossier qu'on vient de créer doit se voir. Les routines sans dossier forment un groupe en fin de liste plutôt que d'être classées d'office quelque part.
+
+Le déplacement d'une routine passe par le sélecteur de dossier de l'éditeur. Le glisser-déposer entre dossiers viendra avec le repliement des dossiers, quand il y aura assez de routines pour que ça compte.
 
 ### Historique
 Deux vues commutables : liste antéchronologique paginée, et calendrier mensuel avec pastilles. Filtres par routine et par période.

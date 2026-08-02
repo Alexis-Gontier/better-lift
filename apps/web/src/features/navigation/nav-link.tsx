@@ -17,7 +17,7 @@ export function NavLink({
   href,
   children,
 }: {
-  href: "/dashboard" | "/exercises";
+  href: "/dashboard" | "/routines" | "/exercises";
   children: string;
 }) {
   const pathname = usePathname();
