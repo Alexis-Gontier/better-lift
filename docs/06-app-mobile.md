@@ -18,6 +18,7 @@ app/
 ├── workout/
 │   ├── active.tsx         # séance en cours (plein écran)
 │   └── [id].tsx           # détail d'une séance passée
+├── routines.tsx           # liste, groupée par dossiers
 ├── routine/
 │   ├── [id].tsx
 │   └── edit/[id].tsx      # édition simplifiée
@@ -103,6 +104,12 @@ Séance en cours (le cas échéant), routines épinglées avec un gros bouton «
 
 ### Routines
 Liste par dossiers, aperçu d'une routine (exercices et séries cibles), démarrage. L'édition mobile est **volontairement simplifiée** : ajouter/supprimer un exercice, ajuster les séries. La construction sérieuse se fait sur le web.
+
+**Fait :** la liste et l'aperçu. Le regroupement par dossier se fait côté client, la liste n'étant pas paginée — et les dossiers vides sont masqués ici, contrairement au web : on ne les gère pas depuis le mobile, les afficher n'ajouterait qu'une ligne morte sur un petit écran.
+
+**Pas encore :** l'édition simplifiée (D9) et le démarrage. Les deux attendent les séances — ajuster une routine sans pouvoir la lancer n'a pas d'usage, et « démarrer » n'a pas de destination.
+
+`ScrollView` et non `FlatList` : quelques dizaines de routines au plus, et un regroupement par dossier demanderait des sections là où une boucle suffit (même raisonnement que [D21](09-decisions.md)).
 
 ### Historique
 Liste antéchronologique infinie, résumé par carte (nom, date, durée, volume, records). Détail identique au web.
