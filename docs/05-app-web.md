@@ -161,11 +161,19 @@ C'est l'écran d'accueil de la zone connectée. Il doit répondre en un coup d'�
 
 **Cartes KPI.** Chaque valeur est accompagnée de sa variation par rapport à la période précédente — un chiffre isolé n'informe pas. Données issues de `GET /v1/stats/summary` (`previousPeriod` inclus, un seul appel).
 
+Deux garde-fous sur la variation : une période précédente **vide** affiche un tiret et non « +∞ % » (passer de 0 à 12 séances est un début, pas une progression mesurable), et un écart **inférieur à 1 %** est rendu comme stable — sans ce seuil, 0,3 % afficherait une flèche montante pour du bruit de mesure.
+
+La flèche est achromatique, comme le reste. Une baisse de volume n'est de toute façon pas une erreur à signaler en rouge : une semaine de décharge en produit une, et elle est voulue.
+
 **Volume par semaine.** Barres, 12 dernières semaines. C'est le graphique le plus utile pour repérer une déload involontaire ou une dérive.
 
 **Répartition musculaire.** Nombre de séries par partie du corps sur 30 jours, en barres horizontales triées. Un radar est plus joli mais nettement moins lisible pour comparer des valeurs — on privilégie la lecture.
 
-**Régularité.** Heatmap type contributions GitHub sur 12 semaines. Signal comportemental fort, coût d'implémentation faible.
+Ces barres-là sont en **CSS, pas en Recharts** : un `BarChart` horizontal apporterait un axe, une grille et une infobulle pour rendre ce qu'une largeur en pourcentage dit déjà, et il faudrait de toute façon réécrire les étiquettes à côté. L'échelle est le **maximum** et non le total — rapporter au total écrase toutes les barres dès qu'il y a plus de trois parties du corps.
+
+**Régularité.** Heatmap type contributions GitHub sur 12 semaines. Signal comportemental fort, coût d'implémentation faible. La grille elle-même est `aria-hidden` — 84 cases annoncées une à une seraient inexploitables — et un résumé en une phrase la double juste en dessous.
+
+**Animation des graphiques : `isAnimationActive={false}`, et ce n'est pas un choix esthétique.** Recharts anime en JavaScript, en interpolant l'attribut `height` : le bloc `prefers-reduced-motion` de `globals.css` ne l'atteint pas, puisqu'il ne pilote que des animations CSS. Sans cette prop, la préférence serait ignorée précisément sur l'écran qui porte le plus de mouvement.
 
 **État vide.** Un nouvel utilisateur voit un dashboard sans données : prévoir explicitement une variante « premiers pas » (créer une routine → démarrer une séance) plutôt que des cartes à zéro. C'est souvent oublié et c'est le tout premier écran que voit un inscrit.
 

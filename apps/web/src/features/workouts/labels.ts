@@ -1,12 +1,9 @@
+import { type RecordType } from "@better-lift/validators";
+
 /**
  * Libellés et formats de l'historique. Sans React ni appel réseau : c'est la
  * partie testable des écrans de séance, et elle se teste sans monter un
  * composant.
- *
- * Les libellés des six types de record n'y sont pas encore : rien ne les
- * affiche tant que `GET /v1/exercises/:id/records` n'existe pas. Le détail
- * d'une séance ne connaît des records que le drapeau `isPr` porté par chaque
- * série, et son compteur.
  */
 
 const SECONDS_PER_MINUTE = 60;
@@ -62,3 +59,20 @@ export function formatSetDuration(seconds: number): string {
 export function plural(count: number, singular: string, many = `${singular}s`): string {
   return `${count} ${count > 1 ? many : singular}`;
 }
+
+/**
+ * Libellés des six types de record, servis par `GET /v1/stats/records`.
+ *
+ * Formulés comme ce qu'on a battu, pas comme un nom de colonne : « Charge max »
+ * plutôt que « BEST_WEIGHT ». Le 1RM garde son sigle, qui est le mot du domaine
+ * — l'écrire « répétition maximale estimée » serait plus long et moins clair
+ * pour qui s'entraîne.
+ */
+export const RECORD_TYPE_LABELS: Record<RecordType, string> = {
+  BEST_1RM: "1RM estimé",
+  BEST_WEIGHT: "Charge max",
+  BEST_SET_VOLUME: "Volume sur une série",
+  BEST_REPS: "Répétitions max",
+  BEST_DURATION: "Durée max",
+  BEST_DISTANCE: "Distance max",
+};
