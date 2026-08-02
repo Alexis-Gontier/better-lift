@@ -1,55 +1,35 @@
 import { type Metadata } from "next";
 import { Suspense } from "react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@better-lift/ui/components/card";
-
-import { SessionPanel } from "@/features/auth/session-panel";
 import { VerificationNotice } from "@/features/auth/verification-notice";
+import { Dashboard } from "@/features/dashboard/dashboard";
 
 export const metadata: Metadata = { title: "Tableau de bord — better-lift" };
 
 /**
- * Le tableau de bord de la doc 05 (cartes KPI, volume hebdomadaire, régularité)
- * attend les données que la V1 n'a pas encore produites. En attendant, cette
- * page a une fonction réelle : c'est la **première route protégée du web**, et
- * elle rend visible ce que `proxy.ts` garde.
+ * Écran d'accueil de la zone connectée (doc 05).
+ *
+ * La page est un Server Component qui ne fait que poser la coquille : chaque
+ * bloc du tableau de bord charge ses propres données côté client et porte ses
+ * propres états, si bien qu'ils ne se bloquent pas mutuellement.
+ *
+ * Le panneau de contrôle de session qui occupait cet écran depuis la V0 est
+ * retiré : il prouvait que `proxy.ts` gardait bien la route, ce que les quatre
+ * lots suivants ont largement confirmé.
+ *
+ * `Dashboard` lit la période dans l'URL, donc appelle `useSearchParams` : d'où
+ * le `Suspense` qui l'enveloppe, sans lequel Next refuse le pré-rendu.
  */
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
-      <header className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">Tableau de bord</h1>
-        <p className="text-muted-foreground">
-          Zone authentifiée. Les cartes de la doc 05 arriveront avec les séances.
-        </p>
-      </header>
-
+    <div className="flex flex-1 flex-col gap-6">
       <Suspense fallback={null}>
         <VerificationNotice />
       </Suspense>
 
-      {/*
-        `max-w-xl` : ce bloc de contrôle est une liste de paires libellé/valeur,
-        pas un tableau de bord. Étalé sur les 1152 px de la coquille, l'œil
-        devrait traverser l'écran entre l'intitulé et sa valeur.
-      */}
-      <Card className="max-w-xl">
-        <CardHeader>
-          <CardTitle>Session</CardTitle>
-          <CardDescription>
-            Deux lectures indépendantes de la même session, dont une via l’API.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SessionPanel />
-        </CardContent>
-      </Card>
+      <Suspense fallback={null}>
+        <Dashboard />
+      </Suspense>
     </div>
   );
 }

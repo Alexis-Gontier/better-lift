@@ -19,6 +19,7 @@
     "clsx": "catalog:",
     "lucide-react": "catalog:",
     "radix-ui": "catalog:",
+    "recharts": "catalog:",
     "shadcn": "catalog:",
     "tailwind-merge": "catalog:",
     "tw-animate-css": "catalog:"
