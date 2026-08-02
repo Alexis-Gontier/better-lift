@@ -8,11 +8,12 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "clean": "node -e \"fs.rmSync('.expo',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true})\""
   },
   "dependencies": {
-    "@better-lift/api-client": "workspace:*",
     "@better-auth/expo": "catalog:",
+    "@better-lift/api-client": "workspace:*",
     "@better-lift/core": "workspace:*",
     "@better-lift/validators": "workspace:*",
     "@tanstack/react-query": "catalog:",
@@ -27,11 +28,14 @@
     "expo-system-ui": "~57.0.2",
     "react": "catalog:",
     "react-native": "0.86.2",
+    "react-native-mmkv": "^4.3.2",
+    "react-native-nitro-modules": "^0.36.5",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.2"
   },
   "devDependencies": {
     "@types/react": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

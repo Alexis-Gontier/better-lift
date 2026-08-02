@@ -2,6 +2,7 @@ import { type ZodType } from "zod";
 
 import {
   type CreateExerciseInput,
+  type CreateWorkoutInput,
   type CurrentUser,
   currentUserSchema,
   type ExerciseDetail,
@@ -11,7 +12,9 @@ import {
   exerciseListResponseSchema,
   type HealthResponse,
   healthResponseSchema,
+  type LastPerformance,
   type Locale,
+  lastPerformanceResponseSchema,
   type RoutineDetail,
   type RoutineFolder,
   type RoutineFolderInput,
@@ -27,6 +30,14 @@ import {
   type UpdateRoutineInput,
   type VersionResponse,
   versionResponseSchema,
+  type WorkoutDetail,
+  type WorkoutListQuery,
+  type WorkoutListResponse,
+  type WorkoutSaveResponse,
+  type WorkoutStructureInput,
+  workoutDetailSchema,
+  workoutListResponseSchema,
+  workoutSaveResponseSchema,
 } from "@better-lift/validators";
 
 import { ApiClientError, toApiClientError } from "./errors.js";
@@ -114,6 +125,40 @@ export interface ApiClient {
   deleteRoutine: (id: string, signal?: AbortSignal) => Promise<void>;
   duplicateRoutine: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<RoutineDetail>;
   reorderRoutines: (ids: string[], signal?: AbortSignal) => Promise<RoutineSummary[]>;
+
+  listWorkouts: (
+    query?: Partial<WorkoutListQuery>,
+    signal?: AbortSignal,
+  ) => Promise<WorkoutListResponse>;
+  getWorkout: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<WorkoutDetail>;
+  /**
+   * **Idempotent** : l'`id` est généré par l'appelant, et un envoi répété
+   * renvoie la séance existante au lieu d'en créer une seconde (règle non
+   * négociable n°7). C'est ce qui rend une file de synchronisation hors ligne
+   * rejouable sans précaution.
+   *
+   * Lève une `ApiClientError` 409 si l'identifiant appartient déjà à quelqu'un
+   * d'autre — il faut alors en générer un nouveau, pas réessayer.
+   */
+  createWorkout: (
+    input: CreateWorkoutInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<WorkoutSaveResponse>;
+  /** **Remplace** la structure entière, et fait recalculer les records touchés. */
+  updateWorkout: (
+    id: string,
+    input: WorkoutStructureInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<WorkoutSaveResponse>;
+  /** Suppression **physique**, contrairement à une routine. */
+  deleteWorkout: (id: string, signal?: AbortSignal) => Promise<void>;
+  /**
+   * Dernières valeurs par exercice, pour pré-remplir l'écran de saisie. Un
+   * exercice jamais fait est **absent** de la réponse.
+   */
+  getLastPerformance: (exerciseIds: string[], signal?: AbortSignal) => Promise<LastPerformance[]>;
 }
 
 /**
@@ -347,5 +392,43 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
           body: { ids },
         })
       ).data,
+
+    listWorkouts: (query = {}, signal) =>
+      request(`/v1/workouts${toSearchParams(query)}`, workoutListResponseSchema, signal),
+    getWorkout: (id, locale, signal) =>
+      request(
+        `/v1/workouts/${encodeURIComponent(id)}${localeQuery(locale)}`,
+        workoutDetailSchema,
+        signal,
+      ),
+    createWorkout: (input, locale, signal) =>
+      request(`/v1/workouts${localeQuery(locale)}`, workoutSaveResponseSchema, signal, {
+        method: "POST",
+        body: input,
+      }),
+    updateWorkout: (id, input, locale, signal) =>
+      request(
+        `/v1/workouts/${encodeURIComponent(id)}${localeQuery(locale)}`,
+        workoutSaveResponseSchema,
+        signal,
+        { method: "PUT", body: input },
+      ),
+    deleteWorkout: (id, signal) =>
+      requestNoContent(`/v1/workouts/${encodeURIComponent(id)}`, "DELETE", signal),
+    getLastPerformance: async (exerciseIds, signal) => {
+      // Aucun exercice, aucune requête : l'API exige au moins un identifiant et
+      // répondrait 422 là où la réponse évidente est « rien à dire ».
+      if (exerciseIds.length === 0) {
+        return [];
+      }
+
+      const { data } = await request(
+        `/v1/workouts/last-performance?exerciseIds=${exerciseIds.map(encodeURIComponent).join(",")}`,
+        lastPerformanceResponseSchema,
+        signal,
+      );
+
+      return data;
+    },
   };
 }
