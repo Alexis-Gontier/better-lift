@@ -256,14 +256,14 @@ Le `PUT` supprime les exercices existants avant de les recréer. Les identifiant
 
 ### Séances
 
-| Méthode | Chemin | Description |
-|---|---|---|
-| `GET` | `/v1/workouts` | Historique (`?from=&to=&routineId=`) |
-| `POST` | `/v1/workouts` | Enregistrer une séance terminée |
-| `GET` | `/v1/workouts/:id` | Détail |
-| `PUT` | `/v1/workouts/:id` | Corriger une séance passée |
-| `DELETE` | `/v1/workouts/:id` | Supprimer définitivement |
-| `GET` | `/v1/workouts/last-performance?exerciseIds=a,b,c` | Dernières valeurs par exercice, pour les placeholders |
+| Méthode | Chemin | Description | État |
+|---|---|---|---|
+| `GET` | `/v1/workouts` | Historique (`?from=&to=&routineId=`) | ✅ |
+| `POST` | `/v1/workouts` | Enregistrer une séance terminée | ✅ |
+| `GET` | `/v1/workouts/:id` | Détail | ✅ |
+| `PUT` | `/v1/workouts/:id` | Corriger une séance passée | ✅ |
+| `DELETE` | `/v1/workouts/:id` | Supprimer définitivement | ✅ |
+| `GET` | `/v1/workouts/last-performance?exerciseIds=a,b,c` | Dernières valeurs par exercice, pour les placeholders | ✅ |
 
 **Idempotence.** Le client génère l'identifiant de la séance (`cuid` local) et le transmet. Un `POST` avec un `id` déjà connu renvoie `200` et la ressource existante plutôt que `201`. Sans ça, une reconnexion réseau au mauvais moment crée des doublons — c'est le bug numéro un des trackers de sport.
 
@@ -313,6 +313,14 @@ Réponse : la séance persistée, agrégats calculés et records détectés.
 ```
 
 Les records sont calculés **serveur**, jamais client : c'est la seule façon de garantir la cohérence entre deux appareils.
+
+Cinq particularités de ces routes, apprises en les câblant :
+
+- **Le corps n'est pas strict**, contrairement à celui des routines et du profil : les champs inconnus sont ignorés au lieu de valoir 422. C'est le seul corps qu'un client envoie depuis une file de synchronisation, parfois plusieurs jours après coup ; perdre une séance réelle sur un champ ajouté depuis serait bien pire qu'un champ ignoré. La règle générale de l'API — tolérer les entrées inconnues pour les vieux clients mobiles — s'applique donc pleinement ici.
+- **Un exercice archivé reste acceptable** dans une séance, alors qu'il est refusé dans une routine. L'archivage est une préférence de catalogue, pas une frontière de sécurité ; celle-là reste la visibilité, appliquée dans les deux cas. Un exercice personnalisé d'autrui vaut toujours 422.
+- **Un identifiant déjà pris par la séance de quelqu'un d'autre répond 409**, et non 404. Le client doit en générer un autre, là où un 404 l'inviterait à réessayer à l'identique. Rien du contenu n'est révélé, et la collision de deux cuid relève du hasard pur.
+- **Enregistrer, corriger et supprimer passent par le même recalcul de records**, qui les reconstruit depuis l'historique des exercices touchés. Corriger à la baisse peut invalider un record, et il faut alors retrouver le second meilleur — ce qu'un ajustement incrémental n'a aucun moyen de connaître. Faire vivre deux chemins, l'un rapide à l'ajout et l'autre complet à la correction, c'était garantir qu'ils finiraient par diverger.
+- **`lastPerformedAt` d'une routine ne recule jamais** à l'enregistrement : une vieille séance remontée tardivement par la file de synchronisation ne doit pas faire paraître la routine plus ancienne qu'elle ne l'est. À la **suppression** d'une séance, en revanche, les deux compteurs sont relus depuis les séances restantes — laisser la date pointer une séance supprimée fausserait le tri « dernière utilisée » sans que rien ne le signale.
 
 ### Statistiques
 

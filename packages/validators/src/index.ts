@@ -12,3 +12,4 @@ export * from "./locale.js";
 export * from "./pagination.js";
 export * from "./routine.js";
 export * from "./session.js";
+export * from "./workout.js";

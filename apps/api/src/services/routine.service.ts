@@ -1,3 +1,4 @@
+import { normalizeSupersetGroups } from "@better-lift/core";
 import { type Prisma, prisma } from "@better-lift/db";
 import {
   DEFAULT_LOCALE,
@@ -12,8 +13,9 @@ import {
   type UpdateRoutineInput,
 } from "@better-lift/validators";
 
+import { toDecimalString } from "../lib/decimal.js";
 import { ApiError, notFound } from "../lib/errors.js";
-import { toExerciseSummary } from "./exercise.service.js";
+import { loadUsableExercises, toExerciseSummary } from "./exercise.service.js";
 
 /**
  * Routines (doc 04, § Routines).
@@ -53,15 +55,6 @@ const ROUTINE_INCLUDE = {
     },
   },
 } as const;
-
-/**
- * Les `Decimal` sortent en **chaîne** (doc 04), avec l'échelle de leur colonne.
- * `toString()` donnerait `"100"` là où le contrat annonce `"100.00"`, et un
- * client qui compare des chaînes verrait deux charges différentes.
- */
-function toDecimalString(value: Prisma.Decimal | null, scale: number): string | null {
-  return value === null ? null : value.toFixed(scale);
-}
 
 function toSet(row: RoutineRow["exercises"][number]["sets"][number]): RoutineSet {
   return {
@@ -119,74 +112,6 @@ function toDetail(row: RoutineRow, locale: Locale): RoutineDetail {
   };
 }
 
-/**
- * Un superset resté seul n'en est pas un.
- *
- * L'invariant 4 (doc 03) demande qu'un groupe compte au moins deux exercices,
- * sinon il est ramené à `NULL` à l'enregistrement. Le cas arrive tout seul :
- * on crée un superset de deux exercices dans l'éditeur, puis on en supprime un
- * — le survivant garderait sinon une marque de groupe invisible et fausse.
- */
-function normalizeSupersets(exercises: RoutineStructurePayload["exercises"]): (number | null)[] {
-  const counts = new Map<number, number>();
-
-  for (const exercise of exercises) {
-    if (exercise.supersetGroup !== null && exercise.supersetGroup !== undefined) {
-      counts.set(exercise.supersetGroup, (counts.get(exercise.supersetGroup) ?? 0) + 1);
-    }
-  }
-
-  return exercises.map((exercise) => {
-    const group = exercise.supersetGroup;
-
-    if (group === null || group === undefined) {
-      return null;
-    }
-
-    return (counts.get(group) ?? 0) >= 2 ? group : null;
-  });
-}
-
-/**
- * Vérifie que **tous** les exercices référencés sont visibles de cet
- * utilisateur, et non archivés.
- *
- * Sans ce contrôle, glisser l'identifiant d'un exercice personnalisé d'autrui
- * dans le corps de la requête suffirait à le lire ensuite dans sa propre
- * routine : la clé étrangère l'accepterait sans broncher. C'est la seule
- * frontière entre deux comptes sur cette route.
- */
-async function assertExercisesUsable(exerciseIds: string[], userId: string): Promise<void> {
-  if (exerciseIds.length === 0) {
-    return;
-  }
-
-  const unique = [...new Set(exerciseIds)];
-
-  const usable = await prisma.exercise.findMany({
-    where: {
-      id: { in: unique },
-      isArchived: false,
-      OR: [{ ownerId: null }, { ownerId: userId }],
-    },
-    select: { id: true },
-  });
-
-  if (usable.length === unique.length) {
-    return;
-  }
-
-  const found = new Set(usable.map((row) => row.id));
-
-  throw new ApiError(
-    "VALIDATION_FAILED",
-    "Certains exercices sont introuvables ou ne vous sont pas accessibles.",
-    unique
-      .filter((id) => !found.has(id))
-      .map((id) => ({ path: "exercises", message: `Exercice inconnu : ${id}` })),
-  );
-}
-
 /** Le dossier visé doit exister et vous appartenir — sinon 404, comme partout. */
 async function assertFolderOwned(folderId: string | null | undefined, userId: string) {
   if (!folderId) {
@@ -205,7 +130,9 @@ async function assertFolderOwned(folderId: string | null | undefined, userId: st
 
 /** Traduit la structure reçue en `create` imbriqué Prisma, positions comprises. */
 function toNestedCreate(structure: RoutineStructurePayload) {
-  const supersets = normalizeSupersets(structure.exercises);
+  const supersets = normalizeSupersetGroups(
+    structure.exercises.map((exercise) => exercise.supersetGroup),
+  );
 
   return structure.exercises.map((exercise, index) => ({
     exerciseId: exercise.exerciseId,
@@ -272,7 +199,7 @@ export async function createRoutine(
   locale: Locale = DEFAULT_LOCALE,
 ): Promise<RoutineDetail> {
   await assertFolderOwned(structure.folderId, userId);
-  await assertExercisesUsable(
+  await loadUsableExercises(
     structure.exercises.map((exercise) => exercise.exerciseId),
     userId,
   );
@@ -327,7 +254,7 @@ export async function replaceRoutine(
   }
 
   await assertFolderOwned(structure.folderId, userId);
-  await assertExercisesUsable(
+  await loadUsableExercises(
     structure.exercises.map((exercise) => exercise.exerciseId),
     userId,
   );

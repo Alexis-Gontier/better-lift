@@ -8,6 +8,7 @@ import {
   type ExerciseListQuery,
   type ExerciseListResponse,
   type ExerciseSummary,
+  type ExerciseType as ExerciseTypeValue,
   LOCALES,
   type Locale,
   type UpdateExercisePayload,
@@ -90,6 +91,67 @@ export function toExerciseSummary(
  */
 function visibleTo(userId: string): Prisma.ExerciseWhereInput {
   return { OR: [{ ownerId: null }, { ownerId: userId }] };
+}
+
+/**
+ * Vérifie que **tous** les exercices référencés sont visibles de cet
+ * utilisateur, et renvoie leur type.
+ *
+ * Le type est ramené par la même requête parce que l'appelant en a besoin
+ * juste après : c'est lui qui décide de la contribution d'une série au volume
+ * et de la pertinence d'un 1RM (doc 03). Le redemander serait un aller-retour
+ * de plus pour des lignes qu'on vient de lire.
+ *
+ * Sans ce contrôle, glisser l'identifiant d'un exercice personnalisé d'autrui
+ * dans le corps d'une requête suffirait à le lire ensuite dans sa propre
+ * routine ou sa propre séance : la clé étrangère l'accepterait sans broncher.
+ * C'est la seule frontière entre deux comptes sur ces routes — d'où sa place
+ * ici, avec la clause de visibilité qu'elle applique, plutôt que recopiée dans
+ * chaque service qui référence un exercice.
+ *
+ * `allowArchived` distingue les deux appelants, et la nuance compte :
+ *
+ * - **une routine** est un gabarit qu'on construit tranquillement : y ajouter
+ *   un exercice retiré du catalogue est une erreur, autant la signaler ;
+ * - **une séance** est un fait déjà accompli, envoyé parfois plusieurs jours
+ *   après par une file de synchronisation. La refuser parce que l'exercice a
+ *   été archivé entre-temps ferait perdre un entraînement réel. L'archivage est
+ *   une préférence de catalogue, pas une frontière de sécurité — celle-là reste
+ *   la visibilité, qui s'applique dans les deux cas.
+ */
+export async function loadUsableExercises(
+  exerciseIds: readonly string[],
+  userId: string,
+  { allowArchived = false } = {},
+): Promise<Map<string, ExerciseTypeValue>> {
+  const unique = [...new Set(exerciseIds)];
+
+  if (unique.length === 0) {
+    return new Map();
+  }
+
+  const usable = await prisma.exercise.findMany({
+    where: {
+      id: { in: unique },
+      ...(allowArchived ? {} : { isArchived: false }),
+      ...visibleTo(userId),
+    },
+    select: { id: true, type: true },
+  });
+
+  if (usable.length !== unique.length) {
+    const found = new Set(usable.map((row) => row.id));
+
+    throw new ApiError(
+      "VALIDATION_FAILED",
+      "Certains exercices sont introuvables ou ne vous sont pas accessibles.",
+      unique
+        .filter((id) => !found.has(id))
+        .map((id) => ({ path: "exercises", message: `Exercice inconnu : ${id}` })),
+    );
+  }
+
+  return new Map(usable.map((row) => [row.id, row.type]));
 }
 
 /**
