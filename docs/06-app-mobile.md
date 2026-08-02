@@ -98,6 +98,7 @@ Fin       → POST /v1/workouts (id généré localement)
 Trois conséquences à connaître :
 
 - **MMKV 4 casse l'API de la 3** : `createMMKV({ id })` et non `new MMKV()`, `remove()` et non `delete()`. La v4 est bâtie sur **Nitro Modules**, qui devient une dépendance de plus (voir [doc 10](10-versions.md)). Elle n'expose **pas** de config plugin, contrairement à ce que son `package.json` laisse croire : l'ajouter à `plugins` dans `app.json` fait échouer `expo export` sur une résolution ESM.
+- **Le magasin s'ouvre paresseusement, et son échec est une information.** Sans MMKV — sur Expo Go —, le brouillon bascule en mémoire et `isDraftPersisted()` renvoie `false`, ce que l'écran de séance **affiche**. Le repli n'est pas silencieux : il ne tient pas la reprise après crash, et laisser croire le contraire serait la pire façon de l'apprendre. Ce mode dégradé sert à développer les autres écrans, jamais à s'entraîner pour de vrai.
 - **Le brouillon passe par le disque, jamais par un paramètre de route.** « Démarrer cette routine » l'écrit puis navigue ; l'écran de séance le relit au montage, exactement comme il relirait une séance interrompue. Un seul chemin d'entrée, donc un seul à éprouver — et la reprise après crash cesse d'être un cas particulier.
 - **Une séance en cours n'est jamais écrasée.** Si un brouillon existe, « Démarrer » devient « Reprendre la séance en cours ». Le cas arrive tout seul : on quitte l'écran par mégarde, on retombe sur ses routines, on appuie. Écraser silencieusement détruirait la seule donnée de l'app qui n'existe nulle part ailleurs.
 
@@ -141,6 +142,17 @@ Statistiques, réglages, unités, langue, déconnexion.
 ## Contraintes techniques
 
 **Development build obligatoire.** Expo Go ne suffit pas : `expo-secure-store`, MMKV, les notifications et Better Auth exigent du natif. Prévoir `eas build --profile development` dès la V0, sinon le mobile décroche du reste du monorepo au premier module natif.
+
+**Constaté le 2026-08-02, au premier lancement réel sur appareil.** Scanner le QR code de `expo start` avec **Expo Go** échoue : `Failed to get NitroModules`. Expo Go embarque un jeu fixe de modules natifs et ne peut charger ni MMKV ni Nitro. Le malentendu à dissiper une fois pour toutes : un development build n'est pas une éjection. On le construit **une fois**, on installe l'APK, et le quotidien redevient identique — `pnpm dev`, on scanne le même QR code avec sa propre app au lieu d'Expo Go, même fast refresh. On ne reconstruit qu'en ajoutant ou retirant un module natif.
+
+Deux chemins, aucun `eas.json` n'existant encore :
+
+| Commande | Ce qu'il faut | Durée |
+|---|---|---|
+| `eas build --profile development -p android` | un compte Expo gratuit, rien d'installé localement | ~15 min, dans le nuage |
+| `npx expo run:android` | Android Studio + JDK sur la machine | ~10 min, en local |
+
+Sur Windows sans Android Studio, EAS demande nettement moins de mise en place.
 
 **Cycle de vie du SDK.** Un SDK Expo est supporté environ un an. Le 57 date de fin juin 2026, le 58 est attendu vers septembre/octobre. Planifier la montée de version plutôt que de la subir quand un correctif de sécurité l'imposera.
 

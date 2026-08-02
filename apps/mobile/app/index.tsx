@@ -5,7 +5,8 @@ import { useHealth, useVersion } from "@better-lift/api-client";
 import { estimate1RM, kgToLb, setVolume } from "@better-lift/core";
 
 import { SessionPanel } from "@/features/auth/session-panel";
-import { API_URL, apiClient } from "@/lib/api";
+import { apiClient } from "@/lib/api";
+import { API_URL } from "@/lib/env";
 
 const SAMPLE_SET = { type: "NORMAL", completed: true, reps: 5, weightKg: "102.50" } as const;
 

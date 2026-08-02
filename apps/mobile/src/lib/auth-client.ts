@@ -2,7 +2,7 @@ import { expoClient } from "@better-auth/expo/client";
 import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 
-import { API_URL } from "./api";
+import { API_URL } from "./env";
 
 /**
  * Client Better Auth du mobile. Il parle à la **même instance** que le web,

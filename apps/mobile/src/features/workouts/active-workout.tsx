@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { useCreateWorkout } from "@better-lift/api-client";
 
 import { completedSetCount, toCreateWorkoutInput, type WorkoutDraft } from "./draft";
+import { isDraftPersisted } from "./draft-store";
 import { ExerciseBlock } from "./exercise-block";
 import { RestTimer } from "./rest-timer";
 import { formatElapsed, useTicker } from "./use-ticker";
@@ -34,6 +35,8 @@ export function ActiveWorkout() {
 
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
   const [leaving, setLeaving] = useState(false);
+  // Lu une fois : la disponibilité du module natif ne change pas en cours de vie.
+  const [persisted] = useState(isDraftPersisted);
 
   // L'horloge ne bat que s'il y a une séance : sans elle, elle ne ferait que
   // réveiller React une fois par seconde pour rien.
@@ -118,6 +121,20 @@ export function ActiveWorkout() {
           )}
         </Pressable>
       </View>
+
+      {/*
+        La garantie « rien ne se perd » ne tient que si MMKV est là. Là où le
+        module natif manque — Expo Go —, le brouillon vit en mémoire et
+        disparaît avec l'app. C'est dit à l'écran : laisser croire à une
+        reprise après crash qui n'aura pas lieu serait la pire façon de
+        l'apprendre.
+      */}
+      {persisted ? null : (
+        <Text style={styles.warning}>
+          Brouillon non persisté : cette séance sera perdue si l'app se ferme. Un development build
+          est nécessaire (doc 06).
+        </Text>
+      )}
 
       {resumed ? (
         <Text style={styles.resumed}>Séance reprise là où elle s'était arrêtée.</Text>
@@ -227,6 +244,13 @@ const styles = StyleSheet.create({
   },
   finishOff: { backgroundColor: "#2a323a" },
   finishLabel: { color: "#11161b", fontSize: 18, fontWeight: "700" },
+  warning: {
+    color: "#f08a7a",
+    fontSize: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    textAlign: "center",
+  },
   resumed: {
     color: "#e8c468",
     fontSize: 12,

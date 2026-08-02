@@ -234,7 +234,9 @@ node-linker=hoisted
 | `storage.delete(key)` | `storage.remove(key)` |
 | rien | `react-native-nitro-modules` est une **dépendance de pair obligatoire** |
 
-Deux pièges de plus, découverts en bundlant :
+**N'appelez pas `createMMKV()` au chargement du module.** C'est l'erreur qui a réellement cassé l'app au premier lancement sur appareil : là où le module natif est absent — Expo Go —, l'échec se produit à l'**évaluation** du module et emporte tous ses importateurs. Les écrans concernés perdent jusqu'à leur `export default`, et Expo Router signale alors une route « missing the required default export » qui n'a plus aucun rapport avec la cause. Ouvrir le magasin **paresseusement**, au premier accès, et traiter l'échec comme une information plutôt qu'une exception : un magasin ne doit jamais empêcher l'application de démarrer.
+
+Trois pièges de plus, découverts en bundlant puis en lançant :
 
 - **Il n'y a pas de config plugin.** Le `package.json` liste pourtant `app.plugin.js` dans ses `files`, et le fichier n'existe pas dans le paquet publié. L'ajouter à `plugins` dans `app.json` fait échouer `expo export` sur une erreur ESM/CJS dont le message ne mentionne jamais `app.json` — l'autolinking suffit.
 - **Les chaînes accentuées sont en UTF-16 dans le bytecode Hermes.** Chercher « Démarrer la séance » dans un `.hbc` lu en latin-1 ne donne rien alors que le code est bien embarqué. Vérifier un bundle avec `Buffer.from(texte, "utf16le")`, sinon on conclut à une absence qui n'existe pas.

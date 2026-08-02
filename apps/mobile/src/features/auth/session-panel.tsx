@@ -56,7 +56,13 @@ export function SessionPanel() {
     return <ActivityIndicator color="#7ad6a5" />;
   }
 
-  if (!session.data) {
+  /**
+   * Le garde porte sur `user`, pas seulement sur `data` : Better Auth peut
+   * rendre une session présente mais sans utilisateur — jeton périmé, session
+   * partiellement rechargée depuis SecureStore. Tester `data` seul laissait
+   * passer ce cas, et l'écran plantait sur `data.user.email`.
+   */
+  if (!session.data?.user) {
     return (
       <View style={styles.stack}>
         <TextInput
@@ -91,6 +97,7 @@ export function SessionPanel() {
   return (
     <View style={styles.stack}>
       <Row label="Session (client)" value={session.data.user.email} />
+      {/* Le garde ci-dessus a déjà écarté l'absence d'utilisateur. */}
       <Row
         label="Session (via l’API)"
         value={me.isPending ? "…" : (me.data?.email ?? `échec : ${me.error?.message ?? ""}`)}
