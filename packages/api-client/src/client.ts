@@ -1,6 +1,7 @@
 import { type ZodType } from "zod";
 
 import {
+  type CreateExerciseInput,
   type CurrentUser,
   currentUserSchema,
   type ExerciseDetail,
@@ -11,6 +12,7 @@ import {
   type HealthResponse,
   healthResponseSchema,
   type Locale,
+  type UpdateExerciseInput,
   type UpdateMeInput,
   type VersionResponse,
   versionResponseSchema,
@@ -43,6 +45,23 @@ export interface ApiClient {
   ) => Promise<ExerciseListResponse>;
   /** Lève une `ApiClientError` 404 quand l'exercice est inconnu ou archivé. */
   getExercise: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<ExerciseDetail>;
+  createExercise: (
+    input: CreateExerciseInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<ExerciseDetail>;
+  /**
+   * Lève une `ApiClientError` 403 sur un exercice du catalogue commun, 404 sur
+   * celui d'un autre utilisateur — la distinction est volontaire, voir doc 04.
+   */
+  updateExercise: (
+    id: string,
+    input: UpdateExerciseInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<ExerciseDetail>;
+  /** Archive, ne supprime pas : l'historique continue de le référencer. */
+  archiveExercise: (id: string, signal?: AbortSignal) => Promise<void>;
 }
 
 /**
@@ -139,6 +158,48 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     return parsed.data;
   }
 
+  /**
+   * Écriture sans corps de réponse (204). Elle ne peut pas passer par
+   * `request`, qui exige un schéma : appeler `.json()` sur un corps vide lève,
+   * et un `DELETE` réussi finirait en `INVALID_RESPONSE`.
+   */
+  async function requestNoContent(
+    path: string,
+    method: "DELETE",
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const token = await options.getAuthToken?.();
+
+    let response: Response;
+
+    try {
+      response = await doFetch(`${baseUrl}${path}`, {
+        method,
+        headers: {
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        signal,
+      });
+    } catch (cause) {
+      throw new ApiClientError(
+        0,
+        "NETWORK_ERROR",
+        cause instanceof Error ? cause.message : "API injoignable.",
+      );
+    }
+
+    if (!response.ok) {
+      throw await toApiClientError(response);
+    }
+  }
+
+  /** `?locale=` n'est ajouté que s'il est demandé : l'API a son propre défaut. */
+  function localeQuery(locale?: Locale): string {
+    return locale ? `?locale=${locale}` : "";
+  }
+
   return {
     getHealth: (signal) => request("/health", healthResponseSchema, signal),
     getVersion: (signal) => request("/v1/version", versionResponseSchema, signal),
@@ -149,9 +210,23 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       request(`/v1/exercises${toSearchParams(query)}`, exerciseListResponseSchema, signal),
     getExercise: (id, locale, signal) =>
       request(
-        `/v1/exercises/${encodeURIComponent(id)}${locale ? `?locale=${locale}` : ""}`,
+        `/v1/exercises/${encodeURIComponent(id)}${localeQuery(locale)}`,
         exerciseDetailSchema,
         signal,
       ),
+    createExercise: (input, locale, signal) =>
+      request(`/v1/exercises${localeQuery(locale)}`, exerciseDetailSchema, signal, {
+        method: "POST",
+        body: input,
+      }),
+    updateExercise: (id, input, locale, signal) =>
+      request(
+        `/v1/exercises/${encodeURIComponent(id)}${localeQuery(locale)}`,
+        exerciseDetailSchema,
+        signal,
+        { method: "PATCH", body: input },
+      ),
+    archiveExercise: (id, signal) =>
+      requestNoContent(`/v1/exercises/${encodeURIComponent(id)}`, "DELETE", signal),
   };
 }

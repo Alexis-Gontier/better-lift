@@ -125,13 +125,23 @@ Trois particularités de cette route, toutes délibérées :
 |---|---|---|---|
 | `GET` | `/v1/exercises` | Catalogue + exercices custom de l'utilisateur | ✅ |
 | `GET` | `/v1/exercises/:id` | Fiche détaillée avec instructions localisées | ✅ |
-| `POST` | `/v1/exercises` | Créer un exercice personnalisé | à faire |
-| `PATCH` | `/v1/exercises/:id` | Modifier — exercices custom uniquement | à faire |
-| `DELETE` | `/v1/exercises/:id` | Archiver — exercices custom uniquement | à faire |
+| `POST` | `/v1/exercises` | Créer un exercice personnalisé | ✅ |
+| `PATCH` | `/v1/exercises/:id` | Modifier — exercices custom uniquement | ✅ |
+| `DELETE` | `/v1/exercises/:id` | Archiver — exercices custom uniquement | ✅ |
 | `GET` | `/v1/exercises/:id/history` | Séries réalisées sur cet exercice, antéchronologique | après les séances |
 | `GET` | `/v1/exercises/:id/records` | Records personnels sur cet exercice | après les séances |
 
-**Les exercices personnalisés demandent une migration** : `Exercise` n'a pas encore de propriétaire. Le champ `isCustom` de la réponse est déjà calculé — il vaut `externalId === null`, seuls les exercices du catalogue en ayant un — et vaut donc `false` partout tant que la migration n'est pas faite. C'est un calcul, pas une constante en attente.
+**Exercices personnalisés.** Un exercice créé par un utilisateur porte son `ownerId` et n'est visible que de lui ; le catalogue commun a un `ownerId` nul et se voit de tous. Le champ `isCustom` de la réponse est **calculé** depuis ce seul propriétaire (D22). La clause de visibilité s'applique à toutes les lectures : deviner l'identifiant de l'exercice de quelqu'un d'autre donne un 404.
+
+Trois particularités à connaître :
+
+- **Aucun média.** `thumbnailUrl`, `animationUrl` et `attribution` restent nuls : les visuels du catalogue viennent d'un dataset sous licence (D17) et rien n'héberge d'image d'utilisateur. Les interfaces ont déjà leur repli.
+- **Le nom est écrit dans toutes les locales servies.** L'utilisateur en saisit un seul ; le service le réplique. Les listes étant enracinées sur `ExerciseTranslation`, une locale sans ligne ferait disparaître l'exercice — sans erreur.
+- **`equipment` est normalisé par le contrat** (minuscules, espaces en tirets bas), exactement comme au seed. « Body Weight » devient `body_weight`. Sans cela l'exercice existerait sans jamais répondre au filtre `?equipment=body_weight`.
+
+**Modifier ou archiver, et les deux refus possibles.** Le premier est un 404 : l'exercice appartient à quelqu'un d'autre, et son existence ne doit pas fuiter (règle non négociable n°8). Le second est un **403** : l'exercice est du catalogue commun. C'est le seul endroit de l'API où un refus n'est pas un 404, et c'est délibéré — l'utilisateur vient peut-être d'afficher cette fiche, un « introuvable » contredirait le `GET` qui a réussi une seconde plus tôt, et il n'y a rien à protéger : le catalogue est public pour tous les comptes.
+
+**`DELETE` archive, il ne supprime pas.** Une séance passée peut référencer l'exercice, et l'historique ne change jamais rétroactivement (invariant 8, doc 03). L'exercice disparaît du catalogue et des recherches ; les séances qui le citent restent lisibles.
 
 Paramètres de `GET /v1/exercises` :
 
@@ -140,7 +150,8 @@ Paramètres de `GET /v1/exercises` :
 &bodyPart=CHEST   filtre, répétable
 &equipment=barbell  répétable, insensible à la casse
 &type=WEIGHT_REPS   répétable
-&custom=true|false  à venir avec les exercices personnalisés
+&custom=true|false  true : ses seuls exercices ; false : le seul catalogue
+                    absent : les deux, ce qui est le cas courant
 &locale=fr          "fr" par défaut
 &limit=&cursor=     limit 20 par défaut, 100 au maximum
 ```

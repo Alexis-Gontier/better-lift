@@ -90,6 +90,16 @@ model Exercise {
   /// apparaît (doc 08, D17).
   attribution  String?
 
+  /// Propriétaire d'un exercice personnalisé. NULL = exercice du catalogue,
+  /// visible de tous. Renseigné = visible de ce seul utilisateur.
+  ///
+  /// C'est la **seule** source de vérité de la distinction : le champ
+  /// `isCustom` exposé par l'API en est calculé, il n'a pas de colonne. Une
+  /// colonne booléenne redondante avec sa propre clé étrangère finit toujours
+  /// par la contredire (voir D22).
+  ownerId String?
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
   /// Permet de retirer un exercice du catalogue sans casser l'historique :
   /// un exercice référencé par une séance n'est jamais supprimé.
   isArchived Boolean @default(false)
@@ -102,6 +112,9 @@ model Exercise {
   @@index([bodyPart])
   @@index([equipment])
   @@index([isArchived])
+  /// Sert la clause de visibilité de chaque lecture du catalogue
+  /// (`ownerId IS NULL OR ownerId = ?`) : les NULL sont indexés par Postgres.
+  @@index([ownerId])
 }
 
 /// Nom et instructions traduits. Le dataset fournit 10 langues ; on n'importe
@@ -163,6 +176,9 @@ model User {
 
   /// Renseigné à la fin du parcours d'accueil. Nul tant qu'il n'a pas eu lieu.
   onboardedAt DateTime?
+
+  /// Exercices personnalisés. Supprimer le compte les supprime avec lui (D18).
+  customExercises Exercise[]
 
   @@unique([email])
   @@map("user")

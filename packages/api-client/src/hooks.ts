@@ -10,12 +10,14 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  type CreateExerciseInput,
   type CurrentUser,
   type ExerciseDetail,
   type ExerciseListQuery,
   type ExerciseListResponse,
   type HealthResponse,
   type Locale,
+  type UpdateExerciseInput,
   type UpdateMeInput,
   type VersionResponse,
 } from "@better-lift/validators";
@@ -36,6 +38,12 @@ export const queryKeys = {
    * résultat du précédent.
    */
   exercises: (query: Partial<ExerciseListQuery> = {}) => ["exercises", query] as const,
+  /**
+   * Racine des listes. Une invalidation doit porter sur **toutes** les
+   * combinaisons de filtres : créer un exercice le fait entrer dans des listes
+   * dont on ne connaît pas les filtres depuis la mutation.
+   */
+  exercisesAll: ["exercises"] as const,
   exercise: (id: string, locale?: Locale) => ["exercise", id, locale ?? null] as const,
 };
 
@@ -118,6 +126,64 @@ export function useExercise(
     staleTime: 5 * 60_000,
     // Un 404 est une réponse, pas une panne.
     retry: false,
+  });
+}
+
+/**
+ * Création d'un exercice personnalisé.
+ *
+ * Toutes les listes sont invalidées, quels que soient leurs filtres : le
+ * nouvel exercice a de bonnes chances d'appartenir à plusieurs d'entre elles,
+ * et la mutation n'a aucun moyen de savoir lesquelles sont en cache. Le détail
+ * est écrit directement depuis la réponse, qui est déjà la fiche complète.
+ */
+export function useCreateExercise(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<ExerciseDetail, Error, CreateExerciseInput> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateExerciseInput) => client.createExercise(input, locale),
+    onSuccess: async (exercise) => {
+      queryClient.setQueryData(queryKeys.exercise(exercise.id, exercise.locale), exercise);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.exercisesAll });
+    },
+  });
+}
+
+export function useUpdateExercise(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<ExerciseDetail, Error, { id: string; input: UpdateExerciseInput }> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }) => client.updateExercise(id, input, locale),
+    onSuccess: async (exercise) => {
+      queryClient.setQueryData(queryKeys.exercise(exercise.id, exercise.locale), exercise);
+      // Un renommage change la place de l'exercice dans un tri alphabétique :
+      // remplacer la fiche sans réinvalider les listes les laisserait mal
+      // ordonnées.
+      await queryClient.invalidateQueries({ queryKey: queryKeys.exercisesAll });
+    },
+  });
+}
+
+/**
+ * Archivage. La fiche est **retirée du cache** plutôt que mise à jour : un
+ * exercice archivé répond désormais 404, et garder sa dernière version en cache
+ * ferait afficher une fiche qui n'existe plus.
+ */
+export function useArchiveExercise(client: ApiClient): UseMutationResult<void, Error, string> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => client.archiveExercise(id),
+    onSuccess: async (_result, id) => {
+      queryClient.removeQueries({ queryKey: ["exercise", id] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.exercisesAll });
+    },
   });
 }
 
