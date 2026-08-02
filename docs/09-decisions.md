@@ -124,6 +124,14 @@ Le modèle de données est prêt pour ce scénario : `thumbnailUrl` et `animatio
 
 Un compte supprimé disparaît en base immédiatement, en cascade réelle (pas un drapeau). Les sauvegardes sont purgées sous 30 jours. Export JSON à la demande.
 
+### D21 — Listes mobiles : `FlatList` tant que la pagination suffit
+
+La [doc 06](06-app-mobile.md) prescrivait `FlashList` pour le catalogue, au motif de ses 1 324 exercices. Le motif ne tient pas : la liste est **paginée par curseur**, vingt lignes à la fois, et rien ne monte jamais le catalogue entier en mémoire. Sur ce volume, `FlatList` est indistinguable.
+
+Ce qu'on évite en attendant : un module natif de plus dans une application dont le **development build n'a toujours pas tourné sur appareil**. Chaque dépendance native ajoutée avant cette vérification allonge la liste des suspects le jour où le build échouera.
+
+Le jour où une liste non paginée apparaît — l'historique complet, le sélecteur d'exercices d'une séance en cours —, ou si le défilement se dégrade à la mesure, `FlashList` reprend sa place. La décision est donc un report, pas un renoncement.
+
 ## Actions à mener (pas des décisions)
 
 - [ ] **Nom et disponibilité** : vérifier le domaine `better-lift.app`, les identifiants App Store et Play Store, et l'absence de conflit de marque.

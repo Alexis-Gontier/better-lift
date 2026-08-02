@@ -11,7 +11,7 @@ paths:
 - `localhost` désigne le téléphone, pas la machine de dev. L'URL d'API vient de `EXPO_PUBLIC_API_URL` (IP LAN). Émulateur Android : `10.0.2.2`.
 - **`EXPO_PUBLIC_*` doit vivre dans `apps/mobile/.env`, pas à la racine du monorepo.** Expo ne lit que le `.env` de son propre dossier ; une valeur placée à la racine est ignorée sans avertissement et le bundle retombe sur la valeur de repli du code. Après tout changement, relancer Metro avec `--clear` : le cache conserve les valeurs inlinées précédentes.
 - **Le development build est désormais obligatoire** : `expo-secure-store` est installé depuis le spike d'authentification (31 juillet 2026). Expo Go ne suffit plus.
-- `FlashList` pour les longues listes (le catalogue fait 1 324 exercices).
+- `FlashList` pour les listes **non paginées**. Le catalogue, lui, est paginé par curseur et reste en `FlatList` (D21) — ne pas ajouter le module natif sans mesure qui le justifie.
 
 ## Séance active — le cœur du produit
 
