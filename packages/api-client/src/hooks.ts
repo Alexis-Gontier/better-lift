@@ -17,8 +17,15 @@ import {
   type ExerciseListResponse,
   type HealthResponse,
   type Locale,
+  type RoutineDetail,
+  type RoutineFolder,
+  type RoutineFolderInput,
+  type RoutineListQuery,
+  type RoutineStructureInput,
+  type RoutineSummary,
   type UpdateExerciseInput,
   type UpdateMeInput,
+  type UpdateRoutineInput,
   type VersionResponse,
 } from "@better-lift/validators";
 
@@ -45,6 +52,12 @@ export const queryKeys = {
    */
   exercisesAll: ["exercises"] as const,
   exercise: (id: string, locale?: Locale) => ["exercise", id, locale ?? null] as const,
+
+  routineFolders: ["routine-folders"] as const,
+  routines: (query: Partial<RoutineListQuery> = {}) => ["routines", query] as const,
+  /** Racine des listes de routines : cible des invalidations après écriture. */
+  routinesAll: ["routines"] as const,
+  routine: (id: string, locale?: Locale) => ["routine", id, locale ?? null] as const,
 };
 
 export function useHealth(client: ApiClient): UseQueryResult<HealthResponse, Error> {
@@ -184,6 +197,191 @@ export function useArchiveExercise(client: ApiClient): UseMutationResult<void, E
       queryClient.removeQueries({ queryKey: ["exercise", id] });
       await queryClient.invalidateQueries({ queryKey: queryKeys.exercisesAll });
     },
+  });
+}
+
+// ── Routines ──────────────────────────────────────────────────────────────
+
+/**
+ * Après toute écriture sur une routine ou un dossier, **les deux** familles de
+ * listes sont invalidées.
+ *
+ * Elles sont couplées plus qu'il n'y paraît : déplacer une routine change le
+ * `routineCount` de deux dossiers, en supprimer une change celui d'un seul, et
+ * supprimer un dossier renvoie ses routines à la racine. Invalider finement
+ * demanderait de rejouer cette logique côté client, pour économiser une requête
+ * sur des listes qui tiennent à l'écran.
+ */
+async function invalidateRoutineViews(queryClient: ReturnType<typeof useQueryClient>) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.routinesAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.routineFolders }),
+  ]);
+}
+
+export function useRoutineFolders(client: ApiClient): UseQueryResult<RoutineFolder[], Error> {
+  return useQuery({
+    queryKey: queryKeys.routineFolders,
+    queryFn: ({ signal }) => client.listRoutineFolders(signal),
+    staleTime: 30_000,
+  });
+}
+
+export function useRoutines(
+  client: ApiClient,
+  query: Partial<RoutineListQuery> = {},
+): UseQueryResult<RoutineSummary[], Error> {
+  return useQuery({
+    queryKey: queryKeys.routines(query),
+    queryFn: ({ signal }) => client.listRoutines(query, signal),
+    staleTime: 30_000,
+  });
+}
+
+export function useRoutine(
+  client: ApiClient,
+  id: string,
+  locale?: Locale,
+): UseQueryResult<RoutineDetail, Error> {
+  return useQuery({
+    queryKey: queryKeys.routine(id, locale),
+    queryFn: ({ signal }) => client.getRoutine(id, locale, signal),
+    // Un 404 est une réponse, pas une panne.
+    retry: false,
+  });
+}
+
+export function useCreateRoutineFolder(
+  client: ApiClient,
+): UseMutationResult<RoutineFolder, Error, RoutineFolderInput> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: RoutineFolderInput) => client.createRoutineFolder(input),
+    onSuccess: () => invalidateRoutineViews(queryClient),
+  });
+}
+
+export function useUpdateRoutineFolder(
+  client: ApiClient,
+): UseMutationResult<RoutineFolder, Error, { id: string; input: RoutineFolderInput }> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }) => client.updateRoutineFolder(id, input),
+    onSuccess: () => invalidateRoutineViews(queryClient),
+  });
+}
+
+export function useDeleteRoutineFolder(client: ApiClient): UseMutationResult<void, Error, string> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => client.deleteRoutineFolder(id),
+    // Les routines du dossier remontent à la racine : leur `folderId` a changé
+    // côté serveur, les listes en cache sont périmées.
+    onSuccess: () => invalidateRoutineViews(queryClient),
+  });
+}
+
+export function useReorderRoutineFolders(
+  client: ApiClient,
+): UseMutationResult<RoutineFolder[], Error, string[]> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => client.reorderRoutineFolders(ids),
+    onSuccess: (folders) => {
+      // La réponse **est** la liste réordonnée : la réécrire évite un
+      // aller-retour et le clignotement d'un rechargement après un glisser.
+      queryClient.setQueryData(queryKeys.routineFolders, folders);
+    },
+  });
+}
+
+export function useCreateRoutine(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<RoutineDetail, Error, RoutineStructureInput> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: RoutineStructureInput) => client.createRoutine(input, locale),
+    onSuccess: async (routine) => {
+      queryClient.setQueryData(queryKeys.routine(routine.id, locale), routine);
+      await invalidateRoutineViews(queryClient);
+    },
+  });
+}
+
+/** `PUT` : l'éditeur envoie son brouillon complet, le serveur remplace tout. */
+export function useReplaceRoutine(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<RoutineDetail, Error, { id: string; input: RoutineStructureInput }> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }) => client.replaceRoutine(id, input, locale),
+    onSuccess: async (routine) => {
+      queryClient.setQueryData(queryKeys.routine(routine.id, locale), routine);
+      await invalidateRoutineViews(queryClient);
+    },
+  });
+}
+
+export function useUpdateRoutine(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<RoutineDetail, Error, { id: string; input: UpdateRoutineInput }> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }) => client.updateRoutine(id, input, locale),
+    onSuccess: async (routine) => {
+      queryClient.setQueryData(queryKeys.routine(routine.id, locale), routine);
+      await invalidateRoutineViews(queryClient);
+    },
+  });
+}
+
+export function useDeleteRoutine(client: ApiClient): UseMutationResult<void, Error, string> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => client.deleteRoutine(id),
+    onSuccess: async (_result, id) => {
+      // La routine répond désormais 404 : garder sa dernière version en cache
+      // ferait afficher un écran qui n'existe plus.
+      queryClient.removeQueries({ queryKey: ["routine", id] });
+      await invalidateRoutineViews(queryClient);
+    },
+  });
+}
+
+export function useDuplicateRoutine(
+  client: ApiClient,
+  locale?: Locale,
+): UseMutationResult<RoutineDetail, Error, string> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => client.duplicateRoutine(id, locale),
+    onSuccess: async (routine) => {
+      queryClient.setQueryData(queryKeys.routine(routine.id, locale), routine);
+      await invalidateRoutineViews(queryClient);
+    },
+  });
+}
+
+export function useReorderRoutines(
+  client: ApiClient,
+): UseMutationResult<RoutineSummary[], Error, string[]> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => client.reorderRoutines(ids),
+    onSuccess: () => invalidateRoutineViews(queryClient),
   });
 }
 

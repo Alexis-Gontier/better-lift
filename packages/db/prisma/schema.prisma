@@ -34,6 +34,15 @@ enum ExerciseType {
   DISTANCE_DURATION // course, rameur : distance + durée
 }
 
+/// Nature d'une série, cible comme réalisée.
+/// Doit rester aligné sur `SetType` dans packages/core.
+enum SetType {
+  WARMUP // exclue du volume et des records
+  NORMAL
+  FAILURE
+  DROP
+}
+
 /// Unité d'affichage du profil. Les données restent en métrique quoi qu'il
 /// arrive (règle non négociable n°3) : le kg/lb ne se persiste jamais.
 enum UnitSystem {
@@ -107,7 +116,8 @@ model Exercise {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  translations ExerciseTranslation[]
+  translations     ExerciseTranslation[]
+  routineExercises RoutineExercise[]
 
   @@index([bodyPart])
   @@index([equipment])
@@ -179,6 +189,8 @@ model User {
 
   /// Exercices personnalisés. Supprimer le compte les supprime avec lui (D18).
   customExercises Exercise[]
+  routineFolders  RoutineFolder[]
+  routines        Routine[]
 
   @@unique([email])
   @@map("user")
@@ -230,4 +242,109 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// ─────────────────────────────────────────────
+// Routines (gabarits)
+//
+// Une routine est un **gabarit**, une séance en sera un instantané
+// indépendant (règle non négociable n°5). Rien de ce qui vit ici ne doit
+// pouvoir altérer un historique déjà enregistré.
+// ─────────────────────────────────────────────
+
+model RoutineFolder {
+  id       String @id @default(cuid())
+  userId   String
+  name     String @db.VarChar(120)
+  position Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routines Routine[]
+
+  @@index([userId, position])
+}
+
+model Routine {
+  id       String  @id @default(cuid())
+  userId   String
+  folderId String?
+  name     String  @db.VarChar(120)
+  notes    String? @db.Text
+  position Int     @default(0)
+
+  /// Dénormalisé pour trier « dernière utilisée » sans jointure sur les séances.
+  /// Écrit à la fin d'une séance, jamais calculé à la lecture.
+  lastPerformedAt DateTime?
+  performedCount  Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Suppression **logique** : une séance passée peut encore désigner cette
+  /// routine, et l'historique ne change jamais rétroactivement (doc 03).
+  deletedAt DateTime?
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Supprimer un dossier ne supprime pas ses routines : elles remontent à la
+  /// racine (doc 04).
+  folder RoutineFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  exercises RoutineExercise[]
+
+  @@index([userId, deletedAt])
+  @@index([folderId, position])
+}
+
+model RoutineExercise {
+  id         String  @id @default(cuid())
+  routineId  String
+  exerciseId String
+  position   Int
+  notes      String? @db.VarChar(500)
+
+  /// Surcharge le repos par défaut du profil, pour ce seul exercice.
+  restSec Int?
+
+  /// Les exercices d'une même routine partageant cette valeur non nulle
+  /// forment un superset. Le modèle le porte dès la V1, l'interface viendra
+  /// en V2 (D8) — avoir le champ maintenant évite une migration de données.
+  supersetGroup Int?
+
+  routine  Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  /// `Restrict` : un exercice référencé par une routine ne s'efface pas, il
+  /// s'archive (invariant 8, doc 03).
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+
+  sets RoutineSet[]
+
+  /// Interdit deux exercices à la même place. Corollaire à ne pas oublier :
+  /// un échange naïf de positions viole la contrainte, il faut réécrire
+  /// l'ensemble dans une transaction (invariant 3).
+  @@unique([routineId, position])
+  @@index([exerciseId])
+}
+
+/// Série **cible**. Tous les champs de valeur sont optionnels : une routine
+/// peut ne prescrire qu'un nombre de séries, sans charge ni répétitions.
+model RoutineSet {
+  id                String  @id @default(cuid())
+  routineExerciseId String
+  position          Int
+  type              SetType @default(NORMAL)
+
+  /// Métrique partout, et `Decimal` jamais `Float` pour les charges
+  /// (règles non négociables n°3 et 4).
+  targetReps        Int?
+  targetWeightKg    Decimal? @db.Decimal(7, 2)
+  targetDurationSec Int?
+  targetDistanceM   Decimal? @db.Decimal(9, 2)
+  /// Effort perçu, de 1.0 à 10.0.
+  targetRpe         Decimal? @db.Decimal(3, 1)
+
+  routineExercise RoutineExercise @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([routineExerciseId, position])
 }

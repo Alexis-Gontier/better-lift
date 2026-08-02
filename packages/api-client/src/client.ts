@@ -12,8 +12,19 @@ import {
   type HealthResponse,
   healthResponseSchema,
   type Locale,
+  type RoutineDetail,
+  type RoutineFolder,
+  type RoutineFolderInput,
+  type RoutineListQuery,
+  type RoutineStructureInput,
+  type RoutineSummary,
+  routineDetailSchema,
+  routineFolderListResponseSchema,
+  routineFolderSchema,
+  routineListResponseSchema,
   type UpdateExerciseInput,
   type UpdateMeInput,
+  type UpdateRoutineInput,
   type VersionResponse,
   versionResponseSchema,
 } from "@better-lift/validators";
@@ -62,6 +73,47 @@ export interface ApiClient {
   ) => Promise<ExerciseDetail>;
   /** Archive, ne supprime pas : l'historique continue de le référencer. */
   archiveExercise: (id: string, signal?: AbortSignal) => Promise<void>;
+
+  listRoutineFolders: (signal?: AbortSignal) => Promise<RoutineFolder[]>;
+  createRoutineFolder: (input: RoutineFolderInput, signal?: AbortSignal) => Promise<RoutineFolder>;
+  updateRoutineFolder: (
+    id: string,
+    input: RoutineFolderInput,
+    signal?: AbortSignal,
+  ) => Promise<RoutineFolder>;
+  /** Les routines du dossier remontent à la racine, elles ne sont pas supprimées. */
+  deleteRoutineFolder: (id: string, signal?: AbortSignal) => Promise<void>;
+  /** L'ordre **complet**, pas un déplacement relatif. */
+  reorderRoutineFolders: (ids: string[], signal?: AbortSignal) => Promise<RoutineFolder[]>;
+
+  listRoutines: (
+    query?: Partial<RoutineListQuery>,
+    signal?: AbortSignal,
+  ) => Promise<RoutineSummary[]>;
+  getRoutine: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<RoutineDetail>;
+  createRoutine: (
+    input: RoutineStructureInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<RoutineDetail>;
+  /** **Remplace** la structure entière : l'éditeur envoie son brouillon complet. */
+  replaceRoutine: (
+    id: string,
+    input: RoutineStructureInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<RoutineDetail>;
+  /** Métadonnées seules — renommer, déplacer — sans toucher à la structure. */
+  updateRoutine: (
+    id: string,
+    input: UpdateRoutineInput,
+    locale?: Locale,
+    signal?: AbortSignal,
+  ) => Promise<RoutineDetail>;
+  /** Suppression logique : l'historique continue de désigner la routine. */
+  deleteRoutine: (id: string, signal?: AbortSignal) => Promise<void>;
+  duplicateRoutine: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<RoutineDetail>;
+  reorderRoutines: (ids: string[], signal?: AbortSignal) => Promise<RoutineSummary[]>;
 }
 
 /**
@@ -70,7 +122,7 @@ export interface ApiClient {
  * les valeurs absentes sont omises plutôt qu'envoyées vides, un
  * `?q=` déclencherait sinon une erreur de validation.
  */
-function toSearchParams(query: Partial<ExerciseListQuery>): string {
+function toSearchParams(query: Record<string, unknown>): string {
   const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(query)) {
@@ -228,5 +280,72 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       ),
     archiveExercise: (id, signal) =>
       requestNoContent(`/v1/exercises/${encodeURIComponent(id)}`, "DELETE", signal),
+
+    listRoutineFolders: async (signal) =>
+      (await request("/v1/routine-folders", routineFolderListResponseSchema, signal)).data,
+    createRoutineFolder: (input, signal) =>
+      request("/v1/routine-folders", routineFolderSchema, signal, {
+        method: "POST",
+        body: input,
+      }),
+    updateRoutineFolder: (id, input, signal) =>
+      request(`/v1/routine-folders/${encodeURIComponent(id)}`, routineFolderSchema, signal, {
+        method: "PATCH",
+        body: input,
+      }),
+    deleteRoutineFolder: (id, signal) =>
+      requestNoContent(`/v1/routine-folders/${encodeURIComponent(id)}`, "DELETE", signal),
+    reorderRoutineFolders: async (ids, signal) =>
+      (
+        await request("/v1/routine-folders/reorder", routineFolderListResponseSchema, signal, {
+          method: "POST",
+          body: { ids },
+        })
+      ).data,
+
+    listRoutines: async (query = {}, signal) =>
+      (await request(`/v1/routines${toSearchParams(query)}`, routineListResponseSchema, signal))
+        .data,
+    getRoutine: (id, locale, signal) =>
+      request(
+        `/v1/routines/${encodeURIComponent(id)}${localeQuery(locale)}`,
+        routineDetailSchema,
+        signal,
+      ),
+    createRoutine: (input, locale, signal) =>
+      request(`/v1/routines${localeQuery(locale)}`, routineDetailSchema, signal, {
+        method: "POST",
+        body: input,
+      }),
+    replaceRoutine: (id, input, locale, signal) =>
+      request(
+        `/v1/routines/${encodeURIComponent(id)}${localeQuery(locale)}`,
+        routineDetailSchema,
+        signal,
+        { method: "PUT", body: input },
+      ),
+    updateRoutine: (id, input, locale, signal) =>
+      request(
+        `/v1/routines/${encodeURIComponent(id)}${localeQuery(locale)}`,
+        routineDetailSchema,
+        signal,
+        { method: "PATCH", body: input },
+      ),
+    deleteRoutine: (id, signal) =>
+      requestNoContent(`/v1/routines/${encodeURIComponent(id)}`, "DELETE", signal),
+    duplicateRoutine: (id, locale, signal) =>
+      request(
+        `/v1/routines/${encodeURIComponent(id)}/duplicate${localeQuery(locale)}`,
+        routineDetailSchema,
+        signal,
+        { method: "POST" },
+      ),
+    reorderRoutines: async (ids, signal) =>
+      (
+        await request("/v1/routines/reorder", routineListResponseSchema, signal, {
+          method: "POST",
+          body: { ids },
+        })
+      ).data,
   };
 }
