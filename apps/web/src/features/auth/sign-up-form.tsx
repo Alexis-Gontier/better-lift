@@ -4,13 +4,19 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { Field, FormError, Separator, SubmitButton } from "./form-parts";
+import { FormAlert, FormSeparator, PasswordField, SubmitButton, TextField } from "./form-parts";
 import { safeNextPath } from "./next-path";
 import { SocialButtons } from "./social-buttons";
+import {
+  MIN_PASSWORD_LENGTH,
+  validateEmail,
+  validateIfFilled,
+  validateName,
+  validatePassword,
+} from "./validation";
 import { signUp } from "@/lib/auth-client";
 
-/** Aligné sur `minPasswordLength` de l'instance Better Auth. */
-const MIN_PASSWORD_LENGTH = 8;
+type FieldName = "name" | "email" | "password";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -18,20 +24,70 @@ export function SignUpForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const destination = safeNextPath(searchParams.get("next"));
 
+  function validate(field: FieldName, value: string) {
+    if (field === "name") {
+      return validateName(value);
+    }
+
+    if (field === "email") {
+      return validateEmail(value);
+    }
+
+    return validatePassword(value, "new");
+  }
+
+  /**
+   * Erreur posée au `blur`, levée à la frappe suivante. Un champ resté vide ne
+   * dit rien : voir `validateIfFilled`.
+   */
+  function onFieldBlur(field: FieldName, value: string) {
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: validateIfFilled(value, (input) => validate(field, input)) ?? undefined,
+    }));
+  }
+
+  function clearFieldError(field: FieldName) {
+    setFieldErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+
+      const { [field]: _removed, ...rest } = current;
+
+      return rest;
+    });
+  }
+
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+
+    const nextErrors: Partial<Record<FieldName, string>> = {
+      name: validateName(name) ?? undefined,
+      email: validateEmail(email) ?? undefined,
+      password: validatePassword(password, "new") ?? undefined,
+    };
+
+    if (nextErrors.name || nextErrors.email || nextErrors.password) {
+      setFieldErrors(nextErrors);
+      setError(null);
+      return;
+    }
+
+    setFieldErrors({});
     setError(null);
     setPending(true);
 
     const result = await signUp.email({
-      email,
+      email: email.trim(),
       password,
-      name,
+      name: name.trim(),
       /**
        * Destination du lien contenu dans l'e-mail de vérification. Elle doit
        * être absolue : c'est l'API qui redirige à la fin, un chemin relatif
@@ -42,11 +98,18 @@ export function SignUpForm() {
 
     if (result.error) {
       setPending(false);
-      setError(
-        result.error.status === 422 || result.error.code === "USER_ALREADY_EXISTS"
-          ? "Un compte existe déjà avec cette adresse."
-          : (result.error.message ?? "La création du compte a échoué."),
-      );
+
+      /*
+        Le compte existant est signalé **sous le champ e-mail**, pas dans le
+        bandeau : c'est le seul champ à corriger, et l'y rattacher évite de
+        relire les trois. Le reste n'a pas de champ coupable et reste en haut.
+      */
+      if (result.error.status === 422 || result.error.code === "USER_ALREADY_EXISTS") {
+        setFieldErrors({ email: "Un compte existe déjà avec cette adresse." });
+        return;
+      }
+
+      setError(result.error.message ?? "La création du compte a échoué.");
       return;
     }
 
@@ -59,50 +122,68 @@ export function SignUpForm() {
   }
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={onSubmit} className="space-y-4">
-        <Field
+    <div className="flex flex-col gap-5">
+      {/* Fournisseurs en premier — même raison qu'à la connexion. */}
+      <SocialButtons callbackPath={destination} />
+
+      <FormSeparator>ou</FormSeparator>
+
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+        <TextField
           label="Nom"
           type="text"
-          required
           autoComplete="name"
           autoFocus
+          placeholder="Entrez votre nom"
           value={name}
-          onChange={(event) => setName(event.target.value)}
+          error={fieldErrors.name}
+          onChange={(event) => {
+            setName(event.target.value);
+            clearFieldError("name");
+          }}
+          onBlur={(event) => onFieldBlur("name", event.target.value)}
         />
 
-        <Field
+        <TextField
           label="Adresse e-mail"
           type="email"
-          required
+          inputMode="email"
           autoComplete="email"
+          placeholder="Entrez votre e-mail"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          error={fieldErrors.email}
+          onChange={(event) => {
+            setEmail(event.target.value);
+            clearFieldError("email");
+          }}
+          onBlur={(event) => onFieldBlur("email", event.target.value)}
         />
 
-        <Field
+        <PasswordField
           label="Mot de passe"
-          type="password"
-          required
-          minLength={MIN_PASSWORD_LENGTH}
           autoComplete="new-password"
+          placeholder="Entrez votre mot de passe"
           hint={`${MIN_PASSWORD_LENGTH} caractères minimum.`}
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          error={fieldErrors.password}
+          onChange={(event) => {
+            setPassword(event.target.value);
+            clearFieldError("password");
+          }}
+          onBlur={(event) => onFieldBlur("password", event.target.value)}
         />
 
-        {error && <FormError>{error}</FormError>}
+        {error && <FormAlert>{error}</FormAlert>}
 
         <SubmitButton pending={pending}>Créer le compte</SubmitButton>
       </form>
 
-      <Separator>ou</Separator>
-
-      <SocialButtons callbackPath={destination} />
-
-      <p className="text-center text-sm text-ink-muted">
+      <p className="text-center text-sm text-muted-foreground">
         Déjà inscrit ?{" "}
-        <Link href="/login" className="underline underline-offset-4">
+        <Link
+          href="/login"
+          className="rounded-sm font-medium text-foreground underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
           Se connecter
         </Link>
       </p>

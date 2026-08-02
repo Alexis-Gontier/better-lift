@@ -1,0 +1,19 @@
+{
+  // `react-source` et non `react-library` : ce paquet ne compile pas vers
+  // `dist`, il exporte ses `.tsx` bruts et c'est Next qui les transpile
+  // (`transpilePackages`). Deux raisons — Tailwind 4 doit lire les classes
+  // dans le source pour les générer, et une étape `tsc` de plus déplacerait
+  // les directives `"use client"` de leur position en tête de fichier.
+  "extends": "@better-lift/config/tsconfig/react-source",
+  "compilerOptions": {
+    // Les composants générés par le CLI shadcn s'importent entre eux en
+    // `@better-lift/ui/...`. Sans cet alias, TypeScript devrait résoudre le
+    // paquet par son `exports`, ce qui échoue tant que pnpm n'a pas relié le
+    // workspace — et rend l'édition d'un composant dépendante d'un install.
+    "paths": {
+      "@better-lift/ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "postcss.config.mjs"],
+  "exclude": ["node_modules"]
+}

@@ -25,8 +25,8 @@ packages/db          Prisma 7 : schéma, migrations, seed, client
 packages/core        logique métier pure — aucun I/O, aucun React, aucun Prisma
 packages/validators  schémas Zod partagés (source de vérité des contrats)
 packages/api-client  client typé + hooks TanStack Query
-packages/ui          composants shadcn/ui — web uniquement
-packages/config      tsconfig partagés, design tokens
+packages/ui          primitives shadcn/ui + globals.css — web uniquement, exporté en source (pas de build)
+packages/config      tsconfig partagés
 ```
 
 ## Règles non négociables

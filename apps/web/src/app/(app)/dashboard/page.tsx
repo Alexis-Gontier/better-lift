@@ -17,7 +17,7 @@ export default function DashboardPage() {
     <main className="space-y-8">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Tableau de bord</h1>
-        <p className="text-ink-muted">
+        <p className="text-muted-foreground">
           Zone authentifiée. Les cartes de la doc 05 arriveront avec les séances.
         </p>
       </header>
@@ -26,8 +26,8 @@ export default function DashboardPage() {
         <VerificationNotice />
       </Suspense>
 
-      <section className="rounded-xl bg-surface-raised p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+      <section className="rounded-xl bg-card p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Session
         </h2>
         <SessionPanel />

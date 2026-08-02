@@ -1,4 +1,5 @@
-/** Tailwind 4 : la configuration est CSS-first, ce fichier est le seul réglage. */
-export default {
-  plugins: ["@tailwindcss/postcss"],
-};
+/**
+ * La configuration vit avec la feuille de style, dans `@better-lift/ui`.
+ * Deux fichiers listant les mêmes plugins finiraient par diverger.
+ */
+export { default } from "@better-lift/ui/postcss.config";

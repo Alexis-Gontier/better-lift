@@ -103,7 +103,7 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 - [x] Exercices personnalisés : création, modification et archivage. Le web crée et modifie ; le mobile crée et archive, l'édition restant l'affaire de l'atelier. Un filtre d'origine (tous / catalogue / les miens) sépare les deux ensembles sur les deux surfaces.
 - [x] Routines : CRUD complet + dossiers, éditeur web soigné, consultation mobile. L'éditeur web se pilote aussi au clavier. Restent, et les deux attendent les séances : l'édition simplifiée sur mobile (D9) et « démarrer cette routine ».
 - [ ] Séance : démarrage depuis routine ou à vide, saisie complète, minuteur de repos, enregistrement. **L'API et l'écran de saisie mobile sont faits** : brouillon persisté en MMKV, chrono non dérivant, colonne « PRÉC. », minuteur de repos, sortie sans perte, enregistrement idempotent et records calculés serveur. Restent la **séance libre** et l'ajout d'un exercice en cours de séance — les deux demandent un sélecteur d'exercices —, le retour haptique, les notifications de repos, et le détail web.
-- [ ] Historique : liste + détail d'une séance.
+- [x] Historique : liste antéchronologique paginée et calendrier mensuel, filtres par routine et par période persistés dans l'URL, détail d'une séance avec résumé, séries, records et suppression. Reste la **modification d'une séance passée** — `PUT /v1/workouts/:id` existe, il lui manque l'éditeur web.
 - [ ] Dashboard web : les 4 cartes KPI + volume hebdo + séances récentes.
 - [ ] Réglages : unités, langue, repos par défaut.
 - [ ] Suppression de compte + export JSON.

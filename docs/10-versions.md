@@ -45,7 +45,8 @@ Vérifié le **31 juillet 2026**. À revalider à chaque démarrage de phase (V0
 | TanStack Query               | **5.101.x**                  |                             |
 | Tailwind CSS                 | **4.x**                      | Web. Config CSS-first.      |
 | NativeWind                   | **v4 stable** (Tailwind 3.x) | ⚠️ voir le point ci-dessous |
-| shadcn/ui                    | courant                      | Web uniquement.             |
+| shadcn/ui                    | CLI **4.16.x**, base `radix`, preset `vega` | Web uniquement, dans `packages/ui` (D24). `shadcn` est aussi une dépendance d'exécution : `globals.css` fait `@import "shadcn/tailwind.css"`. |
+| radix-ui                     | **1.6.x**                    | Paquet unifié, pas les anciens `@radix-ui/react-*`. |
 | dnd-kit, Recharts, FlashList | courants                     |                             |
 
 ---

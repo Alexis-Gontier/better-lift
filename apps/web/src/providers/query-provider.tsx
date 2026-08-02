@@ -8,7 +8,7 @@ import { useState } from "react";
  * en rendu serveur, une instance de module serait partagée entre toutes les
  * requêtes et ferait fuiter le cache d'un utilisateur vers un autre.
  */
-export function Providers({ children }: { children: React.ReactNode }) {
+export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({

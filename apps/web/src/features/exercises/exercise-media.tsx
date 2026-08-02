@@ -27,7 +27,7 @@ export function ExerciseMedia({
   if (!resolved) {
     return (
       <div
-        className={`flex items-center justify-center bg-white/5 text-ink-muted ${className}`}
+        className={`flex items-center justify-center bg-muted/50 text-muted-foreground ${className}`}
         aria-hidden
       >
         <span className="text-lg font-semibold">{name.slice(0, 1).toUpperCase()}</span>
@@ -55,5 +55,5 @@ export function MediaAttribution({ attribution }: { attribution: string | null }
     return null;
   }
 
-  return <p className="text-xs text-ink-muted">{attribution}</p>;
+  return <p className="text-xs text-muted-foreground">{attribution}</p>;
 }

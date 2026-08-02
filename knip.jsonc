@@ -12,7 +12,19 @@
     "apps/mobile": {
       // Routage par fichiers d'Expo Router : chaque écran est un point d'entrée.
       "entry": ["app/**/*.tsx"]
+    },
+    "apps/web": {
+      "ignoreDependencies": [
+        // Utilisées, mais par un chemin que Knip ne suit pas : le
+        // `postcss.config.mjs` du web réexporte celui de `@better-lift/ui`,
+        // et c'est cette configuration-là qui nomme le plugin (D24).
+        "@tailwindcss/postcss",
+        "tailwindcss"
+      ]
     }
+    // `packages/ui` n'a besoin d'aucun réglage : ses `exports` déclarent
+    // `./components/*`, donc Knip traite chaque composant comme un point
+    // d'entrée et ne réclame pas que `buttonVariants` soit consommé.
   },
 
   // `@public` en JSDoc marque un export volontairement conservé avant son

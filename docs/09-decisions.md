@@ -60,6 +60,39 @@ Trois points à connaître avant d'y toucher :
 
 **Limitation assumée du rate limiting.** Les quotas d'authentification de la doc 04 sont appliqués par Better Auth avec un stockage **en mémoire**, donc par instance d'API. Suffisant tant qu'elle tourne sur un seul processus. Le jour où elle est répliquée, il faudra passer au stockage base (modèle `rateLimit` et migration) ou à un stockage secondaire — sans quoi le quota réel devient le quota multiplié par le nombre d'instances.
 
+### D24 — shadcn/ui : base `radix`, preset `vega`, dans `packages/ui`
+
+Adopté le 2 août 2026. Jusque-là shadcn était annoncé partout dans la doc et installé nulle part : pas de `components.json`, pas de `packages/ui`, aucune dépendance UI. Les écrans étaient écrits en Tailwind brut sur une palette maison.
+
+**Base `radix`, pas `base`.** Base UI est le défaut du CLI aujourd'hui, mais `radix` reste disponible et mieux documenté, et son API (`asChild`, composition `Root`/`Trigger`/`Content`) est celle que reproduit `@rn-primitives` — ce qui garde un modèle mental commun si le mobile adopte un jour `react-native-reusables`. Ce n'est pas une décision prise : le mobile est en `StyleSheet` et le reste tant qu'aucun besoin ne le justifie.
+
+**Preset `vega`, palette neutre, `--pointer`.** L'ancienne palette (fond sombre, accent vert `oklch(0.72 0.17 150)`) n'est pas conservée : on repart des neutres du preset, quitte à reteinter plus tard. Le vocabulaire des tokens change entièrement — `surface`/`ink`/`accent`/`danger` deviennent `background`/`foreground`/`primary`/`destructive`. Attention au faux ami : **`accent` existait déjà et voulait dire l'inverse** — c'était la couleur d'action, c'est désormais la surface de survol discrète. Les 398 occurrences ont été converties d'un coup.
+
+**`packages/ui` plutôt que `apps/web/src/components/ui`.** Choix assumé contre l'argument suivant, qui reste vrai : la règle 2 interdit de partager l'UI avec le mobile et il n'y a qu'une app web, donc ce paquet n'aura **jamais** de second consommateur. C'est une frontière de build pour un seul client. Retenu quand même pour tenir la promesse de la doc 02 et garder les primitives à distance du code métier — mais si le paquet devient une gêne, le replier dans `apps/web` est un déplacement de dossier, pas une migration.
+
+Trois conséquences à connaître :
+
+- **Le paquet n'a pas d'étape `build`.** Contrairement à `core`, `validators` et `api-client` qui se compilent vers `dist`, `@better-lift/ui` exporte ses `.tsx` bruts (`"./components/*": "./src/components/*.tsx"`) et c'est Next qui les transpile via `transpilePackages`. Deux raisons : Tailwind 4 doit lire les classes dans le source pour les générer, et une passe `tsc` supplémentaire déplacerait les directives `"use client"` de leur position en tête de fichier. D'où le tsconfig `react-source`, distinct de `react-library`.
+- **La feuille de style vit dans `packages/ui`, donc `apps/web` n'est pas balayé par défaut.** Tailwind 4 détecte ses sources à partir du dossier du CSS. Le `@source` supplémentaire vers `apps/web/src` est obligatoire — sans lui, toute classe utilisée uniquement dans une page du web disparaît du CSS, sans erreur. Le gabarit officiel de shadcn écrit ici un chemin trop court (`../../../apps/**` résout en `packages/apps/**`) : ne pas le recopier tel quel.
+- **`shadcn` est une dépendance d'exécution**, pas seulement un CLI : `globals.css` fait `@import "shadcn/tailwind.css"`.
+
+**Ce que ça coûte à l'outillage.** Le CLI écrit des versions en dur à chaque `add` : les remonter dans le catalog pnpm et remettre `catalog:`. Biome reformate les fichiers générés — accepté, l'alternative (les exclure) laisserait passer de vrais problèmes ; en contrepartie `shadcn add --diff` affichera toujours du bruit de formatage. Deux règles sont désactivées sur `packages/ui/src/components/**`, toutes deux parce qu'elles se redéclencheraient à chaque `add` sur du code qu'on ne maintient pas à la main : `useSemanticElements` (`Field` rend un `<div role="group">` à dessein) et `noDocumentCookie` (`sidebar.tsx` persiste son état replié en écrivant `document.cookie`). Knip n'a rien demandé — les `exports` du paquet font de chaque composant un point d'entrée.
+
+**Les alias de `components.json` pointent tous vers le paquet.** `components`, `hooks`, `lib` et `ui` valent `@better-lift/ui/*`, jamais `@/*`. C'est ce qui fait atterrir les fichiers générés au bon endroit **et** ce qui rend leurs imports croisés résolvables : un `sidebar.tsx` déposé dans `packages/ui` mais important `@/hooks/use-mobile` viserait `apps/web/src/hooks`, qui n'existe pas et que le paquet ne pourrait de toute façon pas atteindre. D'où l'entrée `"./hooks/*"` dans les `exports`, prévue avant son premier occupant (`use-mobile.ts`, tiré par la sidebar).
+
+**Deux primitives s'écartent volontairement du registre.** La règle reste « on ne les écrit pas à la main » ; ces deux-là sont l'exception, et elles sont signalées par un commentaire `ÉCART ASSUMÉ` en tête du bloc concerné.
+
+| Fichier | Écart | Pourquoi pas un `className` |
+|---|---|---|
+| `input.tsx` | variante `size` (`default` 36 px, `lg` 44 px) | Une hauteur de champ décrit une **densité**, pas une exception locale. Passée en `className`, deux écrans finissent par en choisir deux différentes sans que rien ne le signale. |
+| `input-group.tsx` | même variante `size`, plus `h-full` sur `InputGroupInput` | Le contrôle gardait le `h-9` d'`Input` dans un groupe plus haut, et `items-center` le centrait : la zone cliquable était plus courte que la bordure. Défaut invisible tant qu'on ne rate pas le champ. |
+
+Les deux retirent le `size` natif d'`<input>` du typage (une largeur en caractères, que personne n'utilise) — il ne peut pas coexister avec la variante sous le même nom.
+
+**Le coût, et il est réel :** `npx shadcn add input --overwrite` écrase ces fichiers et fait disparaître les variantes **en silence**. Les appels `size="lg"` cesseraient d'avoir un effet sans erreur de compilation, `size` étant un attribut légal sur `<input>`. À vérifier après toute réinstallation d'`input`, et après tout `add` d'un composant qui en dépend (`input-group`, `field`).
+
+**Le `tooltip.tsx` du preset n'embarque pas son `Provider`.** `<Tooltip>` monté sans `TooltipProvider` au-dessus lève à l'exécution. Le provider est donc global, dans `apps/web/src/providers/` — sans lui, `<SidebarMenuButton tooltip="…" />` casse la page dès que la sidebar est repliée, ce qui est précisément le mode où les libellés disparaissent.
+
 ## Produit
 
 ### D6 — Vérification d'e-mail non bloquante en V1

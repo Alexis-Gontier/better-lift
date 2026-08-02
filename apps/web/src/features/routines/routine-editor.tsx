@@ -254,7 +254,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
       {restorable && (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-raised p-4"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-4"
         >
           <p className="text-sm">Un brouillon non enregistré a été retrouvé sur cet appareil.</p>
           <div className="flex gap-2">
@@ -268,7 +268,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
                 setRestorable(null);
                 setDirty(true);
               }}
-              className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-surface"
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
             >
               Restaurer
             </button>
@@ -278,7 +278,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
                 clearDraft(routineId);
                 setRestorable(null);
               }}
-              className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+              className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
             >
               Ignorer
             </button>
@@ -289,7 +289,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <label htmlFor={`${fieldId}-name`} className="mb-1 block text-xs text-ink-muted">
+            <label htmlFor={`${fieldId}-name`} className="mb-1 block text-xs text-muted-foreground">
               Nom de la routine
             </label>
             <input
@@ -297,20 +297,23 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
               value={draft.name}
               onChange={(event) => run({ type: "setName", value: event.target.value })}
               placeholder="Push A"
-              className="w-full rounded-lg bg-surface-raised px-3 py-2 text-lg font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="w-full rounded-lg bg-card px-3 py-2 text-lg font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
 
           <div className="flex flex-wrap gap-3">
             <div>
-              <label htmlFor={`${fieldId}-folder`} className="mb-1 block text-xs text-ink-muted">
+              <label
+                htmlFor={`${fieldId}-folder`}
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Dossier
               </label>
               <select
                 id={`${fieldId}-folder`}
                 value={draft.folderId ?? ""}
                 onChange={(event) => run({ type: "setFolder", value: event.target.value || null })}
-                className="rounded-lg bg-surface-raised px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="rounded-lg bg-card px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <option value="">Aucun</option>
                 {(folders.data ?? []).map((folder) => (
@@ -322,7 +325,10 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
             </div>
 
             <div className="min-w-48 flex-1">
-              <label htmlFor={`${fieldId}-notes`} className="mb-1 block text-xs text-ink-muted">
+              <label
+                htmlFor={`${fieldId}-notes`}
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Notes
               </label>
               <input
@@ -330,14 +336,14 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
                 value={draft.notes}
                 onChange={(event) => run({ type: "setNotes", value: event.target.value })}
                 placeholder="Barre à 20 kg…"
-                className="w-full rounded-lg bg-surface-raised px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="w-full rounded-lg bg-card px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <p className="text-sm text-ink-muted" aria-live="polite">
+          <p className="text-sm text-muted-foreground" aria-live="polite">
             {draft.exercises.length} exercice{draft.exercises.length > 1 ? "s" : ""} ·{" "}
             {countSets(draft)} série{countSets(draft) > 1 ? "s" : ""}
           </p>
@@ -345,7 +351,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
             type="button"
             onClick={() => void save()}
             disabled={mutation.isPending}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-surface disabled:opacity-50"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
             {mutation.isPending ? "Enregistrement…" : "Enregistrer"}
           </button>
@@ -353,7 +359,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
       </header>
 
       {error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
@@ -379,7 +385,7 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
             </SortableContext>
 
             {draft.exercises.length === 0 && (
-              <p className="rounded-xl bg-surface-raised p-5 text-sm text-ink-muted">
+              <p className="rounded-xl bg-card p-5 text-sm text-muted-foreground">
                 Aucun exercice pour l’instant. Ajoutez-en depuis le panneau de droite.
               </p>
             )}

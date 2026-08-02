@@ -1,7 +1,12 @@
 "use client";
 
+import { CircleCheckIcon, MailIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import { Spinner } from "@better-lift/ui/components/spinner";
 
 import { sendVerificationEmail, useSession } from "@/lib/auth-client";
 
@@ -12,6 +17,10 @@ import { sendVerificationEmail, useSession } from "@/lib/auth-client";
  * faut bien que quelque chose le rappelle — sinon la décision « non bloquante »
  * revient en pratique à « jamais vérifié ». D'où ce bandeau, présent tant que
  * l'adresse ne l'est pas, et qui n'interrompt rien.
+ *
+ * Variante `default` et non `destructive` : ce n'est pas une erreur, l'app
+ * fonctionne. Un bandeau rouge sur le premier écran d'un inscrit dirait le
+ * contraire.
  */
 export function VerificationNotice() {
   const searchParams = useSearchParams();
@@ -21,9 +30,10 @@ export function VerificationNotice() {
   // Le lien de l'e-mail revient sur `/dashboard?verified=1`.
   if (searchParams.get("verified")) {
     return (
-      <p role="status" className="rounded-lg bg-accent/10 px-4 py-3 text-sm text-accent">
-        Adresse e-mail confirmée.
-      </p>
+      <Alert>
+        <CircleCheckIcon className="text-primary" />
+        <AlertTitle>Adresse e-mail confirmée.</AlertTitle>
+      </Alert>
     );
   }
 
@@ -45,25 +55,37 @@ export function VerificationNotice() {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface-raised px-4 py-3 ring-1 ring-white/10">
-      <p className="text-sm text-ink-muted">
-        Votre adresse <span className="text-ink">{user.email}</span> n’est pas confirmée.
-      </p>
+    <Alert>
+      <MailIcon />
+      <AlertTitle>Adresse e-mail non confirmée</AlertTitle>
+      <AlertDescription>
+        Nous avons écrit à <span className="break-all text-foreground">{user.email}</span>.
+        {state === "failed" && " Le renvoi a échoué."}
+      </AlertDescription>
 
-      {state === "sent" ? (
-        <span role="status" className="text-sm text-accent">
-          E-mail renvoyé.
-        </span>
-      ) : (
-        <button
-          type="button"
-          disabled={state === "sending"}
-          onClick={() => void resend(user.email)}
-          className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-surface disabled:opacity-50"
-        >
-          {state === "sending" ? "…" : state === "failed" ? "Réessayer" : "Renvoyer l’e-mail"}
-        </button>
-      )}
-    </div>
+      <AlertAction>
+        {state === "sent" ? (
+          /*
+            Le bouton disparaît une fois l'e-mail parti. Le laisser actif
+            invite à recliquer, ce qui ne fait qu'empiler des e-mails
+            identiques — et finit par déclencher la limite de débit.
+          */
+          <span role="status" className="text-sm text-muted-foreground">
+            E-mail renvoyé.
+          </span>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={state === "sending"}
+            aria-busy={state === "sending"}
+            onClick={() => void resend(user.email)}
+          >
+            {state === "sending" && <Spinner data-icon="inline-start" />}
+            {state === "failed" ? "Réessayer" : "Renvoyer"}
+          </Button>
+        )}
+      </AlertAction>
+    </Alert>
   );
 }

@@ -36,15 +36,15 @@ const SKELETON_COUNT = 6;
 function EmptyState({ filters }: { filters: Filters }) {
   if (filters.custom === true && !filters.q.trim() && !filters.bodyPart.length) {
     return (
-      <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+      <div className="space-y-3 rounded-xl bg-card p-5">
         <p className="font-medium">Aucun exercice personnalisé pour l’instant.</p>
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-muted-foreground">
           Utile quand le catalogue ne connaît pas un mouvement de votre salle, ou une variante que
           vous êtes seul à faire.
         </p>
         <Link
           href="/exercises/new"
-          className="inline-block rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-surface"
+          className="inline-block rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
         >
           Créer un exercice
         </Link>
@@ -53,9 +53,9 @@ function EmptyState({ filters }: { filters: Filters }) {
   }
 
   return (
-    <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+    <div className="space-y-3 rounded-xl bg-card p-5">
       <p className="font-medium">Aucun exercice ne correspond.</p>
-      <p className="text-sm text-ink-muted">
+      <p className="text-sm text-muted-foreground">
         {hasActiveFilters(filters)
           ? "Essayer avec moins de filtres, ou une autre orthographe."
           : "Le catalogue semble vide : vérifier que le seed a bien été joué."}
@@ -178,13 +178,13 @@ export function ExerciseCatalog() {
       )}
 
       {exercises.isError && (
-        <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+        <div className="space-y-3 rounded-xl bg-card p-5">
           <p className="font-medium">Le catalogue n’a pas pu être chargé.</p>
-          <p className="text-sm text-ink-muted">{exercises.error.message}</p>
+          <p className="text-sm text-muted-foreground">{exercises.error.message}</p>
           <button
             type="button"
             onClick={() => void exercises.refetch()}
-            className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+            className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
           >
             Réessayer
           </button>
@@ -196,7 +196,7 @@ export function ExerciseCatalog() {
       {items.length > 0 && (
         <>
           {/* Annoncé au lecteur d'écran : sans cela, filtrer ne produit aucun retour audible. */}
-          <p aria-live="polite" className="text-sm text-ink-muted">
+          <p aria-live="polite" className="text-sm text-muted-foreground">
             {items.length} exercice{items.length > 1 ? "s" : ""} affiché
             {items.length > 1 ? "s" : ""}
             {exercises.hasNextPage ? " — la liste continue" : ""}
@@ -215,14 +215,14 @@ export function ExerciseCatalog() {
               type="button"
               onClick={() => void exercises.fetchNextPage()}
               disabled={exercises.isFetchingNextPage}
-              className="w-full rounded-lg py-2.5 text-sm ring-1 ring-white/15 hover:bg-white/5 disabled:opacity-50"
+              className="w-full rounded-lg py-2.5 text-sm ring-1 ring-border hover:bg-accent disabled:opacity-50"
             >
               {exercises.isFetchingNextPage ? "Chargement…" : "Charger la suite"}
             </button>
           )}
 
           {attributions.map((attribution) => (
-            <p key={attribution} className="text-xs text-ink-muted">
+            <p key={attribution} className="text-xs text-muted-foreground">
               {attribution}
             </p>
           ))}

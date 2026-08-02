@@ -10,7 +10,10 @@ export default async function EditRoutinePage({ params }: { params: Promise<{ id
 
   return (
     <main className="space-y-6">
-      <Link href={`/routines/${id}`} className="text-sm text-ink-muted hover:text-ink">
+      <Link
+        href={`/routines/${id}`}
+        className="text-sm text-muted-foreground hover:text-foreground"
+      >
         ← Aperçu
       </Link>
 

@@ -22,8 +22,8 @@ export function RoutineEdit({ id }: { id: string }) {
   if (routine.isPending) {
     return (
       <div className="space-y-3" aria-busy>
-        <div className="h-10 animate-pulse rounded-lg bg-white/5" />
-        <div className="h-48 animate-pulse rounded-xl bg-white/5" />
+        <div className="h-10 animate-pulse rounded-lg bg-muted/50" />
+        <div className="h-48 animate-pulse rounded-xl bg-muted/50" />
       </div>
     );
   }
@@ -32,16 +32,16 @@ export function RoutineEdit({ id }: { id: string }) {
     const missing = routine.error instanceof ApiClientError && routine.error.status === 404;
 
     return (
-      <div className="space-y-3 rounded-xl bg-surface-raised p-5">
+      <div className="space-y-3 rounded-xl bg-card p-5">
         <p className="font-medium">
           {missing ? "Cette routine n’existe plus." : "Routine indisponible."}
         </p>
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-muted-foreground">
           {missing ? "Elle a pu être supprimée depuis." : routine.error.message}
         </p>
         <Link
           href="/routines"
-          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-white/15 hover:bg-white/5"
+          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
         >
           Retour aux routines
         </Link>

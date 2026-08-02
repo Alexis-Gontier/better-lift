@@ -75,7 +75,7 @@ export function SortableRow({
         <button
           type="button"
           aria-label={`Déplacer ${label}`}
-          className="mt-1 cursor-grab touch-none rounded px-1 text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:cursor-grabbing"
+          className="mt-1 cursor-grab touch-none rounded px-1 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >

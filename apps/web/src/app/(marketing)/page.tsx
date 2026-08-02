@@ -16,27 +16,30 @@ export default function HomePage() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-8 px-6 py-16">
       <header className="space-y-1">
         <h1 className="text-3xl font-semibold tracking-tight">better-lift</h1>
-        <p className="text-ink-muted">Préparez vos séances, remplissez-les sans friction.</p>
+        <p className="text-muted-foreground">Préparez vos séances, remplissez-les sans friction.</p>
       </header>
 
       <div className="flex gap-3">
-        <Link href="/signup" className="rounded-lg bg-accent px-4 py-2 font-medium text-surface">
+        <Link
+          href="/signup"
+          className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground"
+        >
           Créer un compte
         </Link>
-        <Link href="/login" className="rounded-lg px-4 py-2 font-medium ring-1 ring-white/15">
+        <Link href="/login" className="rounded-lg px-4 py-2 font-medium ring-1 ring-border">
           Se connecter
         </Link>
       </div>
 
-      <section className="rounded-xl bg-surface-raised p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+      <section className="rounded-xl bg-card p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Chaîne web → API
         </h2>
         <ApiStatus />
       </section>
 
-      <section className="rounded-xl bg-surface-raised p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+      <section className="rounded-xl bg-card p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Logique métier partagée
         </h2>
         <CoreCheck />

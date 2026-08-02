@@ -5,15 +5,15 @@ import { useHealth, useVersion } from "@better-lift/api-client";
 import { apiClient } from "@/lib/api";
 
 const DOT = {
-  ok: "bg-accent",
+  ok: "bg-primary",
   degraded: "bg-amber-400",
-  down: "bg-danger",
+  down: "bg-destructive",
 } as const;
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-1.5">
-      <dt className="text-sm text-ink-muted">{label}</dt>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="font-mono text-sm">{value}</dd>
     </div>
   );
@@ -28,7 +28,7 @@ export function ApiStatus() {
   const version = useVersion(apiClient);
 
   if (health.isPending) {
-    return <p className="text-sm text-ink-muted">Interrogation de l’API…</p>;
+    return <p className="text-sm text-muted-foreground">Interrogation de l’API…</p>;
   }
 
   if (health.isError) {
@@ -38,8 +38,8 @@ export function ApiStatus() {
           <span className={`size-2.5 rounded-full ${DOT.down}`} aria-hidden />
           <span className="font-medium">API injoignable</span>
         </div>
-        <p className="text-sm text-ink-muted">{health.error.message}</p>
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-muted-foreground">{health.error.message}</p>
+        <p className="text-sm text-muted-foreground">
           Vérifier que <code className="font-mono">pnpm dev</code> a bien démarré l’API sur le port
           3001.
         </p>
@@ -58,7 +58,7 @@ export function ApiStatus() {
         </span>
       </div>
 
-      <dl className="divide-y divide-white/5">
+      <dl className="divide-y divide-border">
         <Row label="Base de données" value={db === "ok" ? "connectée" : "injoignable"} />
         <Row label="Version API" value={apiVersion} />
         <Row label="Logique métier" value={version.data?.core ?? "…"} />

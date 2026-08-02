@@ -54,8 +54,8 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
   }
 
   return (
-    <aside className="space-y-3 rounded-xl bg-surface-raised p-4" aria-label="Ajouter un exercice">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+    <aside className="space-y-3 rounded-xl bg-card p-4" aria-label="Ajouter un exercice">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Ajouter un exercice
       </h2>
 
@@ -69,7 +69,7 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
         onChange={(event) => setDraftQuery(event.target.value)}
         placeholder="Rechercher…"
         autoComplete="off"
-        className="w-full rounded-lg bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="w-full rounded-lg bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       />
 
       <fieldset className="flex flex-wrap gap-1.5">
@@ -83,10 +83,10 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
               type="button"
               aria-pressed={pressed}
               onClick={() => toggleBodyPart(bodyPart)}
-              className={`rounded-full px-2.5 py-1 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+              className={`rounded-full px-2.5 py-1 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                 pressed
-                  ? "bg-accent font-medium text-surface"
-                  : "bg-surface text-ink-muted hover:text-ink"
+                  ? "bg-primary font-medium text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:text-foreground"
               }`}
             >
               {BODY_PART_LABELS[bodyPart]}
@@ -95,16 +95,16 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
         })}
       </fieldset>
 
-      {exercises.isPending && <p className="text-sm text-ink-muted">Chargement…</p>}
+      {exercises.isPending && <p className="text-sm text-muted-foreground">Chargement…</p>}
 
       {exercises.isError && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-sm text-destructive">
           {exercises.error.message}
         </p>
       )}
 
       {exercises.isSuccess && items.length === 0 && (
-        <p className="text-sm text-ink-muted">Aucun exercice ne correspond.</p>
+        <p className="text-sm text-muted-foreground">Aucun exercice ne correspond.</p>
       )}
 
       <ul className="max-h-96 space-y-1 overflow-y-auto">
@@ -113,10 +113,10 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
             <button
               type="button"
               onClick={() => onAdd(exercise)}
-              className="w-full rounded-lg px-2 py-1.5 text-left transition hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="w-full rounded-lg px-2 py-1.5 text-left transition hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <span className="block truncate text-sm">{exercise.name}</span>
-              <span className="block truncate text-xs text-ink-muted">
+              <span className="block truncate text-xs text-muted-foreground">
                 {exercise.isCustom ? "Personnalisé · " : ""}
                 {BODY_PART_LABELS[exercise.bodyPart]} · {equipmentLabel(exercise.equipment)}
               </span>
@@ -130,7 +130,7 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
           type="button"
           onClick={() => void exercises.fetchNextPage()}
           disabled={exercises.isFetchingNextPage}
-          className="w-full rounded-lg py-1.5 text-xs ring-1 ring-white/15 hover:bg-white/5 disabled:opacity-50"
+          className="w-full rounded-lg py-1.5 text-xs ring-1 ring-border hover:bg-accent disabled:opacity-50"
         >
           {exercises.isFetchingNextPage ? "Chargement…" : "Charger la suite"}
         </button>

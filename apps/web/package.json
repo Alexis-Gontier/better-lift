@@ -14,13 +14,16 @@
   "dependencies": {
     "@better-lift/api-client": "workspace:*",
     "@better-lift/core": "workspace:*",
+    "@better-lift/ui": "workspace:*",
     "@better-lift/validators": "workspace:*",
     "@dnd-kit/core": "catalog:",
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
     "@tanstack/react-query": "catalog:",
     "better-auth": "catalog:",
+    "lucide-react": "catalog:",
     "next": "16.2.12",
+    "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zod": "catalog:"
@@ -30,7 +33,7 @@
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "catalog:",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",
     "vitest": "catalog:"

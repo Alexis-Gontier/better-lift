@@ -11,7 +11,10 @@ export default async function EditExercisePage({ params }: { params: Promise<{ i
 
   return (
     <main className="space-y-6">
-      <Link href={`/exercises/${id}`} className="text-sm text-ink-muted hover:text-ink">
+      <Link
+        href={`/exercises/${id}`}
+        className="text-sm text-muted-foreground hover:text-foreground"
+      >
         ← Fiche
       </Link>
 

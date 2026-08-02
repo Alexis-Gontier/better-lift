@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
 import { Suspense } from "react";
 
+import { AuthScreen } from "@/features/auth/auth-screen";
+import { FormSkeleton } from "@/features/auth/form-skeleton";
 import { ResetPasswordForm } from "@/features/auth/reset-password-form";
 
 export const metadata: Metadata = { title: "Nouveau mot de passe — better-lift" };
@@ -12,17 +14,13 @@ export const metadata: Metadata = { title: "Nouveau mot de passe — better-lift
  */
 export default function ResetPasswordPage() {
   return (
-    <>
-      <header className="space-y-1">
-        <h1 className="text-xl font-semibold">Nouveau mot de passe</h1>
-        <p className="text-sm text-ink-muted">
-          Choisissez un mot de passe que vous n’utilisez nulle part ailleurs.
-        </p>
-      </header>
-
-      <Suspense fallback={<p className="text-sm text-ink-muted">…</p>}>
+    <AuthScreen
+      title="Nouveau mot de passe"
+      description="Choisissez un mot de passe que vous n’utilisez nulle part ailleurs."
+    >
+      <Suspense fallback={<FormSkeleton fields={2} />}>
         <ResetPasswordForm />
       </Suspense>
-    </>
+    </AuthScreen>
   );
 }
