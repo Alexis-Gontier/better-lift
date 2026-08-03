@@ -20,6 +20,7 @@ import { Skeleton } from "@better-lift/ui/components/skeleton";
 
 import { formatVolume } from "./format";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
+import { useProfileUnits } from "@/features/account/use-profile-units";
 import { apiClient } from "@/lib/api";
 
 const CONFIG = {
@@ -64,6 +65,7 @@ function VolumeChartSkeleton() {
 export function VolumeChart() {
   const locale = useProfileLocale();
   const intlLocale = locale === "en" ? "en-GB" : "fr-FR";
+  const units = useProfileUnits();
   const volume = useStatsVolume(apiClient, { groupBy: "week" });
 
   if (volume.isPending) {
@@ -118,7 +120,7 @@ export function VolumeChart() {
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
-                      formatter={(value) => formatVolume(String(value), intlLocale)}
+                      formatter={(value) => formatVolume(String(value), intlLocale, units)}
                     />
                   }
                 />
@@ -161,7 +163,7 @@ export function VolumeChart() {
                 {points.map((point) => (
                   <tr key={point.periodStart}>
                     <th scope="row">{point.label}</th>
-                    <td>{formatVolume(String(point.volume), intlLocale)}</td>
+                    <td>{formatVolume(String(point.volume), intlLocale, units)}</td>
                     <td>{point.workoutCount}</td>
                   </tr>
                 ))}

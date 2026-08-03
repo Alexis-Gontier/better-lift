@@ -47,18 +47,41 @@ describe("trendOf", () => {
 
 describe("formatVolume", () => {
   it("should use kilograms below a tonne", () => {
-    expect(formatVolume("840.00", "fr-FR")).toBe("840 kg");
-    expect(formatVolume("0.00", "fr-FR")).toBe("0 kg");
+    expect(formatVolume("840.00", "fr-FR", "METRIC")).toBe("840 kg");
+    expect(formatVolume("0.00", "fr-FR", "METRIC")).toBe("0 kg");
   });
 
   it("should switch to tonnes above a tonne", () => {
     // 84 250 kg en kilogrammes est un nombre à six chiffres que personne ne lit.
-    expect(formatVolume("84250.00", "fr-FR")).toBe("84,3 t");
-    expect(formatVolume("1000.00", "fr-FR")).toBe("1 t");
+    expect(formatVolume("84250.00", "fr-FR", "METRIC")).toBe("84,3 t");
+    expect(formatVolume("1000.00", "fr-FR", "METRIC")).toBe("1 t");
+  });
+
+  /**
+   * Le défaut que la page de préférences a révélé : le volume restait en
+   * kilogrammes quel que soit le profil, alors que les charges d'à côté
+   * passaient bien en livres. Deux unités sur le même écran pour la même
+   * grandeur, c'est la confusion qu'un tracker de charges ne peut pas se
+   * permettre.
+   */
+  it("should convert to pounds for an imperial profile", () => {
+    expect(formatVolume("840.00", "en-GB", "IMPERIAL")).toBe("1,852 lb");
+  });
+
+  it("should switch to short tons above two thousand pounds", () => {
+    // La tonne courte vaut 2 000 lb, d'où un seuil différent du métrique.
+    expect(formatVolume("84250.00", "en-GB", "IMPERIAL")).toBe("92.9 t (US)");
+  });
+
+  it("should never label a short ton like a metric one", () => {
+    // Écrire « t » des deux côtés ferait passer 1 000 kg pour 907 kg.
+    expect(formatVolume("50000.00", "fr-FR", "METRIC")).toContain(" t");
+    expect(formatVolume("50000.00", "fr-FR", "IMPERIAL")).toContain("t (US)");
   });
 
   it("should degrade gracefully on a value it cannot read", () => {
-    expect(formatVolume("indisponible", "fr-FR")).toBe("—");
+    expect(formatVolume("indisponible", "fr-FR", "METRIC")).toBe("—");
+    expect(formatVolume("indisponible", "fr-FR", "IMPERIAL")).toBe("—");
   });
 });
 

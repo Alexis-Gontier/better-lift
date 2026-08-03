@@ -268,19 +268,31 @@ GIF d'animation, muscles primaires et secondaires, instructions numérotées dan
 Version approfondie du dashboard : sélecteur de période, progression par exercice, comparaison de périodes, records par exercice. V2 pour l'essentiel.
 
 ### Réglages
-Profil (nom, pseudo, avatar, bio) · Préférences (unités, langue, repos par défaut, visibilité) · Compte (mot de passe, sessions actives, export, suppression).
+Profil (nom, pseudo, avatar, bio) · Préférences (unités, langue, fuseau, repos par défaut, visibilité, thème) · Compte (mot de passe, sessions actives, export, suppression).
+
+**Enregistrement explicite, jamais à la volée.** Le bouton reste désactivé tant que rien n'a bougé, ce qui répond à « est-ce que j'ai enregistré ? » sans avoir à poser la question. Trois des préférences transforment l'interface entière : les appliquer sans qu'on l'ait demandé serait déroutant. Le thème fait exception — il vit hors du profil, dans le navigateur, et s'applique immédiatement.
+
+**Seuls les champs modifiés partent** dans le `PATCH`. Ce n'est pas une optimisation : envoyer tout le profil écraserait un champ changé entre-temps depuis le mobile par une valeur lue avant sa modification. `username` et `bio` deviennent `null` quand on les vide, l'API distinguant « absent » (ne pas toucher) de `null` (effacer).
+
+**Le 409 sur pseudo pris s'affiche sous le champ**, pas en bandeau : l'erreur porte sur une entrée précise, la montrer ailleurs obligerait à deviner laquelle. Le message vient du `details` de l'API.
+
+**Le fuseau ne se choisit pas dans une liste.** Les ~400 fuseaux IANA demanderaient une recherche, donc deux primitives de plus pour un champ qu'on règle une fois. L'écran affiche le fuseau courant et propose celui de l'appareil quand ils diffèrent — le cas réel est « mon fuseau est faux parce que je me suis inscrit en voyage ».
+
+**Ce qui manque encore au Compte** : la modification de l'adresse e-mail (elle demande de vérifier la nouvelle avant de basculer, sans quoi une faute de frappe enferme dehors), la liste des sessions actives, l'export JSON et la suppression du compte. Ces deux derniers sont au périmètre V1 : ce sont eux qui rendent l'app quittable.
 
 ## Détails d'implémentation
 
 **Server / Client Components.** Server par défaut. Passent en client : l'éditeur de routines, les graphiques, la recherche instantanée, les formulaires. La liste des routines et l'historique se rendent côté serveur avec hydratation TanStack Query pour la pagination.
 
-**Affichage des unités.** Un composant `<Weight value={kg} />` lit la préférence utilisateur et formate. Aucun composant n'appelle une conversion à la main — sinon un écran finira en kg pendant que le voisin est en lb. Son pendant `<Distance>` fait la même chose pour les mètres, et les deux vivent dans `features/account/units.tsx`, seul fichier du web qui convertit une unité. Les en-têtes de colonne passent par `useWeightUnitLabel` / `useDistanceUnitLabel` plutôt qu'un « kg » écrit en dur, qui mentirait pour un profil impérial.
+**Affichage des unités.** Un composant `<Weight value={kg} />` lit la préférence utilisateur et formate. Aucun composant n'appelle une conversion à la main — sinon un écran finira en kg pendant que le voisin est en lb. Son pendant `<Distance>` fait la même chose pour les mètres, et les deux vivent dans `features/account/units.tsx`. Les en-têtes de colonne passent par `useWeightUnitLabel` / `useDistanceUnitLabel` plutôt qu'un « kg » écrit en dur, qui mentirait pour un profil impérial.
+
+**Une seule exception, et elle est nommée** : `formatVolume` (`features/dashboard/format.ts`), pour les volumes cumulés. `<Weight>` rend une charge telle quelle ; un total hebdomadaire y donnerait un nombre à six chiffres que personne ne lit, d'où la bascule en tonnes — et en **tonnes courtes** (2 000 lb, notées « t (US) ») pour un profil impérial, parce qu'écrire « t » des deux côtés ferait passer 1 000 kg pour 907 kg. La conversion passe par `toDisplayWeight` de `packages/core`, comme `<Weight>`. Le défaut existait dans la première version du tableau de bord, où le volume restait en kilogrammes quel que soit le profil : c'est l'écran de préférences qui l'a rendu visible.
 
 **Formatage localisé.** `Intl.NumberFormat` et `Intl.DateTimeFormat` avec la locale du profil, pas celle du navigateur : un utilisateur qui a choisi le français sur un navigateur anglais s'attend à du français partout.
 
 **Thème.** Clair et sombre, `next-themes` en `attribute="class"` (la classe `.dark` sur `<html>`, ce qu'attend `@custom-variant dark` côté CSS). Le premier chargement suit `prefers-color-scheme` — `defaultTheme="system"`. Le « sombre par défaut » que visait le produit décrit l'identité visuelle, pas un forçage : imposer le sombre à quelqu'un dont le système est clair, ce serait précisément ne pas respecter la préférence. `<html>` porte `suppressHydrationWarning`, requis parce que le script de next-themes pose la classe avant l'hydratation pour éviter le flash — c'est le seul endroit où l'avertissement est légitime.
 
-**Le sélecteur de thème vit dans le menu du compte**, en pied de sidebar (trois choix : système, clair, sombre). Il était initialement prévu dans Réglages › Préférences ; on le règle en regardant l'écran qu'il transforme, pas depuis un formulaire au bout de deux clics. Il sera **aussi** proposé dans Réglages › Préférences avec les unités et la langue, les deux commandes écrivant la même valeur — c'est un doublon assumé, pas un oubli. Les écrans d'authentification gardent leur propre bascule (`ThemeToggle`), seul endroit où elle est atteignable avant d'avoir un compte.
+**Le sélecteur de thème vit dans le menu du compte**, en pied de sidebar (trois choix : système, clair, sombre). Il était initialement prévu dans Réglages › Préférences ; on le règle en regardant l'écran qu'il transforme, pas depuis un formulaire au bout de deux clics. Il est **aussi** proposé dans Réglages › Préférences avec les unités et la langue, les deux commandes écrivant la même valeur — c'est un doublon assumé, pas un oubli. Les écrans d'authentification gardent leur propre bascule (`ThemeToggle`), seul endroit où elle est atteignable avant d'avoir un compte.
 
 **Graphiques.** Recharts. Toujours accompagnés d'une table de données accessible en lecteur d'écran, ou d'un `aria-label` décrivant la tendance.
 
