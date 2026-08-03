@@ -4,11 +4,21 @@ import { useCallback, useState } from "react";
 import { type ApiClient } from "@better-lift/api-client";
 import { type RoutineDetail } from "@better-lift/validators";
 
-import { draftFromRoutine } from "./draft";
+import { draftFromRoutine, newWorkoutDraft } from "./draft";
 import { readDraft, writeDraft } from "./draft-store";
 
+const ACTIVE_HREF = "/workout/active" as const;
+
 /**
- * « Démarrer cette routine ».
+ * Le paramètre ne transporte **pas** le brouillon — celui-ci reste sur le
+ * disque — mais l'intention de l'entrée : commencer, et non reprendre. Sans
+ * lui, l'écran de séance ne verrait qu'un brouillon trouvé sur le disque, et
+ * annoncerait « séance reprise » à chaque démarrage.
+ */
+const FRESH_HREF = "/workout/active?fresh=1" as const;
+
+/**
+ * « Démarrer cette routine » et « Séance libre ».
  *
  * ## Une séance en cours n'est jamais écrasée
  *
@@ -42,7 +52,7 @@ export function useStartWorkout(client: ApiClient) {
       // Relu au moment de l'appui, et non pris de l'état : c'est la seule
       // lecture dont la fraîcheur est garantie.
       if (readDraft() !== null) {
-        router.push("/workout/active");
+        router.push(ACTIVE_HREF);
 
         return;
       }
@@ -59,7 +69,7 @@ export function useStartWorkout(client: ApiClient) {
         const performances = await client.getLastPerformance(exerciseIds).catch(() => []);
 
         writeDraft(draftFromRoutine(routine, performances));
-        router.push("/workout/active");
+        router.push(FRESH_HREF);
       } finally {
         setStarting(false);
       }
@@ -67,5 +77,24 @@ export function useStartWorkout(client: ApiClient) {
     [client],
   );
 
-  return { start, starting, inProgress };
+  /**
+   * Séance libre : le brouillon naît vide, les exercices se choisissent depuis
+   * l'écran de séance. Le chrono part donc tout de suite — en salle, on
+   * commence l'échauffement avant de savoir ce qu'on fera.
+   *
+   * Aucun appel réseau : sans exercice, il n'y a pas de performance passée à
+   * demander. Une séance libre se démarre donc hors ligne.
+   */
+  const startFree = useCallback(() => {
+    if (readDraft() !== null) {
+      router.push(ACTIVE_HREF);
+
+      return;
+    }
+
+    writeDraft(newWorkoutDraft());
+    router.push(FRESH_HREF);
+  }, []);
+
+  return { start, startFree, starting, inProgress };
 }

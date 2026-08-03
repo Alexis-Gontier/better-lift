@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { type LastPerformance, type RoutineDetail } from "@better-lift/validators";
+import {
+  type ExerciseSummary,
+  type LastPerformance,
+  type RoutineDetail,
+} from "@better-lift/validators";
 
 import {
+  appendExercises,
   columnsFor,
   completedSetCount,
+  draftExerciseFrom,
   draftFromRoutine,
   draftReducer,
+  newWorkoutDraft,
   newWorkoutId,
   normalizeDecimal,
   toCreateWorkoutInput,
@@ -72,33 +79,33 @@ function routine(): RoutineDetail {
   };
 }
 
-const PERFORMANCES: LastPerformance[] = [
-  {
-    exerciseId: "exo_1",
-    workoutId: "wkt_old",
-    performedAt: "2026-07-30T10:00:00.000Z",
-    sets: [
-      {
-        position: 0,
-        type: "WARMUP",
-        reps: 10,
-        weightKg: "40.00",
-        durationSec: null,
-        distanceM: null,
-        rpe: null,
-      },
-      {
-        position: 1,
-        type: "NORMAL",
-        reps: 5,
-        weightKg: "102.50",
-        durationSec: null,
-        distanceM: null,
-        rpe: null,
-      },
-    ],
-  },
-];
+const BENCH_PERFORMANCE: LastPerformance = {
+  exerciseId: "exo_1",
+  workoutId: "wkt_old",
+  performedAt: "2026-07-30T10:00:00.000Z",
+  sets: [
+    {
+      position: 0,
+      type: "WARMUP",
+      reps: 10,
+      weightKg: "40.00",
+      durationSec: null,
+      distanceM: null,
+      rpe: null,
+    },
+    {
+      position: 1,
+      type: "NORMAL",
+      reps: 5,
+      weightKg: "102.50",
+      durationSec: null,
+      distanceM: null,
+      rpe: null,
+    },
+  ],
+};
+
+const PERFORMANCES: LastPerformance[] = [BENCH_PERFORMANCE];
 
 function start(): WorkoutDraft {
   const draft = draftFromRoutine(routine(), PERFORMANCES, new Date("2026-08-02T17:00:00.000Z"));
@@ -159,6 +166,99 @@ describe("draftFromRoutine", () => {
     const draft = draftFromRoutine(routine(), []);
 
     expect(draft.exercises[0]?.previous).toEqual([]);
+  });
+});
+
+const CURL: ExerciseSummary = {
+  id: "exo_2",
+  name: "Curl haltères",
+  type: "WEIGHT_REPS",
+  bodyPart: "UPPER_ARMS",
+  equipment: "dumbbell",
+  target: "biceps",
+  secondaryMuscles: [],
+  thumbnailUrl: null,
+  animationUrl: null,
+  attribution: null,
+  isCustom: false,
+};
+
+describe("newWorkoutDraft", () => {
+  it("should start empty so the clock runs before the first exercise is chosen", () => {
+    const draft = newWorkoutDraft(new Date("2026-08-03T17:00:00.000Z"));
+
+    expect(draft.exercises).toEqual([]);
+    expect(draft.routineId).toBeNull();
+    expect(draft.startedAt).toBe("2026-08-03T17:00:00.000Z");
+  });
+
+  it("should carry an id, which is what makes the save idempotent", () => {
+    const input = toCreateWorkoutInput(
+      newWorkoutDraft(new Date("2026-08-03T17:00:00.000Z")),
+      new Date("2026-08-03T18:00:00.000Z"),
+    );
+
+    expect(input.id).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
+  });
+});
+
+describe("draftExerciseFrom", () => {
+  it("should copy the name and type so the draft survives without the catalogue", () => {
+    const exercise = draftExerciseFrom(CURL);
+
+    expect(exercise.name).toBe("Curl haltères");
+    expect(exercise.exerciseType).toBe("WEIGHT_REPS");
+    expect(exercise.exerciseId).toBe("exo_2");
+  });
+
+  it("should open a single empty set", () => {
+    const exercise = draftExerciseFrom(CURL);
+
+    // Un exercice ajouté à la volée ne dit pas combien de séries prévoir : on
+    // en ajoute au fur et à mesure plutôt que d'en supprimer.
+    expect(exercise.sets).toHaveLength(1);
+    expect(exercise.sets[0]?.type).toBe("NORMAL");
+    expect(exercise.sets[0]?.weightKg).toBe("");
+  });
+
+  it("should carry the last performance for the previous column", () => {
+    const exercise = draftExerciseFrom(CURL, { ...BENCH_PERFORMANCE, exerciseId: "exo_2" });
+
+    expect(exercise.previous[1]?.label).toBe("102.50 × 5");
+  });
+
+  it("should leave the previous column empty when the exercise was never performed", () => {
+    expect(draftExerciseFrom(CURL).previous).toEqual([]);
+  });
+});
+
+describe("appendExercises", () => {
+  it("should add at the end without touching what is already filled in", () => {
+    const draft = start();
+    const next = appendExercises(draft, [draftExerciseFrom(CURL)]);
+
+    expect(next.exercises).toHaveLength(2);
+    expect(next.exercises[0]).toBe(draft.exercises[0]);
+    expect(next.exercises[1]?.name).toBe("Curl haltères");
+  });
+
+  it("should allow the same exercise twice", () => {
+    // Enchaîner deux fois le même mouvement à des charges différentes est un
+    // usage courant : refuser l'ajout ne se comprendrait pas à l'écran.
+    const next = appendExercises(start(), [draftExerciseFrom(CURL), draftExerciseFrom(CURL)]);
+
+    expect(next.exercises).toHaveLength(3);
+    // Les clés restent distinctes, sinon les deux blocs se modifieraient
+    // ensemble.
+    expect(next.exercises[1]?.key).not.toBe(next.exercises[2]?.key);
+  });
+
+  it("should keep every added set in the payload sent to the API", () => {
+    const draft = appendExercises(start(), [draftExerciseFrom(CURL)]);
+    const input = toCreateWorkoutInput(draft, new Date("2026-08-03T18:00:00.000Z"));
+
+    expect(input.exercises?.[1]?.exerciseId).toBe("exo_2");
+    expect(input.exercises?.[1]?.sets).toHaveLength(1);
   });
 });
 

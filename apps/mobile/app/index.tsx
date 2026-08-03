@@ -5,6 +5,7 @@ import { useHealth, useVersion } from "@better-lift/api-client";
 import { estimate1RM, kgToLb, setVolume } from "@better-lift/core";
 
 import { SessionPanel } from "@/features/auth/session-panel";
+import { useStartWorkout } from "@/features/workouts/use-start-workout";
 import { apiClient } from "@/lib/api";
 import { API_URL } from "@/lib/env";
 
@@ -72,11 +73,25 @@ function CoreCheck() {
 }
 
 export default function HomeScreen() {
+  const { startFree, inProgress } = useStartWorkout(apiClient);
+
   return (
     <>
       <Stack.Screen options={{ title: "better-lift" }} />
       <ScrollView contentContainerStyle={styles.screen}>
         <Text style={styles.subtitle}>Socle technique V0 — outil de terrain</Text>
+
+        {/*
+          Une séance en cours n'est jamais écrasée : tant qu'il en existe une,
+          ce bouton la reprend. La barre persistante de la doc 06 viendra avec
+          les onglets ; d'ici là, c'est le seul chemin de retour depuis
+          l'accueil.
+        */}
+        <Pressable style={styles.start} onPress={startFree} accessibilityRole="button">
+          <Text style={styles.startLabel}>
+            {inProgress ? "Reprendre la séance en cours" : "Séance libre"}
+          </Text>
+        </Pressable>
 
         <Link href="/routines" asChild>
           <Pressable style={styles.action}>
@@ -126,6 +141,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   actionLabel: { color: "#f2f4f6", fontSize: 15, fontWeight: "500" },
+  start: {
+    backgroundColor: "#7ad6a5",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  startLabel: { color: "#11161b", fontSize: 15, fontWeight: "600" },
   actionChevron: { color: "#9aa3ad", fontSize: 20 },
   cardTitle: {
     color: "#9aa3ad",

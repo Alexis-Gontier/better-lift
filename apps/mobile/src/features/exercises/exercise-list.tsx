@@ -1,41 +1,18 @@
 import { Link } from "expo-router";
-import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useExercises } from "@better-lift/api-client";
-import { type BodyPart, bodyPartSchema, type ExerciseSummary } from "@better-lift/validators";
+import { type ExerciseSummary } from "@better-lift/validators";
 
+import { ExerciseFilters } from "./exercise-filters";
+import { ExerciseThumb } from "./exercise-thumb";
 import { BODY_PART_LABELS, equipmentLabel } from "./labels";
-import { resolveMediaUrl } from "./media";
-import { useDebouncedValue } from "./use-debounced-value";
-import { useProfileLocale } from "@/features/account/use-profile-locale";
-import { apiClient } from "@/lib/api";
-
-const SEARCH_DEBOUNCE_MS = 250;
+import { useExerciseSearch } from "./use-exercise-search";
 
 function ExerciseRow({ exercise }: { exercise: ExerciseSummary }) {
-  const media = resolveMediaUrl(exercise.thumbnailUrl);
-
   return (
     <Link href={`/exercise/${exercise.id}`} asChild>
       <Pressable style={styles.row}>
-        {media ? (
-          <Image source={{ uri: media }} style={styles.thumb} accessibilityIgnoresInvertColors />
-        ) : (
-          <View style={[styles.thumb, styles.thumbFallback]}>
-            <Text style={styles.thumbInitial}>{exercise.name.slice(0, 1).toUpperCase()}</Text>
-          </View>
-        )}
+        <ExerciseThumb exercise={exercise} />
 
         <View style={styles.rowText}>
           <Text style={styles.rowTitle} numberOfLines={1}>
@@ -59,147 +36,21 @@ function ExerciseRow({ exercise }: { exercise: ExerciseSummary }) {
 /**
  * Catalogue d'exercices (doc 06, § Exercices).
  *
- * ## Deux écarts assumés avec le web
- *
- * Les filtres ne sont pas persistés : il n'y a pas d'URL à partager sur un
- * téléphone, et un état local suffit.
- *
- * L'équipement n'a pas ses pastilles ici. Ajouter une seconde rangée de filtres
- * mangerait le tiers haut de l'écran sur un appareil moyen, pour un usage qui
- * passe presque toujours par la recherche. Le filtre par partie du corps reste,
- * c'est celui qu'on utilise en salle.
+ * L'écran ne porte que la navigation vers la fiche : la recherche, les filtres
+ * et la pagination vivent dans `useExerciseSearch`, partagés avec le sélecteur
+ * de séance.
  *
  * `FlatList` et non `FlashList` (doc 06) : la liste est paginée par curseur, on
  * ne monte donc jamais 1 324 lignes d'un coup. `FlashList` est un module natif
  * de plus à embarquer, et le development build n'est pas encore éprouvé sur
  * appareil — il sera temps quand la mesure le justifiera.
  */
-/** Les trois origines possibles, dans l'ordre où on les propose. */
-const ORIGINS: ReadonlyArray<{ value: boolean | undefined; label: string }> = [
-  { value: undefined, label: "Tous" },
-  { value: false, label: "Catalogue" },
-  { value: true, label: "Les miens" },
-];
-
 export function ExerciseList() {
-  const [draftQuery, setDraftQuery] = useState("");
-  const [bodyParts, setBodyParts] = useState<BodyPart[]>([]);
-  const [custom, setCustom] = useState<boolean | undefined>(undefined);
-
-  const q = useDebouncedValue(draftQuery, SEARCH_DEBOUNCE_MS).trim();
-  const locale = useProfileLocale();
-
-  const query = useMemo(
-    () => ({
-      ...(q ? { q } : {}),
-      ...(bodyParts.length ? { bodyPart: bodyParts } : {}),
-      // `false` est une valeur significative — « le catalogue seul » — à ne pas
-      // confondre avec « non renseigné », qui veut dire « les deux ».
-      ...(custom === undefined ? {} : { custom }),
-      locale,
-    }),
-    [q, bodyParts, custom, locale],
-  );
-
-  const exercises = useExercises(apiClient, query);
-  const items = useMemo(
-    () => exercises.data?.pages.flatMap((page) => page.data) ?? [],
-    [exercises.data],
-  );
-
-  /**
-   * Mentions de copyright des seuls médias réellement affichés (D17, doc 08),
-   * regroupées en pied de liste : la source est unique pour tout le catalogue,
-   * et la répéter sous chaque ligne n'informerait pas mieux.
-   */
-  const attributions = useMemo(
-    () => [
-      ...new Set(
-        items
-          .filter((exercise) => resolveMediaUrl(exercise.thumbnailUrl))
-          .map((exercise) => exercise.attribution)
-          .filter((value): value is string => Boolean(value)),
-      ),
-    ],
-    [items],
-  );
-
-  /** Le tri garde la clé de cache TanStack stable quel que soit l'ordre des taps. */
-  function toggleBodyPart(value: BodyPart) {
-    setBodyParts((current) =>
-      current.includes(value)
-        ? current.filter((entry) => entry !== value)
-        : [...current, value].sort((a, b) => a.localeCompare(b)),
-    );
-  }
+  const { exercises, items, attributions, filters, unfiltered } = useExerciseSearch();
 
   return (
     <View style={styles.screen}>
-      {/* La recherche reste hors de la liste : dans un `ListHeaderComponent`,
-          elle perdrait le focus à chaque re-rendu — et elle doit rester
-          atteignable une fois la grille défilée. */}
-      <View style={styles.controls}>
-        <TextInput
-          style={styles.input}
-          value={draftQuery}
-          onChangeText={setDraftQuery}
-          placeholder="Rechercher un exercice…"
-          placeholderTextColor="#6d7680"
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="search"
-          accessibilityLabel="Rechercher un exercice"
-        />
-
-        {/*
-          Un choix parmi trois, et non trois bascules : les origines s'excluent.
-          `radio` le dit aux lecteurs d'écran, là où des bascules laisseraient
-          croire qu'on peut les cumuler.
-        */}
-        <View style={styles.origins} accessibilityRole="radiogroup">
-          {ORIGINS.map((origin) => {
-            const active = custom === origin.value;
-
-            return (
-              <Pressable
-                key={origin.label}
-                onPress={() => setCustom(origin.value)}
-                style={[styles.origin, active && styles.originActive]}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: active }}
-              >
-                <Text style={[styles.originLabel, active && styles.originLabelActive]}>
-                  {origin.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
-        >
-          {bodyPartSchema.options.map((bodyPart) => {
-            const active = bodyParts.includes(bodyPart);
-
-            return (
-              <Pressable
-                key={bodyPart}
-                onPress={() => toggleBodyPart(bodyPart)}
-                style={[styles.chip, active && styles.chipActive]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-              >
-                <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
-                  {BODY_PART_LABELS[bodyPart]}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
+      <ExerciseFilters filters={filters} />
 
       <FlatList
         data={items}
@@ -226,7 +77,7 @@ export function ExerciseList() {
                 <Text style={styles.retryLabel}>Réessayer</Text>
               </Pressable>
             </View>
-          ) : custom === true && !q && bodyParts.length === 0 ? (
+          ) : filters.custom === true && unfiltered ? (
             /*
              * « Les miens » sans résultat n'est pas un échec de recherche :
              * c'est le seul moment où l'on sait que rien n'a encore été créé.
@@ -269,29 +120,6 @@ export function ExerciseList() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  controls: { paddingHorizontal: 16, paddingTop: 12, gap: 10 },
-  input: {
-    backgroundColor: "#171c22",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: "#f2f4f6",
-  },
-  origins: { flexDirection: "row", gap: 6 },
-  origin: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  originActive: { backgroundColor: "#1a1f25" },
-  originLabel: { color: "#6d7680", fontSize: 13 },
-  originLabelActive: { color: "#f2f4f6", fontWeight: "600" },
-  chips: { gap: 8, paddingRight: 16 },
-  chip: {
-    backgroundColor: "#1a1f25",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  chipActive: { backgroundColor: "#7ad6a5" },
-  chipLabel: { color: "#9aa3ad", fontSize: 13 },
-  chipLabelActive: { color: "#101418", fontWeight: "600" },
   list: { padding: 16, gap: 8 },
   row: {
     flexDirection: "row",
@@ -301,9 +129,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
   },
-  thumb: { width: 48, height: 48, borderRadius: 8 },
-  thumbFallback: { backgroundColor: "#222931", alignItems: "center", justifyContent: "center" },
-  thumbInitial: { color: "#9aa3ad", fontSize: 18, fontWeight: "600" },
   rowText: { flex: 1 },
   rowTitle: { color: "#f2f4f6", fontSize: 15, fontWeight: "500" },
   rowMeta: { color: "#9aa3ad", fontSize: 13, marginTop: 2 },

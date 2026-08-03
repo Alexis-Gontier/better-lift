@@ -29,7 +29,15 @@ export default function RootLayout() {
             headerTintColor: "#f2f4f6",
             contentStyle: { backgroundColor: "#101418" },
           }}
-        />
+        >
+          {/*
+            Déclaré ici et non dans l'écran : `presentation` est lu au montage
+            de la pile, un `Stack.Screen` posé depuis la route arriverait trop
+            tard. Ajouter un exercice ne quitte pas la séance — la modale se
+            pose par-dessus, et la séance reste montée dessous.
+          */}
+          <Stack.Screen name="workout/add-exercise" options={{ presentation: "modal" }} />
+        </Stack>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

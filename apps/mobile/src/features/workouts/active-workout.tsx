@@ -1,10 +1,15 @@
-import { router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useCreateWorkout } from "@better-lift/api-client";
 
-import { completedSetCount, toCreateWorkoutInput, type WorkoutDraft } from "./draft";
+import {
+  completedSetCount,
+  newWorkoutDraft,
+  toCreateWorkoutInput,
+  type WorkoutDraft,
+} from "./draft";
 import { isDraftPersisted } from "./draft-store";
 import { ExerciseBlock } from "./exercise-block";
 import { RestTimer } from "./rest-timer";
@@ -30,7 +35,10 @@ const FALLBACK_REST_SEC = 120;
  */
 export function ActiveWorkout() {
   const locale = useProfileLocale();
-  const { draft, resumed, update, discard } = useWorkoutDraft();
+  const { draft, resumed, start, update, discard } = useWorkoutDraft();
+  // « On vient de démarrer » : le brouillon était bien sur le disque au montage,
+  // mais c'est cet écran-ci qui l'y a fait mettre, pas une séance interrompue.
+  const { fresh } = useLocalSearchParams<{ fresh?: string }>();
   const createWorkout = useCreateWorkout(apiClient, locale);
 
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
@@ -51,8 +59,8 @@ export function ActiveWorkout() {
       <View style={styles.empty}>
         <Text style={styles.emptyTitle}>Aucune séance en cours</Text>
         <Text style={styles.emptyHint}>
-          Ouvrir une routine et lancer « Démarrer la séance ». Une séance interrompue se retrouve
-          ici telle qu'elle était.
+          Ouvrir une routine et lancer « Démarrer la séance », ou partir d'une séance libre. Une
+          séance interrompue se retrouve ici telle qu'elle était.
         </Text>
         <Pressable
           onPress={() => {
@@ -62,6 +70,20 @@ export function ActiveWorkout() {
           accessibilityRole="button"
         >
           <Text style={styles.primaryLabel}>Voir mes routines</Text>
+        </Pressable>
+        {/*
+          Démarrée sur place, sans navigation : on est déjà sur l'écran de
+          séance. Le brouillon naît vide, le chrono part, et les exercices se
+          choisissent ensuite.
+        */}
+        <Pressable
+          onPress={() => {
+            start(newWorkoutDraft());
+          }}
+          style={styles.secondary}
+          accessibilityRole="button"
+        >
+          <Text style={styles.secondaryLabel}>Démarrer une séance libre</Text>
         </Pressable>
       </View>
     );
@@ -136,7 +158,7 @@ export function ActiveWorkout() {
         </Text>
       )}
 
-      {resumed ? (
+      {resumed && fresh !== "1" ? (
         <Text style={styles.resumed}>Séance reprise là où elle s'était arrêtée.</Text>
       ) : null}
 
@@ -189,10 +211,21 @@ export function ActiveWorkout() {
 
         {draft.exercises.length === 0 ? (
           <Text style={styles.emptyHint}>
-            Tous les exercices ont été retirés. Abandonner la séance, ou en relancer une depuis une
-            routine.
+            Aucun exercice pour l'instant. Le chrono tourne déjà : ajouter le premier quand il est
+            décidé.
           </Text>
         ) : null}
+
+        {/*
+          En pied de liste plutôt qu'en bouton flottant : pendant la saisie,
+          un flottant masquerait en permanence une ligne de série, et l'ajout
+          d'un exercice se fait entre deux exercices, pas entre deux séries.
+        */}
+        <Link href="/workout/add-exercise" asChild>
+          <Pressable style={styles.addExercise} accessibilityRole="button">
+            <Text style={styles.addExerciseLabel}>+ Ajouter un exercice</Text>
+          </Pressable>
+        </Link>
 
         {createWorkout.isError ? (
           <Text style={styles.error}>
@@ -283,4 +316,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   primaryLabel: { color: "#11161b", fontSize: 15, fontWeight: "600" },
+  secondary: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#2a323b",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  secondaryLabel: { color: "#f2f4f6", fontSize: 15 },
+  addExercise: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#2a323b",
+    borderStyle: "dashed",
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  addExerciseLabel: { color: "#7ad6a5", fontSize: 15, fontWeight: "500" },
 });

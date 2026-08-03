@@ -52,6 +52,22 @@ describe("quand le module natif est présent", () => {
     expect(store.readDraft()).toBeNull();
   });
 
+  it("should let a writer recognise its own version on disk", async () => {
+    createMMKV.mockReturnValue(fakeMMKV());
+
+    const store = await loadStore();
+
+    // C'est ce qui permet à l'écran de séance de distinguer sa propre écriture
+    // de celle du sélecteur, et de ne reprendre la version du disque que
+    // lorsqu'elle vient d'ailleurs.
+    const written = store.writeDraft(DRAFT);
+
+    expect(store.readDraftRaw()).toBe(written);
+
+    store.writeDraft({ ...DRAFT, title: "Séance libre" });
+    expect(store.readDraftRaw()).not.toBe(written);
+  });
+
   it("should open the storage once, not on every access", async () => {
     createMMKV.mockReturnValue(fakeMMKV());
 

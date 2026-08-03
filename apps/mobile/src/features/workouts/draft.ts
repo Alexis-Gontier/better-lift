@@ -1,5 +1,6 @@
 import {
   type CreateWorkoutInput,
+  type ExerciseSummary,
   type ExerciseType,
   type LastPerformance,
   type RoutineDetail,
@@ -223,6 +224,65 @@ export function draftFromRoutine(
       previous: previousByExercise.get(exercise.exercise.id) ?? [],
     })),
   };
+}
+
+/**
+ * Séance libre : on démarre, on choisit les exercices ensuite.
+ *
+ * Le brouillon naît **vide et déjà persisté**, comme celui d'une routine. Le
+ * chrono part donc au premier appui, avant le moindre choix d'exercice : en
+ * salle, on commence l'échauffement puis on décide.
+ */
+export function newWorkoutDraft(now: Date = new Date()): WorkoutDraft {
+  return {
+    id: newWorkoutId(),
+    routineId: null,
+    title: "Séance libre",
+    notes: "",
+    startedAt: now.toISOString(),
+    exercises: [],
+  };
+}
+
+/**
+ * Traduit un exercice du catalogue en bloc de séance.
+ *
+ * Une **seule série vide** : la routine dit combien de séries prévoir, un
+ * exercice ajouté à la volée ne le dit pas. « + Ajouter une série » recopie la
+ * précédente, donc en partir d'une coûte un appui par série réellement faite —
+ * là où trois séries proposées d'office obligeraient à en supprimer.
+ */
+export function draftExerciseFrom(
+  exercise: ExerciseSummary,
+  performance?: LastPerformance,
+): DraftExercise {
+  return {
+    key: nextKey("e"),
+    exerciseId: exercise.id,
+    // Copié ici comme au démarrage d'une routine : la séance ne dépend plus du
+    // catalogue une fois l'exercice ajouté (règle non négociable n°5).
+    name: exercise.name,
+    exerciseType: exercise.type,
+    restSec: null,
+    supersetGroup: null,
+    notes: "",
+    sets: [emptySet()],
+    previous: performance?.sets.map(describe) ?? [],
+  };
+}
+
+/**
+ * Ajoute des exercices à un brouillon.
+ *
+ * **Les doublons sont permis** : enchaîner deux fois le même mouvement à des
+ * charges différentes est un usage courant, et refuser l'ajout obligerait à
+ * comprendre pourquoi rien ne s'est passé.
+ */
+export function appendExercises(
+  draft: WorkoutDraft,
+  exercises: readonly DraftExercise[],
+): WorkoutDraft {
+  return { ...draft, exercises: [...draft.exercises, ...exercises] };
 }
 
 // ── Réducteur ─────────────────────────────────────────────────────────────

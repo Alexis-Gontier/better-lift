@@ -57,7 +57,21 @@ C'est l'écran qui fait ou défait le produit.
 
 **Fait au 2026-08-02** : la grille de saisie, la coche, le chrono, la colonne « PRÉC. », le minuteur de repos, la sortie sans perte, et l'enregistrement. La séance se démarre depuis l'aperçu d'une routine.
 
-**Pas encore** : le retour haptique et les notifications de fin de repos (`expo-haptics`, `expo-notifications` — deux modules natifs de plus, à ajouter quand le development build aura tourné) ; le balayage sur une série (`react-native-gesture-handler`), remplacé en attendant par un appui simple qui change de type et un appui long qui supprime — le geste destructeur est le plus difficile des deux, jamais celui qu'on déclenche en visant mal ; l'ajout d'un exercice en cours de séance et la **séance libre**, qui demandent tous deux un sélecteur d'exercices ; la barre persistante « Séance en cours » ; `expo-keep-awake`.
+**Fait au 2026-08-03** : la **séance libre** et l'**ajout d'un exercice en cours de séance**, tous deux servis par le sélecteur décrit ci-dessous.
+
+**Pas encore** : le retour haptique et les notifications de fin de repos (`expo-haptics`, `expo-notifications` — deux modules natifs de plus, à ajouter quand le development build aura tourné) ; le balayage sur une série (`react-native-gesture-handler`), remplacé en attendant par un appui simple qui change de type et un appui long qui supprime — le geste destructeur est le plus difficile des deux, jamais celui qu'on déclenche en visant mal ; la barre persistante « Séance en cours » ; `expo-keep-awake`.
+
+### Sélecteur d'exercices
+
+Une modale posée sur la séance, qui partage la recherche, les filtres et la pagination du catalogue (`useExerciseSearch`) : seul l'effet d'un appui les distingue — ouvrir la fiche d'un côté, cocher de l'autre. Les mentions de copyright des médias (D17) vivent donc au même endroit pour les deux, une règle qu'on ne peut appliquer qu'une fois ne s'oubliant pas.
+
+**La sélection est multiple et ordonnée.** On ajoute rarement un seul mouvement : une séance libre s'écrit en trois ou quatre exercices d'affilée, et valider un par un rouvrirait la liste autant de fois en perdant la recherche à chaque retour. La pastille porte le rang, pas une coche : c'est l'ordre d'entrée dans la séance, lisible tant qu'il est encore modifiable. La sélection tient à l'exercice et non à un index de liste, elle **survit donc au changement de filtre**.
+
+**Le même exercice peut être ajouté deux fois** : l'enchaîner à deux charges différentes est un usage courant, et un ajout refusé sans explication ne se comprendrait pas à l'écran.
+
+**L'ajout passe par le disque, comme le démarrage.** Le sélecteur relit le brouillon **après** l'appel réseau, y ajoute les exercices et le réécrit ; l'écran de séance reprend la version du disque en retrouvant le focus. Réécrire un brouillon capturé une requête plus tôt effacerait ce qui a été saisi entre-temps.
+
+**Une séance libre démarre hors ligne** : sans exercice, il n'y a aucune performance passée à demander. Le chrono part au premier appui, avant le moindre choix — en salle, on commence l'échauffement puis on décide. Un exercice ajouté ouvre **une seule série vide** : la routine dit combien de séries prévoir, un ajout à la volée ne le dit pas, et « + Ajouter une série » recopie la précédente.
 
 ### Ce qui doit être irréprochable
 
@@ -99,7 +113,7 @@ Trois conséquences à connaître :
 
 - **MMKV 4 casse l'API de la 3** : `createMMKV({ id })` et non `new MMKV()`, `remove()` et non `delete()`. La v4 est bâtie sur **Nitro Modules**, qui devient une dépendance de plus (voir [doc 10](10-versions.md)). Elle n'expose **pas** de config plugin, contrairement à ce que son `package.json` laisse croire : l'ajouter à `plugins` dans `app.json` fait échouer `expo export` sur une résolution ESM.
 - **Le magasin s'ouvre paresseusement, et son échec est une information.** Sans MMKV — sur Expo Go —, le brouillon bascule en mémoire et `isDraftPersisted()` renvoie `false`, ce que l'écran de séance **affiche**. Le repli n'est pas silencieux : il ne tient pas la reprise après crash, et laisser croire le contraire serait la pire façon de l'apprendre. Ce mode dégradé sert à développer les autres écrans, jamais à s'entraîner pour de vrai.
-- **Le brouillon passe par le disque, jamais par un paramètre de route.** « Démarrer cette routine » l'écrit puis navigue ; l'écran de séance le relit au montage, exactement comme il relirait une séance interrompue. Un seul chemin d'entrée, donc un seul à éprouver — et la reprise après crash cesse d'être un cas particulier.
+- **Le brouillon passe par le disque, jamais par un paramètre de route.** « Démarrer cette routine » l'écrit puis navigue ; l'écran de séance le relit au montage, exactement comme il relirait une séance interrompue. Un seul chemin d'entrée, donc un seul à éprouver — et la reprise après crash cesse d'être un cas particulier. Le sélecteur d'exercices emprunte le même chemin, et l'écran de séance **relit le disque au retour du focus** dès que la version qui s'y trouve n'est pas la sienne. Le seul paramètre de route qui subsiste, `?fresh=1`, ne transporte pas le brouillon mais l'intention de l'entrée : commencer, et non reprendre — sans lui, l'écran annoncerait « séance reprise » à chaque démarrage, puisqu'il trouve toujours un brouillon déjà écrit.
 - **Une séance en cours n'est jamais écrasée.** Si un brouillon existe, « Démarrer » devient « Reprendre la séance en cours ». Le cas arrive tout seul : on quitte l'écran par mégarde, on retombe sur ses routines, on appuie. Écraser silencieusement détruirait la seule donnée de l'app qui n'existe nulle part ailleurs.
 
 **Reprise après crash.** Au démarrage, l'app cherche un brouillon actif ; s'il existe, elle propose de reprendre la séance. À tester explicitement en tuant l'app en cours de séance — c'est la garantie de confiance la plus importante du produit.
@@ -120,7 +134,7 @@ Liste par dossiers, aperçu d'une routine (exercices et séries cibles), démarr
 
 **Fait :** la liste et l'aperçu. Le regroupement par dossier se fait côté client, la liste n'étant pas paginée — et les dossiers vides sont masqués ici, contrairement au web : on ne les gère pas depuis le mobile, les afficher n'ajouterait qu'une ligne morte sur un petit écran.
 
-**Pas encore :** l'édition simplifiée (D9) et le démarrage. Les deux attendent les séances — ajuster une routine sans pouvoir la lancer n'a pas d'usage, et « démarrer » n'a pas de destination.
+**Pas encore :** l'édition simplifiée (D9). Le démarrage, lui, est fait : l'aperçu porte « Démarrer la séance », qui devient « Reprendre la séance en cours » tant qu'un brouillon existe.
 
 `ScrollView` et non `FlatList` : quelques dizaines de routines au plus, et un regroupement par dossier demanderait des sections là où une boucle suffit (même raisonnement que [D21](09-decisions.md)).
 
