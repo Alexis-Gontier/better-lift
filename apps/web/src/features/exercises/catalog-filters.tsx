@@ -1,46 +1,38 @@
 "use client";
 
+import { SearchIcon } from "lucide-react";
+
+import { Button } from "@better-lift/ui/components/button";
+import { FieldLegend, FieldSet } from "@better-lift/ui/components/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@better-lift/ui/components/input-group";
+import { Toggle } from "@better-lift/ui/components/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@better-lift/ui/components/toggle-group";
 import { type BodyPart, bodyPartSchema } from "@better-lift/validators";
 
 import { type CatalogFilters as Filters, hasActiveFilters } from "./filters";
 import { BODY_PART_LABELS, EQUIPMENT_FILTERS } from "./labels";
 
 /**
- * Bascule de filtre. `aria-pressed` plutôt qu'une case à cocher déguisée : le
- * bouton est annoncé « activé / désactivé », ce qui est exactement son état,
- * et il reste utilisable au clavier sans travail supplémentaire.
+ * Les trois origines possibles, dans l'ordre où on les propose.
+ *
+ * `ToggleGroup` travaille sur des chaînes : l'origine, elle, est un
+ * `boolean | undefined` côté filtres — `undefined` valant « les deux ». D'où
+ * cette table de correspondance, qui évite de sérialiser un `undefined` en
+ * chaîne vide, laquelle est réservée par Radix à « rien de sélectionné ».
  */
-function FilterChip({
-  label,
-  pressed,
-  onToggle,
-}: {
-  label: string;
-  pressed: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      onClick={onToggle}
-      className={`rounded-full px-3 py-1.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
-        pressed
-          ? "bg-primary font-medium text-primary-foreground"
-          : "bg-card text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
+const ORIGINS = [
+  { key: "all", value: undefined, label: "Tous" },
+  { key: "catalog", value: false, label: "Catalogue" },
+  { key: "mine", value: true, label: "Les miens" },
+] as const;
 
-/** Les trois origines possibles, dans l'ordre où on les propose. */
-const ORIGINS: ReadonlyArray<{ value: boolean | undefined; label: string }> = [
-  { value: undefined, label: "Tous" },
-  { value: false, label: "Catalogue" },
-  { value: true, label: "Les miens" },
-];
+function originKey(custom: boolean | undefined): string {
+  return ORIGINS.find((origin) => origin.value === custom)?.key ?? "all";
+}
 
 export function CatalogFilters({
   draftQuery,
@@ -63,79 +55,106 @@ export function CatalogFilters({
   const active = hasActiveFilters({ ...filters, q: draftQuery });
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="exercise-search" className="sr-only">
-          Rechercher un exercice
-        </label>
-        <input
+    <div className="flex flex-col gap-4">
+      <InputGroup>
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+        <InputGroupInput
           id="exercise-search"
           type="search"
           value={draftQuery}
           onChange={(event) => onDraftQueryChange(event.target.value)}
           placeholder="Rechercher un exercice…"
           autoComplete="off"
-          className="w-full rounded-lg bg-card px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          aria-label="Rechercher un exercice"
         />
-      </div>
+      </InputGroup>
 
       {/*
         Un choix parmi trois, et non trois bascules : les origines s'excluent.
-        De vrais boutons radio plutôt que des `<button role="radio">` — le
-        navigateur donne alors gratuitement la navigation aux flèches et
-        l'annonce « 2 sur 3 », qu'une imitation devrait recoder entièrement.
+        `ToggleGroup type="single"` rend un vrai `radiogroup` avec navigation
+        aux flèches et tabindex glissant — ce qu'une rangée de `<button
+        aria-pressed>` devrait recoder entièrement.
+
+        `onValueChange` peut recevoir "" : cliquer l'élément déjà actif le
+        désélectionne. L'origine est toujours définie, on ignore donc le vide
+        plutôt que de tomber dans un état qu'aucun bouton ne représente.
       */}
-      <fieldset className="flex gap-1 text-sm">
-        <legend className="sr-only">Origine des exercices</legend>
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        spacing={0}
+        aria-label="Origine des exercices"
+        value={originKey(filters.custom)}
+        onValueChange={(key) => {
+          const origin = ORIGINS.find((entry) => entry.key === key);
+
+          if (origin) {
+            onOriginChange(origin.value);
+          }
+        }}
+      >
         {ORIGINS.map((origin) => (
-          <label
-            key={origin.label}
-            className="cursor-pointer rounded-lg px-3 py-1.5 text-muted-foreground transition hover:text-foreground has-checked:bg-card has-checked:text-foreground has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring"
-          >
-            <input
-              type="radio"
-              name="exercise-origin"
-              className="sr-only"
-              checked={filters.custom === origin.value}
-              onChange={() => onOriginChange(origin.value)}
-            />
+          <ToggleGroupItem key={origin.key} value={origin.key}>
             {origin.label}
-          </label>
+          </ToggleGroupItem>
         ))}
-      </fieldset>
+      </ToggleGroup>
 
-      <fieldset className="flex flex-wrap gap-2">
-        <legend className="sr-only">Filtrer par partie du corps</legend>
-        {bodyPartSchema.options.map((bodyPart) => (
-          <FilterChip
-            key={bodyPart}
-            label={BODY_PART_LABELS[bodyPart]}
-            pressed={filters.bodyPart.includes(bodyPart)}
-            onToggle={() => onToggleBodyPart(bodyPart)}
-          />
-        ))}
-      </fieldset>
+      {/*
+        Les deux groupes suivants sont **multiples** et indépendants : cocher
+        « Dos » et « Pectoraux » cumule, ce qu'un `ToggleGroup type="multiple"`
+        rendrait aussi — mais il renvoie le tableau entier dans l'ordre des
+        clics, alors que `toggleValue` le maintient trié. Cet ordre entre dans
+        la clé de cache TanStack (voir `filters.ts`) : le perdre dédoublerait
+        les requêtes. D'où des `Toggle` indépendants, un par valeur.
+      */}
+      <FieldSet>
+        <FieldLegend className="sr-only">Filtrer par partie du corps</FieldLegend>
+        <div className="flex flex-wrap gap-2">
+          {bodyPartSchema.options.map((bodyPart) => (
+            <Toggle
+              key={bodyPart}
+              variant="outline"
+              size="sm"
+              pressed={filters.bodyPart.includes(bodyPart)}
+              onPressedChange={() => onToggleBodyPart(bodyPart)}
+            >
+              {BODY_PART_LABELS[bodyPart]}
+            </Toggle>
+          ))}
+        </div>
+      </FieldSet>
 
-      <fieldset className="flex flex-wrap gap-2">
-        <legend className="sr-only">Filtrer par équipement</legend>
-        {EQUIPMENT_FILTERS.map((equipment) => (
-          <FilterChip
-            key={equipment.value}
-            label={equipment.label}
-            pressed={filters.equipment.includes(equipment.value)}
-            onToggle={() => onToggleEquipment(equipment.value)}
-          />
-        ))}
-      </fieldset>
+      <FieldSet>
+        <FieldLegend className="sr-only">Filtrer par équipement</FieldLegend>
+        <div className="flex flex-wrap gap-2">
+          {EQUIPMENT_FILTERS.map((equipment) => (
+            <Toggle
+              key={equipment.value}
+              variant="outline"
+              size="sm"
+              pressed={filters.equipment.includes(equipment.value)}
+              onPressedChange={() => onToggleEquipment(equipment.value)}
+            >
+              {equipment.label}
+            </Toggle>
+          ))}
+        </div>
+      </FieldSet>
 
       {active && (
-        <button
+        <Button
           type="button"
+          variant="link"
+          size="sm"
+          className="self-start px-0"
           onClick={onReset}
-          className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
           Réinitialiser les filtres
-        </button>
+        </Button>
       )}
     </div>
   );

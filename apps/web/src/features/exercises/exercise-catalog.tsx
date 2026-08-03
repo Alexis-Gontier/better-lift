@@ -5,6 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useExercises } from "@better-lift/api-client";
+import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@better-lift/ui/components/empty";
+import { Spinner } from "@better-lift/ui/components/spinner";
 import { type BodyPart } from "@better-lift/validators";
 
 import { CatalogFilters } from "./catalog-filters";
@@ -36,31 +46,34 @@ const SKELETON_COUNT = 6;
 function EmptyState({ filters }: { filters: Filters }) {
   if (filters.custom === true && !filters.q.trim() && !filters.bodyPart.length) {
     return (
-      <div className="space-y-3 rounded-xl bg-card p-5">
-        <p className="font-medium">Aucun exercice personnalisé pour l’instant.</p>
-        <p className="text-sm text-muted-foreground">
-          Utile quand le catalogue ne connaît pas un mouvement de votre salle, ou une variante que
-          vous êtes seul à faire.
-        </p>
-        <Link
-          href="/exercises/new"
-          className="inline-block rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-        >
-          Créer un exercice
-        </Link>
-      </div>
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>Aucun exercice personnalisé pour l’instant.</EmptyTitle>
+          <EmptyDescription>
+            Utile quand le catalogue ne connaît pas un mouvement de votre salle, ou une variante que
+            vous êtes seul à faire.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button asChild>
+            <Link href="/exercises/new">Créer un exercice</Link>
+          </Button>
+        </EmptyContent>
+      </Empty>
     );
   }
 
   return (
-    <div className="space-y-3 rounded-xl bg-card p-5">
-      <p className="font-medium">Aucun exercice ne correspond.</p>
-      <p className="text-sm text-muted-foreground">
-        {hasActiveFilters(filters)
-          ? "Essayer avec moins de filtres, ou une autre orthographe."
-          : "Le catalogue semble vide : vérifier que le seed a bien été joué."}
-      </p>
-    </div>
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>Aucun exercice ne correspond.</EmptyTitle>
+        <EmptyDescription>
+          {hasActiveFilters(filters)
+            ? "Essayer avec moins de filtres, ou une autre orthographe."
+            : "Le catalogue semble vide : vérifier que le seed a bien été joué."}
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }
 
@@ -151,7 +164,7 @@ export function ExerciseCatalog() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <CatalogFilters
         draftQuery={draftQuery}
         filters={filters}
@@ -170,7 +183,7 @@ export function ExerciseCatalog() {
       />
 
       {exercises.isPending && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2" aria-busy>
           {Array.from({ length: SKELETON_COUNT }, (_, index) => (
             <ExerciseCardSkeleton key={index} />
           ))}
@@ -178,17 +191,19 @@ export function ExerciseCatalog() {
       )}
 
       {exercises.isError && (
-        <div className="space-y-3 rounded-xl bg-card p-5">
-          <p className="font-medium">Le catalogue n’a pas pu être chargé.</p>
-          <p className="text-sm text-muted-foreground">{exercises.error.message}</p>
-          <button
+        <Alert variant="destructive">
+          <AlertTitle>Le catalogue n’a pas pu être chargé.</AlertTitle>
+          <AlertDescription>{exercises.error.message}</AlertDescription>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3 w-fit"
             onClick={() => void exercises.refetch()}
-            className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
           >
             Réessayer
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
       {exercises.isSuccess && items.length === 0 && <EmptyState filters={filters} />}
@@ -218,14 +233,16 @@ export function ExerciseCatalog() {
           </ul>
 
           {exercises.hasNextPage && (
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => void exercises.fetchNextPage()}
               disabled={exercises.isFetchingNextPage}
-              className="w-full rounded-lg py-2.5 text-sm ring-1 ring-border hover:bg-accent disabled:opacity-50"
+              className="w-full"
             >
-              {exercises.isFetchingNextPage ? "Chargement…" : "Charger la suite"}
-            </button>
+              {exercises.isFetchingNextPage && <Spinner data-icon="inline-start" />}
+              Charger la suite
+            </Button>
           )}
 
           {attributions.map((attribution) => (

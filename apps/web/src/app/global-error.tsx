@@ -2,6 +2,8 @@
 
 import "@better-lift/ui/globals.css";
 
+import { Button } from "@better-lift/ui/components/button";
+
 /**
  * Dernier recours : une erreur levée dans le layout racine ou dans les
  * providers. À ce stade le layout racine n'a pas rendu, donc ce fichier fournit
@@ -38,13 +40,14 @@ export default function GlobalError({
             <p className="font-mono text-xs text-muted-foreground">Réf. {error.digest}</p>
           ) : null}
           <div>
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground"
-            >
+            {/*
+              `Button` est sûr ici bien qu'on soit sous la panne : c'est un
+              bouton stylé, sans contexte ni provider. Seuls les composants qui
+              en dépendent — thème, requêtes — seraient à proscrire.
+            */}
+            <Button type="button" size="lg" onClick={reset}>
               Recharger
-            </button>
+            </Button>
           </div>
         </main>
       </body>
