@@ -86,6 +86,18 @@ Pas de `loading.tsx` dans `(auth)` : ces écrans sont des formulaires clients sa
 
 `global-error.tsx` est la seule page de l'app qui déclare `<html>` et `<body>` : le layout racine est justement ce qui a échoué. Elle réimporte `globals.css` pour la même raison, tourne sans aucun provider — donc sans `next-themes`, donc en thème clair — et l'overlay de développement la masque : pour la voir, il faut `next build && next start`.
 
+## Langues
+
+`next-intl` en provider client, monté sous `QueryProvider` — la langue vient du **profil**, qu'il lit dans le cache de TanStack Query. Les catalogues vivent dans `apps/web/messages/{fr,en}.json`, le français étant la source dont le type des clés dérive.
+
+Trois sources, dans cet ordre : le **profil**, la **langue du navigateur** (avant la connexion, seul indice disponible), puis le français. La résolution est une fonction pure et testée — c'est elle qui décide ce que voit quelqu'un qui n'a pas encore de compte.
+
+**Le premier rendu est toujours en français**, la langue bascule après le montage : le serveur ne connaît ni le profil ni le navigateur, et résoudre au premier rendu client casserait l'hydratation. Le raisonnement complet, et son coût, sont en [D29](09-decisions.md).
+
+**Un composant qui affiche du texte est client.** Une page serveur ne peut pas traduire, faute de locale dans la requête : le titre et la description d'un écran descendent donc dans un composant client (`sign-in-screen.tsx` pour la connexion), la page ne gardant que ses `metadata` — qui restent en français.
+
+**Migration en cours** : l'écran de connexion et le panneau éditorial des écrans d'authentification sont traduits, ainsi que tous les messages de validation de formulaire. Le reste suit écran par écran.
+
 ## Écrans d'authentification
 
 **Deux colonnes à partir de `lg`** (`(auth)/layout.tsx`) : panneau éditorial à gauche, formulaire à droite. Sous `lg`, le panneau disparaît entièrement et la colonne du formulaire prend l'écran — c'est la même mise en page, pas une variante mobile à maintenir en parallèle.

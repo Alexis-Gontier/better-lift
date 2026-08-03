@@ -84,6 +84,8 @@ catalog:
   "radix-ui": ^1.6.7
   "lucide-react": ^1.28.0
   "next-themes": ^0.4.6
+  # i18n du web (D29). Le mobile aura le sien : next-intl est propre à Next.
+  "next-intl": ^4.5.5
   # Graphiques du tableau de bord (doc 05), **web uniquement**. Déclaré dans
   # `packages/ui` — qui porte `chart.tsx` — **et** dans `apps/web`, qui compose
   # les graphiques et importe donc `Bar`, `BarChart` et consorts directement.
@@ -105,6 +107,12 @@ allowBuilds:
   # Lefthook télécharge et lie son binaire Go au postinstall : sans ce script,
   # `lefthook install` n'a rien à exécuter et les hooks ne sont jamais posés.
   lefthook: true
+  # Tirés par `next-intl`, qui les embarque pour son plugin Next — celui qu'on
+  # n'utilise pas, la langue venant du profil et non de l'URL (D29). Refusés
+  # explicitement plutôt que laissés en suspens : un script ignoré fait sortir
+  # `pnpm install` en erreur, et `pnpm exec` refuse alors de démarrer.
+  "@swc/core": false
+  "@parcel/watcher": false
 
 # Failles hautes tirées transitivement par Next 16.2.12, que `pnpm audit`
 # bloque en CI. Les deux sont des montées de patch, sans rupture d'API :

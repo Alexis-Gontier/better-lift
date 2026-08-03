@@ -2,15 +2,32 @@
 
 import { ArrowLeftIcon, MailCheckIcon } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@better-lift/ui/components/button";
 
 import { FormAlert, SubmitButton, TextField } from "./form-parts";
-import { validateEmail, validateIfFilled } from "./validation";
+import {
+  MIN_PASSWORD_LENGTH,
+  type ValidationKey,
+  validateEmail,
+  validateIfFilled,
+} from "./validation";
 import { requestPasswordReset } from "@/lib/auth-client";
 
 export function ForgotPasswordForm() {
+  const errors = useTranslations("AuthValidation");
+
+  /**
+   * Traduit la clé rendue par les validateurs (D29). Elle est convertie **dès
+   * qu'elle est produite** plutôt qu'à l'affichage : l'état des erreurs porte
+   * aussi des messages venus du serveur, qui sont déjà des phrases.
+   */
+  function message(key: ValidationKey | null): string | undefined {
+    return key ? errors(key, { min: MIN_PASSWORD_LENGTH }) : undefined;
+  }
+
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | undefined>(undefined);
   const [sent, setSent] = useState(false);
@@ -111,7 +128,7 @@ export function ForgotPasswordForm() {
             setEmailError(undefined);
           }}
           onBlur={(event) =>
-            setEmailError(validateIfFilled(event.target.value, validateEmail) ?? undefined)
+            setEmailError(message(validateIfFilled(event.target.value, validateEmail)))
           }
         />
 

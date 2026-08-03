@@ -3,6 +3,7 @@
 import { CircleCheckIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@better-lift/ui/components/button";
@@ -10,6 +11,7 @@ import { Button } from "@better-lift/ui/components/button";
 import { FormAlert, PasswordField, SubmitButton } from "./form-parts";
 import {
   MIN_PASSWORD_LENGTH,
+  type ValidationKey,
   validateConfirmation,
   validateIfFilled,
   validatePassword,
@@ -45,6 +47,17 @@ function ExpiredLink() {
  * déclarations de fonction étant hissées avant lui.
  */
 function ResetPasswordFields({ token }: { token: string }) {
+  const errors = useTranslations("AuthValidation");
+
+  /**
+   * Traduit la clé rendue par les validateurs (D29). Elle est convertie **dès
+   * qu'elle est produite** plutôt qu'à l'affichage : l'état des erreurs porte
+   * aussi des messages venus du serveur, qui sont déjà des phrases.
+   */
+  function message(key: ValidationKey | null): string | undefined {
+    return key ? errors(key, { min: MIN_PASSWORD_LENGTH }) : undefined;
+  }
+
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirmation?: string }>({});
@@ -56,8 +69,8 @@ function ResetPasswordFields({ token }: { token: string }) {
     event.preventDefault();
 
     const nextErrors = {
-      password: validatePassword(password, "new") ?? undefined,
-      confirmation: validateConfirmation(password, confirmation) ?? undefined,
+      password: message(validatePassword(password, "new")),
+      confirmation: message(validateConfirmation(password, confirmation)),
     };
 
     if (nextErrors.password || nextErrors.confirmation) {

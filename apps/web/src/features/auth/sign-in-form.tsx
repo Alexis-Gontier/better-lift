@@ -2,17 +2,37 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { FormAlert, FormSeparator, PasswordField, SubmitButton, TextField } from "./form-parts";
 import { safeNextPath } from "./next-path";
 import { SocialButtons } from "./social-buttons";
-import { validateEmail, validateIfFilled, validatePassword } from "./validation";
+import {
+  MIN_PASSWORD_LENGTH,
+  type ValidationKey,
+  validateEmail,
+  validateIfFilled,
+  validatePassword,
+} from "./validation";
 import { signIn } from "@/lib/auth-client";
 
 export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("SignIn");
+  const fields = useTranslations("AuthFields");
+  const errors = useTranslations("AuthValidation");
+
+  /**
+   * Traduit la clé rendue par les validateurs (D29). Elle est convertie **dès
+   * qu'elle est produite** plutôt qu'à l'affichage : l'état des erreurs porte
+   * aussi des messages venus du serveur, qui sont déjà des phrases.
+   */
+  function message(key: ValidationKey | null): string | undefined {
+    return key ? errors(key, { min: MIN_PASSWORD_LENGTH }) : undefined;
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -50,8 +70,8 @@ export function SignInForm() {
       pas quand le formulaire part à la touche Entrée.
     */
     const nextErrors = {
-      email: validateEmail(email) ?? undefined,
-      password: validatePassword(password, "existing") ?? undefined,
+      email: message(validateEmail(email)),
+      password: message(validatePassword(password, "existing")),
     };
 
     if (nextErrors.email || nextErrors.password) {
@@ -68,11 +88,7 @@ export function SignInForm() {
 
     if (result.error) {
       setPending(false);
-      setError(
-        result.error.status === 429
-          ? "Trop de tentatives. Réessayez dans quelques minutes."
-          : "Adresse e-mail ou mot de passe incorrect.",
-      );
+      setError(result.error.status === 429 ? t("rateLimited") : t("invalidCredentials"));
       return;
     }
 
@@ -93,7 +109,7 @@ export function SignInForm() {
       */}
       <SocialButtons callbackPath={destination} />
 
-      <FormSeparator>ou</FormSeparator>
+      <FormSeparator>{fields("or")}</FormSeparator>
 
       {/*
         `noValidate` : la validation native affiche une bulle non stylable, dans
@@ -104,13 +120,15 @@ export function SignInForm() {
       */}
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <TextField
-          label="Adresse e-mail"
+          label={fields("email")}
           type="email"
           inputMode="email"
           autoComplete="email"
           autoFocus
-          placeholder="Entrez votre e-mail"
+          placeholder={fields("emailPlaceholder")}
           value={email}
+          /* La validation renvoie une clé (D29) : c'est l'écran qui choisit
+             les mots, et lui seul connaît la langue affichée. */
           error={fieldErrors.email}
           onChange={(event) => {
             setEmail(event.target.value);
@@ -119,16 +137,16 @@ export function SignInForm() {
           onBlur={(event) =>
             setFieldErrors((current) => ({
               ...current,
-              email: validateIfFilled(event.target.value, validateEmail) ?? undefined,
+              email: message(validateIfFilled(event.target.value, validateEmail)),
             }))
           }
         />
 
         <div className="flex flex-col gap-1.5">
           <PasswordField
-            label="Mot de passe"
+            label={fields("password")}
             autoComplete="current-password"
-            placeholder="Entrez votre mot de passe"
+            placeholder={fields("passwordPlaceholder")}
             value={password}
             error={fieldErrors.password}
             onChange={(event) => {
@@ -141,22 +159,22 @@ export function SignInForm() {
             href="/forgot-password"
             className="self-end rounded-sm text-xs text-muted-foreground underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            Mot de passe oublié ?
+            {t("forgotPassword")}
           </Link>
         </div>
 
         {error && <FormAlert>{error}</FormAlert>}
 
-        <SubmitButton pending={pending}>Se connecter</SubmitButton>
+        <SubmitButton pending={pending}>{t("submit")}</SubmitButton>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Pas encore de compte ?{" "}
+        {t("noAccount")}{" "}
         <Link
           href="/signup"
           className="rounded-sm font-medium text-foreground underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          Créer un compte
+          {t("createAccount")}
         </Link>
       </p>
     </div>

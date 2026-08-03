@@ -1,4 +1,7 @@
+"use client";
+
 import { GiftIcon, ListChecksIcon, TrophyIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * Panneau éditorial des écrans d'authentification.
@@ -7,31 +10,23 @@ import { GiftIcon, ListChecksIcon, TrophyIcon } from "lucide-react";
  * pas pour meubler une colonne, c'est fabriquer une preuve. À la place, trois
  * promesses que le produit tient réellement — chacune vérifiable dans la doc 01.
  *
- * Rendu côté serveur, aucun état : ce n'est que du texte et trois icônes.
+ * Composant **client** depuis l'internationalisation (D29) : il n'a toujours
+ * aucun état, mais la langue est résolue côté client — il n'existe pas de
+ * traduction côté serveur, faute de locale dans l'URL.
  *
  * `hidden lg:flex` le retire de l'arbre d'accessibilité sous 1024 px, ce qui est
  * l'intention : sur mobile, le formulaire est la seule chose à l'écran et faire
  * lire trois arguments avant d'y arriver serait un obstacle, pas un renfort.
  */
 const BENEFITS = [
-  {
-    Icon: ListChecksIcon,
-    title: "Vos routines, prêtes avant la salle",
-    body: "L’atelier se fait au calme sur le web. Le téléphone ne sert plus qu’à saisir.",
-  },
-  {
-    Icon: TrophyIcon,
-    title: "Les records se calculent seuls",
-    body: "Charge, volume, répétitions : rien à noter, rien à comparer à la main.",
-  },
-  {
-    Icon: GiftIcon,
-    title: "Gratuit, et ça le reste",
-    body: "Pas d’abonnement, pas de publicité, pas de revente de données.",
-  },
+  { Icon: ListChecksIcon, key: "routines" },
+  { Icon: TrophyIcon, key: "records" },
+  { Icon: GiftIcon, key: "free" },
 ] as const;
 
 export function AuthPanel() {
+  const t = useTranslations("AuthPanel");
+
   return (
     /*
       Contenu **centré** dans le panneau, pas calé sur la gouttière de gauche.
@@ -64,25 +59,30 @@ export function AuthPanel() {
           Un `<p>` et non un titre : le `<h1>` de la page est celui du
           formulaire. Deux titres de même niveau feraient croire à deux écrans.
         */}
-        <p className="font-heading text-4xl leading-[1.1] font-semibold tracking-tight text-balance xl:text-5xl">
-          Le carnet,
-          <br />
-          sans le carnet.
+        {/*
+          `whitespace-pre-line` : la coupure de ligne fait partie du texte et
+          vit donc dans le catalogue. Un `<br />` codé en dur imposerait la
+          même césure à toutes les langues, alors qu'elle dépend de la phrase.
+        */}
+        <p className="font-heading text-4xl leading-[1.1] font-semibold tracking-tight whitespace-pre-line text-balance xl:text-5xl">
+          {t("headline")}
         </p>
 
         <div className="mt-8 h-px w-12 bg-border" />
 
         <ul className="mt-8 space-y-6">
-          {BENEFITS.map(({ Icon, title, body }) => (
-            <li key={title} className="flex gap-3.5">
+          {BENEFITS.map(({ Icon, key }) => (
+            <li key={key} className="flex gap-3.5">
               <Icon
                 aria-hidden="true"
                 className="mt-0.5 size-4 shrink-0 text-muted-foreground"
                 strokeWidth={2}
               />
               <div className="space-y-1">
-                <p className="text-sm leading-snug font-medium">{title}</p>
-                <p className="text-sm leading-normal text-muted-foreground text-pretty">{body}</p>
+                <p className="text-sm leading-snug font-medium">{t(`${key}.title`)}</p>
+                <p className="text-sm leading-normal text-muted-foreground text-pretty">
+                  {t(`${key}.body`)}
+                </p>
               </div>
             </li>
           ))}

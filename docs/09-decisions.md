@@ -237,6 +237,22 @@ Le reste suit de l'idempotence de `POST /v1/workouts` (règle non négociable n�
 
 Ce que la file **ne fait pas** : les corrections et les suppressions de séances passées ne passent pas par elle. Elles se font depuis l'atelier — le web —, sur une séance déjà partie, et une file qui rejouerait un `PUT` sur une ressource qu'un autre appareil vient de modifier poserait un problème de résolution de conflit que la V1 n'a aucune raison d'ouvrir.
 
+### D29 — i18n du web : `next-intl` côté client, la langue vient du profil et non de l'URL
+
+La doc 01 promet fr + en dès la V1 ; rien n'existait, tous les écrans étaient en français en dur. Le premier lot pose le mécanisme et migre l'écran de connexion.
+
+**Pas de segment `[locale]` dans l'URL.** La langue est un **réglage de compte**, servi par `GET /v1/me` : deux URL pour la même page n'auraient rien à dire de plus, et il faudrait alors réconcilier l'URL avec le profil à chaque connexion — sans jamais savoir lequel des deux fait foi. Le routage internationalisé, qui est le mode par défaut de `next-intl`, est donc écarté.
+
+**`next-intl` en provider client**, sans `getRequestConfig`. Il accepte `locale` et `messages` explicites et n'exige la configuration serveur que pour `getTranslations`, dont on ne se sert pas. Ce qu'on garde de la bibliothèque : la syntaxe ICU (pluriels, interpolation), le formatage des dates et des nombres accordé à la locale, et le typage des clés. Ce qu'on écarte : son plugin Next, d'où deux scripts d'installation refusés dans `pnpm-workspace.yaml`.
+
+**Le premier rendu est toujours en français**, et la langue se résout après le montage. Le serveur ne connaît ni le profil ni la langue du navigateur ; résoudre dès le premier rendu client produirait un écart avec le HTML envoyé — l'avertissement d'hydratation, et un arbre remonté. Le coût est visible : un compte anglophone voit un instant de français au chargement. On l'accepte tant que le français est la langue de l'immense majorité des comptes. Lire `Accept-Language` ou un cookie côté serveur supprimerait ce flash, mais rendrait **toutes** les pages dynamiques, y compris la page d'accueil marketing, qui est statique.
+
+**Trois sources, dans cet ordre : le profil, la langue du navigateur, le français.** La deuxième existe pour les écrans d'authentification, où il n'y a pas encore de compte — c'est le seul indice disponible, et c'est ce qui décide de la langue de quelqu'un qui découvre le produit.
+
+**Les validateurs renvoient une clé, pas une phrase.** Une fonction pure ne peut pas appeler `useTranslations`, et lui passer la fonction de traduction ferait dépendre les règles de la langue affichée. Elles disent ce qui ne va pas, l'écran choisit les mots — et elles restent testables sans catalogue.
+
+**Ce que le lot ne fait pas :** les titres d'onglet (`metadata`) restent en français, faute de locale côté serveur ; le mobile aura son propre dispositif, `next-intl` étant propre à Next ; et les écrans non encore migrés restent en français. Une interface partiellement traduite n'est pas une régression — elle l'était intégralement avant.
+
 ## Actions à mener (pas des décisions)
 
 - [ ] **Nom et disponibilité** : vérifier le domaine `better-lift.app`, les identifiants App Store et Play Store, et l'absence de conflit de marque.

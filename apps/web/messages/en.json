@@ -1,0 +1,46 @@
+{
+  "AuthPanel": {
+    "headline": "The logbook,\nwithout the logbook.",
+    "routines": {
+      "title": "Your routines, ready before the gym",
+      "body": "Build them calmly on the web. The phone is left with nothing but logging."
+    },
+    "records": {
+      "title": "Records work themselves out",
+      "body": "Weight, volume, reps: nothing to note down, nothing to compare by hand."
+    },
+    "free": {
+      "title": "Free, and staying that way",
+      "body": "No subscription, no ads, no selling your data."
+    }
+  },
+  "AuthFields": {
+    "email": "Email address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "or": "or",
+    "continueWithGitHub": "Continue with GitHub"
+  },
+  "SignIn": {
+    "title": "Sign in",
+    "description": "Pick up where you left off.",
+    "submit": "Sign in",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "No account yet?",
+    "createAccount": "Create one",
+    "invalidCredentials": "Incorrect email address or password.",
+    "rateLimited": "Too many attempts. Try again in a few minutes."
+  },
+  "AuthValidation": {
+    "emailRequired": "Enter your email address.",
+    "emailShape": "This does not look like an email address.",
+    "nameRequired": "Enter a name.",
+    "passwordRequired": "Enter your password.",
+    "passwordTooShort": "{min} characters minimum.",
+    "confirmationRequired": "Confirm the password.",
+    "confirmationMismatch": "The two passwords do not match."
+  }
+}

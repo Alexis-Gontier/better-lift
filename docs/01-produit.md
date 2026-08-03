@@ -136,5 +136,5 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 | Séance hors ligne           | Fonctionnelle intégralement, synchronisation au retour du réseau |
 | API p95                     | < 300 ms sur les lectures                                        |
 | Accessibilité               | WCAG 2.1 AA sur le web                                           |
-| i18n                        | fr + en dès la V1 (le dataset fournit déjà les deux)             |
+| i18n                        | fr + en dès la V1 (le dataset fournit déjà les deux). **Mécanisme posé (D29), migration des écrans en cours** |
 | RGPD                        | Export et suppression effectifs, hébergement UE                  |
