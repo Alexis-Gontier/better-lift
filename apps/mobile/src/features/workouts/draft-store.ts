@@ -66,8 +66,19 @@ export function isDraftPersisted(): boolean {
   return open() !== null;
 }
 
+/**
+ * La forme sérialisée, telle qu'elle est sur le disque.
+ *
+ * Elle sert à répondre à une seule question : « le brouillon a-t-il changé
+ * depuis ma dernière écriture ? » Comparer deux chaînes évite d'avoir à
+ * inventer un numéro de révision, qu'il faudrait alors incrémenter partout.
+ */
+export function readDraftRaw(): string | null {
+  return open()?.getString(DRAFT_KEY) ?? memory.get(DRAFT_KEY) ?? null;
+}
+
 export function readDraft(): WorkoutDraft | null {
-  const raw = open()?.getString(DRAFT_KEY) ?? memory.get(DRAFT_KEY);
+  const raw = readDraftRaw();
 
   if (!raw) {
     return null;
@@ -85,7 +96,8 @@ export function readDraft(): WorkoutDraft | null {
   }
 }
 
-export function writeDraft(draft: WorkoutDraft): void {
+/** Renvoie la forme écrite, que l'appelant compare ensuite à celle du disque. */
+export function writeDraft(draft: WorkoutDraft): string {
   const serialized = JSON.stringify(draft);
   const store = open();
 
@@ -94,6 +106,8 @@ export function writeDraft(draft: WorkoutDraft): void {
   } else {
     memory.set(DRAFT_KEY, serialized);
   }
+
+  return serialized;
 }
 
 export function clearDraft(): void {
