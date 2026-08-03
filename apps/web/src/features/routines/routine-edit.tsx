@@ -3,6 +3,9 @@
 import Link from "next/link";
 
 import { ApiClientError, useRoutine } from "@better-lift/api-client";
+import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import { Skeleton } from "@better-lift/ui/components/skeleton";
 
 import { RoutineEditor } from "./routine-editor";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -21,9 +24,9 @@ export function RoutineEdit({ id }: { id: string }) {
 
   if (routine.isPending) {
     return (
-      <div className="space-y-3" aria-busy>
-        <div className="h-10 animate-pulse rounded-lg bg-muted/50" />
-        <div className="h-48 animate-pulse rounded-xl bg-muted/50" />
+      <div className="flex flex-col gap-3" aria-busy>
+        <Skeleton className="h-10 rounded-lg" />
+        <Skeleton className="h-48 rounded-xl" />
       </div>
     );
   }
@@ -32,20 +35,17 @@ export function RoutineEdit({ id }: { id: string }) {
     const missing = routine.error instanceof ApiClientError && routine.error.status === 404;
 
     return (
-      <div className="space-y-3 rounded-xl bg-card p-5">
-        <p className="font-medium">
+      <Alert variant="destructive">
+        <AlertTitle>
           {missing ? "Cette routine n’existe plus." : "Routine indisponible."}
-        </p>
-        <p className="text-sm text-muted-foreground">
+        </AlertTitle>
+        <AlertDescription>
           {missing ? "Elle a pu être supprimée depuis." : routine.error.message}
-        </p>
-        <Link
-          href="/routines"
-          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
-        >
-          Retour aux routines
-        </Link>
-      </div>
+        </AlertDescription>
+        <Button asChild variant="outline" size="sm" className="mt-3 w-fit">
+          <Link href="/routines">Retour aux routines</Link>
+        </Button>
+      </Alert>
     );
   }
 

@@ -3,6 +3,16 @@
 import Link from "next/link";
 
 import { ApiClientError, useExercise } from "@better-lift/api-client";
+import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@better-lift/ui/components/empty";
+import { Skeleton } from "@better-lift/ui/components/skeleton";
 
 import { ExerciseForm } from "./exercise-form";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -23,9 +33,9 @@ export function ExerciseEdit({ id }: { id: string }) {
 
   if (exercise.isPending) {
     return (
-      <div className="space-y-4" aria-busy>
-        <div className="h-10 animate-pulse rounded-lg bg-muted/50" />
-        <div className="h-40 animate-pulse rounded-lg bg-muted/50" />
+      <div className="flex flex-col gap-4" aria-busy>
+        <Skeleton className="h-10 rounded-lg" />
+        <Skeleton className="h-40 rounded-lg" />
       </div>
     );
   }
@@ -34,45 +44,42 @@ export function ExerciseEdit({ id }: { id: string }) {
     const missing = exercise.error instanceof ApiClientError && exercise.error.status === 404;
 
     return (
-      <Refusal
-        title={missing ? "Cet exercice n’est plus au catalogue." : "Fiche indisponible."}
-        detail={missing ? "Il a pu être archivé depuis." : exercise.error.message}
-      />
+      <Alert variant="destructive">
+        <AlertTitle>
+          {missing ? "Cet exercice n’est plus au catalogue." : "Fiche indisponible."}
+        </AlertTitle>
+        <AlertDescription>
+          {missing ? "Il a pu être archivé depuis." : exercise.error.message}
+        </AlertDescription>
+        <Button asChild variant="outline" size="sm" className="mt-3 w-fit">
+          <Link href="/exercises">Retour au catalogue</Link>
+        </Button>
+      </Alert>
     );
   }
 
+  /*
+    Un refus, pas une panne : `Empty` plutôt qu'`Alert`. Rien n'a échoué, la
+    demande n'a simplement pas de sens — et l'écran propose la seule chose qui
+    en ait une, créer sa propre version.
+  */
   if (!exercise.data.isCustom) {
     return (
-      <Refusal
-        title="Le catalogue commun n’est pas modifiable."
-        detail="Créer un exercice personnalisé permet d’en faire sa propre version."
-        action={{ href: "/exercises/new", label: "Créer un exercice" }}
-      />
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>Le catalogue commun n’est pas modifiable.</EmptyTitle>
+          <EmptyDescription>
+            Créer un exercice personnalisé permet d’en faire sa propre version.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button asChild>
+            <Link href="/exercises/new">Créer un exercice</Link>
+          </Button>
+        </EmptyContent>
+      </Empty>
     );
   }
 
   return <ExerciseForm exercise={exercise.data} />;
-}
-
-function Refusal({
-  title,
-  detail,
-  action,
-}: {
-  title: string;
-  detail: string;
-  action?: { href: "/exercises/new" | "/exercises"; label: string };
-}) {
-  return (
-    <div className="space-y-3 rounded-xl bg-card p-5">
-      <p className="font-medium">{title}</p>
-      <p className="text-sm text-muted-foreground">{detail}</p>
-      <Link
-        href={action?.href ?? "/exercises"}
-        className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
-      >
-        {action?.label ?? "Retour au catalogue"}
-      </Link>
-    </div>
-  );
 }

@@ -19,6 +19,19 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useReducer, useState } from "react";
 
 import { useCreateRoutine, useReplaceRoutine, useRoutineFolders } from "@better-lift/api-client";
+import { Alert, AlertDescription } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import { Card, CardContent } from "@better-lift/ui/components/card";
+import { Field, FieldLabel } from "@better-lift/ui/components/field";
+import { Input } from "@better-lift/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@better-lift/ui/components/select";
+import { Spinner } from "@better-lift/ui/components/spinner";
 import { type RoutineDetail, routineStructureSchema } from "@better-lift/validators";
 
 import {
@@ -53,6 +66,15 @@ import { apiClient } from "@/lib/api";
  * 3. **Le panneau d'ajout reste ouvert.** On construit une routine de six
  *    exercices, pas d'un seul.
  */
+
+/**
+ * Valeur sentinelle de « aucun dossier ».
+ *
+ * Un `Select` de Radix réserve la chaîne vide à l'absence de sélection : un
+ * `SelectItem value=""` lève une erreur, et remettre `""` réafficherait le
+ * placeholder. Le préfixe `__` écarte la collision avec un identifiant réel.
+ */
+const NO_FOLDER = "__none__";
 
 /**
  * Ne considère que les cibles **de même nature** que l'élément saisi.
@@ -250,95 +272,94 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
   const exerciseIds = draft.exercises.map((exercise) => exerciseDndId(exercise.key));
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {restorable && (
-        <div
-          role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-4"
-        >
-          <p className="text-sm">Un brouillon non enregistré a été retrouvé sur cet appareil.</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                // Le brouillon est restauré **en entier**, séries et valeurs
-                // comprises : n'en remettre qu'une partie serait pire que de
-                // ne rien proposer.
-                dispatch({ type: "replaceDraft", draft: restorable });
-                setRestorable(null);
-                setDirty(true);
-              }}
-              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-            >
-              Restaurer
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                clearDraft(routineId);
-                setRestorable(null);
-              }}
-              className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
-            >
-              Ignorer
-            </button>
-          </div>
-        </div>
+        <Alert>
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+            <span>Un brouillon non enregistré a été retrouvé sur cet appareil.</span>
+            <span className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  // Le brouillon est restauré **en entier**, séries et valeurs
+                  // comprises : n'en remettre qu'une partie serait pire que de
+                  // ne rien proposer.
+                  dispatch({ type: "replaceDraft", draft: restorable });
+                  setRestorable(null);
+                  setDirty(true);
+                }}
+              >
+                Restaurer
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  clearDraft(routineId);
+                  setRestorable(null);
+                }}
+              >
+                Ignorer
+              </Button>
+            </span>
+          </AlertDescription>
+        </Alert>
       )}
 
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0 flex-1 space-y-3">
-          <div>
-            <label htmlFor={`${fieldId}-name`} className="mb-1 block text-xs text-muted-foreground">
-              Nom de la routine
-            </label>
-            <input
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-name`}>Nom de la routine</FieldLabel>
+            <Input
               id={`${fieldId}-name`}
+              size="lg"
               value={draft.name}
               onChange={(event) => run({ type: "setName", value: event.target.value })}
               placeholder="Push A"
-              className="w-full rounded-lg bg-card px-3 py-2 text-lg font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="text-lg font-medium"
             />
-          </div>
+          </Field>
 
-          <div className="flex flex-wrap gap-3">
-            <div>
-              <label
-                htmlFor={`${fieldId}-folder`}
-                className="mb-1 block text-xs text-muted-foreground"
+          <div className="flex flex-wrap items-end gap-3">
+            <Field className="w-auto">
+              <FieldLabel htmlFor={`${fieldId}-folder`}>Dossier</FieldLabel>
+              {/*
+                `Select` de Radix réserve la chaîne vide à « aucune sélection » :
+                un `SelectItem value=""` lève une erreur et ferait revenir le
+                placeholder au lieu de sélectionner « Aucun ». D'où une valeur
+                sentinelle, retraduite en `null` dans le brouillon.
+              */}
+              <Select
+                value={draft.folderId ?? NO_FOLDER}
+                onValueChange={(value) =>
+                  run({ type: "setFolder", value: value === NO_FOLDER ? null : value })
+                }
               >
-                Dossier
-              </label>
-              <select
-                id={`${fieldId}-folder`}
-                value={draft.folderId ?? ""}
-                onChange={(event) => run({ type: "setFolder", value: event.target.value || null })}
-                className="rounded-lg bg-card px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                <option value="">Aucun</option>
-                {(folders.data ?? []).map((folder) => (
-                  <option key={folder.id} value={folder.id}>
-                    {folder.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <SelectTrigger id={`${fieldId}-folder`} className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_FOLDER}>Aucun</SelectItem>
+                  {(folders.data ?? []).map((folder) => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-            <div className="min-w-48 flex-1">
-              <label
-                htmlFor={`${fieldId}-notes`}
-                className="mb-1 block text-xs text-muted-foreground"
-              >
-                Notes
-              </label>
-              <input
+            <Field className="min-w-48 flex-1">
+              <FieldLabel htmlFor={`${fieldId}-notes`}>Notes</FieldLabel>
+              <Input
                 id={`${fieldId}-notes`}
                 value={draft.notes}
                 onChange={(event) => run({ type: "setNotes", value: event.target.value })}
                 placeholder="Barre à 20 kg…"
-                className="w-full rounded-lg bg-card px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
-            </div>
+            </Field>
           </div>
         </div>
 
@@ -347,21 +368,22 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
             {draft.exercises.length} exercice{draft.exercises.length > 1 ? "s" : ""} ·{" "}
             {countSets(draft)} série{countSets(draft) > 1 ? "s" : ""}
           </p>
-          <button
+          <Button
             type="button"
             onClick={() => void save()}
             disabled={mutation.isPending}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            aria-busy={mutation.isPending}
           >
-            {mutation.isPending ? "Enregistrement…" : "Enregistrer"}
-          </button>
+            {mutation.isPending && <Spinner data-icon="inline-start" />}
+            Enregistrer
+          </Button>
         </div>
       </header>
 
       {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <DndContext
@@ -385,9 +407,11 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
             </SortableContext>
 
             {draft.exercises.length === 0 && (
-              <p className="rounded-xl bg-card p-5 text-sm text-muted-foreground">
-                Aucun exercice pour l’instant. Ajoutez-en depuis le panneau de droite.
-              </p>
+              <Card size="sm">
+                <CardContent className="text-sm text-muted-foreground">
+                  Aucun exercice pour l’instant. Ajoutez-en depuis le panneau de droite.
+                </CardContent>
+              </Card>
             )}
           </div>
 

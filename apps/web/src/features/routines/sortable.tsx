@@ -2,6 +2,10 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon } from "lucide-react";
+
+import { Button } from "@better-lift/ui/components/button";
+import { cn } from "@better-lift/ui/lib/utils";
 
 /**
  * Un seul `DndContext` couvre l'éditeur, exercices **et** séries — imbriquer
@@ -69,18 +73,25 @@ export function SortableRow({
       style={{ transform: CSS.Translate.toString(transform), transition }}
       // L'élément saisi passe au-dessus et s'allège : sans ce retour, on ne
       // sait pas ce qu'on déplace.
-      className={`${className} ${isDragging ? "relative z-10 opacity-60" : ""}`}
+      className={cn(className, isDragging && "relative z-10 opacity-60")}
     >
       <div className="flex items-start gap-2">
-        <button
+        {/*
+          `touch-none` est indispensable et non décoratif : sans lui, le
+          navigateur mobile interprète le geste comme un défilement et le
+          glissement ne démarre jamais.
+        */}
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           aria-label={`Déplacer ${label}`}
-          className="mt-1 cursor-grab touch-none rounded px-1 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
+          className="mt-1 shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
-          ⠿
-        </button>
+          <GripVerticalIcon />
+        </Button>
         <div className="min-w-0 flex-1">{children}</div>
       </div>
     </div>

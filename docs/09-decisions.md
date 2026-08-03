@@ -80,16 +80,17 @@ Trois conséquences à connaître :
 
 **Les alias de `components.json` pointent tous vers le paquet.** `components`, `hooks`, `lib` et `ui` valent `@better-lift/ui/*`, jamais `@/*`. C'est ce qui fait atterrir les fichiers générés au bon endroit **et** ce qui rend leurs imports croisés résolvables : un `sidebar.tsx` déposé dans `packages/ui` mais important `@/hooks/use-mobile` viserait `apps/web/src/hooks`, qui n'existe pas et que le paquet ne pourrait de toute façon pas atteindre. D'où l'entrée `"./hooks/*"` dans les `exports`, prévue avant son premier occupant (`use-mobile.ts`, tiré par la sidebar).
 
-**Deux primitives s'écartent volontairement du registre.** La règle reste « on ne les écrit pas à la main » ; ces deux-là sont l'exception, et elles sont signalées par un commentaire `ÉCART ASSUMÉ` en tête du bloc concerné.
+**Trois primitives s'écartent volontairement du registre.** La règle reste « on ne les écrit pas à la main » ; celles-là sont l'exception, et elles sont signalées par un commentaire `ÉCART ASSUMÉ` en tête du bloc concerné.
 
 | Fichier | Écart | Pourquoi pas un `className` |
 |---|---|---|
 | `input.tsx` | variante `size` (`default` 36 px, `lg` 44 px) | Une hauteur de champ décrit une **densité**, pas une exception locale. Passée en `className`, deux écrans finissent par en choisir deux différentes sans que rien ne le signale. |
 | `input-group.tsx` | même variante `size`, plus `h-full` sur `InputGroupInput` | Le contrôle gardait le `h-9` d'`Input` dans un groupe plus haut, et `items-center` le centrait : la zone cliquable était plus courte que la bordure. Défaut invisible tant qu'on ne rate pas le champ. |
+| `select.tsx` | ouverture en `position="popper"` / `align="start"` au lieu d'`item-aligned` centré | Le défaut du registre pose la liste **par-dessus** le déclencheur, recalée sur l'option choisie : elle s'ouvre ailleurs selon la valeur courante et masque le champ qu'on règle. C'est un comportement de menu système, pas de champ de formulaire — tout le reste (`dropdown-menu`, `popover`) descend sous son ancre. Un `className` ne peut rien ici : la position est une prop, pas une classe. |
 
-Les deux retirent le `size` natif d'`<input>` du typage (une largeur en caractères, que personne n'utilise) — il ne peut pas coexister avec la variante sous le même nom.
+Les deux premières retirent le `size` natif d'`<input>` du typage (une largeur en caractères, que personne n'utilise) — il ne peut pas coexister avec la variante sous le même nom.
 
-**Le coût, et il est réel :** `npx shadcn add input --overwrite` écrase ces fichiers et fait disparaître les variantes **en silence**. Les appels `size="lg"` cesseraient d'avoir un effet sans erreur de compilation, `size` étant un attribut légal sur `<input>`. À vérifier après toute réinstallation d'`input`, et après tout `add` d'un composant qui en dépend (`input-group`, `field`).
+**Le coût, et il est réel :** `npx shadcn add input --overwrite` écrase ces fichiers et fait disparaître les écarts **en silence**. Les appels `size="lg"` cesseraient d'avoir un effet sans erreur de compilation, `size` étant un attribut légal sur `<input>` ; `select` rouvrirait ses listes par-dessus leur champ, `item-aligned` étant une position légale. À vérifier après toute réinstallation d'`input` ou de `select`, et après tout `add` d'un composant qui en dépend (`input-group`, `field`).
 
 ### D25 — Typographie : Geist Sans et Geist Mono, la palette reste achromatique
 

@@ -1,8 +1,21 @@
 "use client";
 
+import { SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { useExercises } from "@better-lift/api-client";
+import { Alert, AlertDescription } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@better-lift/ui/components/card";
+import { FieldLegend, FieldSet } from "@better-lift/ui/components/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@better-lift/ui/components/input-group";
+import { Skeleton } from "@better-lift/ui/components/skeleton";
+import { Spinner } from "@better-lift/ui/components/spinner";
+import { Toggle } from "@better-lift/ui/components/toggle";
 import { type BodyPart, bodyPartSchema, type ExerciseSummary } from "@better-lift/validators";
 
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -11,6 +24,7 @@ import { useDebouncedValue } from "@/features/exercises/use-debounced-value";
 import { apiClient } from "@/lib/api";
 
 const SEARCH_DEBOUNCE_MS = 250;
+const SKELETON_COUNT = 5;
 
 /**
  * Panneau d'ajout d'exercice de l'éditeur (doc 05).
@@ -54,87 +68,104 @@ export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) =
   }
 
   return (
-    <aside className="space-y-3 rounded-xl bg-card p-4" aria-label="Ajouter un exercice">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Ajouter un exercice
-      </h2>
+    <Card size="sm" role="group" aria-label="Ajouter un exercice" className="h-fit">
+      <CardHeader>
+        <CardTitle className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+          Ajouter un exercice
+        </CardTitle>
+      </CardHeader>
 
-      <label htmlFor="picker-search" className="sr-only">
-        Rechercher un exercice
-      </label>
-      <input
-        id="picker-search"
-        type="search"
-        value={draftQuery}
-        onChange={(event) => setDraftQuery(event.target.value)}
-        placeholder="Rechercher…"
-        autoComplete="off"
-        className="w-full rounded-lg bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      />
+      <CardContent className="flex flex-col gap-3">
+        <InputGroup>
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
+            id="picker-search"
+            type="search"
+            value={draftQuery}
+            onChange={(event) => setDraftQuery(event.target.value)}
+            placeholder="Rechercher…"
+            autoComplete="off"
+            aria-label="Rechercher un exercice"
+          />
+        </InputGroup>
 
-      <fieldset className="flex flex-wrap gap-1.5">
-        <legend className="sr-only">Filtrer par partie du corps</legend>
-        {bodyPartSchema.options.map((bodyPart) => {
-          const pressed = bodyParts.includes(bodyPart);
+        <FieldSet>
+          <FieldLegend className="sr-only">Filtrer par partie du corps</FieldLegend>
+          <div className="flex flex-wrap gap-1.5">
+            {bodyPartSchema.options.map((bodyPart) => (
+              <Toggle
+                key={bodyPart}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                pressed={bodyParts.includes(bodyPart)}
+                onPressedChange={() => toggleBodyPart(bodyPart)}
+              >
+                {BODY_PART_LABELS[bodyPart]}
+              </Toggle>
+            ))}
+          </div>
+        </FieldSet>
 
-          return (
-            <button
-              key={bodyPart}
-              type="button"
-              aria-pressed={pressed}
-              onClick={() => toggleBodyPart(bodyPart)}
-              className={`rounded-full px-2.5 py-1 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
-                pressed
-                  ? "bg-primary font-medium text-primary-foreground"
-                  : "bg-background text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {BODY_PART_LABELS[bodyPart]}
-            </button>
-          );
-        })}
-      </fieldset>
+        {exercises.isPending && (
+          <div className="flex flex-col gap-1" aria-busy>
+            {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+              <Skeleton key={index} className="h-10 rounded-lg" />
+            ))}
+          </div>
+        )}
 
-      {exercises.isPending && <p className="text-sm text-muted-foreground">Chargement…</p>}
+        {exercises.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{exercises.error.message}</AlertDescription>
+          </Alert>
+        )}
 
-      {exercises.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          {exercises.error.message}
-        </p>
-      )}
+        {exercises.isSuccess && items.length === 0 && (
+          <p className="text-sm text-muted-foreground">Aucun exercice ne correspond.</p>
+        )}
 
-      {exercises.isSuccess && items.length === 0 && (
-        <p className="text-sm text-muted-foreground">Aucun exercice ne correspond.</p>
-      )}
+        <ul className="flex max-h-96 flex-col gap-1 overflow-y-auto">
+          {items.map((exercise) => (
+            <li key={exercise.id}>
+              {/*
+                Le bouton porte deux lignes : `h-auto` et `justify-start`
+                défont la hauteur fixe et le centrage des variantes, faits pour
+                un libellé d'une ligne. C'est du placement local, pas une
+                densité — rien à remonter en variante partagée.
+              */}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onAdd(exercise)}
+                className="h-auto w-full flex-col items-start justify-start gap-0 py-1.5 text-left"
+              >
+                <span className="w-full truncate text-sm">{exercise.name}</span>
+                <span className="w-full truncate text-xs font-normal text-muted-foreground">
+                  {exercise.isCustom ? "Personnalisé · " : ""}
+                  {BODY_PART_LABELS[exercise.bodyPart]} · {equipmentLabel(exercise.equipment)}
+                </span>
+              </Button>
+            </li>
+          ))}
+        </ul>
 
-      <ul className="max-h-96 space-y-1 overflow-y-auto">
-        {items.map((exercise) => (
-          <li key={exercise.id}>
-            <button
-              type="button"
-              onClick={() => onAdd(exercise)}
-              className="w-full rounded-lg px-2 py-1.5 text-left transition hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <span className="block truncate text-sm">{exercise.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">
-                {exercise.isCustom ? "Personnalisé · " : ""}
-                {BODY_PART_LABELS[exercise.bodyPart]} · {equipmentLabel(exercise.equipment)}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {exercises.hasNextPage && (
-        <button
-          type="button"
-          onClick={() => void exercises.fetchNextPage()}
-          disabled={exercises.isFetchingNextPage}
-          className="w-full rounded-lg py-1.5 text-xs ring-1 ring-border hover:bg-accent disabled:opacity-50"
-        >
-          {exercises.isFetchingNextPage ? "Chargement…" : "Charger la suite"}
-        </button>
-      )}
-    </aside>
+        {exercises.hasNextPage && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void exercises.fetchNextPage()}
+            disabled={exercises.isFetchingNextPage}
+            className="w-full"
+          >
+            {exercises.isFetchingNextPage && <Spinner data-icon="inline-start" />}
+            Charger la suite
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }

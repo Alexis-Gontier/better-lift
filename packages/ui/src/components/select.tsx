@@ -50,11 +50,29 @@ function SelectTrigger({
   );
 }
 
+/**
+ * ÉCART ASSUMÉ AVEC LE REGISTRE SHADCN — position par défaut.
+ *
+ * Le registre ouvre en `item-aligned` / `align="center"` : la liste se pose
+ * **par-dessus** le déclencheur, recalée sur l'option choisie. Elle s'ouvre donc
+ * à un endroit différent selon la valeur courante, et masque le champ qu'on est
+ * en train de régler — comportement de menu système, hérité du `<select>` natif
+ * de macOS, qui jure au milieu d'un formulaire où tout le reste (`dropdown-menu`,
+ * `popover`) descend sous son ancre.
+ *
+ * `popper` / `align="start"` ancre la liste sous le champ, bord gauche aligné,
+ * largeur au moins celle du déclencheur — les classes qui l'appliquent sont déjà
+ * dans le fichier du registre, seul le défaut change.
+ *
+ * Conséquence : un `npx shadcn add select --overwrite` rétablit `item-aligned`
+ * **sans erreur de compilation**, les deux valeurs étant légales. Le seul
+ * symptôme est visuel.
+ */
 function SelectContent({
   className,
   children,
-  position = "item-aligned",
-  align = "center",
+  position = "popper",
+  align = "start",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (

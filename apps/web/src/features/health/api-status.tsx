@@ -1,13 +1,22 @@
 "use client";
 
 import { useHealth, useVersion } from "@better-lift/api-client";
+import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Badge } from "@better-lift/ui/components/badge";
+import { Skeleton } from "@better-lift/ui/components/skeleton";
 
 import { apiClient } from "@/lib/api";
 
-const DOT = {
-  ok: "bg-primary",
-  degraded: "bg-amber-400",
-  down: "bg-destructive",
+/**
+ * L'état se dit par un libellé, pas par une couleur seule (WCAG 1.4.1). La
+ * variante ne fait qu'appuyer : `secondary` pour « dégradée » plutôt qu'un
+ * ambre écrit en dur — la palette n'a pas de token d'avertissement, et une
+ * couleur hors palette ne suivrait ni le thème clair ni un futur changement.
+ */
+const STATUS_VARIANT = {
+  ok: "default",
+  degraded: "secondary",
+  down: "destructive",
 } as const;
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -28,35 +37,31 @@ export function ApiStatus() {
   const version = useVersion(apiClient);
 
   if (health.isPending) {
-    return <p className="text-sm text-muted-foreground">Interrogation de l’API…</p>;
+    return <Skeleton className="h-24 rounded-lg" />;
   }
 
   if (health.isError) {
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className={`size-2.5 rounded-full ${DOT.down}`} aria-hidden />
-          <span className="font-medium">API injoignable</span>
-        </div>
-        <p className="text-sm text-muted-foreground">{health.error.message}</p>
-        <p className="text-sm text-muted-foreground">
-          Vérifier que <code className="font-mono">pnpm dev</code> a bien démarré l’API sur le port
-          3001.
-        </p>
-      </div>
+      <Alert variant="destructive">
+        <AlertTitle>API injoignable</AlertTitle>
+        <AlertDescription className="flex flex-col gap-1">
+          <span>{health.error.message}</span>
+          <span>
+            Vérifier que <code className="font-mono">pnpm dev</code> a bien démarré l’API sur le
+            port 3001.
+          </span>
+        </AlertDescription>
+      </Alert>
     );
   }
 
   const { status, db, version: apiVersion, uptimeSec } = health.data;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <span className={`size-2.5 rounded-full ${DOT[status]}`} aria-hidden />
-        <span className="font-medium">
-          {status === "ok" ? "API opérationnelle" : "API dégradée"}
-        </span>
-      </div>
+    <div className="flex flex-col gap-3">
+      <Badge variant={STATUS_VARIANT[status]}>
+        {status === "ok" ? "API opérationnelle" : "API dégradée"}
+      </Badge>
 
       <dl className="divide-y divide-border">
         <Row label="Base de données" value={db === "ok" ? "connectée" : "injoignable"} />
