@@ -1,6 +1,7 @@
 "use client";
 
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Alert, AlertDescription } from "@better-lift/ui/components/alert";
@@ -127,6 +128,7 @@ export function PasswordField({
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
   const [revealed, setRevealed] = useState(false);
+  const t = useTranslations("AuthFields");
 
   return (
     <Field data-invalid={error ? true : undefined}>
@@ -146,7 +148,7 @@ export function PasswordField({
             size="icon-sm"
             aria-pressed={revealed}
             aria-controls={id}
-            aria-label={revealed ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+            aria-label={revealed ? t("hidePassword") : t("showPassword")}
             tabIndex={-1}
             onClick={() => setRevealed((current) => !current)}
           >

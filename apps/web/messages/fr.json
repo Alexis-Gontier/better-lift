@@ -1,0 +1,46 @@
+{
+  "AuthPanel": {
+    "headline": "Le carnet,\nsans le carnet.",
+    "routines": {
+      "title": "Vos routines, prêtes avant la salle",
+      "body": "L’atelier se fait au calme sur le web. Le téléphone ne sert plus qu’à saisir."
+    },
+    "records": {
+      "title": "Les records se calculent seuls",
+      "body": "Charge, volume, répétitions : rien à noter, rien à comparer à la main."
+    },
+    "free": {
+      "title": "Gratuit, et ça le reste",
+      "body": "Pas d’abonnement, pas de publicité, pas de revente de données."
+    }
+  },
+  "AuthFields": {
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "Entrez votre e-mail",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "or": "ou",
+    "continueWithGitHub": "Continuer avec GitHub"
+  },
+  "SignIn": {
+    "title": "Se connecter",
+    "description": "Reprenez là où vous en étiez.",
+    "submit": "Se connecter",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "createAccount": "Créer un compte",
+    "invalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
+    "rateLimited": "Trop de tentatives. Réessayez dans quelques minutes."
+  },
+  "AuthValidation": {
+    "emailRequired": "Indiquez votre adresse e-mail.",
+    "emailShape": "Cette adresse ne ressemble pas à une adresse e-mail.",
+    "nameRequired": "Indiquez un nom.",
+    "passwordRequired": "Indiquez votre mot de passe.",
+    "passwordTooShort": "{min} caractères minimum.",
+    "confirmationRequired": "Confirmez le mot de passe.",
+    "confirmationMismatch": "Les deux mots de passe ne correspondent pas."
+  }
+}

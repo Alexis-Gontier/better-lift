@@ -10,10 +10,28 @@
  * d'API — elles ne sont partagées avec personne et n'ont pas leur place dans
  * `packages/validators`, qui est la source de vérité des contrats. Pures, elles
  * se testent sans monter de composant.
+ *
+ * ## Elles renvoient une **clé**, pas une phrase
+ *
+ * Depuis l'internationalisation (D29) : une fonction pure ne peut pas appeler
+ * `useTranslations`, et lui passer la fonction de traduction en paramètre
+ * ferait dépendre les règles de la langue affichée. Elles disent donc ce qui ne
+ * va pas, l'écran choisit les mots — et elles se testent toujours sans
+ * catalogue.
  */
 
 /** Aligné sur `minPasswordLength` de l'instance Better Auth. */
 export const MIN_PASSWORD_LENGTH = 8;
+
+/** Clés du namespace `AuthValidation` des catalogues de messages. */
+export type ValidationKey =
+  | "emailRequired"
+  | "emailShape"
+  | "nameRequired"
+  | "passwordRequired"
+  | "passwordTooShort"
+  | "confirmationRequired"
+  | "confirmationMismatch";
 
 /**
  * Volontairement laxiste. Un e-mail valide au sens de la RFC 5322 ne se décrit
@@ -24,22 +42,22 @@ export const MIN_PASSWORD_LENGTH = 8;
  */
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validateEmail(value: string): string | null {
+export function validateEmail(value: string): ValidationKey | null {
   const trimmed = value.trim();
 
   if (trimmed.length === 0) {
-    return "Indiquez votre adresse e-mail.";
+    return "emailRequired";
   }
 
   if (!EMAIL_SHAPE.test(trimmed)) {
-    return "Cette adresse ne ressemble pas à une adresse e-mail.";
+    return "emailShape";
   }
 
   return null;
 }
 
-export function validateName(value: string): string | null {
-  return value.trim().length === 0 ? "Indiquez un nom." : null;
+export function validateName(value: string): ValidationKey | null {
+  return value.trim().length === 0 ? "nameRequired" : null;
 }
 
 /**
@@ -49,13 +67,13 @@ export function validateName(value: string): string | null {
  * l'adresse existe. On se contente donc d'exiger un champ non vide, et c'est
  * le serveur qui répond « identifiants incorrects », sans distinguer.
  */
-export function validatePassword(value: string, mode: "new" | "existing"): string | null {
+export function validatePassword(value: string, mode: "new" | "existing"): ValidationKey | null {
   if (value.length === 0) {
-    return "Indiquez votre mot de passe.";
+    return "passwordRequired";
   }
 
   if (mode === "new" && value.length < MIN_PASSWORD_LENGTH) {
-    return `${MIN_PASSWORD_LENGTH} caractères minimum.`;
+    return "passwordTooShort";
   }
 
   return null;
@@ -66,7 +84,7 @@ export function validatePassword(value: string, mode: "new" | "existing"): strin
  *
  * Un champ quitté sans avoir été rempli n'est pas une faute : on a pu en sortir
  * sans jamais y toucher. Le premier champ portant l'autofocus, il suffit de
- * cliquer sur la bascule de thème pour que « Indiquez votre adresse e-mail »
+ * cliquer sur la bascule de thème pour qu'« indiquez votre adresse e-mail »
  * apparaisse — un reproche adressé à quelqu'un qui n'a rien fait.
  *
  * Les champs manquants sont rattrapés à l'envoi, où l'intention est explicite.
@@ -75,15 +93,15 @@ export function validatePassword(value: string, mode: "new" | "existing"): strin
  */
 export function validateIfFilled(
   value: string,
-  validate: (value: string) => string | null,
-): string | null {
+  validate: (value: string) => ValidationKey | null,
+): ValidationKey | null {
   return value.trim().length === 0 ? null : validate(value);
 }
 
-export function validateConfirmation(password: string, confirmation: string): string | null {
+export function validateConfirmation(password: string, confirmation: string): ValidationKey | null {
   if (confirmation.length === 0) {
-    return "Confirmez le mot de passe.";
+    return "confirmationRequired";
   }
 
-  return password === confirmation ? null : "Les deux mots de passe ne correspondent pas.";
+  return password === confirmation ? null : "confirmationMismatch";
 }

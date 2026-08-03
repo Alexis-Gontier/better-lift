@@ -23,6 +23,7 @@
     "better-auth": "catalog:",
     "lucide-react": "catalog:",
     "next": "16.2.12",
+    "next-intl": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

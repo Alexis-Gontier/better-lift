@@ -20,8 +20,8 @@ describe("validateEmail", () => {
   });
 
   it("should ask for an address when the field is empty or blank", () => {
-    expect(validateEmail("")).toBe("Indiquez votre adresse e-mail.");
-    expect(validateEmail("   ")).toBe("Indiquez votre adresse e-mail.");
+    expect(validateEmail("")).toBe("emailRequired");
+    expect(validateEmail("   ")).toBe("emailRequired");
   });
 
   it.each([
@@ -30,21 +30,21 @@ describe("validateEmail", () => {
     ["@exemple.test", "rien avant l'arobase"],
     ["alex exemple@test.fr", "une espace au milieu"],
   ])("should reject %s (%s)", (value) => {
-    expect(validateEmail(value)).toBe("Cette adresse ne ressemble pas à une adresse e-mail.");
+    expect(validateEmail(value)).toBe("emailShape");
   });
 });
 
 describe("validateName", () => {
   it("should reject a name made only of spaces", () => {
-    expect(validateName("   ")).toBe("Indiquez un nom.");
+    expect(validateName("   ")).toBe("nameRequired");
     expect(validateName("Alex")).toBeNull();
   });
 });
 
 describe("validatePassword", () => {
   it("should require a value in both modes", () => {
-    expect(validatePassword("", "new")).toBe("Indiquez votre mot de passe.");
-    expect(validatePassword("", "existing")).toBe("Indiquez votre mot de passe.");
+    expect(validatePassword("", "new")).toBe("passwordRequired");
+    expect(validatePassword("", "existing")).toBe("passwordRequired");
   });
 
   /**
@@ -55,7 +55,7 @@ describe("validatePassword", () => {
    */
   it("should not mention the minimum length when signing in", () => {
     expect(validatePassword("court", "existing")).toBeNull();
-    expect(validatePassword("court", "new")).toBe(`${MIN_PASSWORD_LENGTH} caractères minimum.`);
+    expect(validatePassword("court", "new")).toBe("passwordTooShort");
   });
 
   it("should accept a password at exactly the minimum length", () => {
@@ -80,9 +80,7 @@ describe("validateIfFilled", () => {
   });
 
   it("should validate as usual once something has been typed", () => {
-    expect(validateIfFilled("pas-une-adresse", validateEmail)).toBe(
-      "Cette adresse ne ressemble pas à une adresse e-mail.",
-    );
+    expect(validateIfFilled("pas-une-adresse", validateEmail)).toBe("emailShape");
     expect(validateIfFilled("alex@exemple.test", validateEmail)).toBeNull();
   });
 
@@ -97,13 +95,11 @@ describe("validateIfFilled", () => {
 
 describe("validateConfirmation", () => {
   it("should require the confirmation before comparing it", () => {
-    expect(validateConfirmation("motdepasse", "")).toBe("Confirmez le mot de passe.");
+    expect(validateConfirmation("motdepasse", "")).toBe("confirmationRequired");
   });
 
   it("should compare exactly", () => {
     expect(validateConfirmation("motdepasse", "motdepasse")).toBeNull();
-    expect(validateConfirmation("motdepasse", "Motdepasse")).toBe(
-      "Les deux mots de passe ne correspondent pas.",
-    );
+    expect(validateConfirmation("motdepasse", "Motdepasse")).toBe("confirmationMismatch");
   });
 });

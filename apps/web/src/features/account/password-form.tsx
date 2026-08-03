@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@better-lift/ui/components/button";
@@ -7,7 +8,12 @@ import { Spinner } from "@better-lift/ui/components/spinner";
 
 import { SettingsSection } from "./settings-section";
 import { FormAlert, PasswordField } from "@/features/auth/form-parts";
-import { validateConfirmation, validatePassword } from "@/features/auth/validation";
+import {
+  MIN_PASSWORD_LENGTH,
+  type ValidationKey,
+  validateConfirmation,
+  validatePassword,
+} from "@/features/auth/validation";
 import { changePassword } from "@/lib/auth-client";
 
 type Fields = { current: string; next: string; confirmation: string };
@@ -29,6 +35,17 @@ const EMPTY: Fields = { current: "", next: "", confirmation: "" };
  * vient d'agir passerait pour un échec.
  */
 export function PasswordForm() {
+  const t = useTranslations("AuthValidation");
+
+  /**
+   * Traduit la clé rendue par les validateurs (D29). Elle est convertie **dès
+   * qu'elle est produite** plutôt qu'à l'affichage : l'état des erreurs porte
+   * aussi des messages venus du serveur, qui sont déjà des phrases.
+   */
+  function message(key: ValidationKey | null): string | undefined {
+    return key ? t(key, { min: MIN_PASSWORD_LENGTH }) : undefined;
+  }
+
   const [fields, setFields] = useState<Fields>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [banner, setBanner] = useState<string | null>(null);
@@ -49,9 +66,9 @@ export function PasswordForm() {
     event.preventDefault();
 
     const found: Errors = {
-      current: validatePassword(fields.current, "existing"),
-      next: validatePassword(fields.next, "new"),
-      confirmation: validateConfirmation(fields.next, fields.confirmation),
+      current: message(validatePassword(fields.current, "existing")),
+      next: message(validatePassword(fields.next, "new")),
+      confirmation: message(validateConfirmation(fields.next, fields.confirmation)),
     };
 
     /**

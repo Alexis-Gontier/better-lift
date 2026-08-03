@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { FormAlert, FormSeparator, PasswordField, SubmitButton, TextField } from "./form-parts";
@@ -9,6 +10,7 @@ import { safeNextPath } from "./next-path";
 import { SocialButtons } from "./social-buttons";
 import {
   MIN_PASSWORD_LENGTH,
+  type ValidationKey,
   validateEmail,
   validateIfFilled,
   validateName,
@@ -19,6 +21,17 @@ import { signUp } from "@/lib/auth-client";
 type FieldName = "name" | "email" | "password";
 
 export function SignUpForm() {
+  const errors = useTranslations("AuthValidation");
+
+  /**
+   * Traduit la clé rendue par les validateurs (D29). Elle est convertie **dès
+   * qu'elle est produite** plutôt qu'à l'affichage : l'état des erreurs porte
+   * aussi des messages venus du serveur, qui sont déjà des phrases.
+   */
+  function message(key: ValidationKey | null): string | undefined {
+    return key ? errors(key, { min: MIN_PASSWORD_LENGTH }) : undefined;
+  }
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const [name, setName] = useState("");
@@ -49,7 +62,7 @@ export function SignUpForm() {
   function onFieldBlur(field: FieldName, value: string) {
     setFieldErrors((current) => ({
       ...current,
-      [field]: validateIfFilled(value, (input) => validate(field, input)) ?? undefined,
+      [field]: message(validateIfFilled(value, (input) => validate(field, input))),
     }));
   }
 
@@ -69,9 +82,9 @@ export function SignUpForm() {
     event.preventDefault();
 
     const nextErrors: Partial<Record<FieldName, string>> = {
-      name: validateName(name) ?? undefined,
-      email: validateEmail(email) ?? undefined,
-      password: validatePassword(password, "new") ?? undefined,
+      name: message(validateName(name)),
+      email: message(validateEmail(email)),
+      password: message(validatePassword(password, "new")),
     };
 
     if (nextErrors.name || nextErrors.email || nextErrors.password) {

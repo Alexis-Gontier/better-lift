@@ -1,5 +1,6 @@
 import { TooltipProvider } from "@better-lift/ui/components/tooltip";
 
+import { I18nProvider } from "./i18n-provider";
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
 
@@ -24,7 +25,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <QueryProvider>
-        <TooltipProvider>{children}</TooltipProvider>
+        {/*
+          `I18nProvider` est **sous** `QueryProvider` et non au-dessus : la
+          langue vient du profil, qu'il lit dans le cache de TanStack Query.
+          L'inverse lèverait « No QueryClient set » au montage.
+        */}
+        <I18nProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </I18nProvider>
       </QueryProvider>
     </ThemeProvider>
   );

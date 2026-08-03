@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@better-lift/ui/components/button";
@@ -23,7 +24,7 @@ import { signIn } from "@/lib/auth-client";
  * La liste reste un tableau parce qu'Apple s'y ajoutera avant la première
  * soumission iOS, pas avant (doc 04).
  */
-const PROVIDERS = [{ id: "github", label: "Continuer avec GitHub", Mark: GitHubMark }] as const;
+const PROVIDERS = [{ id: "github", label: "continueWithGitHub", Mark: GitHubMark }] as const;
 
 type ProviderId = (typeof PROVIDERS)[number]["id"];
 
@@ -45,6 +46,7 @@ export function SocialButtons({ callbackPath }: { callbackPath: string }) {
    * à zéro ferait clignoter le bouton juste avant qu'elle disparaisse.
    */
   const [pending, setPending] = useState<ProviderId | null>(null);
+  const t = useTranslations("AuthFields");
 
   async function start(provider: ProviderId) {
     setPending(provider);
@@ -78,7 +80,7 @@ export function SocialButtons({ callbackPath }: { callbackPath: string }) {
           ) : (
             <Mark data-icon="inline-start" />
           )}
-          {label}
+          {t(label)}
         </Button>
       ))}
     </div>
