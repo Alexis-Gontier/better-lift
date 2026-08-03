@@ -100,7 +100,18 @@ function WorkoutArticle({ workout }: { workout: Workout }) {
           <p className="text-muted-foreground first-letter:uppercase">{when}</p>
         </div>
 
-        <DeleteWorkout id={workout.id} title={workout.title} />
+        {/*
+          Modifier avant Supprimer, et dans cet ordre : c'est le geste que l'on
+          vient chercher neuf fois sur dix — une charge mal notée entre deux
+          séries. La suppression reste à côté, mais elle n'est pas le recours
+          par défaut à une erreur de saisie.
+        */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/workouts/${workout.id}/edit`}>Modifier</Link>
+          </Button>
+          <DeleteWorkout id={workout.id} title={workout.title} />
+        </div>
       </header>
 
       {ongoing && (

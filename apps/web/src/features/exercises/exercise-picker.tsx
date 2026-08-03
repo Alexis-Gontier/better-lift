@@ -18,16 +18,19 @@ import { Spinner } from "@better-lift/ui/components/spinner";
 import { Toggle } from "@better-lift/ui/components/toggle";
 import { type BodyPart, bodyPartSchema, type ExerciseSummary } from "@better-lift/validators";
 
+import { BODY_PART_LABELS, equipmentLabel } from "./labels";
+import { useDebouncedValue } from "./use-debounced-value";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
-import { BODY_PART_LABELS, equipmentLabel } from "@/features/exercises/labels";
-import { useDebouncedValue } from "@/features/exercises/use-debounced-value";
 import { apiClient } from "@/lib/api";
 
 const SEARCH_DEBOUNCE_MS = 250;
 const SKELETON_COUNT = 5;
 
 /**
- * Panneau d'ajout d'exercice de l'éditeur (doc 05).
+ * Panneau d'ajout d'exercice, partagé par l'éditeur de routines et celui d'une
+ * séance passée (doc 05). Il vit dans le domaine « exercices » et non dans
+ * l'un des deux appelants : choisir un exercice est la même question des deux
+ * côtés, et la copie aurait divergé au premier filtre ajouté.
  *
  * Il **reste ouvert** après un ajout : on ajoute rarement un seul exercice, et
  * le refermer à chaque fois transformerait la construction d'une routine de six
@@ -35,7 +38,7 @@ const SKELETON_COUNT = 5;
  *
  * Son état n'est pas dans l'URL, contrairement au catalogue : ici la recherche
  * est un outil de saisie, pas une vue à partager, et l'URL porte déjà
- * l'identité de la routine en cours d'édition.
+ * l'identité de ce qu'on édite.
  */
 export function ExercisePicker({ onAdd }: { onAdd: (exercise: ExerciseSummary) => void }) {
   const [draftQuery, setDraftQuery] = useState("");

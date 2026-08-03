@@ -245,7 +245,22 @@ Les colonnes durée et distance n'apparaissent que si l'exercice s'en sert : tou
 
 Aucun lien « voir la routine » sur les exercices : une séance est un instantané, la routine a pu changer dix fois depuis, et la comparaison induirait en erreur.
 
-La suppression avertit de sa vraie conséquence — les records de la séance sont **recalculés depuis le reste de l'historique**, et l'un d'eux peut disparaître. **La modification d'une séance passée n'est pas encore faite** : `PUT /v1/workouts/:id` existe côté API, il lui manque l'éditeur.
+La suppression avertit de sa vraie conséquence — les records de la séance sont **recalculés depuis le reste de l'historique**, et l'un d'eux peut disparaître.
+
+### Modifier une séance passée
+
+**Fait au 2026-08-03** (D10). `/workouts/:id/edit` reprend les partis pris de l'éditeur de routines : brouillon local, valeurs en texte jusqu'à l'envoi, un unique `PUT` qui remplace la structure entière. Le même panneau d'ajout d'exercice sert les deux écrans — il vit dans `features/exercises`, choisir un exercice étant la même question des deux côtés.
+
+Quatre écarts, tous délibérés :
+
+- **La coche « Fait » est l'information centrale.** Une série décochée reste affichée : elle dit ce qui était prévu et n'a pas été fait, et ne compte ni dans le volume ni dans les records. La décocher est la correction la plus courante — la série notée par erreur — et elle ne doit pas obliger à supprimer la ligne.
+- **Deux boutons Monter / Descendre, pas de glisser-déposer.** Corriger une séance, c'est réparer des valeurs, très rarement rejouer l'ordre. Le glissement demanderait toute la machinerie de l'éditeur de routines pour un geste qu'on fait une fois par an, quand deux boutons sont accessibles au clavier par construction.
+- **Zéro série est permis**, contrairement à une routine : un exercice commencé puis abandonné existe vraiment, et le contrat des séances l'accepte.
+- **Pas de brouillon en `localStorage`.** Une routine se construit en plusieurs fois ; une correction se fait d'un trait, et restaurer une correction vieille de trois jours sur une séance modifiée depuis serait plus dangereux qu'utile.
+
+**Les charges se saisissent en kg**, quelle que soit l'unité du profil, et l'écran le dit aux profils impériaux. Écrire « lb » sur la colonne mentirait sur ce qu'on édite, et convertir à l'aller comme au retour ferait dériver la charge par arrondis successifs à chaque enregistrement.
+
+**Piège payé une fois, invisible à la lecture : `useUpdateWorkout` doit recevoir la locale.** Elle fait partie de la clé de cache de la séance. Sans elle, la mutation écrit sa réponse sous `["workout", id, null]` pendant que le détail lit `["workout", id, "fr"]` — l'écran d'arrivée affiche alors les **anciens chiffres** après un enregistrement pourtant réussi.
 
 ### Catalogue d'exercices
 Grille avec vignettes, recherche instantanée (debounce 250 ms), filtres persistés dans l'URL — un filtre doit être partageable et survivre à un rechargement.

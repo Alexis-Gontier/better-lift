@@ -45,9 +45,9 @@ import {
 } from "./draft";
 import { clearDraft, loadDraft, saveDraft } from "./draft-storage";
 import { EditorExercise } from "./editor-exercise";
-import { ExercisePicker } from "./exercise-picker";
 import { exerciseDndId, parseDndId, SortableRow } from "./sortable";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
+import { ExercisePicker } from "@/features/exercises/exercise-picker";
 import { apiClient } from "@/lib/api";
 
 /**
