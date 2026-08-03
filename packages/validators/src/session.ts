@@ -88,7 +88,25 @@ export const updateMeSchema = z
     message: "Au moins un champ doit être fourni.",
   });
 
+/**
+ * Confirmation de suppression de compte (doc 04, § Compte).
+ *
+ * `password` est **facultatif dans le schéma, exigé par le service** dès que le
+ * compte porte un mot de passe : un compte créé par GitHub seul (D26) n'en a
+ * aucun à confirmer, et le rendre obligatoire ici l'enfermerait dehors. Le
+ * service tranche, parce que lui seul sait ce que le compte possède.
+ *
+ * Le corps reste **requis**, même vide : c'est la seule façon de distinguer un
+ * client qui n'a rien à confirmer d'un client qui a oublié le champ.
+ */
+export const deleteAccountSchema = z
+  .object({
+    password: z.string().min(1, "Le mot de passe est requis.").max(128).optional(),
+  })
+  .strict();
+
 export type UnitSystem = z.infer<typeof unitSystemSchema>;
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type CurrentUser = z.infer<typeof currentUserSchema>;
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;

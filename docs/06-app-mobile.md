@@ -182,7 +182,7 @@ Attention à une nuance de nommage : le plugin stocke la session sous forme d'en
 
 ## Publication
 
-- **iOS** : Apple Sign-In obligatoire si Google Sign-In est proposé. Prévoir la politique de confidentialité et le formulaire App Privacy avant la première soumission.
+- **iOS** : Apple Sign-In obligatoire dès qu'un autre login social est proposé — c'est le cas, GitHub l'est (D26). Prévoir la politique de confidentialité et le formulaire App Privacy avant la première soumission.
 - **Android** : Data Safety à remplir dans la Play Console.
 - **EAS Update** pour les correctifs JavaScript sans revue de store — utile pour les bugs de saisie découverts en production.
 - Canaux `preview` (interne) et `production`.

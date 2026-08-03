@@ -61,10 +61,6 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: optionalSecret,
   GITHUB_CLIENT_SECRET: optionalSecret,
 
-  /** OAuth Google, même règle d'optionalité que GitHub. */
-  GOOGLE_CLIENT_ID: optionalSecret,
-  GOOGLE_CLIENT_SECRET: optionalSecret,
-
   /**
    * Envoi d'e-mails (doc 09 D20). Absente, l'API bascule sur le transport
    * console : en développement on lit le lien dans le terminal plutôt que

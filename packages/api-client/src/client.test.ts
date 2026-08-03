@@ -106,6 +106,21 @@ describe("createApiClient", () => {
     });
   });
 
+  it("should send the confirmation body on the account deletion, unlike other DELETEs", async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const client = createApiClient({ baseUrl: "https://api.test", fetch });
+
+    await expect(client.deleteAccount({ password: "secret" })).resolves.toBeUndefined();
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.test/v1/me",
+      expect.objectContaining({
+        method: "DELETE",
+        body: JSON.stringify({ password: "secret" }),
+        headers: expect.objectContaining({ "Content-Type": "application/json" }),
+      }),
+    );
+  });
+
   it("joint le bearer token quand il y en a un", async () => {
     const fetch = vi.fn().mockResolvedValue(jsonResponse({ api: "1.0.0", core: "1.0.0" }));
     const client = createApiClient({

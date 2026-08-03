@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@better-lift/ui/components/button";
 import { Spinner } from "@better-lift/ui/components/spinner";
 
-import { GitHubMark, GoogleMark } from "./provider-marks";
+import { GitHubMark } from "./provider-marks";
 import { signIn } from "@/lib/auth-client";
 
 /**
@@ -18,12 +18,12 @@ import { signIn } from "@/lib/auth-client";
  * diagnostique mieux qu'un bouton absent — lequel passerait pour un bug de
  * rendu.
  *
- * Apple viendra avant la première soumission iOS, pas avant (doc 04).
+ * **GitHub est le seul fournisseur** (D26) : le public visé l'a déjà, et une
+ * seconde OAuth App est une dépendance de plus à tenir pour un gain marginal.
+ * La liste reste un tableau parce qu'Apple s'y ajoutera avant la première
+ * soumission iOS, pas avant (doc 04).
  */
-const PROVIDERS = [
-  { id: "github", label: "Continuer avec GitHub", Mark: GitHubMark },
-  { id: "google", label: "Continuer avec Google", Mark: GoogleMark },
-] as const;
+const PROVIDERS = [{ id: "github", label: "Continuer avec GitHub", Mark: GitHubMark }] as const;
 
 type ProviderId = (typeof PROVIDERS)[number]["id"];
 

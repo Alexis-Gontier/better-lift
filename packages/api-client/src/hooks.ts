@@ -13,6 +13,8 @@ import {
   type CreateExerciseInput,
   type CreateWorkoutInput,
   type CurrentUser,
+  type DataExport,
+  type DeleteAccountInput,
   type ExerciseDetail,
   type ExerciseListQuery,
   type ExerciseListResponse,
@@ -145,6 +147,38 @@ export function useUpdateMe(
     mutationFn: (input: UpdateMeInput) => client.updateMe(input),
     onSuccess: (user) => {
       queryClient.setQueryData(queryKeys.me, user);
+    },
+  });
+}
+
+/**
+ * Export RGPD.
+ *
+ * Une **mutation** alors que rien n'est modifié, et rien n'est mis en cache :
+ * un export se déclenche par un clic, se télécharge, et n'a aucune raison
+ * d'être resservi — le garder en cache immobiliserait l'historique entier en
+ * mémoire pour une valeur que personne ne relira.
+ */
+export function useExportMyData(client: ApiClient): UseMutationResult<DataExport, Error, void> {
+  return useMutation({ mutationFn: () => client.exportMyData() });
+}
+
+/**
+ * Suppression du compte.
+ *
+ * `clear()` et non une invalidation : il n'y a plus rien à recharger, et toute
+ * requête relancée derrière répondrait 401. Le cache doit partir en entier,
+ * synchronement, avant que l'écran ne redirige vers la page de connexion.
+ */
+export function useDeleteAccount(
+  client: ApiClient,
+): UseMutationResult<void, Error, DeleteAccountInput> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: DeleteAccountInput) => client.deleteAccount(input),
+    onSuccess: () => {
+      queryClient.clear();
     },
   });
 }

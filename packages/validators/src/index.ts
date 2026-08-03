@@ -5,6 +5,7 @@
  * sorties avec ces schémas, les clients en dérivent leurs types (doc 02).
  */
 
+export * from "./data-export.js";
 export * from "./error.js";
 export * from "./exercise.js";
 export * from "./health.js";
