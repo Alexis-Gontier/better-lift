@@ -2,6 +2,8 @@ import { type Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { Button } from "@better-lift/ui/components/button";
+
 import { ExerciseCatalog } from "@/features/exercises/exercise-catalog";
 
 export const metadata: Metadata = { title: "Exercices — better-lift" };
@@ -25,12 +27,9 @@ export default function ExercisesPage() {
           </p>
         </div>
 
-        <Link
-          href="/exercises/new"
-          className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
-        >
-          Créer un exercice
-        </Link>
+        <Button asChild>
+          <Link href="/exercises/new">Créer un exercice</Link>
+        </Button>
       </header>
 
       <Suspense fallback={null}>

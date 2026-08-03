@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ApiClientError, useArchiveExercise, useExercise } from "@better-lift/api-client";
+import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Badge } from "@better-lift/ui/components/badge";
+import { Button } from "@better-lift/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@better-lift/ui/components/card";
+import { Skeleton } from "@better-lift/ui/components/skeleton";
+import { Spinner } from "@better-lift/ui/components/spinner";
 
 import { ExerciseMedia, MediaAttribution } from "./exercise-media";
 import { BODY_PART_LABELS, equipmentLabel } from "./labels";
@@ -22,24 +28,43 @@ import { apiClient } from "@/lib/api";
  * seul risque réel — l'opération reste réversible en base, l'exercice n'étant
  * qu'archivé.
  */
-function CustomExerciseActions({ id }: { id: string }) {
+function CustomExerciseActions({ id, name }: { id: string; name: string }) {
   const router = useRouter();
   const archive = useArchiveExercise(apiClient);
   const [confirming, setConfirming] = useState(false);
 
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      <Link
-        href={`/exercises/${id}/edit`}
-        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
-      >
-        Modifier
-      </Link>
+  if (!confirming) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/exercises/${id}/edit`}>Modifier</Link>
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => setConfirming(true)}>
+          Archiver
+        </Button>
+      </div>
+    );
+  }
 
-      {confirming ? (
-        <>
-          <button
+  return (
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle>Archiver « {name} » ?</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Il disparaît du catalogue et des sélecteurs. Les séances déjà enregistrées le gardent.
+        </p>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2">
+        {archive.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{archive.error.message}</AlertDescription>
+          </Alert>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
             type="button"
+            variant="destructive"
+            size="sm"
             disabled={archive.isPending}
             onClick={() =>
               archive.mutate(id, {
@@ -48,34 +73,16 @@ function CustomExerciseActions({ id }: { id: string }) {
                 onSuccess: () => router.push("/exercises?custom=true"),
               })
             }
-            className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
           >
-            {archive.isPending ? "Archivage…" : "Confirmer l’archivage"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirming(false)}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
+            {archive.isPending && <Spinner data-icon="inline-start" />}
+            Confirmer l’archivage
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(false)}>
             Annuler
-          </button>
-        </>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setConfirming(true)}
-          className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:text-foreground"
-        >
-          Archiver
-        </button>
-      )}
-
-      {archive.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          {archive.error.message}
-        </p>
-      )}
-    </div>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -91,9 +98,9 @@ function Fact({ label, value }: { label: string; value: string }) {
 /**
  * Fiche d'un exercice (doc 05, § Fiche exercice).
  *
- * Historique personnel, records et courbe de progression viendront avec les
- * séances : ils n'ont aucune donnée à afficher tant que `POST /v1/workouts`
- * n'existe pas. Ce qui est ici est ce que l'API sait déjà servir.
+ * Historique personnel, records et courbe de progression viendront avec la V2 :
+ * l'API ne sert encore aucune série par exercice. Ce qui est ici est ce qu'elle
+ * sait déjà donner.
  */
 export function ExerciseDetail({ id }: { id: string }) {
   const locale = useProfileLocale();
@@ -101,9 +108,9 @@ export function ExerciseDetail({ id }: { id: string }) {
 
   if (exercise.isPending) {
     return (
-      <div className="space-y-4" aria-busy>
-        <div className="h-8 w-2/3 animate-pulse rounded bg-muted/50" />
-        <div className="h-40 animate-pulse rounded-xl bg-muted/50" />
+      <div className="flex flex-col gap-4" aria-busy>
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-40 rounded-xl" />
       </div>
     );
   }
@@ -117,20 +124,17 @@ export function ExerciseDetail({ id }: { id: string }) {
     const missing = exercise.error instanceof ApiClientError && exercise.error.status === 404;
 
     return (
-      <div className="space-y-3 rounded-xl bg-card p-5">
-        <p className="font-medium">
+      <Alert variant="destructive">
+        <AlertTitle>
           {missing ? "Cet exercice n’est plus au catalogue." : "Fiche indisponible."}
-        </p>
-        <p className="text-sm text-muted-foreground">
+        </AlertTitle>
+        <AlertDescription>
           {missing ? "Il a pu être archivé depuis la création du lien." : exercise.error.message}
-        </p>
-        <Link
-          href="/exercises"
-          className="inline-block rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
-        >
-          Retour au catalogue
-        </Link>
-      </div>
+        </AlertDescription>
+        <Button asChild variant="outline" size="sm" className="mt-3 w-fit">
+          <Link href="/exercises">Retour au catalogue</Link>
+        </Button>
+      </Alert>
     );
   }
 
@@ -138,24 +142,20 @@ export function ExerciseDetail({ id }: { id: string }) {
   const hasMedia = Boolean(resolveMediaUrl(data.animationUrl ?? data.thumbnailUrl));
 
   return (
-    <article className="space-y-8">
-      <header className="space-y-2">
+    <article className="flex flex-col gap-8">
+      <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
-          {data.isCustom && (
-            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
-              Personnalisé
-            </span>
-          )}
+          {data.isCustom && <Badge variant="secondary">Personnalisé</Badge>}
         </div>
         <p className="text-muted-foreground">
           {BODY_PART_LABELS[data.bodyPart]} · {equipmentLabel(data.equipment)}
         </p>
       </header>
 
-      {data.isCustom && <CustomExerciseActions id={data.id} />}
+      {data.isCustom && <CustomExerciseActions id={data.id} name={data.name} />}
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <ExerciseMedia
           url={data.animationUrl ?? data.thumbnailUrl}
           name={data.name}
@@ -164,21 +164,25 @@ export function ExerciseDetail({ id }: { id: string }) {
         {hasMedia && <MediaAttribution attribution={data.attribution} />}
       </div>
 
-      <section className="rounded-xl bg-card p-5">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Muscles
-        </h2>
-        <dl className="divide-y divide-border">
-          <Fact label="Muscle cible" value={data.target} />
-          <Fact
-            label="Muscles secondaires"
-            value={data.secondaryMuscles.length ? data.secondaryMuscles.join(", ") : "—"}
-          />
-        </dl>
-      </section>
+      <Card size="sm">
+        <CardHeader>
+          <CardTitle className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            Muscles
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="divide-y divide-border">
+            <Fact label="Muscle cible" value={data.target} />
+            <Fact
+              label="Muscles secondaires"
+              value={data.secondaryMuscles.length ? data.secondaryMuscles.join(", ") : "—"}
+            />
+          </dl>
+        </CardContent>
+      </Card>
 
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Instructions
         </h2>
         {data.instructions.length > 0 ? (

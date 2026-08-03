@@ -1,17 +1,31 @@
 "use client";
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { XIcon } from "lucide-react";
 import { useId } from "react";
 
+import { Button } from "@better-lift/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@better-lift/ui/components/card";
+import { Field, FieldLabel } from "@better-lift/ui/components/field";
+import { Input } from "@better-lift/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@better-lift/ui/components/select";
+import { cn } from "@better-lift/ui/lib/utils";
 import { setTypeSchema } from "@better-lift/validators";
 
 import { type DraftAction, type DraftExercise, type DraftSet } from "./draft";
 import { SET_TYPE_LABELS, SET_TYPE_TONE } from "./labels";
 import { SortableRow, setDndId } from "./sortable";
+import { useWeightUnitLabel } from "@/features/account/units";
 import { BODY_PART_LABELS, equipmentLabel } from "@/features/exercises/labels";
 
-const CELL_CLASS =
-  "w-full rounded bg-background px-2 py-1 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+/** La grille des lignes de série, partagée avec l'en-tête de colonnes. */
+const SET_GRID = "grid grid-cols-[7rem_1fr_1fr_1fr_2rem] items-center gap-2";
 
 /**
  * Une série du brouillon.
@@ -39,36 +53,48 @@ function SetRow({
 
   return (
     <SortableRow id={setDndId(exerciseKey, set.key)} label={`la série ${index + 1}`}>
-      <div className="grid grid-cols-[3rem_1fr_1fr_1fr_2rem] items-center gap-2 py-1">
+      <div className={cn(SET_GRID, "py-1")}>
         <div>
           <label htmlFor={`${fieldId}-type`} className="sr-only">
             Type de la série {index + 1}
           </label>
-          <select
-            id={`${fieldId}-type`}
+          {/*
+            Le type colore son propre déclencheur : une série d'échauffement ne
+            compte ni dans le volume ni dans les records (invariant 1, doc 03),
+            et la distinguer d'un coup d'œil n'est donc pas cosmétique.
+          */}
+          <Select
             value={set.type}
-            onChange={(event) =>
+            onValueChange={(value) =>
               dispatch({
                 type: "setSetField",
                 exerciseKey,
                 setKey: set.key,
                 field: "type",
-                value: event.target.value,
+                value,
               })
             }
-            className={`w-full bg-transparent text-xs font-medium ${SET_TYPE_TONE[set.type]}`}
           >
-            {setTypeSchema.options.map((type) => (
-              <option key={type} value={type} className="text-foreground">
-                {SET_TYPE_LABELS[type]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              id={`${fieldId}-type`}
+              size="sm"
+              className={cn("w-full text-xs font-medium", SET_TYPE_TONE[set.type])}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {setTypeSchema.options.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {SET_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {(
           [
-            { field: "targetWeightKg", label: "Charge en kg", placeholder: "kg" },
+            { field: "targetWeightKg", label: "Charge", placeholder: "charge" },
             { field: "targetReps", label: "Répétitions", placeholder: "reps" },
             { field: "targetRpe", label: "RPE", placeholder: "RPE" },
           ] as const
@@ -77,7 +103,7 @@ function SetRow({
             <label htmlFor={`${fieldId}-${field}`} className="sr-only">
               {label} — série {index + 1}
             </label>
-            <input
+            <Input
               id={`${fieldId}-${field}`}
               type="text"
               inputMode="decimal"
@@ -92,21 +118,22 @@ function SetRow({
                   value: event.target.value,
                 })
               }
-              className={CELL_CLASS}
             />
           </div>
         ))}
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => dispatch({ type: "removeSet", exerciseKey, setKey: set.key })}
           disabled={!canRemove}
           aria-label={`Supprimer la série ${index + 1}`}
           title={canRemove ? undefined : "Un exercice garde au moins une série."}
-          className="rounded px-1 text-muted-foreground hover:text-destructive disabled:opacity-30"
+          className="text-muted-foreground hover:text-destructive"
         >
-          ×
-        </button>
+          <XIcon />
+        </Button>
       </div>
     </SortableRow>
   );
@@ -122,117 +149,128 @@ export function EditorExercise({
   dispatch: (action: DraftAction) => void;
 }) {
   const fieldId = useId();
+  const weightUnit = useWeightUnitLabel();
   const setIds = exercise.sets.map((set) => setDndId(exercise.key, set.key));
 
   return (
-    <section className="rounded-xl bg-card p-4" aria-label={exercise.exercise.name}>
-      <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+    /*
+      `role="group"` plutôt qu'un `<section aria-label>` : `Card` rend un `<div>`
+      et n'accepte pas `asChild`. Le groupe est d'ailleurs le bon rôle — une
+      routine de six exercices ferait six régions de navigation, ce qui encombre
+      la liste des repères pour un gain nul.
+    */
+    <Card size="sm" role="group" aria-label={exercise.exercise.name}>
+      <CardHeader className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="truncate font-medium">
+          <CardTitle className="truncate">
             <span className="mr-2 text-muted-foreground">{index + 1}.</span>
             {exercise.exercise.name}
-          </h3>
+          </CardTitle>
           <p className="truncate text-sm text-muted-foreground">
             {BODY_PART_LABELS[exercise.exercise.bodyPart]} ·{" "}
             {equipmentLabel(exercise.exercise.equipment)}
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => dispatch({ type: "removeExercise", key: exercise.key })}
-          className="rounded-lg px-2 py-1 text-sm text-muted-foreground ring-1 ring-border hover:text-destructive"
         >
           Retirer
-        </button>
-      </header>
+        </Button>
+      </CardHeader>
 
-      <div className="mb-3 grid gap-3 sm:grid-cols-[8rem_1fr]">
-        <div>
-          <label htmlFor={`${fieldId}-rest`} className="mb-1 block text-xs text-muted-foreground">
-            Repos (s)
-          </label>
-          <input
-            id={`${fieldId}-rest`}
-            type="text"
-            inputMode="numeric"
-            value={exercise.restSec}
-            placeholder="défaut"
-            onChange={(event) =>
-              dispatch({
-                type: "setExerciseField",
-                key: exercise.key,
-                field: "restSec",
-                value: event.target.value,
-              })
-            }
-            className={CELL_CLASS}
-          />
-        </div>
-
-        <div>
-          <label htmlFor={`${fieldId}-notes`} className="mb-1 block text-xs text-muted-foreground">
-            Notes
-          </label>
-          <input
-            id={`${fieldId}-notes`}
-            type="text"
-            value={exercise.notes}
-            placeholder="Pause 1 s en bas…"
-            onChange={(event) =>
-              dispatch({
-                type: "setExerciseField",
-                key: exercise.key,
-                field: "notes",
-                value: event.target.value,
-              })
-            }
-            className={CELL_CLASS}
-          />
-        </div>
-      </div>
-
-      {/* En-tête de colonnes, aligné sur la grille des lignes — la poignée
-          occupe la première gouttière, d'où le décalage. */}
-      <div className="ml-7 grid grid-cols-[3rem_1fr_1fr_1fr_2rem] gap-2 pb-1 text-xs text-muted-foreground">
-        <span>Type</span>
-        <span>kg</span>
-        <span>Reps</span>
-        <span>RPE</span>
-        <span />
-      </div>
-
-      <SortableContext items={setIds} strategy={verticalListSortingStrategy}>
-        <div className="divide-y divide-border">
-          {exercise.sets.map((set, setIndex) => (
-            <SetRow
-              key={set.key}
-              exerciseKey={exercise.key}
-              set={set}
-              index={setIndex}
-              dispatch={dispatch}
-              canRemove={exercise.sets.length > 1}
+      <CardContent className="flex flex-col gap-3">
+        <div className="grid gap-3 sm:grid-cols-[8rem_1fr]">
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-rest`}>Repos (s)</FieldLabel>
+            <Input
+              id={`${fieldId}-rest`}
+              type="text"
+              inputMode="numeric"
+              value={exercise.restSec}
+              placeholder="défaut"
+              onChange={(event) =>
+                dispatch({
+                  type: "setExerciseField",
+                  key: exercise.key,
+                  field: "restSec",
+                  value: event.target.value,
+                })
+              }
             />
-          ))}
-        </div>
-      </SortableContext>
+          </Field>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => dispatch({ type: "addSet", exerciseKey: exercise.key })}
-          className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
-        >
-          + Ajouter une série
-        </button>
-        <button
-          type="button"
-          onClick={() => dispatch({ type: "duplicateLastSet", exerciseKey: exercise.key })}
-          className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-border hover:text-foreground"
-        >
-          Dupliquer la dernière
-        </button>
-      </div>
-    </section>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-notes`}>Notes</FieldLabel>
+            <Input
+              id={`${fieldId}-notes`}
+              type="text"
+              value={exercise.notes}
+              placeholder="Pause 1 s en bas…"
+              onChange={(event) =>
+                dispatch({
+                  type: "setExerciseField",
+                  key: exercise.key,
+                  field: "notes",
+                  value: event.target.value,
+                })
+              }
+            />
+          </Field>
+        </div>
+
+        {/*
+            En-tête de colonnes, aligné sur la grille des lignes — la poignée
+            occupe la première gouttière, d'où le décalage.
+
+            L'unité vient du profil : la routine prescrit des kilos en base
+            (règle non négociable n°3), mais un profil impérial doit lire « lb ».
+          */}
+        <div className={cn(SET_GRID, "ml-10 pb-1 text-xs text-muted-foreground")}>
+          <span>Type</span>
+          <span>{weightUnit}</span>
+          <span>Reps</span>
+          <span>RPE</span>
+          <span />
+        </div>
+
+        <SortableContext items={setIds} strategy={verticalListSortingStrategy}>
+          <div className="divide-y divide-border">
+            {exercise.sets.map((set, setIndex) => (
+              <SetRow
+                key={set.key}
+                exerciseKey={exercise.key}
+                set={set}
+                index={setIndex}
+                dispatch={dispatch}
+                canRemove={exercise.sets.length > 1}
+              />
+            ))}
+          </div>
+        </SortableContext>
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => dispatch({ type: "addSet", exerciseKey: exercise.key })}
+          >
+            Ajouter une série
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => dispatch({ type: "duplicateLastSet", exerciseKey: exercise.key })}
+          >
+            Dupliquer la dernière
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

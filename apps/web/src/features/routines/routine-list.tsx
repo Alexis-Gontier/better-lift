@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
 import {
   useCreateRoutineFolder,
@@ -11,6 +11,20 @@ import {
   useRoutineFolders,
   useRoutines,
 } from "@better-lift/api-client";
+import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
+import { Button } from "@better-lift/ui/components/button";
+import { Card, CardContent } from "@better-lift/ui/components/card";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@better-lift/ui/components/empty";
+import { Field, FieldLabel } from "@better-lift/ui/components/field";
+import { Input } from "@better-lift/ui/components/input";
+import { Skeleton } from "@better-lift/ui/components/skeleton";
+import { Spinner } from "@better-lift/ui/components/spinner";
 import { type RoutineFolder, type RoutineSummary } from "@better-lift/validators";
 
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -43,65 +57,75 @@ function RoutineCard({ routine, locale }: { routine: RoutineSummary; locale: str
   }, [routine.lastPerformedAt, locale]);
 
   return (
-    <li className="rounded-xl bg-card p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Link
-            href={`/routines/${routine.id}`}
-            className="font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            {routine.name}
-          </Link>
-          <p className="text-sm text-muted-foreground">
-            {routine.exerciseCount} exercice{routine.exerciseCount > 1 ? "s" : ""} · {lastPerformed}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <Link
-            href={`/routines/${routine.id}/edit`}
-            className="rounded-lg px-2.5 py-1 ring-1 ring-border hover:bg-accent"
-          >
-            Modifier
-          </Link>
-          <button
-            type="button"
-            onClick={() => duplicate.mutate(routine.id)}
-            disabled={duplicate.isPending}
-            className="rounded-lg px-2.5 py-1 text-muted-foreground ring-1 ring-border hover:text-foreground disabled:opacity-50"
-          >
-            Dupliquer
-          </button>
-
-          {confirming ? (
-            <>
-              <button
-                type="button"
-                onClick={() => remove.mutate(routine.id)}
-                disabled={remove.isPending}
-                className="rounded-lg bg-destructive px-2.5 py-1 font-medium text-white disabled:opacity-50"
-              >
-                Confirmer
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Annuler
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="rounded-lg px-2.5 py-1 text-muted-foreground ring-1 ring-border hover:text-destructive"
+    // `Card` rend un `<div>` : l'élément de liste reste au-dessus, un `<ul>`
+    // n'admettant que des `<li>` en enfant direct.
+    <li>
+      <Card size="sm">
+        <CardContent className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Link
+              href={`/routines/${routine.id}`}
+              className="font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
-              Supprimer
-            </button>
-          )}
-        </div>
-      </div>
+              {routine.name}
+            </Link>
+            <p className="text-sm text-muted-foreground">
+              {routine.exerciseCount} exercice{routine.exerciseCount > 1 ? "s" : ""} ·{" "}
+              {lastPerformed}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/routines/${routine.id}/edit`}>Modifier</Link>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => duplicate.mutate(routine.id)}
+              disabled={duplicate.isPending}
+            >
+              {duplicate.isPending && <Spinner data-icon="inline-start" />}
+              Dupliquer
+            </Button>
+
+            {/*
+              Suppression en deux temps, en place — jamais une `confirm()` :
+              bloquante, non stylable, et supprimée par certains navigateurs dans
+              les iframes. Deux clics volontaires écartent le geste accidentel,
+              qui est le seul risque réel ici.
+            */}
+            {confirming ? (
+              <>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => remove.mutate(routine.id)}
+                  disabled={remove.isPending}
+                >
+                  {remove.isPending && <Spinner data-icon="inline-start" />}
+                  Confirmer
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirming(false)}
+                >
+                  Annuler
+                </Button>
+              </>
+            ) : (
+              <Button type="button" variant="outline" size="sm" onClick={() => setConfirming(true)}>
+                Supprimer
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </li>
   );
 }
@@ -112,38 +136,32 @@ function FolderHeading({ folder }: { folder: RoutineFolder }) {
 
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-3">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
         {folder.name}{" "}
-        <span className="font-normal normal-case tracking-normal">({folder.routineCount})</span>
+        <span className="font-normal tracking-normal normal-case">({folder.routineCount})</span>
       </h2>
 
       {confirming ? (
-        <p className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Les routines remontent à la racine.</span>
-          <button
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">Les routines remontent à la racine.</span>
+          <Button
             type="button"
+            variant="destructive"
+            size="sm"
             onClick={() => remove.mutate(folder.id)}
             disabled={remove.isPending}
-            className="rounded-lg bg-destructive px-2.5 py-1 font-medium text-white disabled:opacity-50"
           >
+            {remove.isPending && <Spinner data-icon="inline-start" />}
             Confirmer
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirming(false)}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(false)}>
             Annuler
-          </button>
-        </p>
+          </Button>
+        </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => setConfirming(true)}
-          className="text-sm text-muted-foreground hover:text-destructive"
-        >
+        <Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(true)}>
           Supprimer le dossier
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -151,10 +169,12 @@ function FolderHeading({ folder }: { folder: RoutineFolder }) {
 
 function NewFolderForm() {
   const create = useCreateRoutineFolder(apiClient);
+  const fieldId = useId();
   const [name, setName] = useState("");
 
   return (
     <form
+      noValidate
       onSubmit={(event) => {
         event.preventDefault();
 
@@ -164,25 +184,25 @@ function NewFolderForm() {
       }}
       className="flex flex-wrap items-end gap-2"
     >
-      <div>
-        <label htmlFor="new-folder" className="mb-1 block text-xs text-muted-foreground">
-          Nouveau dossier
-        </label>
-        <input
-          id="new-folder"
+      <Field className="w-auto">
+        <FieldLabel htmlFor={`${fieldId}-folder`}>Nouveau dossier</FieldLabel>
+        <Input
+          id={`${fieldId}-folder`}
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Push Pull Legs"
-          className="rounded-lg bg-card px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
-      </div>
-      <button
+      </Field>
+
+      <Button
         type="submit"
+        variant="outline"
         disabled={create.isPending || !name.trim()}
-        className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent disabled:opacity-50"
+        aria-busy={create.isPending}
       >
+        {create.isPending && <Spinner data-icon="inline-start" />}
         Créer
-      </button>
+      </Button>
     </form>
   );
 }
@@ -211,55 +231,65 @@ export function RoutineList() {
   }, [folders.data, routines.data]);
 
   if (routines.isPending || folders.isPending) {
-    return <p className="text-sm text-muted-foreground">Chargement…</p>;
+    return (
+      <div className="flex flex-col gap-2" aria-busy>
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-20 rounded-xl" />
+        ))}
+      </div>
+    );
   }
 
   if (routines.isError) {
     return (
-      <div className="space-y-3 rounded-xl bg-card p-5">
-        <p className="font-medium">Les routines n’ont pas pu être chargées.</p>
-        <p className="text-sm text-muted-foreground">{routines.error.message}</p>
-        <button
+      <Alert variant="destructive">
+        <AlertTitle>Les routines n’ont pas pu être chargées.</AlertTitle>
+        <AlertDescription>{routines.error.message}</AlertDescription>
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
+          className="mt-3 w-fit"
           onClick={() => void routines.refetch()}
-          className="rounded-lg px-3 py-1.5 text-sm ring-1 ring-border hover:bg-accent"
         >
           Réessayer
-        </button>
-      </div>
+        </Button>
+      </Alert>
     );
   }
 
   if ((routines.data ?? []).length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-3 rounded-xl bg-card p-5">
-          <p className="font-medium">Aucune routine pour l’instant.</p>
-          <p className="text-sm text-muted-foreground">
-            Une routine est un gabarit de séance : une liste d’exercices et leurs séries cibles.
-            Elle ne bouge pas quand vous vous entraînez.
-          </p>
-          <Link
-            href="/routines/new"
-            className="inline-block rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-          >
-            Créer ma première routine
-          </Link>
-        </div>
+      <div className="flex flex-col gap-6">
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>Aucune routine pour l’instant.</EmptyTitle>
+            <EmptyDescription>
+              Une routine est un gabarit de séance : une liste d’exercices et leurs séries cibles.
+              Elle ne bouge pas quand vous vous entraînez.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button asChild>
+              <Link href="/routines/new">Créer ma première routine</Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+
         <NewFolderForm />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       {groups.map(({ folder, routines: grouped }) => (
-        <section key={folder?.id ?? "sans-dossier"} className="space-y-3">
+        <section key={folder?.id ?? "sans-dossier"} className="flex flex-col gap-3">
           {folder ? (
             <FolderHeading folder={folder} />
           ) : (
             grouped.length > 0 && (
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
                 Sans dossier
               </h2>
             )
@@ -268,7 +298,7 @@ export function RoutineList() {
           {grouped.length === 0 ? (
             folder && <p className="text-sm text-muted-foreground">Ce dossier est vide.</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-2">
               {grouped.map((routine) => (
                 <RoutineCard key={routine.id} routine={routine} locale={locale} />
               ))}
