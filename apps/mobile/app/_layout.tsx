@@ -4,6 +4,8 @@ import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { WorkoutSyncRunner } from "@/features/workouts/workout-sync-runner";
+
 export default function RootLayout() {
   const [queryClient] = useState(
     () =>
@@ -12,7 +14,8 @@ export default function RootLayout() {
           queries: {
             staleTime: 30_000,
             // Le hors ligne est un cas nominal : inutile d'insister quand le
-            // réseau manque, la file de retry arrivera en V1.
+            // réseau manque. Ce qui ne doit pas se perdre — les séances — ne
+            // passe pas par ces requêtes mais par la file d'envoi.
             retry: 1,
           },
         },
@@ -23,6 +26,12 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <StatusBar style="light" />
+        {/*
+          La file appartient à l'application, pas à un écran : elle doit
+          continuer de se vider pendant qu'on consulte son historique, et
+          surtout survivre à la fermeture de l'écran de séance.
+        */}
+        <WorkoutSyncRunner />
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: "#101418" },

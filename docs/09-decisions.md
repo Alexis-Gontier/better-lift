@@ -223,6 +223,20 @@ Le coût redouté n'existe pas à cette échelle. La reconstruction ne lit que l
 
 Ce qui distingue encore les appels est un paramètre, pas un chemin : l'ajout et la correction **créditent** la séance écrite et renvoient ses `newRecords`, la suppression ne crédite personne.
 
+### D28 — File d'envoi : une séance en attente quitte l'écran de saisie, une séance refusée y reste
+
+La [doc 06](06-app-mobile.md) demandait « une file de retry avec backoff ». Restait à trancher ce qu'il advient de l'écran de séance pendant ce temps, et de ce que la file ne saura jamais envoyer.
+
+**Un échec réseau libère l'écran.** La séance passe en file, le brouillon est supprimé et l'utilisateur revient à l'accueil, exactement comme si l'envoi avait réussi. La garder sur l'écran de saisie avec un bouton « Réessayer » reviendrait à demander à quelqu'un qui sort de la salle de surveiller son réseau : il éteindra l'écran, et la séance attendra un geste qui ne viendra pas. Il n'existe aucun instant où elle n'est nulle part — le brouillon n'est effacé qu'après l'écriture de la file, toutes deux synchrones sur le même magasin.
+
+**Un refus de l'API la retient.** `422` et `409` ne changeront pas d'avis : les rejouer indéfiniment consommerait la batterie pour la même réponse. L'entrée est marquée `blocked` et **reste en file** — une séance réellement faite ne disparaît jamais en silence. L'accueil l'affiche avec le message de l'API, qui est la seule chose utile à lire.
+
+**`401` est traité comme passager.** C'est le cas limite qui décide de la forme : une session expirée pendant une séance est un incident banal, et l'utilisateur se reconnectera. Classer `401` avec les refus définitifs perdrait des séances pour la raison la plus fréquente qui soit.
+
+Le reste suit de l'idempotence de `POST /v1/workouts` (règle non négociable n°7) : l'identifiant venant du client, un rejeu après un accusé de réception perdu renvoie la séance existante. C'est ce qui autorise à réessayer sans compter, et à ne jamais avoir à distinguer « échec de l'envoi » de « échec de la réponse ».
+
+Ce que la file **ne fait pas** : les corrections et les suppressions de séances passées ne passent pas par elle. Elles se font depuis l'atelier — le web —, sur une séance déjà partie, et une file qui rejouerait un `PUT` sur une ressource qu'un autre appareil vient de modifier poserait un problème de résolution de conflit que la V1 n'a aucune raison d'ouvrir.
+
 ## Actions à mener (pas des décisions)
 
 - [ ] **Nom et disponibilité** : vérifier le domaine `better-lift.app`, les identifiants App Store et Play Store, et l'absence de conflit de marque.
