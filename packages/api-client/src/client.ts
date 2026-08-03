@@ -5,6 +5,9 @@ import {
   type CreateWorkoutInput,
   type CurrentUser,
   currentUserSchema,
+  type DataExport,
+  type DeleteAccountInput,
+  dataExportSchema,
   type ExerciseDetail,
   type ExerciseListQuery,
   type ExerciseListResponse,
@@ -73,6 +76,20 @@ export interface ApiClient {
   getMe: (signal?: AbortSignal) => Promise<CurrentUser>;
   /** Lève une `ApiClientError` 409 quand le pseudo demandé est déjà pris. */
   updateMe: (input: UpdateMeInput, signal?: AbortSignal) => Promise<CurrentUser>;
+  /**
+   * Export RGPD complet, construit et renvoyé dans la requête (D27). Il n'est
+   * pas paginé : c'est un document, pas une liste.
+   */
+  exportMyData: (signal?: AbortSignal) => Promise<DataExport>;
+  /**
+   * Suppression **définitive** du compte et de tout ce qu'il porte (D18).
+   *
+   * Le mot de passe est exigé dès que le compte en a un ; un compte OAuth seul
+   * envoie un corps vide et se confirme par la fraîcheur de sa session. Lève
+   * une `ApiClientError` 422 sur un mot de passe absent ou faux, 401 sur une
+   * session trop ancienne — il faut alors se reconnecter.
+   */
+  deleteAccount: (input: DeleteAccountInput, signal?: AbortSignal) => Promise<void>;
   listExercises: (
     query?: Partial<ExerciseListQuery>,
     signal?: AbortSignal,
@@ -297,6 +314,8 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     path: string,
     method: "DELETE",
     signal?: AbortSignal,
+    /** Rare sur un `DELETE`, mais la suppression de compte se confirme. */
+    body?: unknown,
   ): Promise<void> {
     const token = await options.getAuthToken?.();
 
@@ -307,8 +326,10 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
         method,
         headers: {
           Accept: "application/json",
+          ...(body === undefined ? {} : { "Content-Type": "application/json" }),
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         credentials: "include",
         signal,
       });
@@ -336,6 +357,11 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     getMe: (signal) => request("/v1/me", currentUserSchema, signal),
     updateMe: (input, signal) =>
       request("/v1/me", currentUserSchema, signal, { method: "PATCH", body: input }),
+    exportMyData: (signal) =>
+      request("/v1/me/export", dataExportSchema, signal, { method: "POST" }),
+    // Le corps part même vide : l'API le veut requis pour distinguer « rien à
+    // confirmer » de « champ oublié ».
+    deleteAccount: (input, signal) => requestNoContent("/v1/me", "DELETE", signal, input),
     listExercises: (query = {}, signal) =>
       request(`/v1/exercises${toSearchParams(query)}`, exerciseListResponseSchema, signal),
     getExercise: (id, locale, signal) =>

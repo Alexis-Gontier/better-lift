@@ -156,6 +156,12 @@ Pas de champs structurés (sommeil, énergie, courbatures) tant qu'on n'a pas la
 
 Profils publics, abonnements, fil d'actualité : chantier majeur (modération, signalements, confidentialité, RGPD sur données publiées) pour un bénéfice incertain sur un produit d'abord personnel. Le modèle garde `Workout.visibility` et l'énumération `FOLLOWERS`, donc la porte reste ouverte sans coût aujourd'hui.
 
+### D26 — Un seul fournisseur OAuth : GitHub
+
+Google est retiré. Le câblage tenait en quelques lignes, mais l'OAuth App, elle, est une dépendance permanente : écran de consentement à faire vérifier par Google dès qu'on sort du mode test, identifiants à faire tourner, un compte de plus à ne pas perdre. Pour un public qui a déjà un compte GitHub et qui garde de toute façon l'e-mail/mot de passe, le rapport ne tient pas.
+
+Ce n'est pas une décision irréversible : `socialProviders` est construit fournisseur par fournisseur dans `apps/api/src/lib/auth.ts`, en ajouter un revient à une entrée dans l'objet, deux variables d'environnement et un logo. Apple reviendra par ce chemin avant la première soumission iOS — obligatoire dès lors qu'un autre login social est proposé (règle App Store 4.8), donc pas avant.
+
 ## Business & juridique
 
 ### D16 — Application gratuite, sans limite
@@ -175,6 +181,18 @@ Le modèle de données est prêt pour ce scénario : `thumbnailUrl` et `animatio
 ### D18 — Rétention : suppression immédiate
 
 Un compte supprimé disparaît en base immédiatement, en cascade réelle (pas un drapeau). Les sauvegardes sont purgées sous 30 jours. Export JSON à la demande.
+
+La cascade réelle a une conséquence qu'on n'a vue qu'à l'écriture : elle **ne peut pas** être laissée à Postgres seul. Les exercices personnalisés sont en cascade depuis leur propriétaire, mais les séances et les routines les référencent en `Restrict` — on n'efface jamais un exercice cité par un historique (invariant 8, doc 03). Un `RESTRICT` est vérifié immédiatement, sans attendre la fin de la cascade : supprimer la ligne `user` d'un trait échouerait pour tout compte ayant utilisé son propre exercice dans une séance, c'est-à-dire les plus assidus. La purge est donc explicite et ordonnée, dans une transaction, avant que Better Auth ne supprime le compte.
+
+### D27 — Export RGPD : synchrone, pas par e-mail
+
+La [doc 04](04-api.md) prévoyait un `POST /v1/me/export` qui déclenche un export « envoyé par e-mail ». Le document part désormais dans la réponse, en pièce jointe.
+
+L'envoi par e-mail est le schéma des grandes plateformes, et pour une bonne raison : leurs exports se comptent en gigaoctets et demandent un travail de fond, un stockage temporaire, un lien signé. Rien de tout cela ici. Les données d'une pratique personnelle — quelques centaines de séances, quelques milliers de séries — se sérialisent en une requête.
+
+Ce que le détour par l'e-mail aurait coûté : une file d'attente, un stockage, une gestion des pièces jointes chez Resend, et surtout un envoi passant par `sendEmailSafely`, qui **avale les échecs par conception** (D20) — l'utilisateur cliquerait, ne verrait rien venir, et n'aurait aucun moyen de savoir si l'export a échoué. Il aurait aussi envoyé l'intégralité d'un historique personnel vers une boîte mail, alors que la session qui le demande est déjà authentifiée.
+
+Ce qu'on accepte en échange : une requête longue pour un très gros compte. Le jour où elle le devient — la mesure tranchera, pas l'intuition —, le basculement vers un export asynchrone se fait derrière le même endpoint, qui répondrait alors `202` au lieu de `200`.
 
 ### D21 — Listes mobiles : `FlatList` tant que la pagination suffit
 

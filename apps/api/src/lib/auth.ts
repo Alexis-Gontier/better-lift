@@ -5,6 +5,7 @@ import { bearer } from "better-auth/plugins/bearer";
 
 import { prisma } from "@better-lift/db";
 
+import { purgeUserData } from "../services/me.service.js";
 import { resetPasswordEmail, verificationEmail } from "./emails.js";
 import { env } from "./env.js";
 import { sendEmailSafely } from "./mailer.js";
@@ -35,14 +36,6 @@ const socialProviders = {
         github: {
           clientId: env.GITHUB_CLIENT_ID,
           clientSecret: env.GITHUB_CLIENT_SECRET,
-        },
-      }
-    : {}),
-  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
-    ? {
-        google: {
-          clientId: env.GOOGLE_CLIENT_ID,
-          clientSecret: env.GOOGLE_CLIENT_SECRET,
         },
       }
     : {}),
@@ -116,6 +109,28 @@ export const auth = betterAuth({
     },
   },
 
+  user: {
+    /**
+     * Suppression de compte (D18) : immédiate et réelle, jamais un drapeau.
+     *
+     * `beforeDelete` plutôt qu'une purge appelée depuis notre route : une fois
+     * la fonctionnalité activée, Better Auth expose aussi `/api/auth/delete-user`,
+     * monté avec le reste de son cycle de vie. Deux chemins mènent donc à la
+     * suppression, et un seul les couvre tous les deux — c'est ici que la purge
+     * doit vivre pour ne pas dépendre de la porte empruntée.
+     *
+     * Sans elle, la suppression **échouerait** : les exercices personnalisés
+     * sont référencés en `Restrict` par les séances et les routines. Voir
+     * `purgeUserData`, qui explique l'ordre.
+     */
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        await purgeUserData(user.id);
+      },
+    },
+  },
+
   socialProviders,
 
   /**
@@ -139,6 +154,11 @@ export const auth = betterAuth({
       // autant le bourrage de comptes que de servir de relais de spam.
       "/request-password-reset": { window: 15 * 60, max: 5 },
       "/send-verification-email": { window: 15 * 60, max: 5 },
+      // La suppression vérifie un mot de passe : sans quota, elle en devient un
+      // oracle. Le quota ne couvre que l'appel HTTP direct — `DELETE /v1/me`
+      // passe par `auth.api`, en deçà de ce middleware, et exige déjà une
+      // session valide.
+      "/delete-user": { window: 15 * 60, max: 5 },
     },
   },
 

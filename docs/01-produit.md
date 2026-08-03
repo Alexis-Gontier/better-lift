@@ -72,7 +72,7 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 
 ### Compte & réglages
 
-- Inscription e-mail/mot de passe + OAuth Google et Apple. Vérification d'e-mail non bloquante (D6).
+- Inscription e-mail/mot de passe + OAuth GitHub, Apple avant la première soumission iOS (D26). Vérification d'e-mail non bloquante (D6).
 - Application **gratuite et sans limite** (D16) : pas de plan, pas d'abonnement, rien à modéliser côté facturation.
 - Unités kg/lb, langue (fr/en), temps de repos par défaut, visibilité des séances.
 - Export de ses données, suppression de compte (RGPD).
@@ -98,15 +98,15 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 
 ### V1 — MVP utilisable
 
-- [x] Auth Better Auth : e-mail/mot de passe, vérification d'adresse non bloquante (D6), réinitialisation de mot de passe, quotas d'authentification, `proxy.ts` protégeant la zone connectée, écrans web dédiés. GitHub et Google sont câblés — **il reste à créer les OAuth Apps** pour les éprouver. Apple attend un compte Apple Developer, exigé seulement à la première soumission iOS (doc 04).
+- [x] Auth Better Auth : e-mail/mot de passe, vérification d'adresse non bloquante (D6), réinitialisation de mot de passe, quotas d'authentification, `proxy.ts` protégeant la zone connectée, écrans web dédiés. GitHub est câblé et son OAuth App existe. Google a été retiré (D26). Apple attend un compte Apple Developer, exigé seulement à la première soumission iOS (doc 04).
 - [x] Catalogue d'exercices : recherche, filtres, fiche détail. API en lecture, écrans web (filtres persistés dans l'URL) et mobile. **Les médias ne sont pas encore hébergés** : `MEDIA_BASE_URL` est vide, les deux interfaces basculent donc sur un repli sans visuel (D17).
 - [x] Exercices personnalisés : création, modification et archivage. Le web crée et modifie ; le mobile crée et archive, l'édition restant l'affaire de l'atelier. Un filtre d'origine (tous / catalogue / les miens) sépare les deux ensembles sur les deux surfaces.
 - [x] Routines : CRUD complet + dossiers, éditeur web soigné, consultation mobile. L'éditeur web se pilote aussi au clavier. Restent, et les deux attendent les séances : l'édition simplifiée sur mobile (D9) et « démarrer cette routine ».
 - [ ] Séance : démarrage depuis routine ou à vide, saisie complète, minuteur de repos, enregistrement. **L'API et l'écran de saisie mobile sont faits** : brouillon persisté en MMKV, chrono non dérivant, colonne « PRÉC. », minuteur de repos, sortie sans perte, enregistrement idempotent et records calculés serveur. Restent la **séance libre** et l'ajout d'un exercice en cours de séance — les deux demandent un sélecteur d'exercices —, le retour haptique, les notifications de repos, et le détail web.
 - [x] Historique : liste antéchronologique paginée et calendrier mensuel, filtres par routine et par période persistés dans l'URL, détail d'une séance avec résumé, séries, records et suppression. Reste la **modification d'une séance passée** — `PUT /v1/workouts/:id` existe, il lui manque l'éditeur web.
-- [ ] Dashboard web : les 4 cartes KPI + volume hebdo + séances récentes.
-- [ ] Réglages : unités, langue, repos par défaut.
-- [ ] Suppression de compte + export JSON.
+- [x] Dashboard web : les 4 cartes KPI, volume hebdomadaire, répartition par groupe musculaire, régularité et records récents, servis par les cinq routes `/v1/stats/*`.
+- [x] Réglages : profil, unités, langue, fuseau, repos par défaut, visibilité et changement de mot de passe.
+- [ ] Suppression de compte + export JSON. **L'API est faite** : `POST /v1/me/export` renvoie le document complet dans la requête (D27) et `DELETE /v1/me` purge le compte en une transaction, mot de passe exigé dès que le compte en porte un. Reste à brancher les deux sur l'écran des réglages, aujourd'hui un simple texte d'attente.
 
 **Critère de sortie :** on peut abandonner Hevy pendant un mois complet sans manque bloquant.
 

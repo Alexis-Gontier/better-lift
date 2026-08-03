@@ -102,8 +102,8 @@ Le contenu du panneau est **centré** dans sa colonne, pas calé sur la gouttiè
 │   ───                         │  Reprenez là où vous en étiez. │
 │                               │                                │
 │   · Vos routines, prêtes      │  [ Continuer avec GitHub    ]  │
-│   · Les records se calculent  │  [ Continuer avec Google    ]  │
-│   · Gratuit, et ça le reste   │  ───────────  ou  ───────────  │
+│   · Les records se calculent  │  ───────────  ou  ───────────  │
+│   · Gratuit, et ça le reste   │                                │
 │                               │  … formulaire e-mail …         │
 │                               │                                │
 │                               │  Gratuit, sans publicité.      │
@@ -136,7 +136,7 @@ Le contenu du panneau est **centré** dans sa colonne, pas calé sur la gouttiè
 
 **Ce que ces écrans ne disent pas.** « Mot de passe oublié » répond identiquement que l'adresse soit connue ou non — l'API aussi, et l'annoncer ici ferait de ce formulaire un outil d'énumération de comptes. À la connexion, la longueur minimale du mot de passe n'est **pas** validée côté client : l'afficher révélerait la politique de mots de passe et laisserait entendre que le compte existe. C'est `validatePassword(value, "existing" | "new")` qui porte cette distinction, et un test la verrouille.
 
-**Fournisseurs OAuth.** Logos officiels en SVG inline, pas d'icône générique : un bouton « Continuer avec Google » se reconnaît à la forme avant d'être lu. Les boutons sont affichés inconditionnellement, même si l'API n'a pas les identifiants — une erreur explicite se diagnostique mieux qu'un bouton absent, qui passerait pour un bug de rendu.
+**Fournisseurs OAuth.** Logos officiels en SVG inline, pas d'icône générique : un bouton « Continuer avec GitHub » se reconnaît à la forme avant d'être lu. Les boutons sont affichés inconditionnellement, même si l'API n'a pas les identifiants — une erreur explicite se diagnostique mieux qu'un bouton absent, qui passerait pour un bug de rendu. **GitHub est aujourd'hui le seul fournisseur** (D26), mais la liste reste un tableau : Apple s'y ajoutera avant la première soumission iOS.
 
 ## Dashboard
 

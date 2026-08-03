@@ -32,7 +32,7 @@ export const requireAuth = createMiddleware(async (c, next) => {
 });
 ```
 
-Providers OAuth : **GitHub et Google** sont câblés en V1, Apple viendra. Apple est **obligatoire** sur iOS dès lors qu'un autre login social est proposé (règle App Store 4.8) — donc avant la première soumission mobile, pas avant, et il exige un compte Apple Developer payant.
+Providers OAuth : **GitHub seul** est câblé en V1 (D26), Apple viendra. Apple est **obligatoire** sur iOS dès lors qu'un autre login social est proposé (règle App Store 4.8) — donc avant la première soumission mobile, pas avant, et il exige un compte Apple Developer payant.
 
 Un fournisseur n'est enregistré que si ses deux variables sont renseignées : sans OAuth App, l'API démarre quand même et l'e-mail/mot de passe continue de fonctionner. Côté web les boutons restent affichés dans tous les cas — le navigateur n'a pas moyen de savoir ce qui est configuré côté serveur, et une erreur explicite se diagnostique mieux qu'un bouton absent.
 
@@ -106,8 +106,8 @@ GET /v1/workouts?limit=20&cursor=cm3x8k2p0000...
 |---|---|---|---|
 | `GET` | `/v1/me` | Profil + préférences | ✅ |
 | `PATCH` | `/v1/me` | Modifier profil et préférences | ✅ |
-| `POST` | `/v1/me/export` | Déclenche l'export RGPD (JSON), envoyé par e-mail | à faire |
-| `DELETE` | `/v1/me` | Suppression de compte, cascade complète. Exige la confirmation du mot de passe. | à faire |
+| `POST` | `/v1/me/export` | Export RGPD (JSON), renvoyé dans la requête | ✅ |
+| `DELETE` | `/v1/me` | Suppression de compte, cascade complète. Exige la confirmation du mot de passe. | ✅ |
 
 Champs modifiables par `PATCH /v1/me` : `name`, `username`, `bio`, `unitSystem`, `locale`, `timezone`, `defaultRestSec`, `defaultVisibility`.
 
@@ -118,6 +118,22 @@ Trois particularités de cette route, toutes délibérées :
 - **`username` est unique**, et le conflit est détecté par la contrainte de base, pas par une lecture préalable : entre un `SELECT` et l'`UPDATE`, deux clients peuvent choisir le même pseudo. La violation `P2002` est traduite en `409 CONFLICT`. C'est la seule version sans fenêtre de course.
 
 **`unitSystem` est une préférence d'affichage, jamais une donnée de stockage.** Les charges restent en kg dans l'API et en base (règle non négociable n°3) ; la conversion appartient au client, via un composant unique.
+
+**L'export est synchrone** (D27), contrairement à ce que cette table annonçait : le document part dans la réponse, en pièce jointe (`Content-Disposition`), au lieu d'être envoyé par e-mail. Il est `POST` bien qu'il ne modifie rien — il parcourt l'historique entier, et rien ne doit pouvoir le mettre en cache ni le préchercher.
+
+Trois propriétés du document, qui expliquent qu'il ne réutilise aucun schéma de lecture de l'API :
+
+- **il est autoportant** : chaque exercice cité l'est par son identifiant *et* par son nom, parce qu'un export ouvert trois ans plus tard ne peut pas résoudre un `exerciseId` contre une base à laquelle son lecteur n'a plus accès ;
+- **il ne dépend d'aucune locale** : les noms sont ceux du catalogue, pas la traduction du profil, sinon deux exports du même compte différeraient sur un simple changement de langue ;
+- **il dit tout ce qui est stocké**, jusqu'aux routines supprimées : leur suppression est logique (`deletedAt`), la ligne existe donc toujours. Seul le catalogue commun en est absent — il n'appartient à personne.
+
+Le champ `version` est celui du **format**, pas de l'application : il n'a d'usage que pour un futur import.
+
+**La suppression est immédiate et réelle** (D18) : séances, routines, dossiers, records et exercices personnalisés partent avec le compte, dans une transaction. Trois points la gouvernent :
+
+- **le mot de passe est exigé dès que le compte en porte un.** Un compte créé par GitHub seul (D26) n'en a jamais choisi : il envoie un corps vide, et c'est la **fraîcheur de la session** qui fait office de confirmation. Une session trop ancienne renvoie 401, il faut se reconnecter. Le corps reste requis même vide, seule façon de distinguer « rien à confirmer » de « champ oublié » ;
+- **elle passe par Better Auth**, jamais par un `DELETE` direct en base : lui seul vérifie le mot de passe et révoque les sessions. La purge des données applicatives vit donc dans son `beforeDelete`, et non dans notre route — une fois la fonctionnalité activée, `/api/auth/delete-user` est monté lui aussi, et un seul point couvre les deux chemins ;
+- **l'ordre de la purge est un invariant de schéma.** Les exercices personnalisés sont référencés en `Restrict` par les séances et les routines (invariant 8, doc 03), et Postgres vérifie un `RESTRICT` immédiatement, sans attendre la fin de la cascade. Supprimer la ligne `user` d'un trait échouerait donc pour tout compte ayant utilisé son propre exercice dans une séance. Séances et routines partent **avant** les exercices qui les portent.
 
 ### Exercices
 

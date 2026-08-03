@@ -191,10 +191,8 @@ CORS_ORIGINS="http://localhost:3000,exp://192.168.1.10:8081"
 # Better Auth
 BETTER_AUTH_SECRET="..."          # openssl rand -base64 32
 BETTER_AUTH_URL="http://localhost:3001"
-GOOGLE_CLIENT_ID=""
-GOOGLE_CLIENT_SECRET=""
-APPLE_CLIENT_ID=""
-APPLE_CLIENT_SECRET=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
 
 # Web
 NEXT_PUBLIC_API_URL="http://localhost:3001"
