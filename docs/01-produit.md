@@ -106,7 +106,7 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 - [x] Historique : liste antéchronologique paginée et calendrier mensuel, filtres par routine et par période persistés dans l'URL, détail d'une séance avec résumé, séries, records et suppression. Reste la **modification d'une séance passée** — `PUT /v1/workouts/:id` existe, il lui manque l'éditeur web.
 - [x] Dashboard web : les 4 cartes KPI, volume hebdomadaire, répartition par groupe musculaire, régularité et records récents, servis par les cinq routes `/v1/stats/*`.
 - [x] Réglages : profil, unités, langue, fuseau, repos par défaut, visibilité et changement de mot de passe.
-- [ ] Suppression de compte + export JSON. **L'API est faite** : `POST /v1/me/export` renvoie le document complet dans la requête (D27) et `DELETE /v1/me` purge le compte en une transaction, mot de passe exigé dès que le compte en porte un. Reste à brancher les deux sur l'écran des réglages, aujourd'hui un simple texte d'attente.
+- [x] Suppression de compte + export JSON. `POST /v1/me/export` renvoie le document complet dans la requête (D27), `DELETE /v1/me` purge le compte en une transaction — mot de passe exigé dès que le compte en porte un —, et l'onglet Compte des réglages porte les deux : téléchargement du fichier, confirmation en deux temps, redirection vers la connexion.
 
 **Critère de sortie :** on peut abandonner Hevy pendant un mois complet sans manque bloquant.
 
