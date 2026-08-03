@@ -267,6 +267,66 @@ export const lastPerformanceQuerySchema = z.object({
  */
 export const lastPerformanceResponseSchema = z.object({ data: z.array(lastPerformanceSchema) });
 
+// ── Vues par exercice ─────────────────────────────────────────────────────
+
+/**
+ * Historique et records **d'un seul exercice** (doc 04, § Exercices).
+ *
+ * Les deux vivent ici et non dans `exercise.ts` : ce qu'elles décrivent est de
+ * la donnée de séance — des séries réalisées, des records tombés —, et
+ * `workout.ts` importe déjà `exercise.ts`, l'inverse fermerait le cycle.
+ */
+export const exerciseHistorySetSchema = lastPerformanceSetSchema.extend({
+  /**
+   * Les séries non validées sont **conservées**, comme partout ailleurs : elles
+   * disent ce qui était prévu et n'a pas été fait. C'est au client de choisir
+   * s'il les grise ou les masque.
+   */
+  completed: z.boolean(),
+  /** Informatif : la vérité des records reste `PersonalRecord`, comme sur la séance. */
+  isPr: z.boolean(),
+});
+
+/** Une séance, vue depuis un exercice : ce qu'on y a fait, et quand. */
+export const exerciseHistoryEntrySchema = z.object({
+  /** Identifiant de la ligne `WorkoutExercise` : c'est lui qui sert de curseur. */
+  id: z.string(),
+  workoutId: z.string(),
+  workoutTitle: z.string(),
+  performedAt: z.iso.datetime(),
+  notes: z.string().nullable(),
+  sets: z.array(exerciseHistorySetSchema),
+});
+
+export const exerciseHistoryQuerySchema = paginationQuerySchema;
+
+export const exerciseHistoryResponseSchema = paginatedSchema(exerciseHistoryEntrySchema);
+
+/**
+ * Record personnel sur cet exercice.
+ *
+ * Même forme que `/v1/stats/records`, moins l'exercice : on sait déjà lequel.
+ * `workoutId` est nul quand la séance d'origine a été supprimée — le record,
+ * lui, reste vrai : il a été reconstruit depuis le reste de l'historique.
+ */
+export const exerciseRecordSchema = z.object({
+  id: z.string(),
+  type: recordTypeSchema,
+  /** Normalisé : kg pour les charges et le 1RM, unités brutes sinon. */
+  value: z.string(),
+  /** Contexte lisible, pour afficher « 100 kg × 5 » plutôt qu'un nombre nu. */
+  reps: z.number().int().nullable(),
+  weightKg: z.string().nullable(),
+  achievedAt: z.iso.datetime(),
+  workoutId: z.string().nullable(),
+});
+
+/**
+ * Non paginée : il y a **au plus un record par type** et six types (doc 03).
+ * Un curseur sur six lignes serait du cérémonial.
+ */
+export const exerciseRecordsResponseSchema = z.object({ data: z.array(exerciseRecordSchema) });
+
 export type RecordType = z.infer<typeof recordTypeSchema>;
 export type WorkoutSetInput = z.input<typeof workoutSetInputSchema>;
 export type WorkoutExerciseInput = z.input<typeof workoutExerciseInputSchema>;
@@ -285,3 +345,8 @@ export type WorkoutListResponse = z.infer<typeof workoutListResponseSchema>;
 export type LastPerformance = z.infer<typeof lastPerformanceSchema>;
 export type LastPerformanceQuery = z.infer<typeof lastPerformanceQuerySchema>;
 export type LastPerformanceResponse = z.infer<typeof lastPerformanceResponseSchema>;
+export type ExerciseHistoryEntry = z.infer<typeof exerciseHistoryEntrySchema>;
+export type ExerciseHistoryQuery = z.infer<typeof exerciseHistoryQuerySchema>;
+export type ExerciseHistoryResponse = z.infer<typeof exerciseHistoryResponseSchema>;
+export type ExerciseRecord = z.infer<typeof exerciseRecordSchema>;
+export type ExerciseRecordsResponse = z.infer<typeof exerciseRecordsResponseSchema>;

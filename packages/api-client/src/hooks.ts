@@ -16,8 +16,11 @@ import {
   type DataExport,
   type DeleteAccountInput,
   type ExerciseDetail,
+  type ExerciseHistoryQuery,
+  type ExerciseHistoryResponse,
   type ExerciseListQuery,
   type ExerciseListResponse,
+  type ExerciseRecordsResponse,
   type HealthResponse,
   type LastPerformance,
   type Locale,
@@ -68,6 +71,12 @@ export const queryKeys = {
    */
   exercisesAll: ["exercises"] as const,
   exercise: (id: string, locale?: Locale) => ["exercise", id, locale ?? null] as const,
+  /**
+   * Historique et records dépendent des **séances**, pas du catalogue : ils sont
+   * invalidés par `invalidateWorkoutViews`, jamais par une écriture d'exercice.
+   */
+  exerciseHistory: (id: string) => ["exercise-history", id] as const,
+  exerciseRecords: (id: string) => ["exercise-records", id] as const,
 
   routineFolders: ["routine-folders"] as const,
   routines: (query: Partial<RoutineListQuery> = {}) => ["routines", query] as const,
@@ -214,6 +223,40 @@ export function useExercise(
     queryFn: ({ signal }) => client.getExercise(id, locale, signal),
     staleTime: 5 * 60_000,
     // Un 404 est une réponse, pas une panne.
+    retry: false,
+  });
+}
+
+/**
+ * Historique personnel sur un exercice, paginé par curseur.
+ *
+ * Il change à chaque séance enregistrée, contrairement au catalogue :
+ * `staleTime` est donc court, et `invalidateWorkoutViews` le remet à zéro dès
+ * qu'une séance est écrite, corrigée ou supprimée.
+ */
+export function useExerciseHistory(
+  client: ApiClient,
+  id: string,
+  query: Partial<ExerciseHistoryQuery> = {},
+): UseInfiniteQueryResult<InfiniteData<ExerciseHistoryResponse>, Error> {
+  return useInfiniteQuery({
+    queryKey: queryKeys.exerciseHistory(id),
+    queryFn: ({ pageParam, signal }) =>
+      client.getExerciseHistory(id, { ...query, cursor: pageParam }, signal),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    // Un 404 est une réponse — l'exercice n'est pas le vôtre —, pas une panne.
+    retry: false,
+  });
+}
+
+export function useExerciseRecords(
+  client: ApiClient,
+  id: string,
+): UseQueryResult<ExerciseRecordsResponse, Error> {
+  return useQuery({
+    queryKey: queryKeys.exerciseRecords(id),
+    queryFn: ({ signal }) => client.getExerciseRecords(id, signal),
     retry: false,
   });
 }
@@ -478,6 +521,10 @@ async function invalidateWorkoutViews(queryClient: ReturnType<typeof useQueryCli
     queryClient.invalidateQueries({ queryKey: queryKeys.workoutsAll }),
     queryClient.invalidateQueries({ queryKey: queryKeys.lastPerformanceAll }),
     queryClient.invalidateQueries({ queryKey: queryKeys.routinesAll }),
+    // L'historique et les records d'un exercice sont de la donnée de séance :
+    // une séance enregistrée les change, sans toucher au catalogue.
+    queryClient.invalidateQueries({ queryKey: ["exercise-history"] }),
+    queryClient.invalidateQueries({ queryKey: ["exercise-records"] }),
     // Enregistrer, corriger ou supprimer une séance change le volume, la
     // régularité et les records. Le tableau de bord doit suivre.
     queryClient.invalidateQueries({ queryKey: queryKeys.statsAll }),

@@ -9,10 +9,15 @@ import {
   type DeleteAccountInput,
   dataExportSchema,
   type ExerciseDetail,
+  type ExerciseHistoryQuery,
+  type ExerciseHistoryResponse,
   type ExerciseListQuery,
   type ExerciseListResponse,
+  type ExerciseRecordsResponse,
   exerciseDetailSchema,
+  exerciseHistoryResponseSchema,
   exerciseListResponseSchema,
+  exerciseRecordsResponseSchema,
   type HealthResponse,
   healthResponseSchema,
   type LastPerformance,
@@ -96,6 +101,18 @@ export interface ApiClient {
   ) => Promise<ExerciseListResponse>;
   /** Lève une `ApiClientError` 404 quand l'exercice est inconnu ou archivé. */
   getExercise: (id: string, locale?: Locale, signal?: AbortSignal) => Promise<ExerciseDetail>;
+  /**
+   * Historique personnel sur un exercice : une entrée par passage en séance,
+   * antéchronologique. Un exercice **archivé** répond quand même — son
+   * historique existe toujours.
+   */
+  getExerciseHistory: (
+    id: string,
+    query?: Partial<ExerciseHistoryQuery>,
+    signal?: AbortSignal,
+  ) => Promise<ExerciseHistoryResponse>;
+  /** Records lus, jamais recalculés : ils sont écrits serveur (règle n°6). */
+  getExerciseRecords: (id: string, signal?: AbortSignal) => Promise<ExerciseRecordsResponse>;
   createExercise: (
     input: CreateExerciseInput,
     locale?: Locale,
@@ -368,6 +385,18 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       request(
         `/v1/exercises/${encodeURIComponent(id)}${localeQuery(locale)}`,
         exerciseDetailSchema,
+        signal,
+      ),
+    getExerciseHistory: (id, query = {}, signal) =>
+      request(
+        `/v1/exercises/${encodeURIComponent(id)}/history${toSearchParams(query)}`,
+        exerciseHistoryResponseSchema,
+        signal,
+      ),
+    getExerciseRecords: (id, signal) =>
+      request(
+        `/v1/exercises/${encodeURIComponent(id)}/records`,
+        exerciseRecordsResponseSchema,
         signal,
       ),
     createExercise: (input, locale, signal) =>

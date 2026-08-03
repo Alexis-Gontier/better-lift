@@ -7,8 +7,11 @@ import {
   createExerciseSchema,
   exerciseDetailQuerySchema,
   exerciseDetailSchema,
+  exerciseHistoryQuerySchema,
+  exerciseHistoryResponseSchema,
   exerciseListQuerySchema,
   exerciseListResponseSchema,
+  exerciseRecordsResponseSchema,
   updateExerciseSchema,
 } from "@better-lift/validators";
 
@@ -20,6 +23,8 @@ import {
   archiveExercise,
   createExercise,
   getExerciseById,
+  getExerciseHistory,
+  getExerciseRecords,
   listExercises,
   updateExercise,
 } from "../services/exercise.service.js";
@@ -175,6 +180,60 @@ const deleteRoute = createRoute({
   },
 });
 
+const historyRoute = createRoute({
+  method: "get",
+  path: "/v1/exercises/{id}/history",
+  tags: ["Exercices"],
+  summary: "Historique personnel sur un exercice",
+  description:
+    "Séries réalisées sur cet exercice, antéchronologique et paginée par " +
+    "curseur. Une entrée par passage en séance, jamais une ligne par série : " +
+    "c'est ainsi qu'on lit sa progression, et une séance ne se coupe pas en " +
+    "deux pages. Les séries non validées sont conservées — elles disent ce qui " +
+    "était prévu et n'a pas été fait. Un exercice **archivé** reste consultable " +
+    "ici : son historique existe toujours.",
+  request: { params: idParam, query: exerciseHistoryQuerySchema },
+  responses: {
+    200: {
+      description: "Page d'historique.",
+      content: { "application/json": { schema: exerciseHistoryResponseSchema } },
+    },
+    401: unauthenticated,
+    404: {
+      description: "Exercice inexistant ou appartenant à autrui.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    422: {
+      description: "Paramètres invalides.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
+const recordsRoute = createRoute({
+  method: "get",
+  path: "/v1/exercises/{id}/records",
+  tags: ["Exercices"],
+  summary: "Records personnels sur un exercice",
+  description:
+    "Records **lus**, jamais recalculés : ils sont écrits serveur dans la " +
+    "transaction de fin de séance (D23). Au plus un par type, donc six lignes, " +
+    "d'où l'absence de pagination. `workoutId` est nul quand la séance " +
+    "d'origine a été supprimée — le record, lui, reste vrai.",
+  request: { params: idParam },
+  responses: {
+    200: {
+      description: "Records de l'exercice.",
+      content: { "application/json": { schema: exerciseRecordsResponseSchema } },
+    },
+    401: unauthenticated,
+    404: {
+      description: "Exercice inexistant ou appartenant à autrui.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
 export const exercisesRouter = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
 // Le catalogue est commun à tous, mais il n'est pas public : comme toute route
@@ -205,6 +264,16 @@ exercisesRouter.openapi(deleteRoute, async (c) => {
   await archiveExercise(c.req.valid("param").id, c.get("user").id);
 
   return c.body(null, 204);
+});
+
+exercisesRouter.openapi(historyRoute, async (c) => {
+  const { id } = c.req.valid("param");
+
+  return c.json(await getExerciseHistory(id, c.req.valid("query"), c.get("user").id), 200);
+});
+
+exercisesRouter.openapi(recordsRoute, async (c) => {
+  return c.json(await getExerciseRecords(c.req.valid("param").id, c.get("user").id), 200);
 });
 
 exercisesRouter.openapi(detailRoute, async (c) => {

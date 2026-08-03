@@ -5,8 +5,11 @@ import {
   type CreateExercisePayload,
   DEFAULT_LOCALE,
   type ExerciseDetail,
+  type ExerciseHistoryQuery,
+  type ExerciseHistoryResponse,
   type ExerciseListQuery,
   type ExerciseListResponse,
+  type ExerciseRecordsResponse,
   type ExerciseSummary,
   type ExerciseType as ExerciseTypeValue,
   LOCALES,
@@ -14,7 +17,12 @@ import {
   type UpdateExercisePayload,
 } from "@better-lift/validators";
 
+import { toDecimalString } from "../lib/decimal.js";
 import { ApiError } from "../lib/errors.js";
+
+/** Deux décimales pour les charges et les distances, une seule pour le RPE. */
+const DECIMAL_SCALE = 2;
+const RPE_SCALE = 1;
 
 /**
  * Catalogue d'exercices (doc 04, § Exercices).
@@ -428,4 +436,124 @@ export async function archiveExercise(id: string, userId: string): Promise<void>
   await loadOwned(id, userId);
 
   await prisma.exercise.update({ where: { id }, data: { isArchived: true } });
+}
+
+// ── Historique et records ─────────────────────────────────────────────────
+
+/**
+ * L'exercice existe-t-il **pour cet utilisateur** ?
+ *
+ * Les deux vues ci-dessous liraient sinon des tables de séance qui, elles, sont
+ * déjà filtrées par `userId` : une lecture sur l'exercice d'autrui renverrait
+ * une liste vide plutôt qu'un 404, et confondrait « pas à vous » avec « jamais
+ * fait ». L'archivé, lui, reste consultable : son historique existe toujours.
+ */
+async function assertVisible(id: string, userId: string): Promise<void> {
+  const exercise = await prisma.exercise.findFirst({
+    where: { id, ...visibleTo(userId) },
+    select: { id: true },
+  });
+
+  if (!exercise) {
+    throw new ApiError("NOT_FOUND", "Exercice introuvable.");
+  }
+}
+
+/**
+ * Séries réalisées sur cet exercice, antéchronologique (doc 04).
+ *
+ * Une entrée par passage en séance, et non une ligne par série : c'est ainsi
+ * qu'on lit sa progression — « la semaine dernière, 100 × 5 × 3 » — et c'est
+ * aussi ce qui rend la pagination sensée, une séance ne pouvant pas être coupée
+ * en deux pages.
+ *
+ * Le curseur porte sur `WorkoutExercise.id`, ce qui suppose l'ordre stable :
+ * `id` départage deux séances du même instant, comme dans `listWorkouts`.
+ */
+export async function getExerciseHistory(
+  id: string,
+  query: ExerciseHistoryQuery,
+  userId: string,
+): Promise<ExerciseHistoryResponse> {
+  await assertVisible(id, userId);
+
+  const rows = await prisma.workoutExercise.findMany({
+    where: { exerciseId: id, workout: { userId } },
+    orderBy: [{ workout: { startedAt: "desc" } }, { id: "asc" }],
+    take: query.limit + 1,
+    ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+    select: {
+      id: true,
+      notes: true,
+      workout: { select: { id: true, title: true, startedAt: true } },
+      sets: { orderBy: { position: "asc" } },
+    },
+  });
+
+  const hasMore = rows.length > query.limit;
+  const page = hasMore ? rows.slice(0, query.limit) : rows;
+
+  return {
+    data: page.map((row) => ({
+      id: row.id,
+      workoutId: row.workout.id,
+      workoutTitle: row.workout.title,
+      performedAt: row.workout.startedAt.toISOString(),
+      notes: row.notes,
+      sets: row.sets.map((set) => ({
+        position: set.position,
+        type: set.type,
+        reps: set.reps,
+        weightKg: toDecimalString(set.weightKg, DECIMAL_SCALE),
+        durationSec: set.durationSec,
+        distanceM: toDecimalString(set.distanceM, DECIMAL_SCALE),
+        rpe: toDecimalString(set.rpe, RPE_SCALE),
+        completed: set.completed,
+        isPr: set.isPr,
+      })),
+    })),
+    nextCursor: hasMore ? (page.at(-1)?.id ?? null) : null,
+    hasMore,
+  };
+}
+
+/**
+ * Records personnels sur cet exercice.
+ *
+ * Lus, jamais recalculés : ils sont écrits serveur dans la transaction de fin
+ * de séance (règle non négociable n°6, D23). Les recalculer ici donnerait deux
+ * réponses possibles à la même question, et c'est cette lecture qui se
+ * tromperait — elle ignore les corrections en cours de transaction.
+ */
+export async function getExerciseRecords(
+  id: string,
+  userId: string,
+): Promise<ExerciseRecordsResponse> {
+  await assertVisible(id, userId);
+
+  const rows = await prisma.personalRecord.findMany({
+    where: { userId, exerciseId: id },
+    orderBy: [{ achievedAt: "desc" }, { id: "asc" }],
+    select: {
+      id: true,
+      type: true,
+      value: true,
+      reps: true,
+      weightKg: true,
+      achievedAt: true,
+      workoutId: true,
+    },
+  });
+
+  return {
+    data: rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      value: row.value.toFixed(DECIMAL_SCALE),
+      reps: row.reps,
+      weightKg: toDecimalString(row.weightKg, DECIMAL_SCALE),
+      achievedAt: row.achievedAt.toISOString(),
+      workoutId: row.workoutId,
+    })),
+  };
 }
