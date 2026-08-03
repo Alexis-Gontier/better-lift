@@ -119,10 +119,16 @@ allowBuilds:
 # changement de dépendance de notre côté. La borne ne vise que la plage
 # vulnérable : les versions 1.x et 2.x, encore présentes ailleurs dans l'arbre,
 # ne le sont pas et une montée forcée y serait une rupture d'API gratuite.
+#
+# Même histoire pour `fast-uri` : confusion d'hôte via un antislash en tête
+# d'autorité (GHSA-7p8r-x3mc-p8w7), publié le 2026-08-03 et tiré par l'`ajv` de
+# commitlint, de Prisma et de Better Auth — 28 chemins, aucun à nous. Correctif
+# de patch, la borne suit celle de l'avis.
 overrides:
   postcss: ^8.5.18
   sharp: ^0.35.0
   "brace-expansion@>=4.0.0 <5.0.9": ">=5.0.9"
+  "fast-uri@>=3.0.0 <3.1.5": ">=3.1.5"
 
 minimumReleaseAgeExclude:
   - "@types/react@19.2.18"
