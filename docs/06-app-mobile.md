@@ -118,7 +118,13 @@ Trois conséquences à connaître :
 
 **Reprise après crash.** Au démarrage, l'app cherche un brouillon actif ; s'il existe, elle propose de reprendre la séance. À tester explicitement en tuant l'app en cours de séance — c'est la garantie de confiance la plus importante du produit.
 
-**File de synchronisation.** Les séances non envoyées sont rejouées à la reconnexion (`expo-network` + retry avec backoff exponentiel). L'idempotence par identifiant client (doc 04) rend un rejeu multiple inoffensif.
+**File de synchronisation — faite au 2026-08-03.** Les séances non envoyées sont rejouées à la reconnexion. L'idempotence par identifiant client (doc 04) rend un rejeu multiple inoffensif : c'est elle qui autorise à réessayer sans compter.
+
+Le coureur est monté **une seule fois, à la racine** : la file appartient à l'application et doit continuer de se vider pendant qu'on consulte son historique. Il se réveille de trois façons, pour trois manières de retrouver le réseau — l'horloge du backoff (5 s, 15 s, 45 s… plafonné à 15 min), le retour de la connectivité (`expo-network`), qui **remet les entrées à échéance** plutôt que d'attendre la fin d'un backoff, et le retour au premier plan, une app en arrière-plan pendant toute une séance ne voyant passer ni l'un ni l'autre. Les échéances sont des dates **absolues**, un délai relatif ne survivrait pas à la fermeture de l'app.
+
+Un seul envoi à la fois, et on s'arrête au premier échec : les séances suivantes partagent le même réseau.
+
+Ce qui advient de l'écran de séance et des refus définitifs de l'API est tranché par [D28](09-decisions.md) — un échec réseau libère l'écran, un `422` ou un `409` retient la séance et l'affiche à l'accueil.
 
 **Cache de lecture.** TanStack Query avec persistance MMKV : routines, catalogue d'exercices et dernières performances restent consultables hors ligne. Le catalogue est préchargé après la connexion — une salle en sous-sol n'a pas de réseau, et chercher un exercice doit rester possible.
 

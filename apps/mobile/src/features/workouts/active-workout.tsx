@@ -13,6 +13,8 @@ import {
 import { isDraftPersisted } from "./draft-store";
 import { ExerciseBlock } from "./exercise-block";
 import { RestTimer } from "./rest-timer";
+import { enqueue, isRetryable } from "./sync-queue";
+import { readQueue, writeQueue } from "./sync-store";
 import { formatElapsed, useTicker } from "./use-ticker";
 import { useWorkoutDraft } from "./use-workout-draft";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -93,16 +95,33 @@ export function ActiveWorkout() {
   const done = completedSetCount(draft);
 
   async function finish(current: WorkoutDraft) {
+    const input = toCreateWorkoutInput(current, new Date());
+
     try {
-      const saved = await createWorkout.mutateAsync(toCreateWorkoutInput(current, new Date()));
+      const saved = await createWorkout.mutateAsync(input);
 
       // Le brouillon ne part qu'**après** l'accusé de réception. Le supprimer
       // d'abord, c'est perdre la séance si l'envoi échoue.
       discard();
       router.replace(`/workout/${saved.id}`);
-    } catch {
-      // L'erreur est portée par la mutation, affichée sous la barre d'action :
-      // le brouillon reste intact et l'envoi se retente.
+    } catch (error) {
+      if (!isRetryable(error)) {
+        // L'API a refusé le contenu : réessayer donnerait la même réponse. Le
+        // brouillon reste intact et l'erreur s'affiche sous la barre d'action,
+        // là où l'on peut encore corriger.
+        return;
+      }
+
+      /*
+        Le réseau manque, ou le serveur a bronché. La séance est **faite** : la
+        retenir sur l'écran de saisie pour la faire renvoyer à la main serait
+        exiger de l'utilisateur qu'il surveille son réseau à la sortie de la
+        salle. Elle passe en file, le brouillon peut partir — l'un remplace
+        l'autre, il n'y a aucun instant où la séance n'existe nulle part.
+      */
+      writeQueue(enqueue(readQueue(), input));
+      discard();
+      router.replace("/");
     }
   }
 
@@ -227,10 +246,14 @@ export function ActiveWorkout() {
           </Pressable>
         </Link>
 
+        {/*
+          Ne reste à l'écran que ce qu'un nouvel essai ne résoudrait pas : le
+          réseau, lui, a déjà emmené la séance en file et quitté cet écran.
+        */}
         {createWorkout.isError ? (
           <Text style={styles.error}>
-            Enregistrement impossible : {createWorkout.error.message}. La séance est conservée,
-            l'envoi peut être retenté.
+            Séance refusée : {createWorkout.error.message}. Elle est conservée ici, corriger puis
+            renvoyer.
           </Text>
         ) : null}
       </ScrollView>

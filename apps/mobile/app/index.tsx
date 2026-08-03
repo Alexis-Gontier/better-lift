@@ -5,6 +5,7 @@ import { useHealth, useVersion } from "@better-lift/api-client";
 import { estimate1RM, kgToLb, setVolume } from "@better-lift/core";
 
 import { SessionPanel } from "@/features/auth/session-panel";
+import { SyncBanner } from "@/features/workouts/sync-banner";
 import { useStartWorkout } from "@/features/workouts/use-start-workout";
 import { apiClient } from "@/lib/api";
 import { API_URL } from "@/lib/env";
@@ -80,6 +81,13 @@ export default function HomeScreen() {
       <Stack.Screen options={{ title: "better-lift" }} />
       <ScrollView contentContainerStyle={styles.screen}>
         <Text style={styles.subtitle}>Socle technique V0 — outil de terrain</Text>
+
+        {/*
+          En tête d'accueil : une séance mise en file est enregistrée du point
+          de vue de l'utilisateur, et ne se retrouve nulle part ailleurs tant
+          qu'elle n'est pas partie.
+        */}
+        <SyncBanner />
 
         {/*
           Une séance en cours n'est jamais écrasée : tant qu'il en existe une,
