@@ -1,37 +1,24 @@
-import { ShieldIcon } from "lucide-react";
 import { type Metadata } from "next";
 
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@better-lift/ui/components/empty";
+import { AccountIdentity } from "@/features/account/account-identity";
+import { PasswordForm } from "@/features/account/password-form";
 
 export const metadata: Metadata = { title: "Compte — Réglages — better-lift" };
 
 /**
- * Mot de passe, sessions actives, export JSON et suppression du compte.
+ * Adresse e-mail et mot de passe.
  *
- * Les deux derniers sont au périmètre V1 (doc 01) : ce sont eux qui rendent
- * l'app quittable, ce qui n'est pas une fonctionnalité optionnelle.
+ * **L'export des données et la suppression du compte manquent encore**, alors
+ * qu'ils sont au périmètre V1 (doc 01) : ce sont eux qui rendent l'app
+ * quittable. Ils demandent deux endpoints qui n'existent pas et une
+ * confirmation irréversible, donc leur propre lot — les bâcler ici aurait été
+ * le pire endroit pour aller vite.
  */
 export default function SettingsAccountPage() {
   return (
-    <div className="flex flex-1 flex-col justify-center">
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <ShieldIcon />
-          </EmptyMedia>
-          <EmptyTitle>Compte</EmptyTitle>
-          <EmptyDescription>
-            Mot de passe, sessions actives, export de vos données et suppression du compte. Vos
-            données vous appartiennent : elles partiront avec vous.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+    <div className="flex flex-col gap-6">
+      <AccountIdentity />
+      <PasswordForm />
     </div>
   );
 }

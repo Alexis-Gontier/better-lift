@@ -16,6 +16,7 @@ import {
   trendOf,
 } from "./format";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
+import { useProfileUnits } from "@/features/account/use-profile-units";
 
 const TREND_ICONS: Record<Trend, typeof TrendingUpIcon> = {
   up: TrendingUpIcon,
@@ -116,6 +117,7 @@ export function KpiCardsSkeleton() {
 export function KpiCards({ range, summary }: { range: StatsRange; summary: StatsSummary }) {
   const locale = useProfileLocale();
   const intlLocale = locale === "en" ? "en-GB" : "fr-FR";
+  const units = useProfileUnits();
   const previous = summary.previousPeriod;
 
   return (
@@ -128,7 +130,7 @@ export function KpiCards({ range, summary }: { range: StatsRange; summary: Stats
       />
       <Kpi
         label="Volume total"
-        value={formatVolume(summary.totalVolumeKg, intlLocale)}
+        value={formatVolume(summary.totalVolumeKg, intlLocale, units)}
         change={
           previous
             ? relativeChange(Number(summary.totalVolumeKg), Number(previous.totalVolumeKg))

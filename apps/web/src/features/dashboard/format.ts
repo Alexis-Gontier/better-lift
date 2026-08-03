@@ -1,12 +1,17 @@
+import { toDisplayWeight, type UnitSystem } from "@better-lift/core";
 import { type StatsRange } from "@better-lift/validators";
 
 /**
  * Mises en forme du tableau de bord, isolées du rendu.
  *
- * Aucune de ces fonctions ne convertit d'unité : les charges restent en kg et
- * passent par `<Weight />`, seul endroit du web qui convertit (doc 05). Ce qui
- * se joue ici est l'échelle et l'arrondi — un volume hebdomadaire s'écrit en
- * tonnes, pas en 84 250 kg.
+ * Ce qui s'y joue est l'échelle et l'arrondi — un volume hebdomadaire s'écrit
+ * en tonnes, pas en 84 250 kg. `<Weight />` ne sait pas faire ça : il rend une
+ * charge telle quelle, ce qui donnerait un nombre à six chiffres.
+ *
+ * `formatVolume` est donc le **second** endroit du web à convertir une charge,
+ * et le seul autre. Il passe par `toDisplayWeight` de `packages/core`, comme
+ * `<Weight />` : la règle non négociable n°4 interdit la conversion à la main,
+ * pas la mise à l'échelle d'un agrégat.
  */
 
 export const RANGE_LABELS: Record<StatsRange, string> = {
@@ -53,27 +58,36 @@ export function trendOf(change: number | null): Trend {
 }
 
 /**
- * Volume en tonnes au-delà de 1 000 kg, en kg en deçà.
+ * Volume cumulé, dans le système d'unités du profil.
  *
  * Un total hebdomadaire se compte en dizaines de tonnes : l'écrire en
  * kilogrammes donne un nombre à six chiffres que personne ne lit. En dessous
- * d'une tonne, la tonne est au contraire trop grossière.
+ * d'une tonne, la tonne est au contraire trop grossière — d'où la bascule.
  *
- * La chaîne d'entrée vient de l'API (`Decimal` sérialisé, règle n°4). Le
- * `Number` n'est ici qu'un arrondi d'affichage, jamais un calcul métier.
+ * Le pendant impérial est la **tonne courte** (2 000 lb), avec le même seuil
+ * relatif. Elle est notée « t (US) » : écrire « t » des deux côtés ferait
+ * passer deux grandeurs différentes pour la même, ce qui est exactement le
+ * genre de confusion qu'un tracker de charges ne peut pas se permettre.
+ *
+ * La conversion passe par `packages/core` (règle non négociable n°4) — c'est
+ * le pendant de `<Weight>` pour une valeur agrégée, que le composant ne sait
+ * pas mettre à l'échelle. La chaîne d'entrée vient de l'API ; le `Number` n'est
+ * ici qu'un arrondi d'affichage, jamais un calcul métier.
  */
-export function formatVolume(volumeKg: string, locale: string): string {
-  const kg = Number(volumeKg);
-
-  if (!Number.isFinite(kg)) {
+export function formatVolume(volumeKg: string, locale: string, system: UnitSystem): string {
+  if (!Number.isFinite(Number(volumeKg))) {
     return "—";
   }
 
-  if (kg < 1000) {
-    return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(kg)} kg`;
+  const value = toDisplayWeight(volumeKg, system);
+  const [threshold, unit, bigUnit] =
+    system === "IMPERIAL" ? [2000, "lb", "t (US)"] : [1000, "kg", "t"];
+
+  if (value < threshold) {
+    return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} ${unit}`;
   }
 
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(kg / 1000)} t`;
+  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value / threshold)} ${bigUnit}`;
 }
 
 /** Durée cumulée en heures et minutes : « 4 h 12 », « 48 min ». */

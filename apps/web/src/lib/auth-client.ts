@@ -24,4 +24,10 @@ export const {
   requestPasswordReset,
   resetPassword,
   sendVerificationEmail,
+  /**
+   * Changement de mot de passe depuis les réglages. Distinct de
+   * `resetPassword`, qui répond à un jeton reçu par e-mail : ici la session
+   * existe, et c'est l'ancien mot de passe qui fait preuve.
+   */
+  changePassword,
 } = authClient;
