@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiErrorSchema, exerciseListResponseSchema } from "@better-lift/validators";
+import {
+  apiErrorSchema,
+  exerciseHistoryResponseSchema,
+  exerciseListResponseSchema,
+  exerciseRecordsResponseSchema,
+} from "@better-lift/validators";
 
 const getSession = vi.hoisted(() => vi.fn());
 const findManyTranslations = vi.hoisted(() => vi.fn());
@@ -9,6 +14,8 @@ const findUniqueExercise = vi.hoisted(() => vi.fn());
 const createExerciseRow = vi.hoisted(() => vi.fn());
 const updateExerciseRow = vi.hoisted(() => vi.fn());
 const updateManyTranslations = vi.hoisted(() => vi.fn());
+const findManyWorkoutExercises = vi.hoisted(() => vi.fn());
+const findManyRecords = vi.hoisted(() => vi.fn());
 
 vi.mock("@better-lift/db", () => {
   const client = {
@@ -19,6 +26,8 @@ vi.mock("@better-lift/db", () => {
       create: createExerciseRow,
       update: updateExerciseRow,
     },
+    workoutExercise: { findMany: findManyWorkoutExercises },
+    personalRecord: { findMany: findManyRecords },
     // La transaction est jouée à plat : ce qui est testé ici est la suite
     // d'écritures, pas la garantie transactionnelle de Postgres.
     $transaction: (run: (tx: unknown) => unknown) => run(client),
@@ -546,5 +555,186 @@ describe("DELETE /v1/exercises/:id", () => {
 
     expect((await remove("exo_1")).status).toBe(403);
     expect(updateExerciseRow).not.toHaveBeenCalled();
+  });
+});
+
+/** Une ligne `WorkoutExercise` telle que le service la sélectionne. */
+function historyRow(suffix = "1", startedAt = "2026-08-01T18:00:00.000Z") {
+  return {
+    id: `wex_${suffix}`,
+    notes: "Coudes serrés",
+    workout: { id: `wkt_${suffix}`, title: "Push A", startedAt: new Date(startedAt) },
+    sets: [
+      {
+        position: 0,
+        type: "NORMAL",
+        reps: 5,
+        weightKg: { toFixed: (scale: number) => (100).toFixed(scale) },
+        durationSec: null,
+        distanceM: null,
+        rpe: { toFixed: (scale: number) => (8).toFixed(scale) },
+        completed: true,
+        isPr: true,
+      },
+      {
+        position: 1,
+        type: "NORMAL",
+        reps: null,
+        weightKg: null,
+        durationSec: null,
+        distanceM: null,
+        rpe: null,
+        completed: false,
+        isPr: false,
+      },
+    ],
+  };
+}
+
+describe("GET /v1/exercises/:id/history", () => {
+  it("should return one entry per session, newest first", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    findManyWorkoutExercises.mockResolvedValue([historyRow()]);
+
+    const response = await app.request("/v1/exercises/exo_1/history");
+    const body = exerciseHistoryResponseSchema.parse(await response.json());
+
+    expect(response.status).toBe(200);
+    expect(body.data[0]?.workoutTitle).toBe("Push A");
+    expect(body.data[0]?.sets).toHaveLength(2);
+    // Les charges sont des chaînes (règle non négociable n°4), jamais des
+    // nombres : `82.50` ne survivrait pas à un aller-retour en flottant.
+    expect(body.data[0]?.sets[0]?.weightKg).toBe("100.00");
+    expect(body.data[0]?.sets[0]?.rpe).toBe("8.0");
+
+    expect(findManyWorkoutExercises.mock.calls[0]?.[0]).toMatchObject({
+      where: { exerciseId: "exo_1", workout: { userId: "usr_1" } },
+      orderBy: [{ workout: { startedAt: "desc" } }, { id: "asc" }],
+    });
+  });
+
+  it("should keep unvalidated sets, which say what was planned and not done", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    findManyWorkoutExercises.mockResolvedValue([historyRow()]);
+
+    const body = exerciseHistoryResponseSchema.parse(
+      await (await app.request("/v1/exercises/exo_1/history")).json(),
+    );
+
+    expect(body.data[0]?.sets[1]?.completed).toBe(false);
+  });
+
+  it("should paginate by cursor on the session line", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    // `limit + 1` lignes : la dernière ne sert qu'à savoir qu'il y a une suite.
+    findManyWorkoutExercises.mockResolvedValue([
+      historyRow("1"),
+      historyRow("2", "2026-07-28T18:00:00.000Z"),
+    ]);
+
+    const body = exerciseHistoryResponseSchema.parse(
+      await (await app.request("/v1/exercises/exo_1/history?limit=1")).json(),
+    );
+
+    expect(body.data).toHaveLength(1);
+    expect(body.hasMore).toBe(true);
+    expect(body.nextCursor).toBe("wex_1");
+  });
+
+  it("should skip the cursor row itself", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    findManyWorkoutExercises.mockResolvedValue([]);
+
+    await app.request("/v1/exercises/exo_1/history?cursor=wex_1");
+
+    expect(findManyWorkoutExercises.mock.calls[0]?.[0]).toMatchObject({
+      cursor: { id: "wex_1" },
+      skip: 1,
+    });
+  });
+
+  it("should return 404 for an exercise belonging to someone else", async () => {
+    authenticate();
+    // La clause de visibilité ne ramène rien : sans ce contrôle, la lecture
+    // renverrait une page vide et confondrait « pas à vous » avec « jamais
+    // fait ».
+    findFirstExercise.mockResolvedValue(null);
+
+    const response = await app.request("/v1/exercises/exo_9/history");
+
+    expect(response.status).toBe(404);
+    expect(apiErrorSchema.parse(await response.json()).error.code).toBe("NOT_FOUND");
+    expect(findManyWorkoutExercises).not.toHaveBeenCalled();
+  });
+
+  it("should still serve the history of an archived exercise", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    findManyWorkoutExercises.mockResolvedValue([]);
+
+    expect((await app.request("/v1/exercises/exo_1/history")).status).toBe(200);
+    // L'archivage retire du catalogue, il n'efface pas ce qui a été fait.
+    expect(findFirstExercise.mock.calls[0]?.[0]?.where).not.toHaveProperty("isArchived");
+  });
+
+  it("should reject an out-of-range limit", async () => {
+    authenticate();
+
+    expect((await app.request("/v1/exercises/exo_1/history?limit=500")).status).toBe(422);
+  });
+});
+
+describe("GET /v1/exercises/:id/records", () => {
+  function recordRow() {
+    return {
+      id: "prc_1",
+      type: "BEST_1RM",
+      value: { toFixed: (scale: number) => (117.5).toFixed(scale) },
+      reps: 5,
+      weightKg: { toFixed: (scale: number) => (100).toFixed(scale) },
+      achievedAt: new Date("2026-08-01T18:30:00.000Z"),
+      workoutId: "wkt_1",
+    };
+  }
+
+  it("should return the records of this exercise for this user", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    findManyRecords.mockResolvedValue([recordRow()]);
+
+    const response = await app.request("/v1/exercises/exo_1/records");
+    const body = exerciseRecordsResponseSchema.parse(await response.json());
+
+    expect(response.status).toBe(200);
+    expect(body.data[0]).toMatchObject({ type: "BEST_1RM", value: "117.50", weightKg: "100.00" });
+    expect(findManyRecords.mock.calls[0]?.[0]).toMatchObject({
+      where: { userId: "usr_1", exerciseId: "exo_1" },
+    });
+  });
+
+  it("should keep a record whose workout was deleted", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue({ id: "exo_1" });
+    findManyRecords.mockResolvedValue([{ ...recordRow(), workoutId: null }]);
+
+    const body = exerciseRecordsResponseSchema.parse(
+      await (await app.request("/v1/exercises/exo_1/records")).json(),
+    );
+
+    // Le record reste vrai : il a été reconstruit depuis le reste de
+    // l'historique, la séance d'origine n'en est plus que la référence.
+    expect(body.data[0]?.workoutId).toBeNull();
+  });
+
+  it("should return 404 for an exercise belonging to someone else", async () => {
+    authenticate();
+    findFirstExercise.mockResolvedValue(null);
+
+    expect((await app.request("/v1/exercises/exo_9/records")).status).toBe(404);
+    expect(findManyRecords).not.toHaveBeenCalled();
   });
 });

@@ -144,8 +144,8 @@ Le champ `version` est celui du **format**, pas de l'application : il n'a d'usag
 | `POST` | `/v1/exercises` | Créer un exercice personnalisé | ✅ |
 | `PATCH` | `/v1/exercises/:id` | Modifier — exercices custom uniquement | ✅ |
 | `DELETE` | `/v1/exercises/:id` | Archiver — exercices custom uniquement | ✅ |
-| `GET` | `/v1/exercises/:id/history` | Séries réalisées sur cet exercice, antéchronologique | après les séances |
-| `GET` | `/v1/exercises/:id/records` | Records personnels sur cet exercice | après les séances |
+| `GET` | `/v1/exercises/:id/history` | Séries réalisées sur cet exercice, antéchronologique | ✅ |
+| `GET` | `/v1/exercises/:id/records` | Records personnels sur cet exercice | ✅ |
 
 **Exercices personnalisés.** Un exercice créé par un utilisateur porte son `ownerId` et n'est visible que de lui ; le catalogue commun a un `ownerId` nul et se voit de tous. Le champ `isCustom` de la réponse est **calculé** depuis ce seul propriétaire (D22). La clause de visibilité s'applique à toutes les lectures : deviner l'identifiant de l'exercice de quelqu'un d'autre donne un 404.
 
@@ -158,6 +158,13 @@ Trois particularités à connaître :
 **Modifier ou archiver, et les deux refus possibles.** Le premier est un 404 : l'exercice appartient à quelqu'un d'autre, et son existence ne doit pas fuiter (règle non négociable n°8). Le second est un **403** : l'exercice est du catalogue commun. C'est le seul endroit de l'API où un refus n'est pas un 404, et c'est délibéré — l'utilisateur vient peut-être d'afficher cette fiche, un « introuvable » contredirait le `GET` qui a réussi une seconde plus tôt, et il n'y a rien à protéger : le catalogue est public pour tous les comptes.
 
 **`DELETE` archive, il ne supprime pas.** Une séance passée peut référencer l'exercice, et l'historique ne change jamais rétroactivement (invariant 8, doc 03). L'exercice disparaît du catalogue et des recherches ; les séances qui le citent restent lisibles.
+
+**Historique et records d'un exercice.** Deux lectures qui portent sur des données de **séance**, sous une URL d'exercice.
+
+- `GET /v1/exercises/:id/history` renvoie **une entrée par passage en séance**, jamais une ligne par série : c'est ainsi qu'on lit sa progression, et une séance ne se coupe pas en deux pages. Pagination par curseur sur l'identifiant de la ligne `WorkoutExercise`, tri `startedAt` décroissant puis `id` croissant — comme la liste des séances, pour la même raison : un curseur sur un ordre instable saute ou répète. Les séries non validées sont conservées, avec leur `completed`.
+- `GET /v1/exercises/:id/records` renvoie les records **lus**, jamais recalculés (D23) : au plus un par type, donc six lignes au maximum, d'où l'absence de pagination. `workoutId` est nul quand la séance d'origine a été supprimée — le record, lui, reste vrai.
+- Les deux vérifient la **visibilité de l'exercice** avant de lire quoi que ce soit, et répondent 404 pour l'exercice d'autrui. Sans ce contrôle, les tables de séance étant déjà filtrées par utilisateur, la réponse serait une liste vide — ce qui confondrait « pas à vous » avec « jamais fait ».
+- Un exercice **archivé** répond normalement : son historique existe toujours, seul le catalogue l'a perdu.
 
 Paramètres de `GET /v1/exercises` :
 

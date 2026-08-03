@@ -264,6 +264,10 @@ L'archivage demande une confirmation en place, en deux temps, plutôt qu'une `co
 ### Fiche exercice
 GIF d'animation, muscles primaires et secondaires, instructions numérotées dans la langue de l'utilisateur, courbe de progression, records, dernières séries réalisées. Mention d'attribution du média obligatoire (voir doc 08).
 
+**Fait au 2026-08-03**, sauf la courbe de progression, qui reste en V2. Les records et l'historique viennent de deux requêtes **à part** de la fiche (`/v1/exercises/:id/{records,history}`) : ils dépendent des séances et non du catalogue, leurs caches n'ont donc ni la même durée de vie ni les mêmes invalidations, et ils montent après la fiche plutôt que de la retarder. L'historique s'empile page par page — la pagination est par curseur, il n'existe pas de « page 4 ».
+
+La valeur d'un record passe par `<RecordValue>`, partagé avec le tableau de bord : seules les charges se convertissent en lb, pas des répétitions ni des secondes, et deux copies de ce `switch` finiraient par diverger sans que rien ne le signale sur un profil métrique.
+
 ### Statistiques
 Version approfondie du dashboard : sélecteur de période, progression par exercice, comparaison de périodes, records par exercice. V2 pour l'essentiel.
 

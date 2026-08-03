@@ -13,11 +13,10 @@ import {
   CardTitle,
 } from "@better-lift/ui/components/card";
 import { Skeleton } from "@better-lift/ui/components/skeleton";
-import { type StatsRecord } from "@better-lift/validators";
 
-import { Weight } from "@/features/account/units";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
-import { formatSetDuration, RECORD_TYPE_LABELS } from "@/features/workouts/labels";
+import { RECORD_TYPE_LABELS } from "@/features/workouts/labels";
+import { RecordValue } from "@/features/workouts/record-value";
 import { apiClient } from "@/lib/api";
 
 function RecentRecordsSkeleton() {
@@ -33,29 +32,6 @@ function RecentRecordsSkeleton() {
       </CardContent>
     </Card>
   );
-}
-
-/**
- * Valeur d'un record, dans l'unité de son type.
- *
- * Seules les charges passent par `<Weight />`, qui lit la préférence kg/lb :
- * des répétitions, des secondes et des mètres ne se convertissent pas. C'est
- * aussi pourquoi la conversion n'est jamais faite ici à la main (doc 05).
- */
-function RecordValue({ record }: { record: StatsRecord }) {
-  switch (record.type) {
-    case "BEST_1RM":
-    case "BEST_WEIGHT":
-      return <Weight value={record.value} />;
-    case "BEST_SET_VOLUME":
-      return <Weight value={record.value} />;
-    case "BEST_REPS":
-      return <>{Math.round(Number(record.value))} reps</>;
-    case "BEST_DURATION":
-      return <>{formatSetDuration(Math.round(Number(record.value)))}</>;
-    case "BEST_DISTANCE":
-      return <>{Math.round(Number(record.value))} m</>;
-  }
 }
 
 /**
@@ -128,7 +104,7 @@ export function RecentRecords() {
                 </div>
 
                 <span className="shrink-0 text-sm font-medium tabular-nums">
-                  <RecordValue record={record} />
+                  <RecordValue type={record.type} value={record.value} />
                 </span>
               </li>
             ))}

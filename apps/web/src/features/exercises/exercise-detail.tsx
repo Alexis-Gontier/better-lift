@@ -12,7 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@better-lift/ui/compon
 import { Skeleton } from "@better-lift/ui/components/skeleton";
 import { Spinner } from "@better-lift/ui/components/spinner";
 
+import { ExerciseHistory } from "./exercise-history";
 import { ExerciseMedia, MediaAttribution } from "./exercise-media";
+import { ExerciseRecords } from "./exercise-records";
 import { BODY_PART_LABELS, equipmentLabel } from "./labels";
 import { resolveMediaUrl } from "./media";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -98,9 +100,12 @@ function Fact({ label, value }: { label: string; value: string }) {
 /**
  * Fiche d'un exercice (doc 05, § Fiche exercice).
  *
- * Historique personnel, records et courbe de progression viendront avec la V2 :
- * l'API ne sert encore aucune série par exercice. Ce qui est ici est ce qu'elle
- * sait déjà donner.
+ * Records et historique personnel sont deux requêtes **à part**, servies par
+ * `/v1/exercises/:id/{records,history}` : elles dépendent des séances, pas du
+ * catalogue, et leurs caches n'ont donc ni la même durée de vie ni les mêmes
+ * invalidations. Elles montent après la fiche plutôt que de la retarder.
+ *
+ * La courbe de progression reste en V2.
  */
 export function ExerciseDetail({ id }: { id: string }) {
   const locale = useProfileLocale();
@@ -180,6 +185,10 @@ export function ExerciseDetail({ id }: { id: string }) {
           </dl>
         </CardContent>
       </Card>
+
+      <ExerciseRecords id={data.id} />
+
+      <ExerciseHistory id={data.id} />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">

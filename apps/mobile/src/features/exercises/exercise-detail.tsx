@@ -12,6 +12,7 @@ import {
 
 import { ApiClientError, useArchiveExercise, useExercise } from "@better-lift/api-client";
 
+import { ExerciseLog } from "./exercise-log";
 import { BODY_PART_LABELS, equipmentLabel } from "./labels";
 import { resolveMediaUrl } from "./media";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
@@ -84,8 +85,9 @@ function ArchiveAction({ id }: { id: string }) {
 /**
  * Fiche d'un exercice (doc 06, § Exercices).
  *
- * Records et historique personnel viendront avec les séances : ils n'ont rien à
- * afficher tant que `POST /v1/workouts` n'existe pas.
+ * Records et historique personnel viennent de deux requêtes à part, servies par
+ * `/v1/exercises/:id/{records,history}` : elles dépendent des séances et non du
+ * catalogue, et arrivent donc après la fiche plutôt que de la retarder.
  */
 export function ExerciseDetail({ id }: { id: string }) {
   const locale = useProfileLocale();
@@ -159,6 +161,8 @@ export function ExerciseDetail({ id }: { id: string }) {
           <Text style={styles.emptyHint}>Aucune instruction dans cette langue.</Text>
         )}
       </View>
+
+      <ExerciseLog id={data.id} />
 
       {data.isCustom && <ArchiveAction id={data.id} />}
     </ScrollView>
