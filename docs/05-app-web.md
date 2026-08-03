@@ -268,7 +268,7 @@ GIF d'animation, muscles primaires et secondaires, instructions numérotées dan
 Version approfondie du dashboard : sélecteur de période, progression par exercice, comparaison de périodes, records par exercice. V2 pour l'essentiel.
 
 ### Réglages
-Profil (nom, pseudo, avatar, bio) · Préférences (unités, langue, fuseau, repos par défaut, visibilité, thème) · Compte (mot de passe, sessions actives, export, suppression).
+Profil (nom, pseudo, avatar, bio) · Préférences (unités, langue, fuseau, repos par défaut, visibilité, thème) · Compte (adresse e-mail, mot de passe, export JSON, suppression du compte).
 
 **Enregistrement explicite, jamais à la volée.** Le bouton reste désactivé tant que rien n'a bougé, ce qui répond à « est-ce que j'ai enregistré ? » sans avoir à poser la question. Trois des préférences transforment l'interface entière : les appliquer sans qu'on l'ait demandé serait déroutant. Le thème fait exception — il vit hors du profil, dans le navigateur, et s'applique immédiatement.
 
@@ -278,7 +278,13 @@ Profil (nom, pseudo, avatar, bio) · Préférences (unités, langue, fuseau, rep
 
 **Le fuseau ne se choisit pas dans une liste.** Les ~400 fuseaux IANA demanderaient une recherche, donc deux primitives de plus pour un champ qu'on règle une fois. L'écran affiche le fuseau courant et propose celui de l'appareil quand ils diffèrent — le cas réel est « mon fuseau est faux parce que je me suis inscrit en voyage ».
 
-**Ce qui manque encore au Compte** : la modification de l'adresse e-mail (elle demande de vérifier la nouvelle avant de basculer, sans quoi une faute de frappe enferme dehors), la liste des sessions actives, l'export JSON et la suppression du compte. Ces deux derniers sont au périmètre V1 : ce sont eux qui rendent l'app quittable.
+**L'export vient avant la suppression** dans l'onglet Compte, et ce n'est pas un détail de mise en page : on ne récupère pas ses données après coup. Le fichier est construit à la demande et téléchargé depuis la page (D27) ; l'écran nomme ce qu'il contient **et** ce qu'il ne contient pas, sans quoi l'absence du catalogue commun passerait pour un export incomplet.
+
+**La suppression se confirme par ce que le compte possède.** Avec un mot de passe, c'est lui. Sans — compte GitHub seul (D26) —, l'API se contente de la fraîcheur de la session, et l'écran demande alors d'écrire `SUPPRIMER` : ce n'est pas de la sécurité, c'est du temps de réflexion, ce qui manque précisément à un clic de trop. L'écran sait lequel des deux demander en lisant `listAccounts` de Better Auth, seule source qui connaisse les moyens de connexion — `GET /v1/me` décrit le profil, pas l'authentification. Si cette lecture échoue, l'écran demande le mot de passe : le trop-demander est rattrapable, le pas-assez conduit à un envoi refusé sans que rien ne l'ait annoncé.
+
+Une fois le compte supprimé, la sortie est un **rechargement complet** vers `/login?deleted=1`, jamais une navigation cliente : la session n'existe plus, et le shell resté monté repartirait aussitôt en 401. Le bandeau qui accueille là-bas n'est pas décoratif — sans lui, la suppression se solde par une redirection muette, indistinguable d'une session expirée.
+
+**Ce qui manque encore au Compte** : la modification de l'adresse e-mail (elle demande de vérifier la nouvelle avant de basculer, sans quoi une faute de frappe enferme dehors) et la liste des sessions actives.
 
 ## Détails d'implémentation
 
