@@ -30,4 +30,14 @@ export const {
    * existe, et c'est l'ancien mot de passe qui fait preuve.
    */
   changePassword,
+  /**
+   * Les moyens de connexion du compte, un par fournisseur — dont `credential`,
+   * qui n'existe que si un mot de passe a été choisi.
+   *
+   * C'est la seule source qui sache répondre à « ce compte a-t-il un mot de
+   * passe ? », question que `GET /v1/me` n'expose pas : elle relève de
+   * l'authentification, pas du profil. La suppression de compte s'en sert pour
+   * savoir s'il y a quelque chose à confirmer (doc 04, § Compte).
+   */
+  listAccounts,
 } = authClient;
