@@ -163,8 +163,17 @@ export const routineSummarySchema = z.object({
   folderId: z.string().nullable(),
   notes: z.string().nullable(),
   position: z.number().int(),
-  /** De quoi afficher une carte de routine sans charger sa structure. */
+  /**
+   * De quoi afficher une carte de routine sans charger sa structure.
+   *
+   * `setCount` est le total des séries **cibles**, toutes lignes confondues :
+   * c'est ce qui distingue une séance de vingt minutes d'une d'une heure et
+   * demie, là où le nombre d'exercices seul ne dit rien du volume. Trois
+   * exercices à cinq séries et trois à deux séries donnent la même carte sans
+   * lui.
+   */
   exerciseCount: z.number().int(),
+  setCount: z.number().int(),
   lastPerformedAt: z.iso.datetime().nullable(),
   performedCount: z.number().int(),
   createdAt: z.iso.datetime(),

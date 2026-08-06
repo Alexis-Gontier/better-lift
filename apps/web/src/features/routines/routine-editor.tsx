@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type CollisionDetection,
   closestCenter,
   DndContext,
   type DragEndEvent,
@@ -17,13 +16,22 @@ import {
 } from "@dnd-kit/sortable";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useReducer, useState } from "react";
+import { toast } from "sonner";
 
 import { useCreateRoutine, useReplaceRoutine, useRoutineFolders } from "@better-lift/api-client";
+import {
+  ActionBar,
+  ActionBarGroup,
+  ActionBarItem,
+  ActionBarSelection,
+  ActionBarSeparator,
+} from "@better-lift/ui/components/action-bar";
 import { Alert, AlertDescription } from "@better-lift/ui/components/alert";
 import { Button } from "@better-lift/ui/components/button";
 import { Card, CardContent } from "@better-lift/ui/components/card";
 import { Field, FieldLabel } from "@better-lift/ui/components/field";
 import { Input } from "@better-lift/ui/components/input";
+import { Kbd } from "@better-lift/ui/components/kbd";
 import {
   Select,
   SelectContent,
@@ -45,7 +53,7 @@ import {
 } from "./draft";
 import { clearDraft, loadDraft, saveDraft } from "./draft-storage";
 import { EditorExercise } from "./editor-exercise";
-import { exerciseDndId, parseDndId, SortableRow } from "./sortable";
+import { SortableRow } from "./sortable";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
 import { ExercisePicker } from "@/features/exercises/exercise-picker";
 import { apiClient } from "@/lib/api";
@@ -75,40 +83,6 @@ import { apiClient } from "@/lib/api";
  * placeholder. Le préfixe `__` écarte la collision avec un identifiant réel.
  */
 const NO_FOLDER = "__none__";
-
-/**
- * Ne considère que les cibles **de même nature** que l'élément saisi.
- *
- * Sans ce filtre, `closestCenter` propose au glissement d'un exercice les
- * lignes de séries qui se trouvent juste en dessous : la cible la plus proche
- * du centre n'est presque jamais l'exercice suivant. Le déposé était alors
- * rejeté, et le déplacement ne se produisait tout simplement pas — sans erreur,
- * ce qui l'a rendu invisible jusqu'à l'essai au clavier.
- *
- * Une série est en plus restreinte à son propre exercice : la déplacer
- * ailleurs mettrait ses valeurs sous un exercice d'un autre type.
- */
-const sameKindCollision: CollisionDetection = (args) => {
-  const active = parseDndId(String(args.active.id));
-
-  if (!active) {
-    return closestCenter(args);
-  }
-
-  const droppableContainers = args.droppableContainers.filter((container) => {
-    const target = parseDndId(String(container.id));
-
-    if (!target || target.kind !== active.kind) {
-      return false;
-    }
-
-    return active.kind === "set" && target.kind === "set"
-      ? target.exerciseKey === active.exerciseKey
-      : true;
-  });
-
-  return closestCenter({ ...args, droppableContainers });
-};
 
 /**
  * Messages lus par le lecteur d'écran pendant un déplacement au clavier.
@@ -217,10 +191,31 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
       clearDraft(routineId);
       setDirty(false);
       router.push(`/routines/${saved.id}`);
+
+      /*
+        L'enregistrement fait disparaître la barre de modifications, et c'est
+        tout ce qui change à l'écran — les valeurs, elles, restent celles qu'on
+        vient de taper. Sur une création, la navigation est le seul indice, et
+        elle ressemble à s'y méprendre à un rechargement.
+      */
+      toast.success(routine ? "Routine enregistrée." : `« ${saved.name} » créée.`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Enregistrement impossible.");
     }
   }, [draft, routine, replace, create, routineId, router]);
+
+  /**
+   * Abandon des modifications : retour à ce que le serveur connaît.
+   *
+   * Le brouillon local part avec elles — le garder ferait proposer, au prochain
+   * passage, la restauration de ce qu'on vient explicitement de jeter.
+   */
+  const discard = useCallback(() => {
+    dispatch({ type: "replaceDraft", draft: routine ? fromDetail(routine) : emptyDraft() });
+    clearDraft(routineId);
+    setDirty(false);
+    setError(null);
+  }, [routine, routineId]);
 
   /** `⌘S` / `Ctrl+S` enregistre, comme dans n'importe quel éditeur (doc 05). */
   useEffect(() => {
@@ -250,26 +245,10 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
       return;
     }
 
-    const from = parseDndId(String(active.id));
-    const to = parseDndId(String(over.id));
-
-    if (!from || !to || from.kind !== to.kind) {
-      return;
-    }
-
-    if (from.kind === "exercise" && to.kind === "exercise") {
-      run({ type: "moveExercise", from: from.key, to: to.key });
-      return;
-    }
-
-    // Une série ne se déplace qu'à l'intérieur de son exercice : ailleurs, le
-    // type de l'exercice ne correspondrait plus aux champs saisis.
-    if (from.kind === "set" && to.kind === "set" && from.exerciseKey === to.exerciseKey) {
-      run({ type: "moveSet", exerciseKey: from.exerciseKey, from: from.setKey, to: to.setKey });
-    }
+    run({ type: "moveExercise", from: String(active.id), to: String(over.id) });
   }
 
-  const exerciseIds = draft.exercises.map((exercise) => exerciseDndId(exercise.key));
+  const exerciseIds = draft.exercises.map((exercise) => exercise.key);
 
   return (
     <div className="flex flex-col gap-6">
@@ -363,21 +342,17 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-muted-foreground" aria-live="polite">
-            {draft.exercises.length} exercice{draft.exercises.length > 1 ? "s" : ""} ·{" "}
-            {countSets(draft)} série{countSets(draft) > 1 ? "s" : ""}
-          </p>
-          <Button
-            type="button"
-            onClick={() => void save()}
-            disabled={mutation.isPending}
-            aria-busy={mutation.isPending}
-          >
-            {mutation.isPending && <Spinner data-icon="inline-start" />}
-            Enregistrer
-          </Button>
-        </div>
+        {/*
+          Plus de bouton « Enregistrer » ici : il vit dans la barre de
+          modifications, qui n'apparaît que lorsqu'il y a quelque chose à
+          enregistrer. Un bouton permanent sur un écran intouché propose une
+          action sans effet, et laisse la question « est-ce que j'ai des
+          modifications en cours ? » sans réponse.
+        */}
+        <p className="text-sm text-muted-foreground" aria-live="polite">
+          {draft.exercises.length} exercice{draft.exercises.length > 1 ? "s" : ""} ·{" "}
+          {countSets(draft)} série{countSets(draft) > 1 ? "s" : ""}
+        </p>
       </header>
 
       {error && (
@@ -388,36 +363,115 @@ export function RoutineEditor({ routine }: { routine?: RoutineDetail }) {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={sameKindCollision}
+        collisionDetection={closestCenter}
         onDragEnd={onDragEnd}
         accessibility={{ announcements }}
       >
-        <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-          <div className="space-y-3">
-            <SortableContext items={exerciseIds} strategy={verticalListSortingStrategy}>
-              {draft.exercises.map((exercise, index) => (
-                <SortableRow
-                  key={exercise.key}
-                  id={exerciseDndId(exercise.key)}
-                  label={`l’exercice ${exercise.exercise.name}`}
-                >
-                  <EditorExercise exercise={exercise} index={index} dispatch={run} />
-                </SortableRow>
-              ))}
-            </SortableContext>
+        {/*
+          Une seule colonne : le panneau d'ajout est passé en dialogue à
+          sélection multiple (doc 05). C'est ce qui rend au tableau des séries
+          la largeur que la colonne de 20 rem lui prenait en permanence.
+        */}
+        <div className="space-y-3">
+          <SortableContext items={exerciseIds} strategy={verticalListSortingStrategy}>
+            {draft.exercises.map((exercise, index) => (
+              <SortableRow
+                key={exercise.key}
+                id={exercise.key}
+                label={`l’exercice ${exercise.exercise.name}`}
+              >
+                <EditorExercise exercise={exercise} index={index} dispatch={run} />
+              </SortableRow>
+            ))}
+          </SortableContext>
 
-            {draft.exercises.length === 0 && (
-              <Card size="sm">
-                <CardContent className="text-sm text-muted-foreground">
-                  Aucun exercice pour l’instant. Ajoutez-en depuis le panneau de droite.
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          {draft.exercises.length === 0 && (
+            <Card size="sm">
+              <CardContent className="text-sm text-muted-foreground">
+                Aucun exercice pour l’instant.
+              </CardContent>
+            </Card>
+          )}
 
-          <ExercisePicker onAdd={(exercise) => run({ type: "addExercise", exercise })} />
+          {/*
+            Le déclencheur est en bas de la liste et non en tête : on ajoute à
+            la suite de ce qu'on vient de construire, et c'est là que le regard
+            se trouve déjà.
+          */}
+          <ExercisePicker
+            className="w-full"
+            onAdd={(added) => {
+              for (const exercise of added) {
+                run({ type: "addExercise", exercise });
+              }
+            }}
+          />
         </div>
       </DndContext>
+
+      {/*
+        Barre de modifications (Dice UI). Elle n'existe que tant qu'il y a
+        quelque chose à enregistrer, et c'est tout son intérêt : elle répond à
+        « est-ce que j'ai des changements en cours ? » par sa seule présence,
+        question qu'un bouton permanent laisse ouverte.
+
+        Elle se porte sur `document.body` — le comportement par défaut — donc
+        elle flotte au-dessus de la page entière et suit le défilement. C'est
+        voulu : on peut modifier une série au bas d'une routine de dix
+        exercices, et l'enregistrement doit rester à portée sans remonter.
+
+        `onOpenChange` reste vide : `dirty` est la seule source de vérité, et
+        la barre n'a pas de fermeture propre. Masquer un avertissement de
+        modifications non enregistrées ne rendrait service à personne.
+      */}
+      <ActionBar open={dirty} side="bottom" sideOffset={24}>
+        <ActionBarSelection>
+          {mutation.isPending ? "Enregistrement…" : "Modifications non enregistrées"}
+        </ActionBarSelection>
+
+        <ActionBarSeparator />
+
+        <ActionBarGroup>
+          {/*
+            `onSelect` prévient l'événement dans les deux cas : sans ça,
+            `ActionBarItem` referme la barre de lui-même dès le clic. Ce serait
+            faux pendant l'enregistrement — la barre disparaîtrait avant la
+            réponse du serveur, y compris quand celle-ci est une erreur.
+          */}
+          <ActionBarItem
+            disabled={mutation.isPending}
+            aria-busy={mutation.isPending}
+            onSelect={(event) => {
+              event.preventDefault();
+              void save();
+            }}
+          >
+            {mutation.isPending && <Spinner data-icon="inline-start" />}
+            Enregistrer
+            {/*
+              Le raccourci existe depuis le début et rien ne le disait — un
+              `⌘S` qu'il faut deviner n'est pas un raccourci, c'est un secret.
+              Il s'affiche ici plutôt que dans une aide : à l'endroit et au
+              moment où il agit.
+
+              Masqué sous `sm` : un téléphone n'a pas de touche Commande, et la
+              barre y est déjà à l'étroit.
+            */}
+            <Kbd className="ml-1 hidden sm:inline-flex">⌘S</Kbd>
+          </ActionBarItem>
+
+          <ActionBarItem
+            variant="ghost"
+            disabled={mutation.isPending}
+            onSelect={(event) => {
+              event.preventDefault();
+              discard();
+            }}
+          >
+            Annuler
+          </ActionBarItem>
+        </ActionBarGroup>
+      </ActionBar>
     </div>
   );
 }

@@ -24,17 +24,18 @@ app/
 │   ├── signup/
 │   ├── forgot-password/
 │   └── reset-password/
-└── (app)/                          # layout authentifié : sidebar + topbar
+└── (app)/                          # layout authentifié : sidebar, sans barre haute
     ├── loading.tsx                 # squelette rendu DANS la coquille
     ├── error.tsx
     ├── not-found.tsx               # identifiant mort, navigation conservée
     ├── dashboard/
     ├── routines/
-    │   ├── page.tsx                # liste + dossiers
+    │   ├── layout.tsx              # deux volets : navigation | contenu
+    │   ├── page.tsx                # volet droit vide — la liste est à gauche
     │   ├── new/
     │   └── [id]/
-    │       ├── page.tsx            # aperçu
-    │       └── edit/
+    │       ├── page.tsx            # l'éditeur, directement
+    │       └── edit/               # 308 vers ../ — l'aperçu n'existe plus
     ├── workouts/
     │   ├── page.tsx                # historique (liste + calendrier)
     │   └── [id]/
@@ -55,7 +56,13 @@ app/
 
 ## La coquille `(app)`
 
-`(app)/layout.tsx` monte `SidebarProvider` → `AppSidebar` + `SidebarInset` (barre haute, puis contenu en `max-w-6xl`). Les composants vivent dans `features/navigation/`, la liste des destinations dans `nav-items.ts` et la règle d'état actif — testée — dans `active.ts`.
+`(app)/layout.tsx` monte `SidebarProvider` → `AppSidebar` + `SidebarInset` (`AppContent` directement, sans barre haute séparée — voir plus bas). Les composants vivent dans `features/navigation/`, la liste des destinations dans `nav-items.ts` et la règle d'état actif — testée — dans `active.ts`.
+
+**`AppContent` porte la mesure de lecture — `max-w-7xl` centrée — sur tous les écrans sauf `/routines`.** C'est la seule exception de mise en page de la zone authentifiée : `/routines` a une colonne de navigation à gauche, et une colonne de navigation doit toucher le bord. Décollée de 192 px sur un écran de 1920, elle ne se lit plus comme la continuation de la barre latérale de l'app mais comme un panneau qui flotte — or c'est exactement ce que produit le centrage du conteneur dès que la fenêtre dépasse la mesure.
+
+Deux solutions ont été écartées. Un **groupe de routes `(contained)`** portant le conteneur aurait été la forme la plus idiomatique, mais il déplace cinq segments pour un layout de trois lignes. Une **marge négative** dans le layout de `/routines` annule le `px-8`, jamais le `mx-auto` : un enfant ne peut pas déborder la largeur maximale de son parent, et le décollement réapparaîtrait au-delà de 1536 px, c'est-à-dire précisément sur les écrans où il se voit.
+
+La largeur est par ailleurs passée de `6xl` à `7xl` (1152 → 1280 px) avec le passage de `/routines` en deux volets. 1280 px reste une mesure de lecture, pas un plein écran.
 
 **Le layout est `async` et lit le cookie `sidebar_state` côté serveur.** La primitive persiste l'état replié dans ce cookie ; sans lecture serveur, le premier rendu montre toujours la colonne dépliée, puis l'hydratation la replie — 16 rem qui sautent à chaque chargement, précisément pour qui a choisi de la replier.
 
@@ -64,6 +71,10 @@ app/
 **L'état actif reste celui de la primitive, et il est ténu.** `bg-sidebar-accent` s'applique à l'entrée active **et** au survol ; seule la graisse du libellé les sépare, si bien que « où je suis » et « ce que je pointe » se ressemblent. Le renforcer demanderait une couleur d'accent, que la palette n'a pas (D25). `aria-current="page"` porte l'information de façon non ambiguë là où elle compte le plus, et le sujet se rouvrira avec la reteinte.
 
 `collapsible="icon"` : replier réduit aux pictogrammes plutôt que de faire disparaître la navigation, et chaque entrée porte un `tooltip` qui redonne son libellé dans cet état. Sous `md`, la primitive bascule seule en tiroir `Sheet`. Les libellés des commandes de repli (`SidebarTrigger`, `SidebarRail`) sont réécrits en français depuis l'app : le registre les livre en anglais et en dur.
+
+**Il n'y a pas de barre haute.** `AppTopbar` a existé, puis a été retirée : elle ne portait que le bouton de repli et le nom de la section courante, et chaque écran affiche déjà son propre titre. Le bouton de repli vit désormais dans l'en-tête de la sidebar elle-même (`AppSidebar`), sous la marque plutôt qu'à côté — la colonne repliée à l'icône ne fait que 3 rem de large, tout juste la place d'un bouton `icon-sm` à la fois.
+
+Ce déplacement crée un problème propre au mobile, et une commande à part le résout. Sous `md`, la sidebar n'est plus repliée aux pictogrammes : elle devient un tiroir `Sheet` entièrement hors écran, fermé par défaut. Le bouton de repli étant maintenant **dans** la sidebar, il est lui-même caché tant que le tiroir est fermé — l'état où on a justement besoin de l'ouvrir. `MobileSidebarTrigger` (`features/navigation/`) est un bouton flottant (`fixed`, pas `sticky` : il n'y a plus de barre haute pour l'ancrer dans le flux), posé en dehors de la sidebar et visible uniquement sous `md` (`md:hidden`, donc absent de l'ordre de tabulation sur desktop, pas seulement masqué). Sur desktop il ne sert à rien, le bouton de l'en-tête suffit.
 
 Le `proxy.ts` Next protège `(app)/*` : session absente → redirection vers `/login?next=<chemin>`. En Next 16 le fichier s'appelle `proxy.ts`, plus `middleware.ts`, et l'export nommé est `proxy` (voir [doc 10](10-versions.md)).
 
@@ -161,7 +172,7 @@ C'est l'écran d'accueil de la zone connectée. Il doit répondre en un coup d'�
 │ Séances      │ Volume total │ Temps        │ Records         │
 │ 4  ▲ +1      │ 22,4 t  ▲ 8% │ 4 h 12  ▬    │ 2  ▲            │
 ├──────────────┴──────────────┴──────────────┴─────────────────┤
-│  Volume par semaine (12 semaines)          [barres]          │
+│  Volume par semaine (12 semaines)     [aire, dégradé]         │
 ├────────────────────────────────┬─────────────────────────────┤
 │  Répartition musculaire (30 j) │  Séances récentes           │
 │  [barres horizontales]         │  · Push A — hier — 1 h 12   │
@@ -177,15 +188,15 @@ Deux garde-fous sur la variation : une période précédente **vide** affiche un
 
 La flèche est achromatique, comme le reste. Une baisse de volume n'est de toute façon pas une erreur à signaler en rouge : une semaine de décharge en produit une, et elle est voulue.
 
-**Volume par semaine.** Barres, 12 dernières semaines. C'est le graphique le plus utile pour repérer une déload involontaire ou une dérive.
+**Volume par semaine.** Aire (Recharts `AreaChart`, dégradé vers la transparence), 12 dernières semaines. C'est le graphique le plus utile pour repérer une déload involontaire ou une dérive — la surface sous la courbe rend la tendance plus lisible qu'une suite de barres, sans ajouter d'information que le tracé seul ne porterait pas.
 
 **Répartition musculaire.** Nombre de séries par partie du corps sur 30 jours, en barres horizontales triées. Un radar est plus joli mais nettement moins lisible pour comparer des valeurs — on privilégie la lecture.
 
 Ces barres-là sont en **CSS, pas en Recharts** : un `BarChart` horizontal apporterait un axe, une grille et une infobulle pour rendre ce qu'une largeur en pourcentage dit déjà, et il faudrait de toute façon réécrire les étiquettes à côté. L'échelle est le **maximum** et non le total — rapporter au total écrase toutes les barres dès qu'il y a plus de trois parties du corps.
 
-**Régularité.** Heatmap type contributions GitHub sur 12 semaines. Signal comportemental fort, coût d'implémentation faible. La grille elle-même est `aria-hidden` — 84 cases annoncées une à une seraient inexploitables — et un résumé en une phrase la double juste en dessous.
+**Régularité.** Heatmap type contributions GitHub sur 12 semaines, via le `contribution-graph` de Kibo UI (`packages/ui`) plutôt qu'une grille CSS maison. Signal comportemental fort, coût d'implémentation faible. Les couleurs du registre (`fill-muted`, puis quatre paliers d'opacité sur `muted-foreground`) sont déjà achromatiques par défaut — rien à écarter, contrairement au logo de la sidebar. `weekStart={1}` aligne le regroupement du composant sur la convention de l'API, qui sert toujours des semaines commençant un lundi. La grille elle-même est `aria-hidden` — 84 cases (et leurs infobulles à la souris) annoncées une à une seraient inexploitables — et un résumé en une phrase la double juste en dessous. Les libellés de mois du registre sont régénérés depuis la locale du profil plutôt que recopiés à la main, pour rester justes en français comme en anglais.
 
-**Animation des graphiques : `isAnimationActive={false}`, et ce n'est pas un choix esthétique.** Recharts anime en JavaScript, en interpolant l'attribut `height` : le bloc `prefers-reduced-motion` de `globals.css` ne l'atteint pas, puisqu'il ne pilote que des animations CSS. Sans cette prop, la préférence serait ignorée précisément sur l'écran qui porte le plus de mouvement.
+**Animation des graphiques : `isAnimationActive={false}`, et ce n'est pas un choix esthétique.** Recharts anime en JavaScript — l'attribut `height` d'une barre, le chemin `d` d'une aire — et le bloc `prefers-reduced-motion` de `globals.css` ne l'atteint pas, puisqu'il ne pilote que des animations CSS. Sans cette prop, la préférence serait ignorée précisément sur l'écran qui porte le plus de mouvement.
 
 **État vide.** Un nouvel utilisateur voit un dashboard sans données : prévoir explicitement une variante « premiers pas » (créer une routine → démarrer une séance) plutôt que des cartes à zéro. C'est souvent oublié et c'est le tout premier écran que voit un inscrit.
 
@@ -197,45 +208,128 @@ L'écran le plus important du web, et celui qui justifie l'existence de l'app we
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  ← Routines    [Push A________]   Dossier: [PPL ▾]  [Enreg.] │
-├────────────────────────────────────────┬──────────────────────┤
-│  ⠿ Développé couché barre       [⋯]    │  Ajouter un exercice │
-│    Repos 3:00 · Notes                  │  ┌────────────────┐  │
-│    ┌──────┬────────┬──────┬─────┐      │  │ 🔍 recherche   │  │
-│    │ Éch. │  40 kg │ 10   │ [×] │      │  └────────────────┘  │
-│    │  1   │ 100 kg │  5   │ [×] │      │  [Pecs][Dos][Jamb.]  │
-│    │  2   │ 100 kg │  5   │ [×] │      │  ─────────────────   │
-│    └──────┴────────┴──────┴─────┘      │  ▸ Développé couché  │
-│    + Ajouter une série                 │  ▸ Développé incliné │
-│                                        │  ▸ Écarté poulie     │
-│  ⠿ Développé militaire          [⋯]    │  ▸ …                 │
-│    …                                   │                      │
-│                                        │                      │
-│  + Ajouter un exercice                 │                      │
-└────────────────────────────────────────┴──────────────────────┘
+│  ← Aperçu      [Push A________]   Dossier: [PPL ▾]  [Enreg.] │
+├───────────────────────────────────────────────────────────────┤
+│  ⠿ 1. Développé couché barre                       [Retirer]  │
+│     Repos 3:00 · Notes                                        │
+│     ┌──────────┬──────────┬────────┬────────┬───┐             │
+│     │ Éch.   ▾ │  40      │  10    │  RPE   │ × │             │
+│     │ Normale▾ │ 100      │   5    │  8     │ × │             │
+│     └──────────┴──────────┴────────┴────────┴───┘             │
+│     + Ajouter une série   · Dupliquer la dernière             │
+│                                                               │
+│  ⠿ 2. Développé militaire                          [Retirer]  │
+│     …                                                         │
+│                                                               │
+│  [+ Ajouter un exercice]  ← ouvre le dialogue ci-dessous      │
+└───────────────────────────────────────────────────────────────┘
+
+        ┌──── Ajouter un exercice ──────────────────── × ┐
+        │ Cochez-en autant que nécessaire.               │
+        │ ┌────────────────────────────────────────────┐ │
+        │ │ 🔍 Rechercher…                             │ │
+        │ └────────────────────────────────────────────┘ │
+        │ [Pectoraux][Dos][Épaules][Bras][Cuisses][…]    │
+        │ ─────────────────────────────────────────────  │
+        │ ☑ Développé couché      Pectoraux · Barre      │
+        │ ☐ Développé incliné     Pectoraux · Haltères   │
+        │ ☑ Écarté poulie         Pectoraux · Poulie     │
+        │ ☐ …                                            │
+        │            ┌──────────────────────────┐        │
+        │            │ 2 exercices │ + Ajouter │× │      │← ActionBar
+        │            └──────────────────────────┘        │
+        └────────────────────────────────────────────────┘
 ```
 
 ### Comportements attendus
 
-- **Glisser-déposer** sur les exercices et sur les séries, via `dnd-kit`. Poignée dédiée (`⠿`) : rendre toute la ligne draggable rend la sélection de texte impossible.
-- **Ajout en un clic** depuis le panneau latéral, qui reste ouvert — on ajoute rarement un seul exercice.
+- **Glisser-déposer** sur les exercices et sur les séries, via `dnd-kit`. Poignée dédiée (`⠿`) : rendre toute la ligne draggable rend la sélection de texte impossible. Sur une **carte d'exercice**, la poignée est étirée sur toute sa hauteur (`SortableRow stretch`) — la carte fait plusieurs centaines de pixels, et viser un carré de 28 px à côté de son titre est un geste de précision pour une action qui n'en demande pas. Une ligne de série garde la poignée compacte : elle fait la hauteur d'un champ, l'étirement n'y changerait rien et doublerait visuellement la colonne de gauche.
+- **Chaque carte porte la vignette de l'exercice**, et son nom ouvre une **fiche en dialogue** (`ExerciseQuickView`). L'image n'est pas décorative : dans une routine de dix lignes, elle distingue un développé incliné d'un décliné plus vite que le nom, qui ne diffère que par un mot au milieu. Le dialogue répond sur place à « c'est bien celui prise serrée ? » — aller sur `/exercises/:id` obligerait à quitter l'éditeur, donc à traverser l'avertissement de fermeture pour lever un doute de trois secondes. Le lien vers la fiche complète reste en pied, pour l'historique et les records.
+
+  **La requête vit dans un composant enfant du `DialogContent`**, et c'est structurant : Radix démonte le contenu d'un dialogue fermé, donc `useExercise` n'existe qu'à l'ouverture. Placée dans le parent, elle partirait pour chaque carte d'une routine de dix exercices, au chargement de l'écran, pour des instructions que personne n'aura demandées. Le reste de la fiche vient du résumé déjà en main et s'affiche sans attendre le réseau.
+
+  L'attribution du média (D17) est portée par le dialogue et non par la vignette : c'est le seul endroit où le média est vraiment *montré*, et une ligne de copyright sous chaque miniature noierait l'écran sans informer personne.
+- **Ajout par lot depuis un dialogue à sélection multiple.** C'est un revirement, et il vaut d'être expliqué : la première version était un panneau latéral de 20 rem toujours ouvert, au motif qu'« on ajoute rarement un seul exercice » et qu'un panneau à rouvrir six fois transformerait la construction d'une routine en six allers-retours. Le raisonnement tenait, la conclusion moins. Ce que la colonne coûtait, c'était 20 rem prélevées en permanence sur l'écran qui en a le plus besoin — et une fois le volet de navigation de `/routines` ajouté, l'éditeur passait à trois colonnes et la grille des séries tombait sous le seuil de lisibilité en dessous de 1536 px. **La sélection multiple règle le problème d'origine sans en payer le prix** : on ouvre une fois, on coche six exercices, on valide. Un aller-retour, et un seul clic d'ajout au lieu de six.
 - **Duplication de série** : la plupart des séries d'un exercice sont identiques. Un bouton « dupliquer la dernière » économise l'essentiel des saisies.
 - **Notes et repos par exercice**, en clair sur la carte plutôt que derrière un menu `⋯` : deux champs qu'on remplit en construisant, pas des actions rares. Restent à faire, quand elles auront un usage : remplacer un exercice, et créer un superset avec le suivant — le modèle porte `supersetGroup` mais l'interface est repoussée en V2 (D8).
 - **Brouillon local.** L'état de l'éditeur vit dans un `useReducer` — pas de Zustand : un seul écran le consomme, et le réducteur se teste sans monter un composant. Rien n'est envoyé avant l'enregistrement, qui fait un unique `POST` ou `PUT /v1/routines/:id`.
 - **Protection contre la perte.** `beforeunload` si le brouillon est modifié, plus une sauvegarde automatique en `localStorage`, **proposée** au retour et jamais imposée : l'écran ne doit pas se remplir tout seul d'un état que l'utilisateur ne reconnaîtrait pas.
-- **Raccourcis clavier** : `⌘S` / `Ctrl+S` enregistre. `⌘K` n'existe pas — le panneau de recherche est toujours ouvert, il n'y a rien à invoquer ni à fermer.
+- **Raccourcis clavier** : `⌘S` / `Ctrl+S` enregistre. `⌘K` n'existe toujours pas, mais la raison a changé : le panneau n'est plus ouvert en permanence, il est devenu un dialogue avec son propre déclencheur en bas de liste. Un raccourci global viendra s'il se révèle nécessaire — il ne l'était pas quand le panneau était là, il reste à démontrer maintenant.
+- **La barre de modifications** vient de Dice UI (`ActionBar`). Elle n'existe que tant qu'il y a quelque chose à enregistrer, et c'est tout son intérêt : elle répond à « est-ce que j'ai des changements en cours ? » par sa seule présence, question qu'un bouton permanent laisse ouverte. Il n'y a donc **plus de bouton « Enregistrer » dans l'en-tête** — un bouton sur un écran intouché propose une action sans effet. Elle porte l'enregistrement et l'abandon, se porte sur `document.body` et suit donc le défilement : on modifie une série au bas d'une routine de dix exercices sans avoir à remonter. `⌘S` reste actif.
+
+  Piège : `ActionBarItem` referme la barre après un clic sauf si `onSelect` prévient l'événement. Sans ça, elle disparaîtrait avant la réponse du serveur — y compris quand celle-ci est une erreur.
+- **Le dialogue d'exercices a un pied fixe, pas une barre flottante.** Le compte et les deux actions sont toujours à la même place et ne masquent jamais une ligne. Deux colonnes de cartes plutôt qu'une liste : un catalogue de 1 324 entrées se parcourt du regard, et deux colonnes divisent par deux la hauteur à balayer. Les filtres sont repliés dans des menus qui affichent leur nombre d'actifs — étalés en pastilles, les onze parties du corps mangeaient deux lignes avant le premier résultat, et un filtre actif invisible fait conclure que le catalogue est cassé.
+- **« Récemment utilisés » vient du `localStorage`, pas de l'API.** Ce serait plus juste de le dériver de l'historique des séances, mais il faudrait un endpoint pour une commodité de saisie. Le cas réel est couvert : on construit ses routines depuis le même ordinateur, sur les mêmes vingt mouvements. Le stockage est volontairement approximatif — perdre la liste ne perd rien, elle se reconstruit à l'usage. On y stocke le résumé entier et non l'identifiant : le résoudre demanderait une requête avant de pouvoir afficher une section qui doit être là instantanément.
+- **Les cases sont associées par `htmlFor`, jamais par enveloppement.** `Checkbox` de Radix rend un `<button role="checkbox">` et non un `<input>` : un `<label>` qui l'entoure ne le bascule pas. Un `<button>` étant un élément étiquetable, l'association explicite fonctionne et le libellé redevient la cible cliquable de toute la carte.
 - **Accessibilité.** L'alternative clavier de `dnd-kit` est câblée et annoncée en français : la poignée est un `<button>` focalisable, Espace saisit, les flèches déplacent, Entrée dépose, Échap annule.
 
 **Un piège de `dnd-kit` qui ne se voit pas à la souris.** Un seul `DndContext` couvre les exercices et les séries — imbriquer deux contextes rend le routage des événements dépendant de l'ordre de montage. Les identifiants sont donc préfixés (`ex:` / `set:`), et la détection de collision **filtre les cibles de même nature** avant de déléguer à `closestCenter`. Sans ce filtre, la cible la plus proche du centre d'un exercice est une ligne de série, le déposé est rejeté, et le déplacement ne se produit tout simplement pas — sans erreur. C'est l'essai au clavier qui l'a révélé.
 
 ## Autres écrans
 
-### Routines (liste)
-Cartes de routine affichant le nom, le nombre d'exercices et la date de dernière exécution. Actions : modifier, dupliquer, supprimer — « démarrer » attend les séances.
+### Routines — deux volets
 
-Le **regroupement par dossier se fait côté client** : la liste n'est pas paginée et arrive entière, donc un appel par dossier serait du trafic pur. Les dossiers vides restent affichés — c'est le seul endroit d'où on peut les supprimer, et un dossier qu'on vient de créer doit se voir. Les routines sans dossier forment un groupe en fin de liste plutôt que d'être classées d'office quelque part.
+**Fait au 2026-08-04.** `/routines` n'est plus une page-liste suivie d'une page-éditeur : le segment porte un `layout.tsx` à deux volets — navigation à gauche, contenu de la route à droite.
 
-Le déplacement d'une routine passe par le sélecteur de dossier de l'éditeur. Le glisser-déposer entre dossiers viendra avec le repliement des dossiers, quand il y aura assez de routines pour que ça compte.
+```
+┌──────────────────────┬─────────────────────────────┬──────────────┐
+│ [+ Nouvelle routine] │  ← Aperçu                   │ AJOUTER UN   │
+│ [🔍 Filtrer…]        │  Nom [Push A_____________]  │ EXERCICE     │
+│                      │  Dossier [PPL ▾]  [Enreg.]  │ [🔍        ] │
+│ ⌄ PUSH PULL LEGS (3) │  ┌────────────────────────┐ │ [Pecs][Dos]  │
+│   ▸ Push A       ⋯   │  │ ⠿ 1. Développé couché  │ │ ────────     │
+│     5 exercices      │  │   Repos · Notes        │ │ ▸ …          │
+│   ▸ Pull A           │  │   ⠿ Éch. 37,5 · 10     │ │ ▸ …          │
+│   ▸ Legs A           │  │   ⠿  2   72,5 ·  5     │ │              │
+│ ⌄ RENFO & MOBILITÉ   │  └────────────────────────┘ │              │
+│ ⌄ SANS DOSSIER (1)   │                             │              │
+│ + Nouveau dossier    │                             │              │
+└──────────────────────┴─────────────────────────────┴──────────────┘
+  RoutineRail (17 rem)   volet droit = la route         20 rem
+  layout, jamais remonté
+```
+
+**La colonne touche le bord, et court sur toute la hauteur.** `AppContent` retire la mesure de lecture sur ce segment, donc le volet vient se coller à la barre latérale de l'application, dont il prolonge la logique — on descend de « Routines » dans la navigation générale vers *quelle* routine dans la navigation locale. Sa hauteur est **fixée** (`h-dvh`, toute la fenêtre — il n'y a pas de barre haute à déduire) et non bornée : avec un simple `max-h`, une colonne plus courte que l'écran s'arrête où son contenu s'arrête, et le filet vertical avec elle — il pend au milieu de la page au lieu de séparer deux volets. La liste défile à l'intérieur.
+
+Le volet droit porte alors sa propre mesure (`max-w-5xl`) : à 1280 px à côté d'une colonne de 17 rem, le bouton d'enregistrement se retrouverait à l'autre bout de l'écran. Il est en `flex flex-col` de bout en bout, ce qui donne une hauteur réelle à ce qu'il contient — sans quoi l'état « aucune routine choisie » se collerait en haut, faute de savoir sur quelle hauteur se centrer.
+
+**Une routine s'ouvre directement en modification.** Il y avait un aperçu en lecture seule et un bouton « Modifier » pour en sortir : deux écrans pour la même chose, l'aperçu montrant exercices, séries et charges cibles que l'éditeur montre à l'identique dans des champs. Personne ne consulte une routine pour le plaisir — on l'ouvre pour ajuster une charge, et le bouton était un péage entre l'intention et le geste. `RoutinePreview` est supprimé, `/routines/:id/edit` redirige en 308 vers `/routines/:id` (la route a circulé, `safeNextPath` la restitue après reconnexion), et l'entrée « Modifier » du menu de la colonne a disparu — le lien de la ligne y mène déjà.
+
+Ce que l'aperçu apportait — regarder sans risquer de changer — est conservé par l'éditeur : rien ne part avant l'enregistrement explicite, et la barre de modifications ne s'affiche qu'une fois quelque chose touché. Ouvrir puis repartir ne modifie rien.
+
+**Le volet gauche vit dans le layout, donc au-dessus des routes qu'il dessert.** Next ne le remonte pas d'une navigation à l'autre : l'état replié des dossiers, la position de défilement et le filtre survivent au passage d'une routine à la suivante, et seul le volet droit est rendu à nouveau. Le même écran construit en page unique aurait à choisir entre remonter la colonne à chaque clic et renoncer aux URL par routine.
+
+**Une routine se rejoint par son URL**, pas par un état de sélection : c'est ce qui garde le bouton Précédent, le partage de lien et l'ouverture dans un nouvel onglet. L'identifiant actif se lit dans `usePathname`, jamais dans un `useState`.
+
+**Le seuil est `xl` (1280 px), et il se calcule.** Il a d'abord été posé à `2xl` : l'éditeur avait alors une seconde colonne — le panneau d'ajout, 20 rem —, et à 1280 px il ne serait resté ~320 px aux cartes, où la grille `type · charge · reps · RPE` devient illisible. Le panneau étant passé en dialogue, l'éditeur n'a plus qu'une colonne et les 20 rem récupérées rendent 1280 px tenable. La dépendance est réelle : rétablir le panneau latéral obligerait à remonter le seuil.
+
+En dessous, on bascule en **maître-détail** : un seul volet visible à la fois, celui que l'URL désigne — la liste sur `/routines`, le contenu partout ailleurs. C'est le même arbre aux deux tailles, seule la visibilité change ; `BackToList` est le retour, et il disparaît dès que les deux volets cohabitent.
+
+Quand elle occupe l'écran entière, la colonne est bornée à `max-w-md` : ce sont des noms de routines, pas un tableau, et étirée à 1080 px la ligne « Push A » laisse un boulevard entre son nom et son menu.
+
+**Un piège de la variante `ghost`, invisible à la relecture.** Elle porte `aria-expanded:bg-muted` — sa convention pour un déclencheur de menu. L'en-tête de dossier est un `CollapsibleTrigger`, donc *déplié* la plupart du temps : sans neutralisation, chaque dossier ouvert prend le fond de la routine active et « où je suis » se perd dans trois bandeaux identiques.
+
+Le **regroupement par dossier se fait côté client** : la liste n'est pas paginée et arrive entière, donc un appel par dossier serait du trafic pur. Les dossiers vides restent affichés hors filtre — c'est le seul endroit d'où on peut les supprimer, et un dossier qu'on vient de créer doit se voir. Les routines sans dossier forment un groupe en fin de liste plutôt que d'être classées d'office quelque part. Pendant une recherche, en revanche, un groupe sans résultat est du bruit et disparaît.
+
+**Le filtre est local, pas dans l'URL**, contrairement au catalogue : ici l'adresse désigne déjà ce qu'on édite, et y ajouter un filtre ferait deux sujets dans une même URL.
+
+**Chaque routine est une carte, et la poignée en est le flanc gauche.** Elle n'est pas posée à côté de la carte mais fait partie du cadre, séparée par un filet et étirée sur toute sa hauteur — saisissable partout sur son bord, sans avoir l'air d'un bouton perdu dans la marge. La carte porte le nom, puis `N exercices · N séries`.
+
+**Pas de bouton « Démarrer » dans la colonne.** Démarrer une séance est le geste du mobile (doc 06) ; le web est l'atelier. Un bouton d'action primaire répété sur chaque ligne concurrencerait la seule chose qu'on vient y faire — choisir quoi modifier.
+
+**La poignée réordonne *et* range.** Un `SortableContext` par groupe et un seul `DndContext` pour la colonne — deux contextes imbriqués rendent le routage des événements dépendant de l'ordre de montage, piège déjà payé dans l'éditeur. Chaque groupe est en plus une **zone de dépose** (`useDroppable`) : sans elle, un dossier vide n'aurait aucune cible à survoler, or un dossier qu'on vient de créer est précisément vide et c'est le moment où on veut le remplir. La détection de collision est `closestCorners` et non `closestCenter` : le centre d'un dossier vide est loin de tout et ne gagne jamais contre la routine la plus proche.
+
+Un glissement fait donc deux choses qu'il faut distinguer. Dans le même dossier : un seul appel, l'ordre complet. Vers un autre dossier : un `PATCH` sur la routine, **puis** l'ordre complet — l'inverse rangerait les positions d'une routine encore rattachée à son ancien dossier, et le second appel les réécrirait. Deux requêtes parce que le contrat les sépare : `reorder` ne connaît que des positions, le dossier est une métadonnée (doc 04).
+
+Le sélecteur de dossier de l'éditeur reste : il sert quand on est déjà dans la routine, et il ne demande pas de viser.
+
+**Le serveur reçoit l'ordre complet, tous dossiers confondus.** `position` est globale en base, pas relative au dossier : n'envoyer que les identifiants d'un groupe leur donnerait les positions 0..n, en collision avec celles des autres, et l'ordre entre groupes deviendrait indéterminé. On aplatit donc les groupes dans leur ordre d'affichage et on réécrit tout — ce que `reorderSchema` attend de toute façon, la liste complète et jamais un déplacement relatif.
+
+**Les dossiers se créent, se renomment et se suppriment en dialogue** (`folder-dialogs.tsx`), contrairement au reste de l'app qui confirme en place. Le geste est rare et la colonne est étroite : un formulaire dépliant y pousse toute la liste vers le bas, et on perd de vue ce qu'on faisait pour saisir un nom. La suppression passe par `AlertDialog` — elle touche ce que le dossier contient, ce qui demande une phrase et non un bouton rouge de plus dans une ligne de 240 px. Un même formulaire sert la création et le renommage : les séparer aurait garanti qu'un jour l'un accepte un nom vide que l'autre refuse.
+
+Le volet est `sticky top-0 h-dvh` : sans barre haute, rien ne se cale plus au-dessus de lui — il touche directement le haut de la fenêtre et en prend toute la hauteur.
+
+`setCount` a été ajouté à `RoutineSummary` pour cette carte : le nombre d'exercices seul ne dit rien du volume — trois exercices à cinq séries et trois à deux séries donnent la même ligne. Le total se compte en deux temps côté service, `_count` ne sachant pas traverser deux niveaux de relation : un compteur par exercice, sommé à la lecture. La liste n'est pas paginée mais elle est bornée par l'effort de son auteur.
 
 ### Historique
 Deux vues commutables : liste antéchronologique paginée, et calendrier mensuel avec pastilles. Filtres par routine et par période. L'état vit dans l'URL, comme au catalogue.
@@ -261,7 +355,7 @@ La suppression avertit de sa vraie conséquence — les records de la séance so
 
 ### Modifier une séance passée
 
-**Fait au 2026-08-03** (D10). `/workouts/:id/edit` reprend les partis pris de l'éditeur de routines : brouillon local, valeurs en texte jusqu'à l'envoi, un unique `PUT` qui remplace la structure entière. Le même panneau d'ajout d'exercice sert les deux écrans — il vit dans `features/exercises`, choisir un exercice étant la même question des deux côtés.
+**Fait au 2026-08-03** (D10). `/workouts/:id/edit` reprend les partis pris de l'éditeur de routines : brouillon local, valeurs en texte jusqu'à l'envoi, un unique `PUT` qui remplace la structure entière. Le même dialogue d'ajout d'exercice sert les deux écrans — il vit dans `features/exercises`, choisir un exercice étant la même question des deux côtés.
 
 Quatre écarts, tous délibérés :
 
@@ -329,8 +423,26 @@ Une fois le compte supprimé, la sortie est un **rechargement complet** vers `/l
 
 **Thème.** Clair et sombre, `next-themes` en `attribute="class"` (la classe `.dark` sur `<html>`, ce qu'attend `@custom-variant dark` côté CSS). Le premier chargement suit `prefers-color-scheme` — `defaultTheme="system"`. Le « sombre par défaut » que visait le produit décrit l'identité visuelle, pas un forçage : imposer le sombre à quelqu'un dont le système est clair, ce serait précisément ne pas respecter la préférence. `<html>` porte `suppressHydrationWarning`, requis parce que le script de next-themes pose la classe avant l'hydratation pour éviter le flash — c'est le seul endroit où l'avertissement est légitime.
 
-**Le sélecteur de thème vit dans le menu du compte**, en pied de sidebar (trois choix : système, clair, sombre). Il était initialement prévu dans Réglages › Préférences ; on le règle en regardant l'écran qu'il transforme, pas depuis un formulaire au bout de deux clics. Il est **aussi** proposé dans Réglages › Préférences avec les unités et la langue, les deux commandes écrivant la même valeur — c'est un doublon assumé, pas un oubli. Les écrans d'authentification gardent leur propre bascule (`ThemeToggle`), seul endroit où elle est atteignable avant d'avoir un compte.
+**Le sélecteur de thème vit dans le menu du compte**, en pied de sidebar (trois choix : système, clair, sombre). Depuis le 2026-08-04, c'est un **sélecteur segmenté** repris de Kibo UI (`packages/ui/src/components/theme-switcher.tsx`) et non plus trois `DropdownMenuRadioItem` : une ligne au lieu de trois pour un réglage qu'on change une fois par an, et le thème courant se lit à la position de la pastille sans rien parcourir.
+
+Trois écarts au composant du registre, tous marqués `ÉCART ASSUMÉ` dans le fichier :
+
+- **Transition CSS au lieu de `motion`.** Le registre anime la pastille avec `motion/react`. C'est ~34 ko sur toutes les pages pour un trajet entre trois positions fixes qu'un `translate-x` couvre — et surtout une animation JavaScript **échappe au bloc `prefers-reduced-motion` de `globals.css`**, qui ne pilote que du CSS. Exactement le piège déjà payé avec Recharts.
+- **`useState` au lieu de `useControllableState`.** Une dépendance de moins pour un composant toujours piloté par `next-themes` ici.
+- **Sémantique de groupe radio et focus glissant aux flèches.** Le registre rend trois `<button>` sans relation : un lecteur d'écran ne peut pas dire lequel est actif. Ce n'est pas qu'un point de conformité — le composant vit dans un `DropdownMenu` Radix, **qui ferme le menu sur `Tab`**. Sans navigation aux flèches, les deux dernières options y seraient inatteignables au clavier. D'où `role="radiogroup"`, `aria-checked`, un seul bouton dans l'ordre de tabulation, et un `stopPropagation` sur les flèches pour que le menu ne déplace pas *aussi* son propre focus.
+
+Il n'est pas rendu comme un `DropdownMenuItem` : un item se sélectionne et referme le menu, alors qu'on veut voir l'écran changer derrière. Il était initialement prévu dans Réglages › Préférences ; on le règle en regardant l'écran qu'il transforme, pas depuis un formulaire au bout de deux clics. Il est **aussi** proposé dans Réglages › Préférences avec les unités et la langue, les deux commandes écrivant la même valeur — c'est un doublon assumé, pas un oubli. Les écrans d'authentification gardent leur propre bascule (`ThemeToggle`), seul endroit où elle est atteignable avant d'avoir un compte.
 
 **Graphiques.** Recharts. Toujours accompagnés d'une table de données accessible en lecteur d'écran, ou d'un `aria-label` décrivant la tendance.
+
+**Notifications éphémères.** `sonner`, monté une fois dans `providers/toast-provider.tsx`. Un toast annonce qu'une action **a eu lieu quand l'écran ne le montre pas de lui-même** : dupliquer une routine, créer ou renommer un dossier, archiver un exercice, enregistrer une séance dont les records ont été recalculés côté serveur. Ces gestes étaient muets jusqu'au 2026-08-04 — le seul signal était une liste qui changeait, et il fallait déjà savoir où regarder.
+
+Il ne remplace **ni** l'erreur de formulaire, qui reste sous son champ, **ni** l'état d'une requête en cours, qui reste sur le bouton (`Spinner` + `disabled` + `aria-busy`) : un toast est un compte rendu, pas un indicateur de progression.
+
+Deux règles pour décider s'il en faut un. **Pas de toast quand le résultat est là où on vient d'agir** : réordonner une routine ne dit rien, on voit la ligne bouger sous le curseur. **Un toast quand le résultat est ailleurs, ou invisible** : ranger une routine dans un autre dossier peut la sortir de la vue, et le recalcul des records d'une séance corrigée ne se voit nulle part.
+
+`richColors` est écarté : la palette est achromatique et `destructive` est la seule couleur de l'interface (D25). Un vert de succès y ferait entrer une teinte que rien d'autre ne porte et affaiblirait le rouge. Position en bas à droite — en haut, sans barre haute, un toast recouvrirait directement le contenu, c'est-à-dire ce qu'on regardait ; à gauche, il tomberait sur la sidebar.
+
+**Les raccourcis s'affichent là où ils agissent.** `⌘S` existait depuis le début de l'éditeur de routines sans que rien ne le dise ; il est désormais écrit dans la barre de modifications, avec la primitive `kbd`. Un raccourci qu'il faut deviner n'est pas un raccourci.
 
 **Peut-on remplir une séance sur le web ?** Oui, dès la V1 (D7), en réutilisant l'API. Ce n'est pas le parcours principal mais le coût est faible et ça débloque deux cas réels : la correction d'une séance mal saisie, et l'utilisateur qui note son entraînement depuis un ordinateur.

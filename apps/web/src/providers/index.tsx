@@ -3,6 +3,7 @@ import { TooltipProvider } from "@better-lift/ui/components/tooltip";
 import { I18nProvider } from "./i18n-provider";
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
+import { ToastProvider } from "./toast-provider";
 
 /**
  * Point d'assemblage des providers globaux. Un fichier par provider à côté,
@@ -31,7 +32,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
           L'inverse lèverait « No QueryClient set » au montage.
         */}
         <I18nProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            {children}
+
+            {/*
+              Le `Toaster` est **sous** `ThemeProvider` : il lit `useTheme`
+              pour s'accorder au thème courant. Il est monté après `children`
+              plutôt qu'autour — il ne fournit rien, c'est une région de rendu
+              posée en fin de document, et l'envelopper suggérerait un contexte
+              qu'il n'a pas.
+            */}
+            <ToastProvider />
+          </TooltipProvider>
         </I18nProvider>
       </QueryProvider>
     </ThemeProvider>

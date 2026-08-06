@@ -84,12 +84,20 @@ catalog:
   "radix-ui": ^1.6.7
   "lucide-react": ^1.28.0
   "next-themes": ^0.4.6
+  # Notifications éphémères. Déclaré dans `packages/ui` — qui porte
+  # `sonner.tsx` — **et** dans `apps/web`, qui appelle `toast()` depuis ses
+  # features sans passer par la primitive.
+  sonner: ^2.0.7
   # i18n du web (D29). Le mobile aura le sien : next-intl est propre à Next.
   "next-intl": ^4.5.5
   # Graphiques du tableau de bord (doc 05), **web uniquement**. Déclaré dans
   # `packages/ui` — qui porte `chart.tsx` — **et** dans `apps/web`, qui compose
   # les graphiques et importe donc `Bar`, `BarChart` et consorts directement.
   recharts: ^3.8.0
+  # Découpage en semaines et bornes de mois du `contribution-graph` (Kibo UI,
+  # doc 05). Déclaré uniquement dans `packages/ui`, qui porte le composant —
+  # `apps/web` ne l'importe jamais directement.
+  "date-fns": ^4.4.0
   # Dépendance d'exécution, pas seulement un CLI : `globals.css` fait
   # `@import "shadcn/tailwind.css"`. La retirer casse le build du CSS.
   shadcn: ^4.16.1

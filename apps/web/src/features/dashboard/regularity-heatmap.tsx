@@ -8,43 +8,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@better-lift/ui/components/card";
+import {
+  ContributionGraph,
+  ContributionGraphBlock,
+  ContributionGraphCalendar,
+  ContributionGraphFooter,
+  ContributionGraphLegend,
+} from "@better-lift/ui/components/contribution-graph";
 import { Skeleton } from "@better-lift/ui/components/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@better-lift/ui/components/tooltip";
-import { cn } from "@better-lift/ui/lib/utils";
 
-import { heatLevel, toWeekColumns } from "./format";
+import { heatLevel } from "./format";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
 import { plural } from "@/features/workouts/labels";
 import { apiClient } from "@/lib/api";
 
-/**
- * Rampe d'intensité, achromatique.
- *
- * L'opacité plutôt que cinq tokens de couleur : la palette n'a pas d'accent, et
- * une rampe d'opacité sur `foreground` reste lisible dans les deux thèmes sans
- * qu'il faille la redéfinir pour chacun.
- */
-const LEVEL_CLASSES: Record<0 | 1 | 2 | 3 | 4, string> = {
-  0: "bg-muted",
-  1: "bg-foreground/25",
-  2: "bg-foreground/45",
-  3: "bg-foreground/70",
-  4: "bg-foreground",
+/** Libellés de la légende « Moins … Plus », le seul texte du registre à traduire ici. */
+const LEGEND_LABELS: Record<"fr" | "en", { less: string; more: string }> = {
+  fr: { less: "Moins", more: "Plus" },
+  en: { less: "Less", more: "More" },
 };
-
-/**
- * Lundi, mercredi et vendredi seulement : sept étiquettes de 12 px de haut ne
- * tiennent pas sans se chevaucher. Les lignes vides gardent l'alignement.
- */
-const WEEKDAY_LABELS = [
-  { key: "mon", label: "Lun" },
-  { key: "tue", label: "" },
-  { key: "wed", label: "Mer" },
-  { key: "thu", label: "" },
-  { key: "fri", label: "Ven" },
-  { key: "sat", label: "" },
-  { key: "sun", label: "" },
-];
 
 function RegularityHeatmapSkeleton() {
   return (
@@ -60,12 +43,16 @@ function RegularityHeatmapSkeleton() {
 }
 
 /**
- * Heatmap de régularité sur douze semaines (doc 05).
+ * Heatmap de régularité sur douze semaines (doc 05), via le `contribution-graph`
+ * de Kibo UI plutôt qu'une grille CSS maison.
  *
- * Signal comportemental fort pour un coût faible. La fenêtre servie par l'API
- * commence toujours un lundi et compte un multiple de sept jours : les colonnes
- * sont pleines et la grille rectangulaire, sans quoi les jours ne s'alignent
- * pas d'une semaine à l'autre.
+ * La fenêtre servie par l'API commence toujours un lundi et compte un multiple
+ * de sept jours : `weekStart={1}` aligne le regroupement du composant sur cette
+ * même convention, sans quoi la première colonne serait incomplète.
+ *
+ * Les couleurs du registre (`fill-muted`, `fill-muted-foreground/20`…20/40/60/80)
+ * sont déjà achromatiques par défaut — rien à écarter ici, contrairement au
+ * logo (doc 05, sidebar).
  */
 export function RegularityHeatmap() {
   const locale = useProfileLocale();
@@ -88,7 +75,6 @@ export function RegularityHeatmap() {
   }
 
   const { days, currentWeeks, longestWeeks } = streak.data;
-  const columns = toWeekColumns(days);
   const activeDays = days.filter((day) => day.workoutCount > 0).length;
 
   const dayFormatter = new Intl.DateTimeFormat(intlLocale, {
@@ -99,6 +85,23 @@ export function RegularityHeatmap() {
     // reculerait d'un jour à l'ouest de Greenwich.
     timeZone: "UTC",
   });
+
+  /**
+   * Le registre livre ses libellés de mois en anglais et en dur
+   * (`DEFAULT_MONTH_LABELS`) : on les régénère depuis la locale du profil
+   * plutôt que de les recopier à la main, pour rester correct en anglais
+   * comme en français sans entretenir deux listes.
+   */
+  const monthFormatter = new Intl.DateTimeFormat(intlLocale, { month: "short", timeZone: "UTC" });
+  const months = Array.from({ length: 12 }, (_, index) =>
+    monthFormatter.format(new Date(Date.UTC(2024, index, 1))),
+  );
+
+  const activities = days.map((day) => ({
+    date: day.date,
+    count: day.workoutCount,
+    level: heatLevel(day.workoutCount),
+  }));
 
   return (
     <Card>
@@ -112,55 +115,42 @@ export function RegularityHeatmap() {
       </CardHeader>
       <CardContent>
         {/*
-          `overflow-x-auto` : douze colonnes de 12 px tiennent partout, mais la
-          carte peut rétrécir sous une sidebar dépliée sur un petit portable.
-          Le débordement défile dans son coin plutôt que d'élargir la page.
+          `aria-hidden` sur le graphe entier, poignées de survol comprises :
+          c'est le même parti pris que l'ancienne grille CSS — 84 cases (et
+          leurs infobulles à la souris) annoncées une à une seraient
+          inexploitables au clavier. Le résumé texte juste en dessous porte
+          l'équivalent qu'exige la doc 05.
         */}
-        <div className="overflow-x-auto">
-          <div className="flex gap-2">
-            <div className="flex flex-col gap-1 pt-0.5">
-              {WEEKDAY_LABELS.map(({ key, label }) => (
-                <span
-                  key={key}
-                  aria-hidden="true"
-                  className="h-3 text-[10px] leading-3 text-muted-foreground"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
+        <ContributionGraph
+          aria-hidden="true"
+          data={activities}
+          weekStart={1}
+          labels={{ months, legend: LEGEND_LABELS[locale] }}
+        >
+          <ContributionGraphCalendar>
+            {({ activity, dayIndex, weekIndex }) => (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ContributionGraphBlock
+                    activity={activity}
+                    dayIndex={dayIndex}
+                    weekIndex={weekIndex}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {activity.count === 0
+                    ? `Aucune séance — ${dayFormatter.format(new Date(`${activity.date}T00:00:00Z`))}`
+                    : `${plural(activity.count, "séance")} — ${dayFormatter.format(new Date(`${activity.date}T00:00:00Z`))}`}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </ContributionGraphCalendar>
 
-            <div aria-hidden="true" className="flex gap-1">
-              {columns.map((week) => (
-                <div key={week[0]?.date} className="flex flex-col gap-1">
-                  {week.map((day) => (
-                    <Tooltip key={day.date}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={cn(
-                            "size-3 rounded-xs",
-                            LEVEL_CLASSES[heatLevel(day.workoutCount)],
-                          )}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {day.workoutCount === 0
-                          ? `Aucune séance — ${dayFormatter.format(new Date(`${day.date}T00:00:00Z`))}`
-                          : `${plural(day.workoutCount, "séance")} — ${dayFormatter.format(new Date(`${day.date}T00:00:00Z`))}`}
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          <ContributionGraphFooter>
+            <ContributionGraphLegend />
+          </ContributionGraphFooter>
+        </ContributionGraph>
 
-        {/*
-          La grille est `aria-hidden` : 84 cases annoncées une à une seraient
-          inexploitables. Le résumé qui suit porte la même information sous une
-          forme qui s'écoute — c'est l'équivalent textuel qu'impose la doc 05.
-        */}
         <p className="mt-4 text-sm text-muted-foreground">
           {activeDays === 0
             ? "Aucune séance sur les douze dernières semaines."

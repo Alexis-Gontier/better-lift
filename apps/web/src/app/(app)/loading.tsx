@@ -2,8 +2,8 @@ import { Skeleton } from "@better-lift/ui/components/skeleton";
 
 /**
  * Squelette de la zone authentifiée. Il s'affiche **dans** le layout `(app)`,
- * donc la sidebar et la barre haute restent visibles pendant le chargement : le
- * cadre ne clignote pas, seul le contenu se remplit.
+ * donc la sidebar reste visible pendant le chargement : le cadre ne clignote
+ * pas, seul le contenu se remplit.
  *
  * La forme reprend celle que partagent toutes les pages du groupe — un titre,
  * une accroche, puis le contenu. Un squelette qui ne ressemble à rien de ce qui

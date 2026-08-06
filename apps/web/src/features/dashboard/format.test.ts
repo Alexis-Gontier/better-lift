@@ -6,7 +6,6 @@ import {
   formatVolume,
   heatLevel,
   relativeChange,
-  toWeekColumns,
   trendOf,
 } from "./format";
 
@@ -118,20 +117,5 @@ describe("heatLevel", () => {
     expect(heatLevel(1)).toBe(2);
     expect(heatLevel(3)).toBe(4);
     expect(heatLevel(9)).toBe(4);
-  });
-});
-
-describe("toWeekColumns", () => {
-  it("should cut a day series into columns of seven", () => {
-    const days = Array.from({ length: 21 }, (_, index) => index);
-    const columns = toWeekColumns(days);
-
-    expect(columns).toHaveLength(3);
-    expect(columns[0]).toEqual([0, 1, 2, 3, 4, 5, 6]);
-    expect(columns.at(-1)).toEqual([14, 15, 16, 17, 18, 19, 20]);
-  });
-
-  it("should return nothing for an empty series", () => {
-    expect(toWeekColumns([])).toEqual([]);
   });
 });

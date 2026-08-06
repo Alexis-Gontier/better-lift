@@ -99,9 +99,7 @@ export type DraftAction =
   | { type: "moveExercise"; from: string; to: string }
   | { type: "setExerciseField"; key: string; field: "notes" | "restSec"; value: string }
   | { type: "addSet"; exerciseKey: string }
-  | { type: "duplicateLastSet"; exerciseKey: string }
   | { type: "removeSet"; exerciseKey: string; setKey: string }
-  | { type: "moveSet"; exerciseKey: string; from: string; to: string }
   | {
       type: "setSetField";
       exerciseKey: string;
@@ -194,15 +192,9 @@ export function draftReducer(draft: RoutineDraft, action: DraftAction): RoutineD
       }));
 
     case "addSet":
-      return mapExercise(draft, action.exerciseKey, (exercise) => ({
-        ...exercise,
-        sets: [...exercise.sets, emptySet()],
-      }));
-
-    case "duplicateLastSet":
       /**
        * La plupart des séries d'un exercice sont identiques (doc 05) :
-       * dupliquer la dernière économise l'essentiel des saisies d'une routine.
+       * copier la dernière économise l'essentiel des saisies d'une routine.
        * Sans dernière série, on retombe sur un ajout vide.
        */
       return mapExercise(draft, action.exerciseKey, (exercise) => {
@@ -222,12 +214,6 @@ export function draftReducer(draft: RoutineDraft, action: DraftAction): RoutineD
         // série n'a rien à prescrire.
         return { ...exercise, sets: sets.length > 0 ? sets : [emptySet()] };
       });
-
-    case "moveSet":
-      return mapExercise(draft, action.exerciseKey, (exercise) => ({
-        ...exercise,
-        sets: move(exercise.sets, action.from, action.to),
-      }));
 
     case "setSetField":
       return mapExercise(draft, action.exerciseKey, (exercise) => ({

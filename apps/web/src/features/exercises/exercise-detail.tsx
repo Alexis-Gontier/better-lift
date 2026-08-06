@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { ApiClientError, useArchiveExercise, useExercise } from "@better-lift/api-client";
 import { Alert, AlertDescription, AlertTitle } from "@better-lift/ui/components/alert";
@@ -70,9 +71,14 @@ function CustomExerciseActions({ id, name }: { id: string; name: string }) {
             disabled={archive.isPending}
             onClick={() =>
               archive.mutate(id, {
-                // La fiche répond désormais 404 : y rester afficherait une
-                // erreur pour une opération pourtant réussie.
-                onSuccess: () => router.push("/exercises?custom=true"),
+                onSuccess: () => {
+                  // La fiche répond désormais 404 : y rester afficherait une
+                  // erreur pour une opération pourtant réussie.
+                  router.push("/exercises?custom=true");
+                  // « Archivé », pas « supprimé » : l'exercice reste dans
+                  // l'historique des séances qui le référencent (invariant 8).
+                  toast.success("Exercice archivé. Vos séances passées le gardent.");
+                },
               })
             }
           >

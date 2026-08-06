@@ -13,6 +13,12 @@ pnpm knip                     # dépendances, fichiers et exports morts
 pnpm db:migrate               # prisma migrate dev
 pnpm db:seed                  # explicite : Prisma 7 ne seed plus automatiquement
 pnpm db:studio
+
+# Jeu de démonstration d'un compte de dev : 12 semaines de PPL, dossiers,
+# routines, exercices personnalisés et records. Passe par les services de
+# l'API, donc records et agrégats calculés par le code de production.
+# EFFACE routines, séances et records du compte visé (sauf --keep).
+pnpm --filter=api seed:demo -- --email=… [--weeks=12] [--keep]
 ```
 
 ## Structure

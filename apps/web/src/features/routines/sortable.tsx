@@ -4,49 +4,22 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon } from "lucide-react";
 
-import { Button } from "@better-lift/ui/components/button";
 import { cn } from "@better-lift/ui/lib/utils";
 
 /**
- * Un seul `DndContext` couvre l'éditeur, exercices **et** séries — imbriquer
- * deux contextes rend le routage des événements dépendant de l'ordre de
- * montage. Les identifiants sont donc préfixés pour dire à quelle liste
- * appartient l'élément saisi, et `parseDndId` les relit à la dépose.
- */
-export function exerciseDndId(key: string): string {
-  return `ex:${key}`;
-}
-
-export function setDndId(exerciseKey: string, setKey: string): string {
-  return `set:${exerciseKey}:${setKey}`;
-}
-
-export type DndTarget =
-  | { kind: "exercise"; key: string }
-  | { kind: "set"; exerciseKey: string; setKey: string };
-
-export function parseDndId(id: string): DndTarget | null {
-  const [prefix, ...rest] = id.split(":");
-
-  if (prefix === "ex" && rest[0]) {
-    return { kind: "exercise", key: rest[0] };
-  }
-
-  if (prefix === "set" && rest[0] && rest[1]) {
-    return { kind: "set", exerciseKey: rest[0], setKey: rest[1] };
-  }
-
-  return null;
-}
-
-/**
- * Ligne réordonnable, avec sa **poignée dédiée**.
+ * Carte d'exercice réordonnable, avec sa **poignée dédiée**.
  *
- * Rendre toute la ligne saisissable rendrait la sélection de texte impossible
- * (doc 05) — or une ligne de série est faite de champs qu'on veut pouvoir
+ * Rendre toute la carte saisissable rendrait la sélection de texte impossible
+ * (doc 05) — or une carte d'exercice est faite de champs qu'on veut pouvoir
  * corriger. Seule la poignée porte donc les écouteurs de glissement.
  *
- * La même poignée est un `<button>` : elle reçoit le focus au clavier, et
+ * Le glisser-déposer ne porte **que** sur les exercices, pas sur les séries à
+ * l'intérieur d'une carte : réordonner deux valeurs saisies dans un tableau de
+ * quelques lignes est un geste de précision que personne ne demandait, et il
+ * coûtait une poignée par ligne. L'ordre des séries suit désormais l'ordre de
+ * saisie.
+ *
+ * La poignée est un `<button>` : elle reçoit le focus au clavier, et
  * `dnd-kit` y branche Espace pour saisir, les flèches pour déplacer, Entrée
  * pour déposer. C'est l'alternative clavier exigée par l'objectif WCAG 2.1 AA,
  * et elle ne coûte rien de plus que de ne pas la casser.
@@ -75,23 +48,35 @@ export function SortableRow({
       // sait pas ce qu'on déplace.
       className={cn(className, isDragging && "relative z-10 opacity-60")}
     >
-      <div className="flex items-start gap-2">
+      {/*
+        `overflow-hidden` n'est pas décoratif : sans lui, le fond de la
+        poignée déborde des coins arrondis du cadre.
+
+        La poignée est le **flanc gauche de la carte**, dans le cadre, pas à
+        côté, séparée par un filet et étirée sur toute sa hauteur : la carte
+        fait plusieurs centaines de pixels, et viser un carré de 28 px posé à
+        côté de son titre est un geste de précision pour une action qui n'en
+        demande pas. Le contenu perd alors son propre cadre — c'est celui-ci
+        qui le porte — d'où le `rounded-none border-0` attendu sur la `Card`
+        enfant.
+      */}
+      <div className="flex items-stretch overflow-hidden rounded-xl border border-border bg-card">
         {/*
           `touch-none` est indispensable et non décoratif : sans lui, le
-          navigateur mobile interprète le geste comme un défilement et le
-          glissement ne démarre jamais.
+          navigateur mobile prend le geste pour un défilement et le glissement
+          ne démarre jamais.
         */}
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="icon-sm"
           aria-label={`Déplacer ${label}`}
-          className="mt-1 shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
+          className={cn(
+            "flex w-8 shrink-0 cursor-grab touch-none items-center justify-center border-r border-border bg-muted/40 text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring active:cursor-grabbing",
+          )}
           {...attributes}
           {...listeners}
         >
-          <GripVerticalIcon />
-        </Button>
+          <GripVerticalIcon className="size-4" />
+        </button>
         <div className="min-w-0 flex-1">{children}</div>
       </div>
     </div>

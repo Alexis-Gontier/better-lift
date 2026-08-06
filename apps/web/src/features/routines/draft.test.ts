@@ -77,7 +77,7 @@ describe("draftReducer", () => {
     ).toBe(WITH_TWO.exercises);
   });
 
-  it("should copy the last set's values when duplicating it", () => {
+  it("should copy the last set's values when adding a set", () => {
     const key = WITH_TWO.exercises[0]?.key ?? "";
     const setKey = WITH_TWO.exercises[0]?.sets[0]?.key ?? "";
 
@@ -85,7 +85,7 @@ describe("draftReducer", () => {
       WITH_TWO,
       { type: "setSetField", exerciseKey: key, setKey, field: "targetReps", value: "5" },
       { type: "setSetField", exerciseKey: key, setKey, field: "targetWeightKg", value: "100" },
-      { type: "duplicateLastSet", exerciseKey: key },
+      { type: "addSet", exerciseKey: key },
     );
 
     const sets = filled.exercises[0]?.sets ?? [];

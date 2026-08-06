@@ -90,7 +90,11 @@ function toRoutineExercise(row: RoutineRow["exercises"][number], locale: Locale)
  * parce que les deux le connaissent différemment : la liste le fait compter par
  * Postgres, le détail tient déjà les exercices en mémoire.
  */
-function toSummaryFields(row: Prisma.RoutineGetPayload<object>, exerciseCount: number) {
+function toSummaryFields(
+  row: Prisma.RoutineGetPayload<object>,
+  exerciseCount: number,
+  setCount: number,
+) {
   return {
     id: row.id,
     name: row.name,
@@ -98,6 +102,7 @@ function toSummaryFields(row: Prisma.RoutineGetPayload<object>, exerciseCount: n
     notes: row.notes,
     position: row.position,
     exerciseCount,
+    setCount,
     lastPerformedAt: row.lastPerformedAt?.toISOString() ?? null,
     performedCount: row.performedCount,
     createdAt: row.createdAt.toISOString(),
@@ -107,7 +112,11 @@ function toSummaryFields(row: Prisma.RoutineGetPayload<object>, exerciseCount: n
 
 function toDetail(row: RoutineRow, locale: Locale): RoutineDetail {
   return {
-    ...toSummaryFields(row, row.exercises.length),
+    ...toSummaryFields(
+      row,
+      row.exercises.length,
+      row.exercises.reduce((total, exercise) => total + exercise.sets.length, 0),
+    ),
     exercises: row.exercises.map((exercise) => toRoutineExercise(exercise, locale)),
   };
 }
@@ -174,10 +183,26 @@ export async function listRoutines(
       ...(query.folderId ? { folderId: query.folderId } : {}),
     },
     orderBy: ORDER_BY[query.sort],
-    include: { _count: { select: { exercises: true } } },
+    /**
+     * Le total des séries se compte en deux temps : `_count` ne sait pas
+     * traverser deux niveaux de relation. On ramène donc un compteur par
+     * exercice — un entier par ligne, pas les séries elles-mêmes — et on somme
+     * ici. La liste n'est pas paginée mais elle est bornée par l'effort de son
+     * auteur : quelques dizaines de routines, quelques centaines d'entiers.
+     */
+    include: {
+      _count: { select: { exercises: true } },
+      exercises: { select: { _count: { select: { sets: true } } } },
+    },
   });
 
-  return rows.map((row) => toSummaryFields(row, row._count.exercises));
+  return rows.map((row) =>
+    toSummaryFields(
+      row,
+      row._count.exercises,
+      row.exercises.reduce((total, exercise) => total + exercise._count.sets, 0),
+    ),
+  );
 }
 
 export async function getRoutine(
