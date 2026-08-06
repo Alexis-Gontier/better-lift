@@ -28,6 +28,7 @@ function routine(): RoutineDetail {
     notes: null,
     position: 0,
     exerciseCount: 1,
+    setCount: 2,
     lastPerformedAt: null,
     performedCount: 0,
     createdAt: "2026-08-01T10:00:00.000Z",

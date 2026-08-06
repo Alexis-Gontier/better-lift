@@ -1,6 +1,7 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { useId } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import { useStatsVolume } from "@better-lift/api-client";
 import {
@@ -63,6 +64,9 @@ function VolumeChartSkeleton() {
  * une courbe régulière là où il y a un trou.
  */
 export function VolumeChart() {
+  // Sert d'identifiant au dégradé du remplissage : un `id` en dur collerait
+  // si la carte se retrouvait un jour montée deux fois sur le même écran.
+  const gradientId = useId();
   const locale = useProfileLocale();
   const intlLocale = locale === "en" ? "en-GB" : "fr-FR";
   const units = useProfileUnits();
@@ -106,7 +110,19 @@ export function VolumeChart() {
         ) : (
           <>
             <ChartContainer config={CONFIG} className="h-56 w-full">
-              <BarChart accessibilityLayer data={points} margin={{ left: 4, right: 4 }}>
+              <AreaChart accessibilityLayer data={points} margin={{ left: 4, right: 4 }}>
+                {/*
+                  Le dégradé descend vers la transparence plutôt qu'un aplat :
+                  un remplissage plein jusqu'en bas alourdirait douze semaines
+                  de suite, le dégradé garde le tracé — la vraie donnée —
+                  lisible par-dessus.
+                */}
+                <defs>
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-volume)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--color-volume)" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="label"
@@ -126,23 +142,25 @@ export function VolumeChart() {
                 />
                 {/*
                   `isAnimationActive={false}` n'est pas un choix esthétique.
-                  Recharts anime ses barres **en JavaScript**, en interpolant
-                  l'attribut `height` : le bloc `prefers-reduced-motion` de
+                  Recharts anime son tracé **en JavaScript**, en interpolant le
+                  chemin du `path` : le bloc `prefers-reduced-motion` de
                   `globals.css` ne l'atteint pas, puisqu'il ne pilote que des
                   animations CSS. La préférence serait donc ignorée ici, et sur
                   le seul écran qui en compte trois.
 
                   Accessoirement, ça règle un faux positif tenace : une capture
                   d'écran prise pendant l'animation d'entrée montre un
-                  graphique vide alors que les barres sont bien dans le DOM.
+                  graphique vide alors que la courbe est bien dans le DOM.
                 */}
-                <Bar
+                <Area
                   dataKey="volume"
-                  fill="var(--color-volume)"
-                  radius={4}
+                  type="monotone"
+                  stroke="var(--color-volume)"
+                  strokeWidth={2}
+                  fill={`url(#${gradientId})`}
                   isAnimationActive={false}
                 />
-              </BarChart>
+              </AreaChart>
             </ChartContainer>
 
             {/*

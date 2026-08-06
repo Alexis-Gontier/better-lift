@@ -130,19 +130,3 @@ export function heatLevel(workoutCount: number): 0 | 1 | 2 | 3 | 4 {
 
   return Math.min(workoutCount + 1, 4) as 1 | 2 | 3 | 4;
 }
-
-/**
- * Découpe une suite de jours en colonnes de sept, une par semaine.
- *
- * La fenêtre servie par l'API commence toujours un lundi et compte un multiple
- * de sept jours : les colonnes sont donc pleines et la grille rectangulaire.
- */
-export function toWeekColumns<T>(days: readonly T[]): T[][] {
-  const columns: T[][] = [];
-
-  for (let index = 0; index < days.length; index += 7) {
-    columns.push(days.slice(index, index + 7));
-  }
-
-  return columns;
-}

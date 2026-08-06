@@ -2,17 +2,22 @@ import { cookies } from "next/headers";
 
 import { SidebarInset, SidebarProvider } from "@better-lift/ui/components/sidebar";
 
+import { AppContent } from "@/features/navigation/app-content";
 import { AppSidebar } from "@/features/navigation/app-sidebar";
-import { AppTopbar } from "@/features/navigation/app-topbar";
+import { MobileSidebarTrigger } from "@/features/navigation/mobile-sidebar-trigger";
 
 /**
- * Coquille de la zone authentifiée : sidebar repliable, barre haute, contenu
- * (doc 05).
+ * Coquille de la zone authentifiée : sidebar repliable, contenu (doc 05).
+ *
+ * Pas de barre haute séparée : le repli de la sidebar (`SidebarTrigger`) vit
+ * dans son propre en-tête, et chaque écran porte son titre lui-même — rien
+ * d'autre ne justifiait une barre à part.
  *
  * Aucune vérification de session ici : c'est `proxy.ts` qui écarte les
  * visiteurs anonymes en amont, et l'API qui fait autorité en aval. Ce layout
- * ne fait pas d'appel réseau et reste un Server Component — seules la sidebar
- * et la barre haute passent en client, parce qu'elles lisent le chemin courant.
+ * ne fait pas d'appel réseau et reste un Server Component — seuls la sidebar,
+ * son bouton de repli mobile et `AppContent` passent en client, parce qu'ils
+ * lisent le chemin courant ou l'état d'ouverture du tiroir.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   /*
@@ -33,10 +38,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <AppSidebar />
 
       <SidebarInset>
-        <AppTopbar />
+        <MobileSidebarTrigger />
 
         {/*
-          Un `<div>` et surtout pas un `<main>` : `SidebarInset` **est** déjà
+          `AppContent` et surtout pas un `<main>` : `SidebarInset` **est** déjà
           l'élément `<main>` (cf. la primitive). En emboîter un second serait du
           balisage invalide et donnerait deux repères « contenu principal » à un
           lecteur d'écran, qui ne saurait plus lequel désigne la page.
@@ -45,19 +50,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           `<main>` d'origine se serait retrouvé imbriqué dans celui-ci dès
           l'introduction de la coquille.
 
-          `max-w-6xl` et non `max-w-3xl` : la doc 05 demande quatre cartes de
-          KPI sur une ligne au tableau de bord et un éditeur de routines à deux
-          colonnes.
-
-          `flex flex-col` sert les écrans qui se centrent verticalement
-          (`error.tsx`, `not-found.tsx` et leur `flex-1`). `min-w-0` est la
-          précaution habituelle du flux flex — sans lui, un tableau large refuse
-          de se réduire et pousse toute la colonne hors de l'écran au lieu de
-          défiler dans son coin.
+          La mesure de lecture — `max-w-7xl` centrée — y est appliquée à tous
+          les écrans **sauf `/routines`**, qui prend la largeur entière parce
+          que sa colonne de navigation doit toucher le bord. Le détail du
+          raisonnement, et les deux solutions écartées, sont dans le composant :
+          c'est la seule exception de mise en page de toute la zone
+          authentifiée, elle mérite d'être justifiée là où elle s'écrit.
         */}
-        <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-1 flex-col px-4 py-6 md:px-8 md:py-8">
-          {children}
-        </div>
+        <AppContent>{children}</AppContent>
       </SidebarInset>
     </SidebarProvider>
   );

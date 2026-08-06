@@ -17,10 +17,13 @@
   "dependencies": {
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
+    "date-fns": "catalog:",
     "lucide-react": "catalog:",
+    "next-themes": "catalog:",
     "radix-ui": "catalog:",
     "recharts": "catalog:",
     "shadcn": "catalog:",
+    "sonner": "catalog:",
     "tailwind-merge": "catalog:",
     "tw-animate-css": "catalog:"
   },

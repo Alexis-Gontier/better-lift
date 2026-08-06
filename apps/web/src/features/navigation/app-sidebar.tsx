@@ -1,5 +1,6 @@
 "use client";
 
+import { PanelLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,13 +16,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarSeparator,
+  useSidebar,
 } from "@better-lift/ui/components/sidebar";
 
 import { isNavItemActive } from "./active";
 import { MAIN_NAV, type NavItem, SECONDARY_NAV } from "./nav-items";
 import { UserMenu } from "./user-menu";
 
-function NavMenu({ items, pathname }: { items: readonly NavItem[]; pathname: string }) {
+function NavMenu({
+  items,
+  pathname,
+  children,
+}: {
+  items: readonly NavItem[];
+  pathname: string;
+  /** Entrées supplémentaires dans la même liste — le repli, entre autres. */
+  children?: React.ReactNode;
+}) {
   return (
     <SidebarMenu>
       {items.map(({ href, label, icon: Icon }) => {
@@ -54,6 +66,7 @@ function NavMenu({ items, pathname }: { items: readonly NavItem[]; pathname: str
           </SidebarMenuItem>
         );
       })}
+      {children}
     </SidebarMenu>
   );
 }
@@ -68,6 +81,7 @@ function NavMenu({ items, pathname }: { items: readonly NavItem[]; pathname: str
  */
 export function AppSidebar() {
   const pathname = usePathname();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">
@@ -77,16 +91,31 @@ export function AppSidebar() {
             <SidebarMenuButton asChild size="lg" tooltip="better-lift">
               <Link href="/dashboard">
                 {/*
-                  Le carré de marque tient lieu de logo et reste seul visible
-                  quand la sidebar est repliée. `aria-hidden` parce que le nom
-                  qui suit le dit déjà — sans quoi il serait lu deux fois.
+                  Le vrai logo du site (`app/icon.svg`, le favicon), pas un
+                  carré de marque improvisé — et seul élément visible quand la
+                  sidebar est repliée. `aria-hidden` parce que le nom qui suit
+                  le dit déjà — sans quoi il serait lu deux fois.
+
+                  Couleurs dupliquées à la main plutôt qu'un `<img src>` : le
+                  favicon reste un fichier statique séparé (convention Next),
+                  et une poignée de chemins ne justifie pas d'aller chercher un
+                  fichier externe pour ce que quatre lignes de JSX couvrent
+                  sans requête ni layout shift. Fixes et non liées aux tokens
+                  `primary`/`background` : une marque garde son identité propre
+                  quel que soit le thème de l'interface qui l'entoure, comme
+                  n'importe quel logo d'app.
+
+                  Le vert d'origine (`#7ad6a5`) est retiré : la palette de
+                  l'app est achromatique (D25), et un logo qui reste coloré
+                  quand plus rien d'autre ne l'est jure au premier coup d'œil.
                 */}
-                <span
-                  aria-hidden="true"
-                  className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground"
-                >
-                  b
-                </span>
+                <svg aria-hidden="true" viewBox="0 0 32 32" className="size-8 shrink-0">
+                  <rect width="32" height="32" rx="7" fill="#101418" />
+                  <g stroke="#ffffff" strokeWidth="3" strokeLinecap="round">
+                    <path d="M6 16h20" />
+                    <path d="M9 11v10M12 12.5v7M23 11v10M20 12.5v7" />
+                  </g>
+                </svg>
                 {/*
                   Les capitales viennent de `uppercase`, pas du texte source :
                   écrire « BETTER-LIFT » en dur ferait épeler le mot lettre par
@@ -100,6 +129,14 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
+      {/*
+        Bord à bord et non `SidebarSeparator` (qui s'inset de `mx-2`) : sous le
+        logo comme au-dessus du compte, le trait marque une vraie coupure entre
+        trois blocs — marque, navigation, compte — et un filet qui s'arrête
+        avant le bord ne lirait pas comme une limite mais comme un ornement.
+      */}
+      <SidebarSeparator className="mx-0" />
 
       <SidebarContent>
         {/*
@@ -129,11 +166,39 @@ export function AppSidebar() {
           */}
           <SidebarGroup className="mt-auto">
             <SidebarGroupContent>
-              <NavMenu items={SECONDARY_NAV} pathname={pathname} />
+              <NavMenu items={SECONDARY_NAV} pathname={pathname}>
+                <SidebarMenuItem>
+                  {/*
+                    Le repli n'a plus de barre haute pour le porter (doc 05) :
+                    il vit ici, sous Réglages, dans la même forme que le reste
+                    de la colonne — un lien, icône et libellé — plutôt qu'un
+                    bouton d'icône isolé, seule commande qui n'avait pas cette
+                    forme.
+
+                    Pas de `SidebarTrigger` : la primitive fige son contenu
+                    (icône + texte réduit à `sr-only`), impossible à faire
+                    coexister avec un libellé visible. `toggleSidebar`
+                    directement, sur un `SidebarMenuButton` ordinaire.
+
+                    Le libellé et l'infobulle disent des choses différentes,
+                    et c'est voulu : le libellé n'apparaît que dépliée, où la
+                    seule action possible est de réduire ; l'infobulle
+                    n'apparaît que repliée à l'icône (`tooltip`, comme les
+                    autres entrées), où la seule action possible est de
+                    déplier.
+                  */}
+                  <SidebarMenuButton onClick={toggleSidebar} tooltip="Afficher la navigation">
+                    <PanelLeftIcon />
+                    <span>Réduire</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </NavMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </nav>
       </SidebarContent>
+
+      <SidebarSeparator className="mx-0" />
 
       <SidebarFooter>
         <UserMenu />
@@ -141,12 +206,11 @@ export function AppSidebar() {
 
       {/*
         La poignée qui borde la colonne : une cible de repli à la souris, large
-        et sur tout le bord, ailleurs que sur le bouton de la barre haute. Elle
-        porte `tabIndex={-1}` dans la primitive et n'est donc pas atteignable au
-        clavier — c'est voulu, le bouton de la barre haute fait déjà ce travail
-        et deux commandes identiques dans l'ordre de tabulation ne feraient que
-        l'allonger. Le libellé est réécrit en français pour la même raison que
-        dans la barre haute.
+        et sur tout le bord, ailleurs que sur le lien « Réduire ». Elle porte
+        `tabIndex={-1}` dans la primitive et n'est donc pas atteignable au
+        clavier — c'est voulu, ce lien fait déjà ce travail et deux commandes
+        identiques dans l'ordre de tabulation ne feraient que l'allonger. Le
+        libellé est réécrit en français pour la même raison.
       */}
       <SidebarRail
         aria-label="Afficher ou masquer la navigation"

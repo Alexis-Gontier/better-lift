@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ChevronsUpDownIcon,
-  LogOutIcon,
-  MonitorIcon,
-  MoonIcon,
-  SettingsIcon,
-  SunIcon,
-} from "lucide-react";
+import { ChevronsUpDownIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -18,8 +11,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@better-lift/ui/components/dropdown-menu";
@@ -30,15 +21,26 @@ import {
   useSidebar,
 } from "@better-lift/ui/components/sidebar";
 import { Skeleton } from "@better-lift/ui/components/skeleton";
+import { THEME_ORDER, type Theme, ThemeSwitcher } from "@better-lift/ui/components/theme-switcher";
 
 import { useSignOut } from "@/features/auth/use-sign-out";
 import { useSession } from "@/lib/auth-client";
 
-const THEMES = [
-  { value: "system", label: "Système", icon: MonitorIcon },
-  { value: "light", label: "Clair", icon: SunIcon },
-  { value: "dark", label: "Sombre", icon: MoonIcon },
-] as const;
+/**
+ * Les libellés viennent de l'app, pas de la primitive : le registre les livre
+ * en anglais, et un pictogramme seul ne dit rien — « soleil » n'est pas
+ * « thème clair ». Ils passeront par `next-intl` quand cet écran sera traduit.
+ */
+const THEME_LABELS: Readonly<Record<Theme, string>> = {
+  system: "Thème : système",
+  light: "Thème : clair",
+  dark: "Thème : sombre",
+};
+
+/** `next-themes` rend `string | undefined` ; le composant attend les trois valeurs connues. */
+function toTheme(value: string | undefined): Theme {
+  return THEME_ORDER.includes(value as Theme) ? (value as Theme) : "system";
+}
 
 /**
  * Initiales de repli, en attendant que le profil porte un avatar.
@@ -68,6 +70,7 @@ export function UserMenu() {
   const session = useSession();
   const signOut = useSignOut();
   const { theme, setTheme } = useTheme();
+  const currentTheme = toTheme(theme);
   const { isMobile } = useSidebar();
 
   /*
@@ -192,18 +195,27 @@ export function UserMenu() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Thème</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={mounted ? (theme ?? "system") : undefined}
-              onValueChange={setTheme}
-            >
-              {THEMES.map(({ value, label, icon: Icon }) => (
-                <DropdownMenuRadioItem key={value} value={value}>
-                  <Icon />
-                  {label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
+            {/*
+              Le sélecteur segmenté remplace les trois `DropdownMenuRadioItem`
+              qui occupaient ici trois lignes pour un réglage qu'on change une
+              fois par an. Sur une seule ligne, le thème courant se lit à la
+              position de la pastille sans rien parcourir.
+
+              Ce n'est **pas** un `DropdownMenuItem` : un item se sélectionne et
+              referme le menu, alors qu'on veut justement voir l'écran changer
+              derrière. D'où un simple `<div>`, et un composant qui porte
+              lui-même le contrat clavier d'un groupe radio — le menu Radix
+              ferme sur `Tab`, la tabulation ne peut donc pas servir à passer
+              d'une option à l'autre.
+            */}
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+              <span className="text-xs text-muted-foreground">Thème</span>
+              <ThemeSwitcher
+                value={mounted ? currentTheme : undefined}
+                onChange={setTheme}
+                labels={THEME_LABELS}
+              />
+            </div>
 
             <DropdownMenuSeparator />
 

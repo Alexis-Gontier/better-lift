@@ -3,6 +3,7 @@
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useReducer, useState } from "react";
+import { toast } from "sonner";
 
 import { useUpdateWorkout } from "@better-lift/api-client";
 import { Alert, AlertDescription } from "@better-lift/ui/components/alert";
@@ -38,7 +39,9 @@ import {
 } from "./edit-draft";
 import { useProfileLocale } from "@/features/account/use-profile-locale";
 import { useProfileUnits } from "@/features/account/use-profile-units";
+import { ExerciseMedia } from "@/features/exercises/exercise-media";
 import { ExercisePicker } from "@/features/exercises/exercise-picker";
+import { ExerciseQuickView } from "@/features/exercises/exercise-quick-view";
 import { BODY_PART_LABELS, equipmentLabel } from "@/features/exercises/labels";
 import { SET_TYPE_LABELS, SET_TYPE_TONE } from "@/features/routines/labels";
 import { apiClient } from "@/lib/api";
@@ -68,15 +71,26 @@ function ExerciseCard({
   return (
     <Card size="sm" role="group" aria-label={exercise.exercise.name}>
       <CardHeader className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <CardTitle className="truncate">
-            <span className="mr-2 text-muted-foreground">{index + 1}.</span>
-            {exercise.exercise.name}
-          </CardTitle>
-          <p className="truncate text-sm text-muted-foreground">
-            {BODY_PART_LABELS[exercise.exercise.bodyPart]} ·{" "}
-            {equipmentLabel(exercise.exercise.equipment)}
-          </p>
+        {/* Même en-tête que l'éditeur de routines : vignette, nom qui ouvre la
+            fiche, puis partie du corps et matériel. Corriger une séance pose
+            les mêmes questions que la construire. */}
+        <div className="flex min-w-0 items-center gap-3">
+          <ExerciseMedia
+            url={exercise.exercise.thumbnailUrl}
+            name={exercise.exercise.name}
+            className="size-12 shrink-0 rounded-md"
+          />
+
+          <div className="min-w-0">
+            <CardTitle className="truncate">
+              <span className="mr-2 text-muted-foreground">{index + 1}.</span>
+              <ExerciseQuickView exercise={exercise.exercise} />
+            </CardTitle>
+            <p className="truncate text-sm text-muted-foreground">
+              {BODY_PART_LABELS[exercise.exercise.bodyPart]} ·{" "}
+              {equipmentLabel(exercise.exercise.equipment)}
+            </p>
+          </div>
         </div>
 
         {/*
@@ -384,9 +398,24 @@ export function WorkoutEditor({ workout }: { workout: WorkoutDetail }) {
     setError(null);
 
     try {
-      await update.mutateAsync({ id: workout.id, input: parsed.data });
+      const saved = await update.mutateAsync({ id: workout.id, input: parsed.data });
+
       setDirty(false);
       router.push(`/workouts/${workout.id}`);
+
+      /*
+        Le recalcul des records est serveur et invisible depuis l'éditeur : une
+        correction à la baisse peut en invalider un, une à la hausse en établir
+        un. C'est la seule conséquence de l'enregistrement qu'on ne voit pas en
+        arrivant sur le détail, donc la seule qui mérite d'être dite.
+      */
+      toast.success(
+        saved.newRecords.length > 0
+          ? `Séance enregistrée · ${saved.newRecords.length} record${
+              saved.newRecords.length > 1 ? "s" : ""
+            }.`
+          : "Séance enregistrée.",
+      );
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Enregistrement impossible.");
     }
@@ -489,29 +518,37 @@ export function WorkoutEditor({ workout }: { workout: WorkoutDetail }) {
         </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <div className="space-y-3">
-          {draft.exercises.map((exercise, index) => (
-            <ExerciseCard
-              key={exercise.key}
-              exercise={exercise}
-              index={index}
-              count={draft.exercises.length}
-              dispatch={run}
-            />
-          ))}
+      {/* Une seule colonne, comme l'éditeur de routines : le panneau d'ajout
+          est passé en dialogue à sélection multiple (doc 05). */}
+      <div className="space-y-3">
+        {draft.exercises.map((exercise, index) => (
+          <ExerciseCard
+            key={exercise.key}
+            exercise={exercise}
+            index={index}
+            count={draft.exercises.length}
+            dispatch={run}
+          />
+        ))}
 
-          {draft.exercises.length === 0 && (
-            <Card size="sm">
-              <CardContent className="text-sm text-muted-foreground">
-                Cette séance n’a plus aucun exercice. L’enregistrer ainsi la laissera vide, sans la
-                supprimer.
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        {draft.exercises.length === 0 && (
+          <Card size="sm">
+            <CardContent className="text-sm text-muted-foreground">
+              Cette séance n’a plus aucun exercice. L’enregistrer ainsi la laissera vide, sans la
+              supprimer.
+            </CardContent>
+          </Card>
+        )}
 
-        <ExercisePicker onAdd={(exercise) => run({ type: "addExercise", exercise })} />
+        <ExercisePicker
+          className="w-full"
+          label="Ajouter un exercice à la séance"
+          onAdd={(added) => {
+            for (const exercise of added) {
+              run({ type: "addExercise", exercise });
+            }
+          }}
+        />
       </div>
     </div>
   );
