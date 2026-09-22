@@ -8,7 +8,10 @@
     "packages/config": { "entry": [], "project": [] },
     "packages/db": { "project": ["src/**/*.ts", "prisma/**/*.prisma"] },
     "apps/api": { "project": "src/**/*.ts" },
-    "apps/web": { "project": "src/**/*.{ts,tsx,css}" },
+    "apps/web": {
+      "entry": ["src/components/ui/**/*.{ts,tsx}", "src/lib/utils.ts"],
+      "project": "src/**/*.{ts,tsx,css}"
+    },
     "apps/mobile": { "entry": "app/**/*.{ts,tsx}", "project": "app/**/*.{ts,tsx}" }
   }
 }
