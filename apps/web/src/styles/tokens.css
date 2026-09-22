@@ -1,0 +1,60 @@
+:root {
+  /* Surfaces — l'échelle porte la hiérarchie */
+  --canvas: #08090a;
+  --surface-1: #101214;
+  --surface-2: #181b1e;
+  --surface-3: #1e2226;
+
+  /* Filets */
+  --line: #24272b;
+  --line-strong: #32363b;
+
+  /* Encre — quatre niveaux */
+  --ink: #f2f3f5;
+  --ink-muted: #b6bcc4;
+  --ink-subtle: #868d96;
+  --ink-faint: #6a717a;
+
+  /* Accent — aplat contre texte (D28, D29) */
+  --accent: #a8cf45;
+  --accent-on: #0b0f04;
+  --accent-ink: #a8cf45;
+  --accent-wash: rgb(168 207 69 / 0.14);
+  --focus-ring: rgb(168 207 69 / 0.45);
+
+  /* Élévation — réservée au passager (D27) */
+  --float-bg: rgb(28 32 36 / 0.9);
+  --float-line: #383d44;
+  --float-shadow: 0 20px 50px rgb(0 0 0 / 0.72), 0 3px 10px rgb(0 0 0 / 0.5);
+  --scrim: rgb(4 5 6 / 0.45);
+
+  --radius: 0.5rem;
+}
+
+[data-theme="light"] {
+  --canvas: #f4f4f6;
+  --surface-1: #ffffff;
+  --surface-2: #f7f7f9;
+  --surface-3: #edeef2;
+
+  --line: #e3e3e7;
+  --line-strong: #d6d6dc;
+
+  --ink: #18181b;
+  --ink-muted: #3f3f46;
+  --ink-subtle: #52525b;
+  --ink-faint: #71717a;
+
+  /* L'aplat garde la même teinte : le texte sombre dessus passe largement.
+     Le lime employé COMME TEXTE, lui, tombe sous 2:1 sur blanc — il s'assombrit. */
+  --accent: #a8cf45;
+  --accent-on: #0b0f04;
+  --accent-ink: #5c7a14;
+  --accent-wash: rgb(92 122 20 / 0.12);
+  --focus-ring: rgb(92 122 20 / 0.45);
+
+  --float-bg: rgb(255 255 255 / 0.92);
+  --float-line: #d6d6dc;
+  --float-shadow: 0 18px 44px rgb(20 20 25 / 0.18), 0 3px 10px rgb(20 20 25 / 0.1);
+  --scrim: rgb(20 20 25 / 0.28);
+}
