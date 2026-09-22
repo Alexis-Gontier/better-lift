@@ -13,10 +13,9 @@ catalog:
   "@types/react-dom": ^19.3.0
 
 allowBuilds:
-  '0': '@biomejs/biome'
-  '1': esbuild
-  '2': lefthook
-  '3': '@prisma/client'
-  '4': '@prisma/engines'
-  '5': prisma
+  "@biomejs/biome": true
+  esbuild: true
   lefthook: true
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
