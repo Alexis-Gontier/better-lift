@@ -106,7 +106,6 @@ packages:
 catalog:
   typescript: 7.0.2
   vitest: 5.0.1
-  zod: 4.6.5
   "@biomejs/biome": 2.5.14
   react: 19.3.0
   react-dom: 19.3.0
@@ -307,7 +306,6 @@ git commit -m "chore: socle du monorepo — pnpm, turborepo, biome, knip, leftho
     "test": "vitest run",
     "clean": "rm -rf .turbo node_modules"
   },
-  "dependencies": { "zod": "catalog:" },
   "devDependencies": {
     "@better-lift/config": "workspace:*",
     "typescript": "catalog:",
@@ -2028,6 +2026,14 @@ git commit -m "feat(web): données factices et les trois états partagés"
 **Interfaces :**
 - Consomme : `AppShell`, `EXERCICES`, les trois composants d'état
 - Produit : `<BadgeRecord kg reps />` — **le contour** du couple aplat/contour (D28), réutilisé partout où un record s'affiche
+
+- [ ] **Étape 0 : Installer Zod**
+
+C'est ici que Zod entre dans le projet, et nulle part avant : `validateSearch` est son premier usage réel. Le déclarer plus tôt ferait échouer `knip` en CI dès la tâche 7, pour une dépendance que personne n'importe.
+
+```bash
+pnpm --filter @better-lift/web add zod@4.6.5
+```
 
 - [ ] **Étape 1 : Écrire le badge de record**
 
