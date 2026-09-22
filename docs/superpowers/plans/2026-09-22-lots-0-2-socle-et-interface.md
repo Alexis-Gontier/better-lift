@@ -114,15 +114,17 @@ catalog:
   "@types/react-dom": ^19.3.0
 
 allowBuilds:
-  - "@biomejs/biome"
-  - esbuild
-  - lefthook
-  - "@prisma/client"
-  - "@prisma/engines"
-  - prisma
+  "@biomejs/biome": true
+  esbuild: true
+  lefthook: true
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
 ```
 
-> Ne jamais éditer `allowBuilds` à la main sans relire le fichier ensuite : pnpm y écrit ses suggestions en clair, ce qui casse le YAML.
+> **`allowBuilds` est une map `matcher: booléen`, jamais une liste.** La forme liste appartient à l'ancienne clé `onlyBuiltDependencies`, qu'`allowBuilds` remplace depuis pnpm 10.26. Écrite en liste, la clé est sérialisée en tableau, et une approbation ultérieure la transforme en objet à clés numériques `'0'`, `'1'`… : plus aucun nom de paquet n'est alors reconnu, et `ERR_PNPM_IGNORED_BUILDS` revient dès qu'une dépendance à script d'installation entre dans l'arbre.
+>
+> Ne jamais éditer `allowBuilds` à la main sans relire le fichier ensuite : `pnpm approve-builds` y réécrit ses décisions, et une forme invalide au départ ressort corrompue.
 
 - [ ] **Étape 5 : Écrire `turbo.json`**
 
