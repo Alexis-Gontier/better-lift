@@ -16,3 +16,6 @@ coverage/
 *.log
 .DS_Store
 Thumbs.db
+
+# Espace de travail SDD (scratch, non versionné)
+.superpowers/
