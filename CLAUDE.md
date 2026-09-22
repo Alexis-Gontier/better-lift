@@ -3,7 +3,7 @@
 Tracker de musculation personnel (2–3 comptes), web + mobile. **L'application est en français.**
 
 La conception fait foi : [`docs/superpowers/specs/2026-09-22-better-lift-redemarrage-design.md`](docs/superpowers/specs/2026-09-22-better-lift-redemarrage-design.md).
-Lis-la avant toute décision d'architecture — elle porte le registre des décisions (D1–D22)
+Lis-la avant toute décision d'architecture — elle porte le registre des décisions (D1–D29)
 et la liste des pièges déjà payés.
 
 ## État
@@ -47,8 +47,17 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   persistées, et **le détail ouvert vit dans l'URL** avec les filtres (paramètres de recherche
   typés de TanStack Router). Un rechargement retombe au même endroit.
 - `Resizable` et `Command` de shadcn fournissent les panneaux et le `Cmd+K` : rien à écrire.
+- **Le permanent est jointif, le passager flotte.** Les trois panneaux se touchent, séparés par
+  un filet de 1 px. L'élévation — flou, ombre portée, voile — est réservée à ce qui est
+  momentané : palette, menus, dialogues. **Si ça flotte, ça se ferme.**
 - **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux
-  d'encre, jamais d'ombres ni de seconde couleur. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
+  d'encre. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
+- **Une seule couleur : le lime sourd `#a8cf45`.** Elle porte l'action ET le record, donc la
+  distinction se fait **par la forme** : l'action est un **aplat** (fond lime, texte sombre), le
+  record est un **contour** (lime en texte sur fond teinté, flèche montante). Invariant.
+- **Un token par rôle, deux valeurs par token.** `--accent` (aplat) reste `#a8cf45` dans les deux
+  thèmes ; `--accent-ink` (lime en texte) passe à `#5c7a14` en clair — sur blanc, `#a8cf45`
+  tombe sous 2:1. Jamais de couleur en dur réutilisée dans les deux registres.
 - **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et on valide un écran avant de lui brancher

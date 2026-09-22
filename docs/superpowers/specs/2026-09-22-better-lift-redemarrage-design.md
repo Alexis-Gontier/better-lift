@@ -154,7 +154,29 @@ Le SPA supprime ici un problème que Next.js imposait : l'ancien projet devait l
 
 **Sombre par défaut, clair disponible et accessible.** Les tokens sont définis pour les deux registres dès le départ, même si le sombre est ce qu'on regarde en salle et le soir.
 
-La hiérarchie vient d'une **échelle de surfaces et de quatre niveaux d'encre**, jamais d'ombres portées ni d'une seconde couleur : canvas, trois surfaces, filets de 1 px. Un accent, employé avec parcimonie. C'est la doctrine de Linear, et elle convient à une interface dense.
+La hiérarchie vient d'une **échelle de surfaces et de quatre niveaux d'encre** : canvas, trois surfaces, filets de 1 px. C'est la doctrine de Linear, et elle convient à une interface dense.
+
+**Le permanent est jointif, le passager flotte.** Les trois panneaux se touchent, séparés par un filet — aucun pixel perdu en gouttières. L'élévation, elle, est réservée à une seule chose : ce qui est momentané. La palette de commandes, les menus et les dialogues s'élèvent avec flou, ombre portée et un voile qui assombrit le reste. La règle tient en une phrase, ce qui la rend facile à respecter : **si ça flotte, ça se ferme.**
+
+C'est une synthèse des deux références, qui divergent sur ce point précis : la refonte 2026 de VS Code détache toutes ses surfaces et cherche la profondeur par *« transparence, flou et ombres »*, là où Linear colle les siennes et emploie *« une échelle de surfaces plutôt que des ombres »*. Elles convergent en revanche sur trois principes qu'on reprend tels quels : palette réduite, accents rares et stratégiques, interface en couches.
+
+**Une seule couleur : le lime sourd `#a8cf45`.** Désaturé par rapport au lime vif, pour qu'il fatigue moins sur de longues sessions et le soir.
+
+Cette couleur unique porte à la fois l'action et le record, ce qui pose un problème réel : ce sont deux choses opposées — ce qu'on *peut faire* et ce qu'on *a accompli* — et le record est le moment fort du produit. **Il est résolu par la forme, pas par la teinte :**
+
+| Rôle | Traitement |
+|---|---|
+| **Action** | Aplat de lime, texte sombre dessus |
+| **Record** | Lime en texte sur fond transparent teinté, précédé d'une flèche montante |
+
+Un aplat et un contour ne se confondent pas, même à teinte égale. Cette distinction est un invariant : tout nouvel élément d'interface doit s'y ranger.
+
+**Le lime en texte change de valeur selon le thème.** `#a8cf45` sur blanc tombe sous 2:1 — très en dessous des 4,5:1 requis. Il faut donc distinguer deux tokens :
+
+- `--accent` (aplat de fond) : `#a8cf45` dans les deux thèmes, le texte sombre dessus passant largement.
+- `--accent-ink` (lime employé comme texte) : `#a8cf45` en sombre, **`#5c7a14`** en clair.
+
+Règle générale qui en découle : **un token par rôle, deux valeurs par token.** Jamais une couleur en dur réutilisée dans les deux registres.
 
 **Cette densité vaut pour le web seulement.** En salle, à bout de bras, entre deux séries, il faut l'inverse : cibles larges, contraste franc, peu d'éléments à l'écran. Le mobile partage la palette pour rester la même application, mais pas l'échelle ni la densité. C'est la traduction visuelle de « le web est l'atelier, le mobile est l'outil de terrain ».
 
@@ -299,7 +321,10 @@ Pas de `.mcp.json` : Neon et Context7 viennent des plugins déjà configurés su
 | D21 | **Noms d'exercices en français d'usage**, guidés par un glossaire versionné et relu avant toute traduction de masse |
 | D22 | **Inscription fermée par liste blanche d'adresses** |
 | D23 | **Coquille web à trois panneaux** — navigation, liste, détail, redimensionnables et persistés. Retenue parce que les trois écrans principaux sont des listes ; le détail en pleine page ferait perdre la liste et ses filtres à chaque consultation |
-| D24 | **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux d'encre, sans ombres ni seconde couleur. Densité réservée au web : le mobile partage la palette, pas l'échelle |
+| D24 | **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux d'encre. Densité réservée au web : le mobile partage la palette, pas l'échelle |
+| D27 | **Registre hybride : le permanent est jointif, le passager flotte.** Panneaux collés, séparés par un filet ; l'élévation — flou, ombre, voile — est réservée à ce qui est momentané. Synthèse des deux références, qui divergent sur ce point : VS Code 2026 détache toutes ses surfaces, Linear les colle. La règle tient en une phrase : si ça flotte, ça se ferme |
+| D28 | **Une seule couleur, le lime sourd `#a8cf45`**, désaturé pour fatiguer moins. Comme elle porte à la fois l'action et le record, **la distinction se fait par la forme** : l'action est un aplat, le record est un lime en texte sur fond teinté avec flèche montante. Invariant à respecter pour tout nouvel élément |
+| D29 | **Un token par rôle, deux valeurs par token.** `--accent` (aplat) vaut `#a8cf45` dans les deux thèmes ; `--accent-ink` (lime en texte) passe à `#5c7a14` en clair, faute de quoi le contraste tombe sous 2:1 sur blanc |
 | D25 | **L'interface passe avant la logique.** On dessine et on valide un écran avant de lui brancher des données. Réordonne le découpage en lots (§ 11) |
 | D26 | **Dépôt `Alexis-Gontier/better-lift` réinitialisé** le 22 septembre 2026 plutôt que recréé. L'historique de la V1 est conservé sur la branche `v1` et le tag `v1-final` (`b5f0a39`). Le ruleset « main protégée » est **désactivé** : ses trois checks requis désignent l'ancienne CI, le réactiver tel quel bloquerait toute PR. À remettre au lot 0, avec les noms à jour |
 
