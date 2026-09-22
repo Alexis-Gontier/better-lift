@@ -19,3 +19,6 @@ Thumbs.db
 
 # Espace de travail SDD (scratch, non versionné)
 .superpowers/
+
+# Client Prisma généré (packages/db)
+packages/db/src/generated/
