@@ -1,0 +1,26 @@
+{
+  "name": "@better-lift/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .expo .turbo node_modules"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.103.2",
+    "expo": "57.0.24",
+    "expo-router": "~57.0.22",
+    "expo-status-bar": "~57.0.1",
+    "react": "catalog:",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.2"
+  },
+  "devDependencies": {
+    "@better-lift/config": "workspace:*",
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
+  }
+}

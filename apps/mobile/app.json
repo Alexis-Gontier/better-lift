@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "better-lift",
+    "slug": "better-lift",
+    "scheme": "better-lift",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "android": {
+      "package": "com.algont.betterlift"
+    },
+    "ios": {
+      "bundleIdentifier": "com.algont.betterlift"
+    }
+  }
+}
