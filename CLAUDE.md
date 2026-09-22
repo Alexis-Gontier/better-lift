@@ -92,6 +92,14 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
 - **MMKV 4** : `createMMKV({ id })` et non `new MMKV()`, `storage.remove()` et non `delete()`,
   `react-native-nitro-modules` en dépendance de pair. **Aucun plugin de configuration** — l'ajouter
   casse `expo export` avec une erreur qui ne mentionne jamais `app.json`.
+- **Versions verrouillées par Expo** : le SDK 57 fixe **TypeScript 6.0.3** et **React 19.2.3**
+  pour tout le monorepo — c'est le consommateur le plus contraint qui décide, et seul le mobile
+  l'est. Ne pas monter TypeScript en 7 tant qu'Expo ne suit pas : `expo-doctor` le refuse, et à
+  partir du client d'API partagé le même code serait typé par deux compilateurs différents.
+  `@types/react` est épinglé en version **exacte** (`19.2.4`) : une plage `^` ne fait jamais
+  redescendre pnpm d'une version déjà satisfaisante. Pour toute dépendance Expo ou React Native,
+  `npx expo install <paquet>` choisit la version juste — ne jamais recopier une version de
+  mémoire. `expo-router` et `expo-status-bar` suivent désormais le numéro du SDK (`~57.x`).
 - **Builds natifs** : `expo run:android` est bloqué sur cette machine (chemins pnpm trop longs
   pour CMake). Les builds natifs passent par **EAS**. L'émulateur ne sert qu'à exécuter.
   Sur émulateur, l'API se joint en `http://10.0.2.2:3001`.
