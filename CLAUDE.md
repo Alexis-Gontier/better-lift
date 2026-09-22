@@ -8,16 +8,24 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. Il ne contient pour l'instant que la conception,
-le setup Claude Code et les skills. **Aucun code applicatif.**
+Le dépôt repart de zéro le 22 septembre 2026. **Le lot 0 est fusionné** : le monorepo tient
+debout, les trois applications démarrent, et la chaîne émulateur → Metro → API → Neon est
+prouvée de bout en bout. Le développement est en cours sur les lots suivants — voir le plan
+`docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md`.
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
 (`b5f0a39`) ; il sert de référence et n'est pas repris.
 
-Le ruleset « main protégée » est **désactivé** : ses trois checks requis désignent l'ancienne CI.
-À remettre au lot 0, avec les noms à jour — les deux doivent bouger ensemble, sinon toute PR
-devient immergeable.
+`main` est **protégée** : PR obligatoire, squash seul, et un check requis nommé **exactement**
+`Qualité · typecheck · test · build`. Ce nom est celui du job dans `.github/workflows/ci.yml` :
+**les deux doivent bouger ensemble**, sinon toute PR devient immergeable. Ne jamais pousser
+directement sur `main`.
+
+La CI n'a pas de base de données. Les étapes qui chargent `packages/db/prisma.config.ts` —
+`prisma generate` et `pnpm knip`, et elles seules — reçoivent une URL PostgreSQL factice, jamais
+contactée. Toute nouvelle étape qui touche cette configuration en aura besoin aussi : le piège
+ne se voit pas en local, où le `.env` existe.
 
 ## Stack
 
