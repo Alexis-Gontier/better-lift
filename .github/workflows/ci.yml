@@ -41,4 +41,12 @@ jobs:
         env:
           VITE_API_URL: http://localhost:3001
 
+      # Le plugin Prisma de knip charge aussi `prisma.config.ts` pour
+      # localiser le schéma : même piège que `generate` ci-dessus, sur une
+      # étape qu'on n'attendait pas. Vérifié sur le runner (PR #38) :
+      # `knip` échouait avec la même `PrismaConfigEnvError`, et faisait
+      # remonter `prisma/schema.prisma` en « Unused files » en conséquence
+      # (l'échec de chargement du plugin, pas un second problème réel).
       - run: pnpm knip
+        env:
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/better_lift_ci
