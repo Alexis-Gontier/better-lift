@@ -16,7 +16,7 @@ Ces règles s'appliquent à **toutes** les tâches, sans être répétées.
 
 - **Node ≥ 24** (local : 24.18.1). **pnpm 11.27.1** exactement, pinné par `packageManager`. La machine a actuellement **11.13.0, une *broken release* marquée par l'amont** : elle doit être remplacée avant la tâche 1.
 - **Pas de pnpm 12** : la branche 12 existe mais n'a jamais été éprouvée avec Metro sur ce projet, et c'est précisément le point que la V0 de l'ancien projet avait dû valider. Le passage en 12 est un chantier à part.
-- **Versions exactes** (relevées le 2026-09-22) : `vite@8.3.0`, `react@19.3.0`, `@vitejs/plugin-react@6.1.1`, `@tanstack/react-router@1.170.38`, `@tanstack/router-plugin@1.168.40`, `@tanstack/react-query@5.103.2`, `hono@4.13.8`, `@hono/node-server@2.1.1`, `@prisma/client@7.10.0`, `@prisma/adapter-pg@7.10.0`, `better-auth@1.7.5`, `tailwindcss@4.3.3`, `zod@4.6.5`, `@biomejs/biome@2.5.14`, `turbo@2.11.2`, `vitest@5.0.1`, `typescript@7.0.2`, `expo@57.0.24`, `lefthook@2.1.14`, `knip@6.37.0`.
+- **Versions exactes** (relevées le 2026-09-22) : `vite@8.3.0`, `react@19.2.3`, `@vitejs/plugin-react@6.1.1`, `@tanstack/react-router@1.170.38`, `@tanstack/router-plugin@1.168.40`, `@tanstack/react-query@5.103.2`, `hono@4.13.8`, `@hono/node-server@2.1.1`, `@prisma/client@7.10.0`, `@prisma/adapter-pg@7.10.0`, `better-auth@1.7.5`, `tailwindcss@4.3.3`, `zod@4.6.5`, `@biomejs/biome@2.5.14`, `turbo@2.11.2`, `vitest@5.0.1`, `typescript@6.0.3`, `expo@57.0.24`, `lefthook@2.1.14`, `knip@6.37.0`.
 - **Toute l'interface est en français.** Aucun mécanisme d'i18n (D14).
 - **Le lime sourd `#a8cf45` est la seule couleur.** L'action est un **aplat**, le record un **contour** avec flèche montante (D28). Jamais de couleur en dur : un token par rôle, deux valeurs par token (D29).
 - **Ni Biome ni Knip ne touchent `.claude/`** : des skills y embarquent des `.mjs` dont la réécriture ferait diverger le hash de `skills-lock.json`.
@@ -89,7 +89,7 @@ git checkout -b feat/lot-0-socle
     "knip": "6.37.0",
     "lefthook": "2.1.14",
     "turbo": "2.11.2",
-    "typescript": "7.0.2"
+    "typescript": "catalog:"
   }
 }
 ```
@@ -104,13 +104,13 @@ packages:
   - "packages/*"
 
 catalog:
-  typescript: 7.0.2
+  typescript: 6.0.3
   vitest: 5.0.1
   "@biomejs/biome": 2.5.14
-  react: 19.3.0
-  react-dom: 19.3.0
-  "@types/react": ^19.3.0
-  "@types/react-dom": ^19.3.0
+  react: 19.2.3
+  react-dom: 19.2.3
+  "@types/react": 19.2.4
+  "@types/react-dom": 19.2.4
 
 allowBuilds:
   "@biomejs/biome": true
@@ -1094,6 +1094,8 @@ git commit -m "feat(web): socle vite, tanstack router et client rpc typé"
 
 > L'objectif de cette tâche est de **prouver la chaîne mobile → API**, rien de plus. Aucun module natif n'est ajouté ici : MMKV viendra au lot 6, et chaque module natif impose un nouveau build EAS.
 
+> **Versions alignées sur le SDK 57, pas choisies.** Le monorepo est en TypeScript 6.0.3 et React 19.2.3 parce qu'Expo SDK 57 l'exige, et c'est le consommateur le plus contraint qui fixe la version. `expo-router` et `expo-status-bar` suivent désormais le numéro du SDK (`~57.x`). En cas de doute, `npx expo install <paquet>` choisit la version juste — ne jamais recopier une version de mémoire.
+
 - [ ] **Étape 1 : Créer le paquet**
 
 ```json
@@ -1111,12 +1113,12 @@ git commit -m "feat(web): socle vite, tanstack router et client rpc typé"
     "@better-lift/shared": "workspace:*",
     "@tanstack/react-query": "5.103.2",
     "expo": "57.0.24",
-    "expo-router": "~7.0.0",
-    "expo-status-bar": "~3.0.0",
+    "expo-router": "~57.0.22",
+    "expo-status-bar": "~57.0.1",
     "react": "catalog:",
-    "react-native": "0.87.1",
+    "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.20.0"
+    "react-native-screens": "~4.26.2"
   },
   "devDependencies": {
     "@better-lift/config": "workspace:*",
@@ -1139,7 +1141,6 @@ Le schéma d'URL sert au lien profond de l'authentification, plus tard.
     "version": "0.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "plugins": ["expo-router"],
     "android": { "package": "com.algont.betterlift" },
     "ios": { "bundleIdentifier": "com.algont.betterlift" }
