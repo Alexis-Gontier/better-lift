@@ -1068,11 +1068,9 @@ pnpm --filter @better-lift/web dev
 
 Ouvrir `http://localhost:3000`. Attendu : « API opérationnelle — base connectée, en ligne depuis N s. »
 
-Le fichier `src/routeTree.gen.ts` est écrit par le greffon au premier démarrage. L'ajouter à `.gitignore` :
+Le fichier `src/routeTree.gen.ts` est écrit par le greffon au premier démarrage. **Il se commite** — c'est la recommandation explicite de la FAQ de TanStack Router : il fait partie du code d'exécution, pas des artefacts de build. Le gitignorer casserait la CI de la tâche 7, qui lance `typecheck` **avant** `build` : le fichier n'existerait pas encore et l'import de `./routeTree.gen` échouerait.
 
-```bash
-echo "apps/web/src/routeTree.gen.ts" >> .gitignore
-```
+En revanche il ne doit être touché ni par Biome ni par Knip, puisque le greffon le réécrit. Ajouter `"!**/routeTree.gen.ts"` à la liste `files.includes` de `biome.json`, et `"**/routeTree.gen.ts"` à la liste `ignore` de `knip.json`.
 
 - [ ] **Étape 9 : Commit**
 
