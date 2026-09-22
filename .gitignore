@@ -22,3 +22,6 @@ Thumbs.db
 
 # Client Prisma généré (packages/db)
 packages/db/src/generated/
+
+# Artefacts du MCP Playwright (captures de vérification manuelle)
+.playwright-mcp/
