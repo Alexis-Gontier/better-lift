@@ -3,13 +3,13 @@ packages:
   - "packages/*"
 
 catalog:
-  typescript: 7.0.2
+  typescript: 6.0.3
   vitest: 5.0.1
   "@biomejs/biome": 2.5.14
-  react: 19.3.0
-  react-dom: 19.3.0
-  "@types/react": ^19.3.0
-  "@types/react-dom": ^19.3.0
+  react: 19.2.3
+  react-dom: 19.2.3
+  "@types/react": 19.2.4
+  "@types/react-dom": 19.2.4
 
 allowBuilds:
   "@biomejs/biome": true

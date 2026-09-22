@@ -29,6 +29,6 @@
     "knip": "6.37.0",
     "lefthook": "2.1.14",
     "turbo": "2.11.2",
-    "typescript": "7.0.2"
+    "typescript": "catalog:"
   }
 }
