@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  qualite:
+    name: Qualité · typecheck · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint:ci
+
+      # `prisma.config.ts` lit DIRECT_URL par `env()`. Sur ce runner, aucun
+      # `.env` n'existe et rien n'appelle `prisma generate` avec une vraie
+      # base : sans valeur, la commande échoue avant même de lire le schéma
+      # (`PrismaConfigEnvError: Cannot resolve environment variable`).
+      # `prisma generate` ne se connecte pas — une URL syntaxiquement valide
+      # qui ne sera jamais contactée suffit.
+      - run: pnpm --filter @better-lift/db run generate
+        env:
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/better_lift_ci
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      - run: pnpm build
+        env:
+          VITE_API_URL: http://localhost:3001
+
+      # Le plugin Prisma de knip charge aussi `prisma.config.ts` pour
+      # localiser le schéma : même piège que `generate` ci-dessus, sur une
+      # étape qu'on n'attendait pas. Vérifié sur le runner (PR #38) :
+      # `knip` échouait avec la même `PrismaConfigEnvError`, et faisait
+      # remonter `prisma/schema.prisma` en « Unused files » en conséquence
+      # (l'échec de chargement du plugin, pas un second problème réel).
+      - run: pnpm knip
+        env:
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/better_lift_ci

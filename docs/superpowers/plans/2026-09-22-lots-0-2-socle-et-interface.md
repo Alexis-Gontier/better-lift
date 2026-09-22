@@ -16,7 +16,7 @@ Ces règles s'appliquent à **toutes** les tâches, sans être répétées.
 
 - **Node ≥ 24** (local : 24.18.1). **pnpm 11.27.1** exactement, pinné par `packageManager`. La machine a actuellement **11.13.0, une *broken release* marquée par l'amont** : elle doit être remplacée avant la tâche 1.
 - **Pas de pnpm 12** : la branche 12 existe mais n'a jamais été éprouvée avec Metro sur ce projet, et c'est précisément le point que la V0 de l'ancien projet avait dû valider. Le passage en 12 est un chantier à part.
-- **Versions exactes** (relevées le 2026-09-22) : `vite@8.3.0`, `react@19.3.0`, `@vitejs/plugin-react@6.1.1`, `@tanstack/react-router@1.170.38`, `@tanstack/router-plugin@1.168.40`, `@tanstack/react-query@5.103.2`, `hono@4.13.8`, `@hono/node-server@2.1.1`, `@prisma/client@7.10.0`, `@prisma/adapter-pg@7.10.0`, `better-auth@1.7.5`, `tailwindcss@4.3.3`, `zod@4.6.5`, `@biomejs/biome@2.5.14`, `turbo@2.11.2`, `vitest@5.0.1`, `typescript@7.0.2`, `expo@57.0.24`, `lefthook@2.1.14`, `knip@6.37.0`.
+- **Versions exactes** (relevées le 2026-09-22) : `vite@8.3.0`, `react@19.2.3`, `@vitejs/plugin-react@6.1.1`, `@tanstack/react-router@1.170.38`, `@tanstack/router-plugin@1.168.40`, `@tanstack/react-query@5.103.2`, `hono@4.13.8`, `@hono/node-server@2.1.1`, `@prisma/client@7.10.0`, `@prisma/adapter-pg@7.10.0`, `better-auth@1.7.5`, `tailwindcss@4.3.3`, `zod@4.6.5`, `@biomejs/biome@2.5.14`, `turbo@2.11.2`, `vitest@5.0.1`, `typescript@6.0.3`, `expo@57.0.24`, `lefthook@2.1.14`, `knip@6.37.0`.
 - **Toute l'interface est en français.** Aucun mécanisme d'i18n (D14).
 - **Le lime sourd `#a8cf45` est la seule couleur.** L'action est un **aplat**, le record un **contour** avec flèche montante (D28). Jamais de couleur en dur : un token par rôle, deux valeurs par token (D29).
 - **Ni Biome ni Knip ne touchent `.claude/`** : des skills y embarquent des `.mjs` dont la réécriture ferait diverger le hash de `skills-lock.json`.
@@ -89,7 +89,7 @@ git checkout -b feat/lot-0-socle
     "knip": "6.37.0",
     "lefthook": "2.1.14",
     "turbo": "2.11.2",
-    "typescript": "7.0.2"
+    "typescript": "catalog:"
   }
 }
 ```
@@ -104,25 +104,26 @@ packages:
   - "packages/*"
 
 catalog:
-  typescript: 7.0.2
+  typescript: 6.0.3
   vitest: 5.0.1
-  zod: 4.6.5
   "@biomejs/biome": 2.5.14
-  react: 19.3.0
-  react-dom: 19.3.0
-  "@types/react": ^19.3.0
-  "@types/react-dom": ^19.3.0
+  react: 19.2.3
+  react-dom: 19.2.3
+  "@types/react": 19.2.4
+  "@types/react-dom": 19.2.4
 
 allowBuilds:
-  - "@biomejs/biome"
-  - esbuild
-  - lefthook
-  - "@prisma/client"
-  - "@prisma/engines"
-  - prisma
+  "@biomejs/biome": true
+  esbuild: true
+  lefthook: true
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
 ```
 
-> Ne jamais éditer `allowBuilds` à la main sans relire le fichier ensuite : pnpm y écrit ses suggestions en clair, ce qui casse le YAML.
+> **`allowBuilds` est une map `matcher: booléen`, jamais une liste.** La forme liste appartient à l'ancienne clé `onlyBuiltDependencies`, qu'`allowBuilds` remplace depuis pnpm 10.26. Écrite en liste, la clé est sérialisée en tableau, et une approbation ultérieure la transforme en objet à clés numériques `'0'`, `'1'`… : plus aucun nom de paquet n'est alors reconnu, et `ERR_PNPM_IGNORED_BUILDS` revient dès qu'une dépendance à script d'installation entre dans l'arbre.
+>
+> Ne jamais éditer `allowBuilds` à la main sans relire le fichier ensuite : `pnpm approve-builds` y réécrit ses décisions, et une forme invalide au départ ressort corrompue.
 
 - [ ] **Étape 5 : Écrire `turbo.json`**
 
@@ -305,7 +306,6 @@ git commit -m "chore: socle du monorepo — pnpm, turborepo, biome, knip, leftho
     "test": "vitest run",
     "clean": "rm -rf .turbo node_modules"
   },
-  "dependencies": { "zod": "catalog:" },
   "devDependencies": {
     "@better-lift/config": "workspace:*",
     "typescript": "catalog:",
@@ -499,13 +499,19 @@ git commit -m "feat(shared): 1RM Epley, volume de série et conversions d'unité
 
 > **Prisma 7 impose un driver adapter et le format ES module.** La configuration diffère de tous les tutoriels antérieurs à novembre 2025.
 
-- [ ] **Étape 1 : Réactiver la branche Neon `dev`**
+- [ ] **Étape 1 : Vérifier que la base est joignable**
 
-Elle est archivée depuis le 2026-09-13. La réactiver depuis la console Neon (projet `late-bar-51472267`), puis copier ses deux URL dans `.env` — la poolée dans `DATABASE_URL`, la directe dans `DIRECT_URL`.
+Le `.env` est **déjà en place** à la racine, et la branche Neon `dev` est réactivée.
+
+Un point à connaître plutôt qu'à redécouvrir : cette branche porte toujours les quinze tables du schéma de la V1 — `ExerciseTranslation`, `PersonalRecord`, `RoutineFolder` et les tables de Better Auth. Un `prisma migrate dev` lancé contre elles détecterait une dérive et proposerait une réinitialisation destructive.
+
+C'est pourquoi le nouveau développement vise une **base distincte, `betterlift`**, créée vide sur la même branche. L'ancienne `neondb` reste intacte à côté, et le catalogue de `production` n'est pas concerné. Les deux URL du `.env` pointent déjà sur `betterlift`.
 
 ```bash
-cp .env.example .env
+node -e "console.log(process.env.DATABASE_URL?.includes('/betterlift') ? 'ok' : 'MAUVAISE BASE')" --env-file=.env
 ```
+
+Attendu : `ok`. Si la sortie dit autre chose, arrête-toi et signale-le — ne migre pas contre `neondb`.
 
 - [ ] **Étape 2 : Créer le paquet**
 
@@ -539,12 +545,35 @@ cp .env.example .env
 
 - [ ] **Étape 3 : Écrire `prisma.config.ts`**
 
+> **Deux ruptures de Prisma 7 que tous les tutoriels antérieurs ignorent.** D'abord, `url` et `directUrl` **ne sont plus acceptés dans `schema.prisma`** : les y laisser fait échouer toute commande sur un `P1012`. Ils vivent désormais ici. Ensuite, **Prisma 7 ne charge plus le `.env` tout seul** — il faut le faire explicitement, et le nôtre est à la racine du monorepo, deux niveaux au-dessus de ce fichier. `process.loadEnvFile()` est natif à Node 24 et évite d'ajouter `dotenv`.
+
+> **Troisième piège, le plus sournois : `url` reçoit ici l'URL DIRECTE, pas la poolée.** En Prisma 7, le CLI n'utilise que `url` pour migrer — `directUrl` n'est plus honoré dans ce contexte. Y mettre `DATABASE_URL` ferait passer les migrations par le pooler, exactement ce que la convention du projet veut éviter : PgBouncer en mode transaction fait échouer une migration qui tient un verrou consultatif sur plusieurs instructions. Un lot de `CREATE` passe quand même, ce qui rend le défaut invisible jusqu'à la première migration complexe.
+>
+> Le découplage est le suivant : **le CLI migre par la connexion directe, le runtime interroge par le pooler.** `src/index.ts` lit `DATABASE_URL` de son côté, indépendamment de ce fichier.
+
 ```ts
-import { defineConfig } from "prisma/config";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { defineConfig, env } from "prisma/config";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.join(here, "../../.env");
+
+// Le garde compte : en CI et sur Vercel, les variables sont injectées dans
+// l'environnement et aucun `.env` n'existe sur disque. Sans lui,
+// `loadEnvFile` jette un ENOENT et casse le build avec un message obscur.
+if (existsSync(envPath)) {
+  process.loadEnvFile(envPath);
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: { path: "prisma/migrations" },
+  datasource: {
+    // L'URL DIRECTE : c'est cette clé que le CLI utilise pour migrer.
+    url: env("DIRECT_URL"),
+  },
 });
 ```
 
@@ -559,9 +588,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  // url et directUrl vivent dans prisma.config.ts (Prisma 7).
 }
 
 enum BodyPart {
@@ -760,6 +788,29 @@ pnpm --filter @better-lift/api exec vitest run src/routes/health.test.ts
 Attendu : vert. La base est joignable, donc `status` vaut `ok`.
 
 - [ ] **Étape 6 : Écrire le point d'entrée**
+
+> **L'API doit charger le `.env` elle-même, et l'endroit compte.** Node ne le charge pas, Prisma 7 non plus : sans chargement explicite, `DATABASE_URL` vaut `undefined` et l'adaptateur échoue au premier appel.
+>
+> **Le piège est l'ordre d'évaluation des modules ES.** Les `import` statiques sont hissés : un module n'exécute son corps qu'après que toutes ses dépendances ont été évaluées. Un `process.loadEnvFile()` écrit dans le corps d'`index.ts` s'exécuterait donc **après** que `@better-lift/db` — importé transitivement par `./routes/health.js` — a déjà lu `DATABASE_URL`. Et le test importe `health.ts` directement, sans jamais passer par `index.ts`.
+>
+> La solution : un module dédié, sans aucune dépendance du dépôt, importé **en premier** par chaque fichier qui importe `@better-lift/db`. L'ordre d'évaluation ES garantit alors le chargement dans tous les cas, test compris.
+>
+> `apps/api/src/env.ts` :
+>
+> ```ts
+> import { existsSync } from "node:fs";
+>
+> // Trois niveaux : apps/api/src → racine du dépôt.
+> const envPath = new URL("../../../.env", import.meta.url);
+>
+> // En CI et sur Vercel, les variables sont injectées dans l'environnement et
+> // aucun `.env` n'existe sur disque : sans ce garde, loadEnvFile jette ENOENT.
+> if (existsSync(envPath)) {
+>   process.loadEnvFile(envPath);
+> }
+> ```
+>
+> Puis `import "./env.js";` en **toute première ligne** de `src/index.ts` et de `src/routes/health.ts`. Toute future route qui importe `@better-lift/db` suit la même règle.
 
 `apps/api/src/index.ts` — le CORS n'est nécessaire qu'en développement, où Vite et l'API occupent deux ports ; en production, même origine (D18).
 
@@ -1017,11 +1068,9 @@ pnpm --filter @better-lift/web dev
 
 Ouvrir `http://localhost:3000`. Attendu : « API opérationnelle — base connectée, en ligne depuis N s. »
 
-Le fichier `src/routeTree.gen.ts` est écrit par le greffon au premier démarrage. L'ajouter à `.gitignore` :
+Le fichier `src/routeTree.gen.ts` est écrit par le greffon au premier démarrage. **Il se commite** — c'est la recommandation explicite de la FAQ de TanStack Router : il fait partie du code d'exécution, pas des artefacts de build. Le gitignorer casserait la CI de la tâche 7, qui lance `typecheck` **avant** `build` : le fichier n'existerait pas encore et l'import de `./routeTree.gen` échouerait.
 
-```bash
-echo "apps/web/src/routeTree.gen.ts" >> .gitignore
-```
+En revanche il ne doit être touché ni par Biome ni par Knip, puisque le greffon le réécrit. Ajouter `"!**/routeTree.gen.ts"` à la liste `files.includes` de `biome.json`, et `"**/routeTree.gen.ts"` à la liste `ignore` de `knip.json`.
 
 - [ ] **Étape 9 : Commit**
 
@@ -1045,6 +1094,8 @@ git commit -m "feat(web): socle vite, tanstack router et client rpc typé"
 
 > L'objectif de cette tâche est de **prouver la chaîne mobile → API**, rien de plus. Aucun module natif n'est ajouté ici : MMKV viendra au lot 6, et chaque module natif impose un nouveau build EAS.
 
+> **Versions alignées sur le SDK 57, pas choisies.** Le monorepo est en TypeScript 6.0.3 et React 19.2.3 parce qu'Expo SDK 57 l'exige, et c'est le consommateur le plus contraint qui fixe la version. `expo-router` et `expo-status-bar` suivent désormais le numéro du SDK (`~57.x`). En cas de doute, `npx expo install <paquet>` choisit la version juste — ne jamais recopier une version de mémoire.
+
 - [ ] **Étape 1 : Créer le paquet**
 
 ```json
@@ -1062,12 +1113,12 @@ git commit -m "feat(web): socle vite, tanstack router et client rpc typé"
     "@better-lift/shared": "workspace:*",
     "@tanstack/react-query": "5.103.2",
     "expo": "57.0.24",
-    "expo-router": "~7.0.0",
-    "expo-status-bar": "~3.0.0",
+    "expo-router": "~57.0.22",
+    "expo-status-bar": "~57.0.1",
     "react": "catalog:",
-    "react-native": "0.87.1",
+    "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.20.0"
+    "react-native-screens": "~4.26.2"
   },
   "devDependencies": {
     "@better-lift/config": "workspace:*",
@@ -1090,7 +1141,6 @@ Le schéma d'URL sert au lien profond de l'authentification, plus tard.
     "version": "0.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "plugins": ["expo-router"],
     "android": { "package": "com.algont.betterlift" },
     "ios": { "bundleIdentifier": "com.algont.betterlift" }
@@ -2026,6 +2076,14 @@ git commit -m "feat(web): données factices et les trois états partagés"
 **Interfaces :**
 - Consomme : `AppShell`, `EXERCICES`, les trois composants d'état
 - Produit : `<BadgeRecord kg reps />` — **le contour** du couple aplat/contour (D28), réutilisé partout où un record s'affiche
+
+- [ ] **Étape 0 : Installer Zod**
+
+C'est ici que Zod entre dans le projet, et nulle part avant : `validateSearch` est son premier usage réel. Le déclarer plus tôt ferait échouer `knip` en CI dès la tâche 7, pour une dépendance que personne n'importe.
+
+```bash
+pnpm --filter @better-lift/web add zod@4.6.5
+```
 
 - [ ] **Étape 1 : Écrire le badge de record**
 

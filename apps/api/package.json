@@ -1,0 +1,27 @@
+{
+  "name": "@better-lift/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@better-lift/db": "workspace:*",
+    "@hono/node-server": "2.1.1",
+    "hono": "4.13.8"
+  },
+  "devDependencies": {
+    "@better-lift/config": "workspace:*",
+    "tsx": "^4.20.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

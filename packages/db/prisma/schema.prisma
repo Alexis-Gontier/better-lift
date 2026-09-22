@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url et directUrl vivent désormais dans prisma.config.ts (Prisma 7).
+}
+
+enum BodyPart {
+  CHEST
+  BACK
+  SHOULDERS
+  UPPER_ARMS
+  LOWER_ARMS
+  UPPER_LEGS
+  LOWER_LEGS
+  WAIST
+  CARDIO
+  NECK
+}
+
+model Exercise {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  instructions String[]
+  bodyPart     BodyPart
+  target       String
+  equipment    String
+  secondary    String[]
+  gifUrl       String?
+  archivedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([bodyPart])
+  @@index([equipment])
+}

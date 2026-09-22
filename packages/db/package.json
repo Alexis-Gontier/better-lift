@@ -1,0 +1,25 @@
+{
+  "name": "@better-lift/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo node_modules src/generated"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0"
+  },
+  "devDependencies": {
+    "@better-lift/config": "workspace:*",
+    "prisma": "7.10.0",
+    "typescript": "catalog:"
+  }
+}

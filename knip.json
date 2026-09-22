@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": [".claude/**"],
+  "ignoreDependencies": ["@prisma/client"],
+  "workspaces": {
+    ".": { "entry": [], "project": [] },
+    "packages/*": { "project": "src/**/*.ts" },
+    "packages/config": { "entry": [], "project": [] },
+    "packages/db": { "project": ["src/**/*.ts", "prisma/**/*.prisma"] },
+    "apps/api": { "project": "src/**/*.ts" },
+    "apps/web": { "project": "src/**/*.{ts,tsx}" },
+    "apps/mobile": { "entry": "app/**/*.{ts,tsx}", "project": "app/**/*.{ts,tsx}" }
+  }
+}

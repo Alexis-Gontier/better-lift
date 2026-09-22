@@ -1,0 +1,30 @@
+{
+  "name": "@better-lift/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.103.2",
+    "@tanstack/react-router": "1.170.38",
+    "hono": "4.13.8",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@better-lift/api": "workspace:*",
+    "@better-lift/config": "workspace:*",
+    "@tanstack/router-plugin": "1.168.40",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "catalog:",
+    "vite": "8.3.0"
+  }
+}
