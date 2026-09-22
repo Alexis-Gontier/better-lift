@@ -547,20 +547,32 @@ Attendu : `ok`. Si la sortie dit autre chose, arrête-toi et signale-le — ne m
 
 > **Deux ruptures de Prisma 7 que tous les tutoriels antérieurs ignorent.** D'abord, `url` et `directUrl` **ne sont plus acceptés dans `schema.prisma`** : les y laisser fait échouer toute commande sur un `P1012`. Ils vivent désormais ici. Ensuite, **Prisma 7 ne charge plus le `.env` tout seul** — il faut le faire explicitement, et le nôtre est à la racine du monorepo, deux niveaux au-dessus de ce fichier. `process.loadEnvFile()` est natif à Node 24 et évite d'ajouter `dotenv`.
 
+> **Troisième piège, le plus sournois : `url` reçoit ici l'URL DIRECTE, pas la poolée.** En Prisma 7, le CLI n'utilise que `url` pour migrer — `directUrl` n'est plus honoré dans ce contexte. Y mettre `DATABASE_URL` ferait passer les migrations par le pooler, exactement ce que la convention du projet veut éviter : PgBouncer en mode transaction fait échouer une migration qui tient un verrou consultatif sur plusieurs instructions. Un lot de `CREATE` passe quand même, ce qui rend le défaut invisible jusqu'à la première migration complexe.
+>
+> Le découplage est le suivant : **le CLI migre par la connexion directe, le runtime interroge par le pooler.** `src/index.ts` lit `DATABASE_URL` de son côté, indépendamment de ce fichier.
+
 ```ts
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, env } from "prisma/config";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-process.loadEnvFile(path.join(here, "../../.env"));
+const envPath = path.join(here, "../../.env");
+
+// Le garde compte : en CI et sur Vercel, les variables sont injectées dans
+// l'environnement et aucun `.env` n'existe sur disque. Sans lui,
+// `loadEnvFile` jette un ENOENT et casse le build avec un message obscur.
+if (existsSync(envPath)) {
+  process.loadEnvFile(envPath);
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: { path: "prisma/migrations" },
   datasource: {
-    url: env("DATABASE_URL"),
-    directUrl: env("DIRECT_URL"),
+    // L'URL DIRECTE : c'est cette clé que le CLI utilise pour migrer.
+    url: env("DIRECT_URL"),
   },
 });
 ```
@@ -783,10 +795,12 @@ Attendu : vert. La base est joignable, donc `status` vaut `ok`.
 > **L'API doit charger le `.env` elle-même.** Node ne le fait pas, et Prisma 7 ne le fait plus non plus : sans cela, `DATABASE_URL` vaut `undefined` et l'adaptateur échoue au premier appel. Ajoute en toute première ligne de `src/index.ts`, avant les autres imports :
 >
 > ```ts
-> process.loadEnvFile(new URL("../../../.env", import.meta.url).pathname);
+> import { existsSync } from "node:fs";
+> const envPath = new URL("../../../.env", import.meta.url);
+> if (existsSync(envPath)) process.loadEnvFile(envPath);
 > ```
 >
-> `process.loadEnvFile` est natif à Node 24 — pas besoin de `dotenv`.
+> `process.loadEnvFile` est natif à Node 24 — pas besoin de `dotenv`. **Le garde `existsSync` n'est pas facultatif** : en CI et sur Vercel les variables sont injectées dans l'environnement et aucun `.env` n'existe sur disque, où l'appel nu jetterait un `ENOENT`.
 
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
