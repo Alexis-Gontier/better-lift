@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(npx skills *)",
+      "Bash(npx biome *)",
+      "Bash(npx prisma *)",
+      "Bash(npx turbo *)",
+      "Bash(node *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git switch*)",
+      "Bash(git restore*)",
+      "Bash(gh api *)",
+      "Bash(gh pr *)",
+      "Bash(gh repo view*)",
+      "Bash(adb *)",
+      "Bash(eas *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./apps/**/.env)",
+      "Read(./apps/**/.env.*)",
+      "Bash(git push*)",
+      "Bash(rm -rf *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"${CLAUDE_PROJECT_DIR}/.claude/hooks/format.ps1\"",
+            "timeout": 30,
+            "statusMessage": "Biome"
+          }
+        ]
+      }
+    ]
+  }
+}

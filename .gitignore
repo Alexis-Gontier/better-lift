@@ -1,7 +1,18 @@
 node_modules/
 dist/
-.env
-.env.local
-*.log
+build/
+coverage/
 .turbo/
 .expo/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+# Réglages Claude Code personnels (les réglages partagés, eux, sont commités)
+.claude/settings.local.json
+
+*.log
+.DS_Store
+Thumbs.db
