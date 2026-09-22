@@ -1,0 +1,22 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+catalog:
+  typescript: 7.0.2
+  vitest: 5.0.1
+  zod: 4.6.5
+  "@biomejs/biome": 2.5.14
+  react: 19.3.0
+  react-dom: 19.3.0
+  "@types/react": ^19.3.0
+  "@types/react-dom": ^19.3.0
+
+allowBuilds:
+  '0': '@biomejs/biome'
+  '1': esbuild
+  '2': lefthook
+  '3': '@prisma/client'
+  '4': '@prisma/engines'
+  '5': prisma
+  lefthook: true
