@@ -291,7 +291,7 @@ Pas de `.mcp.json` : Neon et Context7 viennent des plugins déjà configurés su
 | D1 | Base Neon, région UE. Francfort contre Londres : le Royaume-Uni est hors Union européenne depuis le Brexit, couvert par une décision d'adéquation révocable | D4 |
 | D2 | Runtime Node 24, pas de Cloudflare Workers — Prisma y ajoute de la complexité sans contrepartie | D5 |
 | D3 | Le web passe toujours par l'API | D3 |
-| D4 | 1RM estimé par la formule d'Epley | D11 |
+| D4 | 1RM estimé par la formule d'Epley — `poids × (1 + reps / 30)`, arrondi à la décimale. **Deux bornes que la formule littérale ne donne pas** : à une répétition le 1RM vaut la charge elle-même (Epley rendrait 103,3 % pour un maximum déjà atteint), et à zéro répétition il vaut 0 | D11 |
 | D5 | Le poids de corps est exclu du volume | D12 |
 | D6 | Notes de séance : champ libre, pas de structure imposée | D14 |
 | D7 | Outillage qualité : Biome, Lefthook, Knip | D19 |

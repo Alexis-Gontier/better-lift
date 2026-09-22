@@ -499,13 +499,19 @@ git commit -m "feat(shared): 1RM Epley, volume de série et conversions d'unité
 
 > **Prisma 7 impose un driver adapter et le format ES module.** La configuration diffère de tous les tutoriels antérieurs à novembre 2025.
 
-- [ ] **Étape 1 : Réactiver la branche Neon `dev`**
+- [ ] **Étape 1 : Vérifier que la base est joignable**
 
-Elle est archivée depuis le 2026-09-13. La réactiver depuis la console Neon (projet `late-bar-51472267`), puis copier ses deux URL dans `.env` — la poolée dans `DATABASE_URL`, la directe dans `DIRECT_URL`.
+Le `.env` est **déjà en place** à la racine, et la branche Neon `dev` est réactivée.
+
+Un point à connaître plutôt qu'à redécouvrir : cette branche porte toujours les quinze tables du schéma de la V1 — `ExerciseTranslation`, `PersonalRecord`, `RoutineFolder` et les tables de Better Auth. Un `prisma migrate dev` lancé contre elles détecterait une dérive et proposerait une réinitialisation destructive.
+
+C'est pourquoi le nouveau développement vise une **base distincte, `betterlift`**, créée vide sur la même branche. L'ancienne `neondb` reste intacte à côté, et le catalogue de `production` n'est pas concerné. Les deux URL du `.env` pointent déjà sur `betterlift`.
 
 ```bash
-cp .env.example .env
+node -e "console.log(process.env.DATABASE_URL?.includes('/betterlift') ? 'ok' : 'MAUVAISE BASE')" --env-file=.env
 ```
+
+Attendu : `ok`. Si la sortie dit autre chose, arrête-toi et signale-le — ne migre pas contre `neondb`.
 
 - [ ] **Étape 2 : Créer le paquet**
 
