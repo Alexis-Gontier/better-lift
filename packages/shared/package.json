@@ -11,9 +11,6 @@
     "test": "vitest run",
     "clean": "rm -rf .turbo node_modules"
   },
-  "dependencies": {
-    "zod": "catalog:"
-  },
   "devDependencies": {
     "@better-lift/config": "workspace:*",
     "typescript": "catalog:",

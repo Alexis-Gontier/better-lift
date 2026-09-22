@@ -12,9 +12,6 @@ catalogs:
     vitest:
       specifier: 5.0.1
       version: 5.0.1
-    zod:
-      specifier: 4.6.5
-      version: 4.6.5
 
 importers:
 
@@ -45,10 +42,6 @@ importers:
   packages/config: {}
 
   packages/shared:
-    dependencies:
-      zod:
-        specifier: 'catalog:'
-        version: 4.6.5
     devDependencies:
       '@better-lift/config':
         specifier: workspace:*
