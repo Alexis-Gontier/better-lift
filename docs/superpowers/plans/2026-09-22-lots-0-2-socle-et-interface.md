@@ -1648,13 +1648,20 @@ export function NavLaterale() {
 
 `apps/web/src/components/shell/app-shell.tsx` — `autoSaveId` persiste les tailles en `localStorage`, **ce qui est lu avant le premier rendu** : c'est précisément ce que Next.js ne permettait pas sans rendre toutes les routes dynamiques.
 
+> **L'API de `react-resizable-panels` a changé : le code ci-dessous est celui qui fonctionne contre la 4.13.1 réellement installée.** Trois pièges, tous vérifiés dans le code compilé de la bibliothèque :
+>
+> - `direction` et `autoSaveId` **n'existent plus**. L'orientation s'écrit `orientation="horizontal"`, et la persistance passe par le hook `useDefaultLayout`.
+> - **Une taille numérique nue est interprétée en pixels**, pas en pourcentage : `defaultSize={16}` donne un panneau de 16 px. Les pourcentages s'écrivent en chaînes, `"16%"`.
+> - Le groupe impose `height: 100%` **en style inline**, que rien ne peut surcharger : une classe `h-screen` dessus est inerte. Le remplissage de la fenêtre vient de `html, body, #root { height: 100% }` dans `globals.css`.
+>
+> `useDefaultLayout` lit `localStorage` par `useSyncExternalStore`, donc **pendant le rendu** et non après montage : la largeur est restituée sans saut de mise en page. C'est la promesse que l'ancien projet ne pouvait tenir qu'en lisant un cookie côté serveur.
+>
+> Sa clé de stockage vaut `react-resizable-panels:<id>:<panelIds joints>`. Conséquence à connaître pour la suite : **`panelIds` change quand le panneau de détail apparaît ou disparaît**, donc les largeurs d'un affichage à deux panneaux ne sont pas celles d'un affichage à trois. C'est le comportement voulu par la bibliothèque, mais la largeur de la navigation peut sembler « sauter » à l'ouverture du détail.
+
 ```tsx
 import type { ReactNode } from "react";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { useDefaultLayout } from "react-resizable-panels";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { NavLaterale } from "./nav-lateral";
 
 type Props = {
@@ -1663,26 +1670,39 @@ type Props = {
 };
 
 export function AppShell({ liste, detail }: Props) {
+  // react-resizable-panels 4 n'a plus de prop `autoSaveId` (API des versions 1/2) : la
+  // persistance passe par ce hook, qui lit `localStorage` de façon SYNCHRONE au rendu
+  // (via useSyncExternalStore) — donc bien avant le premier affichage.
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: "better-lift-shell",
+    storage: localStorage,
+    panelIds: detail ? ["nav", "liste", "detail"] : ["nav", "liste"],
+  });
+
   return (
     <ResizablePanelGroup
-      direction="horizontal"
-      autoSaveId="better-lift-shell"
+      orientation="horizontal"
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
       className="h-screen w-screen"
     >
-      <ResizablePanel defaultSize={16} minSize={12} maxSize={26}>
+      {/* Tailles en pourcentage : react-resizable-panels 4 interprète un nombre NU comme
+          des pixels (API v1/v2 : c'était toujours un pourcentage) — sans le suffixe "%",
+          nav se retrouverait contraint entre 12 px et 26 px. */}
+      <ResizablePanel id="nav" defaultSize="16%" minSize="12%" maxSize="26%">
         <NavLaterale />
       </ResizablePanel>
 
       <ResizableHandle className="bg-(--line)" />
 
-      <ResizablePanel defaultSize={detail ? 56 : 84} minSize={30}>
+      <ResizablePanel id="liste" defaultSize={detail ? "56%" : "84%"} minSize="30%">
         {liste}
       </ResizablePanel>
 
       {detail ? (
         <>
           <ResizableHandle className="bg-(--line)" />
-          <ResizablePanel defaultSize={28} minSize={20} maxSize={44}>
+          <ResizablePanel id="detail" defaultSize="28%" minSize="20%" maxSize="44%">
             <aside aria-label="Détail" className="h-full bg-(--surface-1)">
               {detail}
             </aside>
