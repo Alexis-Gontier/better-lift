@@ -545,12 +545,23 @@ Attendu : `ok`. Si la sortie dit autre chose, arrête-toi et signale-le — ne m
 
 - [ ] **Étape 3 : Écrire `prisma.config.ts`**
 
+> **Deux ruptures de Prisma 7 que tous les tutoriels antérieurs ignorent.** D'abord, `url` et `directUrl` **ne sont plus acceptés dans `schema.prisma`** : les y laisser fait échouer toute commande sur un `P1012`. Ils vivent désormais ici. Ensuite, **Prisma 7 ne charge plus le `.env` tout seul** — il faut le faire explicitement, et le nôtre est à la racine du monorepo, deux niveaux au-dessus de ce fichier. `process.loadEnvFile()` est natif à Node 24 et évite d'ajouter `dotenv`.
+
 ```ts
-import { defineConfig } from "prisma/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { defineConfig, env } from "prisma/config";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+process.loadEnvFile(path.join(here, "../../.env"));
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: { path: "prisma/migrations" },
+  datasource: {
+    url: env("DATABASE_URL"),
+    directUrl: env("DIRECT_URL"),
+  },
 });
 ```
 
@@ -565,9 +576,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  // url et directUrl vivent dans prisma.config.ts (Prisma 7).
 }
 
 enum BodyPart {
@@ -770,6 +780,14 @@ Attendu : vert. La base est joignable, donc `status` vaut `ok`.
 `apps/api/src/index.ts` — le CORS n'est nécessaire qu'en développement, où Vite et l'API occupent deux ports ; en production, même origine (D18).
 
 ```ts
+> **L'API doit charger le `.env` elle-même.** Node ne le fait pas, et Prisma 7 ne le fait plus non plus : sans cela, `DATABASE_URL` vaut `undefined` et l'adaptateur échoue au premier appel. Ajoute en toute première ligne de `src/index.ts`, avant les autres imports :
+>
+> ```ts
+> process.loadEnvFile(new URL("../../../.env", import.meta.url).pathname);
+> ```
+>
+> `process.loadEnvFile` est natif à Node 24 — pas besoin de `dotenv`.
+
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
