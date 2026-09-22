@@ -17,6 +17,15 @@
   --color-accent-ink: var(--accent-ink);
 }
 
+/* react-resizable-panels fixe `height: 100%` en style inline sur le groupe (non
+   surchargeable, cf. sa doc) : sans cette chaîne, il s'effondre à la hauteur de son
+   contenu plutôt que de remplir la fenêtre. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   background: var(--canvas);
