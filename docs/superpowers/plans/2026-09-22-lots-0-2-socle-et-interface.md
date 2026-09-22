@@ -1797,22 +1797,26 @@ export function Palette() {
 
 - [ ] **Étape 2 : Habiller la palette au registre flottant**
 
-Ajouter dans `apps/web/src/styles/globals.css` :
+> **Ne pas passer par un sélecteur CSS global.** Le slot `command-dialog-content` n'existe pas : `CommandDialog` rend un `DialogContent`, dont le slot `data-slot="dialog-content"` est partagé par **tous** les dialogues, présents et à venir. Un sélecteur global dessus ferait flotter n'importe quel dialogue ultérieur — exactement ce que D27 interdit, puisque l'élévation est réservée au passager.
+>
+> La bonne voie est de passer les classes par les composants. `DialogContent` ne sait habiller que son contenu : ajoute-lui un prop **`overlayClassName?: string`**, optionnel, transmis à `<DialogOverlay />` — et le même sur `CommandDialog`, qui le relaie.
 
-```css
-[data-slot="command-dialog-content"] {
-  background: var(--float-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--float-line);
-  box-shadow: var(--float-shadow);
-}
+Puis, dans `Palette` :
 
-[data-slot="dialog-overlay"] {
-  background: var(--scrim);
-}
+```tsx
+<CommandDialog
+  open={ouverte}
+  onOpenChange={setOuverte}
+  title="Palette de commandes"
+  description="Rechercher un exercice ou lancer une action"
+  className="border-(--float-line) bg-(--float-bg) shadow-(--float-shadow) backdrop-blur-[20px]"
+  overlayClassName="bg-(--scrim)"
+>
 ```
 
-> Si les sélecteurs ne mordent pas, inspecter le composant généré : le CLI shadcn peut nommer ses parties autrement selon la version. Corriger le sélecteur plutôt que de dupliquer les valeurs.
+La syntaxe `bg-(--float-bg)` fonctionne en Tailwind 4 **même pour une variable non exposée** par `@theme inline` : elle produit `background-color: var(--float-bg)`. Vérifié dans le CSS émis. Et `cn` évince bien les classes par défaut du composant (`bg-background`, `shadow-lg`, `p-6`) au profit des nôtres.
+
+**Traduire les primitives au passage** : `command.tsx` porte « Command Palette » et « Search for a command to run… », `dialog.tsx` porte deux fois « Close ». Ces fichiers sont vendorisés dans le dépôt et l'application est en français — les traduire est légitime. Aucun de ces textes ne sert d'identifiant : Radix relie `aria-labelledby` par contexte, pas par contenu.
 
 - [ ] **Étape 3 : Monter la palette**
 
