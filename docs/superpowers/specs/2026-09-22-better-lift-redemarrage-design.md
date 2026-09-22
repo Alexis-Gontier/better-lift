@@ -26,7 +26,9 @@ Le redémarrage est rentable pour une seule raison, et il faut la garder en têt
 
 ### Ce qui est abandonné
 
-Le code applicatif, dans sa totalité. L'ancien dépôt reste consultable ; le nouveau ne partage avec lui ni historique, ni fichier.
+Le code applicatif, dans sa totalité. Le nouveau dépôt ne partage avec l'ancien ni historique, ni fichier.
+
+Le dépôt `Alexis-Gontier/better-lift` a été **réinitialisé** le 22 septembre 2026 plutôt que recréé : `main` porte le nouvel historique, et celui de la V1 reste accessible sur la branche **`v1`** et le tag **`v1-final`** (`b5f0a39`, 35 PR fusionnées). Voir D26.
 
 ## 2. Produit
 
@@ -124,6 +126,40 @@ Un seul projet Vercel sert le SPA en statique et l'API en fonction sur `/api/*`.
 
 Le mobile n'est pas distribué par les magasins d'applications : APK universel produit par EAS et installé directement. Les artefacts EAS expirent au bout de quatorze jours.
 
+### La coquille du web
+
+**Trois panneaux : navigation, liste, détail** — la structure de Linear et de claude.ai, retenue après comparaison de quatre maquettes.
+
+```
+┌──────────┬────────────────────┬──────────────┐
+│   nav    │       liste        │    détail    │
+│  ~228px  │     flex-grow      │    ~390px    │
+└──────────┴────────────────────┴──────────────┘
+      ↕ poignées redimensionnables, tailles persistées
+```
+
+Elle est retenue pour une raison précise : **les trois écrans principaux sont des listes** — le catalogue, les routines, l'historique. Avec un détail en pleine page, consulter un exercice fait perdre la liste et ses filtres, et parcourir le catalogue devient un aller-retour permanent. C'était le défaut de l'ancien projet et c'est celui de Hevy.
+
+Le coût assumé : un détail étroit, où les graphiques restent petits.
+
+Trois mécaniques viennent avec, et aucune n'est à écrire :
+
+- **Panneaux redimensionnables** — `Resizable` de shadcn, c'est-à-dire `react-resizable-panels`, dont `autoSaveId` persiste les tailles en `localStorage`.
+- **Palette de commandes** (`Cmd+K`) — `Command` de shadcn, c'est-à-dire `cmdk`.
+- **Le détail ouvert vit dans l'URL**, avec les filtres, via les paramètres de recherche typés de TanStack Router. Un rechargement retombe exactement au même endroit.
+
+Le SPA supprime ici un problème que Next.js imposait : l'ancien projet devait lire le cookie `sidebar_state` **côté serveur** pour éviter que la barre latérale saute de 16 rem au chargement, ce qui rendait dynamiques toutes les routes de la zone connectée. En SPA, `localStorage` est lu avant le premier rendu.
+
+### Registre visuel
+
+**Sombre par défaut, clair disponible et accessible.** Les tokens sont définis pour les deux registres dès le départ, même si le sombre est ce qu'on regarde en salle et le soir.
+
+La hiérarchie vient d'une **échelle de surfaces et de quatre niveaux d'encre**, jamais d'ombres portées ni d'une seconde couleur : canvas, trois surfaces, filets de 1 px. Un accent, employé avec parcimonie. C'est la doctrine de Linear, et elle convient à une interface dense.
+
+**Cette densité vaut pour le web seulement.** En salle, à bout de bras, entre deux séries, il faut l'inverse : cibles larges, contraste franc, peu d'éléments à l'écran. Le mobile partage la palette pour rester la même application, mais pas l'échelle ni la densité. C'est la traduction visuelle de « le web est l'atelier, le mobile est l'outil de terrain ».
+
+Contraste minimum WCAG 2.1 AA : 4,5:1 sur le texte courant, 3:1 à partir de 24 px.
+
 ## 4. Modèle de données
 
 Repris du schéma éprouvé, avec deux suppressions.
@@ -212,6 +248,18 @@ Deux écarts délibérés au reste de l'API, hérités et maintenus : le corps d
 - Développement piloté par les tests sur la logique métier. L'interface se vérifie en la faisant tourner : les défauts marquants de l'ancien projet — le volume affiché sans tenir compte du système d'unités, le formulaire bloqué sur son squelette après un échec de requête — étaient tous invisibles à la lecture comme aux tests unitaires.
 - **Node 24**, **pnpm 11.18.0** au minimum. La 11.13.0 a été retirée par l'amont.
 
+### Outillage de l'agent
+
+Posé le 22 septembre 2026, avant tout code.
+
+- **`CLAUDE.md`** à la racine : stack, règles d'architecture, commandes et pièges hérités.
+- **`.claude/settings.json`** : permissions (`pnpm`, `git`, `gh`, `adb`, `eas` autorisés ; les fichiers `.env` et `rm -rf` refusés ; `git push` en confirmation).
+- **`.claude/hooks/format.ps1`** : Biome après chaque édition. En PowerShell, parce que sous Windows un hook en forme shell s'exécute par PowerShell et non par bash. Il **ignore `.claude/skills/`** : certaines skills embarquent des `.mjs` que le formatage réécrirait, ce qui ferait diverger le hash de `skills-lock.json`.
+- **Trois commandes** : `/verif` (build, typecheck, test, lint, knip, avec le remède au `.tsbuildinfo` périmé), `/lot` (démarre un lot sur sa branche), `/migration` (migration Prisma, avec le garde-fou sur la branche Neon visée).
+- **22 skills** en fichiers réels sous `.claude/skills/`, commitées, jamais de `.agents/`. Sources officielles pour Hono, Vite, Vitest, Expo, Prisma, Better Auth, shadcn et Turborepo ; TanStack et React Native viennent de sources tierces vérifiées.
+
+Pas de `.mcp.json` : Neon et Context7 viennent des plugins déjà configurés sur la machine de développement, et les redéclarer imposerait une clé API en clair dans le dépôt.
+
 ## 10. Registre des décisions
 
 ### Reprises de l'ancien projet
@@ -250,20 +298,29 @@ Deux écarts délibérés au reste de l'API, hérités et maintenus : le corps d
 | D20 | **Catalogue aplati**, sans table de traductions |
 | D21 | **Noms d'exercices en français d'usage**, guidés par un glossaire versionné et relu avant toute traduction de masse |
 | D22 | **Inscription fermée par liste blanche d'adresses** |
+| D23 | **Coquille web à trois panneaux** — navigation, liste, détail, redimensionnables et persistés. Retenue parce que les trois écrans principaux sont des listes ; le détail en pleine page ferait perdre la liste et ses filtres à chaque consultation |
+| D24 | **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux d'encre, sans ombres ni seconde couleur. Densité réservée au web : le mobile partage la palette, pas l'échelle |
+| D25 | **L'interface passe avant la logique.** On dessine et on valide un écran avant de lui brancher des données. Réordonne le découpage en lots (§ 11) |
+| D26 | **Dépôt `Alexis-Gontier/better-lift` réinitialisé** le 22 septembre 2026 plutôt que recréé. L'historique de la V1 est conservé sur la branche `v1` et le tag `v1-final` (`b5f0a39`). Le ruleset « main protégée » est **désactivé** : ses trois checks requis désignent l'ancienne CI, le réactiver tel quel bloquerait toute PR. À remettre au lot 0, avec les noms à jour |
 
 ## 11. Découpage en lots
 
+**L'interface passe avant la logique** (D25) : on dessine un écran et on le valide avant de lui brancher des données. Le découpage suit ce principe — l'interface d'un domaine précède son API, et la coquille, qui est transversale, précède tout le reste.
+
 | Lot | Contenu | Critère de sortie |
 |---|---|---|
-| **0** | Monorepo, trois applications qui démarrent, Neon rebranchée, CI minimale | `pnpm dev` lance tout, le mobile lit `/health` |
-| **1** | Better Auth, liste blanche, connexion web et mobile | Connexion effective sur les deux surfaces |
-| **2** | Glossaire, traduction, migration aplatie, seed | Le catalogue est en français dans la base |
-| **3** | Recherche et fiche d'exercice, web et mobile | N'importe quel exercice se retrouve |
-| **4** | Routines : CRUD et éditeur web | Une séance se prépare à l'avance |
-| **5** | **Séance mobile** : saisie, chrono, repos, hors ligne | **Un entraînement réel est saisi avec** |
-| **6** | Historique et records dérivés | L'historique et les meilleures charges sont consultables |
+| **0** | Socle : monorepo, trois applications qui démarrent, Neon rebranchée, CI | `pnpm dev` lance tout, le mobile lit `/health` |
+| **1** | **Coquille web** : tokens des deux thèmes, shadcn, trois panneaux redimensionnables, `Cmd+K` | La coquille tient debout, les tailles survivent au rechargement |
+| **2** | **Écrans web dessinés** dans la coquille — catalogue, routines, historique — sur données factices | Les écrans sont validés visuellement, avant toute API |
+| **3** | Better Auth, liste blanche, connexion web et mobile | Connexion effective sur les deux surfaces |
+| **4** | Catalogue français : glossaire, traduction, migration aplatie, seed, API — puis branchement du lot 2 | N'importe quel exercice se retrouve, en français |
+| **5** | Routines : API et branchement de l'éditeur | Une séance se prépare à l'avance |
+| **6** | **Écrans mobiles dessinés**, puis la séance : API, saisie, chrono, repos, hors ligne | **Un entraînement réel est saisi avec** |
+| **7** | Historique et records dérivés | L'historique et les meilleures charges sont consultables |
 
-Le lot 5 est le but ; tout ce qui le précède existe pour lui.
+Le lot 6 est le but ; tout ce qui le précède existe pour lui.
+
+Deux réserves sur cette méthode, à garder en tête plutôt qu'à découvrir : dessiner un écran sur données factices fait manquer les états que seules les vraies données révèlent — liste vide, chargement, échec de requête, libellés trop longs. Et une maquette validée n'est pas un écran fini : le branchement rouvrira des questions. Les lots d'interface doivent donc porter **les quatre états dès le dessin**, pas seulement le cas nominal.
 
 **Critère de sortie global : pouvoir abandonner Hevy pendant un mois complet sans manque bloquant.**
 

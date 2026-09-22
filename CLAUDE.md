@@ -9,10 +9,15 @@ et la liste des pièges déjà payés.
 ## État
 
 Le dépôt repart de zéro le 22 septembre 2026. Il ne contient pour l'instant que la conception,
-le setup Claude Code et les skills. **Aucun code applicatif.** Un dépôt précédent
-(`Alexis-Gontier/better-lift`, 37 PR) sert de référence et n'est pas repris.
+le setup Claude Code et les skills. **Aucun code applicatif.**
 
-Dépôt **local, sans distant** : ne pas tenter de pousser.
+Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
+historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
+(`b5f0a39`) ; il sert de référence et n'est pas repris.
+
+Le ruleset « main protégée » est **désactivé** : ses trois checks requis désignent l'ancienne CI.
+À remettre au lot 0, avec les noms à jour — les deux doivent bouger ensemble, sinon toute PR
+devient immergeable.
 
 ## Stack
 
@@ -35,6 +40,20 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 - La logique métier vit dans `services/` côté API et ne connaît jamais le contexte Hono.
 - **L'interface n'est pas partagée** entre web et mobile. Deux surfaces, deux ergonomies.
 - Contrat typé par **Hono RPC**, pas d'OpenAPI. Zod dans `shared` est la source unique.
+
+## Interface
+
+- **Coquille web à trois panneaux** : navigation, liste, détail — redimensionnables, tailles
+  persistées, et **le détail ouvert vit dans l'URL** avec les filtres (paramètres de recherche
+  typés de TanStack Router). Un rechargement retombe au même endroit.
+- `Resizable` et `Command` de shadcn fournissent les panneaux et le `Cmd+K` : rien à écrire.
+- **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux
+  d'encre, jamais d'ombres ni de seconde couleur. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
+- **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
+  salle il faut des cibles larges et un contraste franc.
+- **L'interface passe avant la logique** : on dessine et on valide un écran avant de lui brancher
+  des données — avec ses **quatre états** dès le dessin (vide, chargement, erreur, nominal), sans
+  quoi le branchement les découvre trop tard.
 
 ## Commandes
 
