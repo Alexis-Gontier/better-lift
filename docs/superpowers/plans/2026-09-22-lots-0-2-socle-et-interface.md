@@ -789,19 +789,32 @@ Attendu : vert. La base est joignable, donc `status` vaut `ok`.
 
 - [ ] **Étape 6 : Écrire le point d'entrée**
 
-`apps/api/src/index.ts` — le CORS n'est nécessaire qu'en développement, où Vite et l'API occupent deux ports ; en production, même origine (D18).
-
-```ts
-> **L'API doit charger le `.env` elle-même.** Node ne le fait pas, et Prisma 7 ne le fait plus non plus : sans cela, `DATABASE_URL` vaut `undefined` et l'adaptateur échoue au premier appel. Ajoute en toute première ligne de `src/index.ts`, avant les autres imports :
+> **L'API doit charger le `.env` elle-même, et l'endroit compte.** Node ne le charge pas, Prisma 7 non plus : sans chargement explicite, `DATABASE_URL` vaut `undefined` et l'adaptateur échoue au premier appel.
+>
+> **Le piège est l'ordre d'évaluation des modules ES.** Les `import` statiques sont hissés : un module n'exécute son corps qu'après que toutes ses dépendances ont été évaluées. Un `process.loadEnvFile()` écrit dans le corps d'`index.ts` s'exécuterait donc **après** que `@better-lift/db` — importé transitivement par `./routes/health.js` — a déjà lu `DATABASE_URL`. Et le test importe `health.ts` directement, sans jamais passer par `index.ts`.
+>
+> La solution : un module dédié, sans aucune dépendance du dépôt, importé **en premier** par chaque fichier qui importe `@better-lift/db`. L'ordre d'évaluation ES garantit alors le chargement dans tous les cas, test compris.
+>
+> `apps/api/src/env.ts` :
 >
 > ```ts
 > import { existsSync } from "node:fs";
+>
+> // Trois niveaux : apps/api/src → racine du dépôt.
 > const envPath = new URL("../../../.env", import.meta.url);
-> if (existsSync(envPath)) process.loadEnvFile(envPath);
+>
+> // En CI et sur Vercel, les variables sont injectées dans l'environnement et
+> // aucun `.env` n'existe sur disque : sans ce garde, loadEnvFile jette ENOENT.
+> if (existsSync(envPath)) {
+>   process.loadEnvFile(envPath);
+> }
 > ```
 >
-> `process.loadEnvFile` est natif à Node 24 — pas besoin de `dotenv`. **Le garde `existsSync` n'est pas facultatif** : en CI et sur Vercel les variables sont injectées dans l'environnement et aucun `.env` n'existe sur disque, où l'appel nu jetterait un `ENOENT`.
+> Puis `import "./env.js";` en **toute première ligne** de `src/index.ts` et de `src/routes/health.ts`. Toute future route qui importe `@better-lift/db` suit la même règle.
 
+`apps/api/src/index.ts` — le CORS n'est nécessaire qu'en développement, où Vite et l'API occupent deux ports ; en production, même origine (D18).
+
+```ts
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
