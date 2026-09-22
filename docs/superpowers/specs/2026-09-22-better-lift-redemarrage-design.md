@@ -1,0 +1,303 @@
+# better-lift — Conception du redémarrage
+
+> Document de conception, 22 septembre 2026.
+> Remplace l'intégralité de la documentation du dépôt précédent.
+
+## 1. Pourquoi ce redémarrage
+
+Une première version de better-lift existe : dépôt `Alexis-Gontier/better-lift`, 37 PR fusionnées entre le 31 juillet et le 6 août 2026, ~41 000 lignes de TypeScript, 507 tests verts. Elle couvrait presque toute une V1 : authentification, catalogue, routines, séances, historique, statistiques, réglages, export RGPD, saisie mobile hors ligne.
+
+Ce n'est pas la dette qui motive de repartir : **c'est un changement de cible**.
+
+L'architecture d'alors était dimensionnée pour un SaaS ouvert — API déployée à part, monorepo à huit paquets, contrat OpenAPI publiable, quotas d'authentification, internationalisation fr/en, étage de préproduction. Le 6 août 2026, le produit a été recadré en **application personnelle à deux ou trois comptes**. Toute cette machinerie payait donc pour des utilisateurs qui n'existeront jamais.
+
+Le redémarrage est rentable pour une seule raison, et il faut la garder en tête à chaque arbitrage : **l'objectif n'est pas du code plus propre, c'est beaucoup moins de code.**
+
+### Ce qui est repris de l'ancien projet
+
+| Actif | État |
+|---|---|
+| Base Neon `late-bar-51472267` (Francfort, PostgreSQL 18) | Vivante, catalogue intact : 1 324 exercices |
+| Schéma Prisma (14 modèles, 6 enums) | Éprouvé en production, repris avec deux suppressions |
+| Seed et mapping du dataset | Écrits et testés |
+| Chaîne EAS et émulateur Android | Montés sur la machine de développement |
+| OAuth App GitHub | Créée et éprouvée |
+| Registre des 29 décisions argumentées | Relu, trié : repris, révisé ou abandonné (§ 10) |
+
+### Ce qui est abandonné
+
+Le code applicatif, dans sa totalité. L'ancien dépôt reste consultable ; le nouveau ne partage avec lui ni historique, ni fichier.
+
+## 2. Produit
+
+### Vision
+
+better-lift permet à quelqu'un qui s'entraîne en salle de **préparer ses séances à l'avance**, de **les remplir sans friction pendant l'effort**, puis de **voir sa progression**.
+
+La répartition entre les deux surfaces est un postulat, pas une contrainte technique :
+
+- **Le web est l'atelier.** On y prépare, on y analyse, on y lit. Grand écran et clavier : c'est là qu'on construit ses routines.
+- **Le mobile est l'outil de terrain.** Une main, entre deux séries, parfois sans réseau. La saisie doit tenir en un pouce et un coup d'œil.
+
+### Utilisateurs
+
+Deux à trois comptes, tous connus personnellement. L'inscription est fermée par une liste blanche d'adresses. Il n'y a ni public, ni échelle, ni monétisation — et aucune décision ne doit faire comme s'il y en avait.
+
+### Vocabulaire
+
+Identique dans le code, l'API et l'interface. **L'application est en français, cette liste fait foi.**
+
+| Terme | Code | Définition |
+|---|---|---|
+| Exercice | `Exercise` | Mouvement du catalogue, ou créé par l'utilisateur |
+| Routine | `Routine` | Modèle de séance : exercices ordonnés et séries cibles. Aucune donnée réalisée |
+| Séance | `Workout` | Séance réellement effectuée, horodatée |
+| Série | `Set` | Une série, cible dans une routine, réalisée dans une séance |
+| Record | — | Meilleure performance sur un exercice. **Dérivé à la lecture, jamais stocké** (§ 4) |
+
+Distinction structurante : **une routine est un gabarit, une séance est un instantané indépendant.** Modifier ou supprimer une routine ne doit jamais altérer l'historique.
+
+### Périmètre du premier jalon
+
+Le strict nécessaire pour abandonner Hevy :
+
+- Catalogue d'exercices en français : recherche, filtres, fiche détaillée
+- Routines : création, modification, suppression, réordonnancement
+- Séance : démarrage depuis une routine ou à vide, saisie série par série, chrono, minuteur de repos, fonctionnement hors ligne intégral
+- Historique : liste antéchronologique, détail d'une séance, records dérivés par exercice
+
+### Hors périmètre, assumé
+
+Reporté après le premier jalon : dossiers de routines, vue calendrier, tableau de bord et courbes, supersets dans l'interface, exercices personnalisés, mensurations, import CSV, notifications push.
+
+Écarté sans échéance : social, nutrition, cardio GPS, montres connectées, coaching automatique, programmes tout faits.
+
+Supprimé par le recadrage : internationalisation, export RGPD, vérification d'adresse e-mail, quotas d'authentification élaborés, contrat OpenAPI, étage de préproduction.
+
+## 3. Architecture
+
+```
+better-lift/
+├─ apps/
+│  ├─ web/          Vite + React 19 · TanStack Router + Query · shadcn/ui
+│  ├─ mobile/       Expo SDK 57 · Expo Router · TanStack Query · MMKV
+│  └─ api/          Hono · Better Auth · Node en développement, fonction Vercel en production
+└─ packages/
+   ├─ db/           Prisma 7 · schéma · migrations · seed
+   ├─ shared/       Zod + calculs purs
+   └─ api-client/   client Hono RPC typé + hooks TanStack Query
+```
+
+Trois applications et trois paquets, contre trois et six auparavant.
+
+### Une seule source de vérité : l'API
+
+Le web ne parle jamais directement à PostgreSQL. Dès qu'une règle métier existe à deux endroits, elle diverge. Web et mobile consomment strictement les mêmes routes.
+
+Cette contrainte, qui demandait de la discipline avec Next.js et ses Server Components, devient naturelle avec un SPA : il n'existe aucun moyen d'attaquer la base depuis le navigateur.
+
+### Le gain du SPA
+
+Avec Next.js, `api-client` n'était partageable qu'à moitié : les Server Components du web ne consommaient pas les hooks du mobile. **En SPA, web et mobile sont tous deux des clients React purs** et utilisent exactement la même couche de données. Le partage passe de « types et validation » à « types, validation et tout l'accès aux données ».
+
+Ce qu'on perd — rendu serveur et référencement — ne sert à rien pour une application privée derrière une authentification. Disparaissent avec : la frontière `"use client"`, le fichier `proxy.ts`, le cache de Next, les routes rendues dynamiques par la lecture d'un cookie, et `next/font`.
+
+### Protection des routes
+
+Il n'y a plus de garde côté serveur. Le web redirige vers la connexion quand la session est absente, et **la frontière de sécurité réelle est l'API**. C'est plus honnête que l'ancien dispositif : `proxy.ts` ne vérifiait que la *présence* du cookie, jamais sa validité, et laissait donc passer une session expirée jusqu'au premier appel.
+
+### Partage de code
+
+| Paquet | web | mobile | api | Contenu |
+|---|:--:|:--:|:--:|---|
+| `shared` | ✅ | ✅ | ✅ | Schémas Zod, calculs 1RM et volume, conversions, semaines civiles |
+| `api-client` | ✅ | ✅ | — | Client RPC typé, hooks TanStack Query |
+| `db` | — | — | ✅ | Prisma seul |
+
+`shared` n'importe jamais Prisma, React, ni aucune API de plateforme. TypeScript pur, testable en isolation. `Intl` est sa seule dépendance tolérée, pour l'arithmétique des dates.
+
+**L'interface n'est pas partagée.** `react-native-web` impose un dénominateur commun qui dégrade les deux plateformes, et les interactions d'un éditeur de routines au clavier n'ont rien de commun avec une saisie de série au doigt.
+
+### Déploiement
+
+Un seul projet Vercel sert le SPA en statique et l'API en fonction sur `/api/*`. **Même origine, donc aucun CORS en production** ; la configuration d'origines de confiance de Better Auth ne sert qu'en développement, où Vite et l'API occupent deux ports distincts.
+
+Le mobile n'est pas distribué par les magasins d'applications : APK universel produit par EAS et installé directement. Les artefacts EAS expirent au bout de quatorze jours.
+
+## 4. Modèle de données
+
+Repris du schéma éprouvé, avec deux suppressions.
+
+| Table | Sort |
+|---|---|
+| `Exercise` | **Aplatie** : `name` et `instructions` en français portés directement |
+| `ExerciseTranslation` | **Supprimée** |
+| `User` `Session` `Account` `Verification` | Better Auth, inchangées |
+| `Routine` `RoutineExercise` `RoutineSet` | Inchangées |
+| `Workout` `WorkoutExercise` `WorkoutSet` | Inchangées |
+| `PersonalRecord` | **Supprimée** |
+| `RoutineFolder` | Hors premier jalon |
+
+### Pourquoi aplatir le catalogue
+
+Une seule langue rend la table de traductions inutile. On y gagne trois fois : plus de jointure sur chaque lecture du catalogue, recherche plein texte plus simple, et surtout **plus de `locale` à traîner dans les clés de cache TanStack Query** — précisément le piège qui, dans l'ancien projet, affichait les anciens chiffres après un enregistrement pourtant réussi.
+
+Le JSON source du dataset reste versionné : rien n'est perdu définitivement.
+
+### Pourquoi supprimer les records
+
+C'était la partie la plus délicate de l'ancien projet. Sa décision D23 imposait un recalcul complet à chaque écriture, y compris à l'ajout, parce qu'un record entretenu de façon incrémentale sait s'ajouter mais **jamais se retirer** quand on corrige une séance passée.
+
+Tout ce chantier disparaît si le record est **dérivé à la lecture**, par une requête d'agrégation sur `WorkoutSet`. Pour trois comptes et quelques milliers de séries, le coût est négligeable. On matérialisera une table le jour où une mesure le justifie, pas avant.
+
+## 5. Contrat entre l'API et les clients
+
+Zod est la source unique. `packages/shared` définit les schémas ; l'API valide ses entrées avec, les clients en tirent leurs types.
+
+**Hono RPC**, et non `@hono/zod-openapi`. L'ancienne décision visait un contrat OpenAPI publiable que personne ne publiera pour trois comptes. Son objection au RPC — l'inférence TypeScript devient pénible passé environ quatre-vingts routes — ne s'applique pas à un périmètre d'une vingtaine de routes. Le RPC donne le typage de bout en bout sans rien générer, et réduit `api-client` à presque rien.
+
+Découpage de l'API : `routes/` fait la validation et l'HTTP, `services/` porte la logique métier et **ne connaît jamais le contexte Hono**, ce qui le rend testable directement.
+
+## 6. Authentification
+
+Better Auth, instance unique côté API, servant le cookie du web **et** le jeton porteur du mobile.
+
+- Adresse e-mail et mot de passe. GitHub en option — l'OAuth App existe déjà. Une OAuth App GitHub n'accepte qu'une seule URL de rappel : la production en demandera une seconde.
+- **Inscription fermée par liste blanche d'adresses**, vérifiée avant la création du compte. C'est le point de sécurité du projet : dans l'ancien, `/sign-up/email` est resté ouvert sur Internet.
+- **Pas de vérification d'adresse e-mail** : une liste blanche de trois adresses la rend sans objet. Supprime du même coup le besoin d'un service d'envoi transactionnel, et l'arbitrage sur la résidence des données qui allait avec.
+- Mobile : `@better-auth/expo` (1.7.2), plugin officiel. Il gère le stockage sécurisé du jeton et le rappel par lien profond — **les deux points jamais éprouvés dans l'ancien projet**.
+
+## 7. Le catalogue français
+
+Les instructions sont déjà traduites dans le dataset. **Les noms d'exercices ne le sont pas** : la ligne française porte encore « Band Bench Press ».
+
+Les chiffres rendent le chantier abordable : 1 324 noms, 5 583 mots au total, mais seulement **629 mots distincts**, avec une structure très régulière — `Dumbbell` ouvre 283 noms, `Cable` 155, `Barbell` 141, `Lever` 71, `Band` 54, `Smith` 48, `Kettlebell` 41.
+
+Trois temps :
+
+1. **Glossaire d'abord**, environ 150 entrées, fichier versionné et relu avant toute traduction de masse : `bench press → développé couché`, `deadlift → soulevé de terre`, `lateral raise → élévations latérales`, `squat → squat`, `curl → curl`, `pushdown → pushdown`.
+2. **Traduction des 1 324 noms** en s'appuyant sur ce glossaire.
+3. **Relecture ciblée** : les exercices courants passent sous les yeux d'un humain, la longue traîne se corrige à l'usage. Une correction est un `UPDATE`, jamais une migration.
+
+**Registre retenu : le français d'usage.** Les anglicismes réellement employés en salle sont conservés, parce qu'ils sont ce qu'on tape dans une barre de recherche. Personne ne cherche « flexion des avant-bras » pour trouver un curl.
+
+| Nom d'origine | Retenu |
+|---|---|
+| Dumbbell Bench Press | Développé couché haltères |
+| Barbell Deadlift | Soulevé de terre barre |
+| Cable Triceps Pushdown | Pushdown triceps à la poulie |
+| Lever Leg Extension | Leg extension à la machine |
+| Assisted Pull-up | Traction assistée |
+
+### Médias
+
+Le dataset fournit une animation et une vignette par exercice. Ils ne sont pas hébergés au premier jalon : les deux interfaces basculent sur un repli sans visuel. La licence du dataset impose une attribution, qui doit figurer dans l'application dès que les médias sont servis.
+
+## 8. L'invariant du mobile
+
+Le seul point où rien ne change, parce qu'il a été prouvé sur émulateur le 4 août 2026 : **une séance en cours ne se perd jamais.**
+
+- Le brouillon vit en **MMKV sous une clé unique**, et transite **par le disque, jamais par un paramètre de route**. « Démarrer une routine » et « reprendre après un plantage » sont ainsi le même chemin de code, et non deux chemins dont l'un serait rarement exercé.
+- Une séance en cours n'est **jamais écrasée** : la vérification se refait au moment de l'appui, pas depuis un état d'interface vieilli.
+- **Le chrono se calcule depuis `startedAt`**, jamais par un compteur incrémental. C'est ce qui lui a fait afficher 3:24 au retour d'un `force-stop` de soixante-dix secondes, là où un `setInterval` remis à zéro aurait montré 1:05.
+- **File d'envoi** : une séance en attente quitte l'écran de saisie, une séance **refusée** y reste.
+- L'enregistrement est **idempotent** : la file peut rejouer sans créer de doublon.
+
+Deux écarts délibérés au reste de l'API, hérités et maintenus : le corps de la création d'une séance n'est **pas** en mode strict, et un exercice archivé reste acceptable dans une séance. Perdre un entraînement réel envoyé par la file est pire qu'accepter un champ ignoré.
+
+## 9. Qualité
+
+- **Biome** (format et lint), **Lefthook** (crochets), **Knip** (code mort). Pas de tâche de lint dans Turborepo : `pnpm lint` appelle Biome depuis la racine.
+- **Vitest**, avec une priorité aux calculs purs de `shared` et aux services de l'API — le code où un test attrape vraiment quelque chose.
+- Développement piloté par les tests sur la logique métier. L'interface se vérifie en la faisant tourner : les défauts marquants de l'ancien projet — le volume affiché sans tenir compte du système d'unités, le formulaire bloqué sur son squelette après un échec de requête — étaient tous invisibles à la lecture comme aux tests unitaires.
+- **Node 24**, **pnpm 11.18.0** au minimum. La 11.13.0 a été retirée par l'amont.
+
+## 10. Registre des décisions
+
+### Reprises de l'ancien projet
+
+| Nº | Décision | Ancien |
+|---|---|---|
+| D1 | Base Neon, région UE. Francfort contre Londres : le Royaume-Uni est hors Union européenne depuis le Brexit, couvert par une décision d'adéquation révocable | D4 |
+| D2 | Runtime Node 24, pas de Cloudflare Workers — Prisma y ajoute de la complexité sans contrepartie | D5 |
+| D3 | Le web passe toujours par l'API | D3 |
+| D4 | 1RM estimé par la formule d'Epley | D11 |
+| D5 | Le poids de corps est exclu du volume | D12 |
+| D6 | Notes de séance : champ libre, pas de structure imposée | D14 |
+| D7 | Outillage qualité : Biome, Lefthook, Knip | D19 |
+| D8 | Listes mobiles en `FlatList` tant que la pagination suffit | D21 |
+| D9 | Un exercice personnalisé se reconnaît à son propriétaire, pas à un booléen. La fonctionnalité est hors du premier jalon ; la décision s'appliquera quand elle arrivera | D22 |
+| D10 | File d'envoi : une séance en attente quitte l'écran, une séance refusée y reste | D28 |
+| D11 | Supersets : portés par le modèle, absents de l'interface au premier jalon | D8 |
+
+### Révisées
+
+| Nº | Décision | Remplace |
+|---|---|---|
+| D12 | **Hono RPC** au lieu d'un contrat OpenAPI : personne ne publiera d'OpenAPI pour trois comptes, et l'objection d'échelle au RPC ne tient pas sous vingt routes | D1 |
+| D13 | **Records dérivés à la lecture**, table supprimée. Annule tout le dispositif de recalcul complet | D23 |
+| D14 | **Français unique, aucune machinerie d'internationalisation.** Annule aussi bien le plan fr/en que le passage à l'anglais seul décidé au recadrage | D29, D31 |
+| D15 | **Pas de vérification d'adresse e-mail**, rendue sans objet par la liste blanche. Supprime le besoin d'un service d'envoi transactionnel | D6, D20 |
+| D16 | **shadcn/ui conservé, thème repensé.** La palette achromatique et Geist de l'ancien projet ne sont pas reprises | D24, D25 |
+
+### Nouvelles
+
+| Nº | Décision |
+|---|---|
+| D17 | **Web en SPA Vite, sans rendu serveur.** Aucun besoin de référencement pour une application privée ; disparaissent la frontière client/serveur, `proxy.ts`, le cache de Next et `next/font` |
+| D18 | **Un seul projet Vercel** : statique et fonction API sur la même origine, donc aucun CORS en production |
+| D19 | **TanStack Router**, pour le typage des routes et surtout des paramètres d'URL — les filtres du catalogue et de l'historique y sont persistés |
+| D20 | **Catalogue aplati**, sans table de traductions |
+| D21 | **Noms d'exercices en français d'usage**, guidés par un glossaire versionné et relu avant toute traduction de masse |
+| D22 | **Inscription fermée par liste blanche d'adresses** |
+
+## 11. Découpage en lots
+
+| Lot | Contenu | Critère de sortie |
+|---|---|---|
+| **0** | Monorepo, trois applications qui démarrent, Neon rebranchée, CI minimale | `pnpm dev` lance tout, le mobile lit `/health` |
+| **1** | Better Auth, liste blanche, connexion web et mobile | Connexion effective sur les deux surfaces |
+| **2** | Glossaire, traduction, migration aplatie, seed | Le catalogue est en français dans la base |
+| **3** | Recherche et fiche d'exercice, web et mobile | N'importe quel exercice se retrouve |
+| **4** | Routines : CRUD et éditeur web | Une séance se prépare à l'avance |
+| **5** | **Séance mobile** : saisie, chrono, repos, hors ligne | **Un entraînement réel est saisi avec** |
+| **6** | Historique et records dérivés | L'historique et les meilleures charges sont consultables |
+
+Le lot 5 est le but ; tout ce qui le précède existe pour lui.
+
+**Critère de sortie global : pouvoir abandonner Hevy pendant un mois complet sans manque bloquant.**
+
+## 12. Objectifs non fonctionnels
+
+| Critère | Cible |
+|---|---|
+| Saisie d'une série (mobile) | Moins de 2 interactions, retour visuel sous 150 ms |
+| Démarrage à froid (mobile) | Moins de 2 s jusqu'à l'écran d'accueil |
+| Séance hors ligne | Intégralement fonctionnelle, synchronisation au retour du réseau |
+| Lectures de l'API | p95 sous 300 ms |
+| Accessibilité web | WCAG 2.1 AA |
+| Hébergement | Union européenne, coût nul |
+
+## 13. Pièges hérités, à ne pas repayer
+
+Tous ont été payés une fois dans l'ancien projet. Aucun ne se déduit de la lecture du code.
+
+**Découpage temporel.** Il se fait dans le fuseau du profil, jamais en UTC : une séance du samedi 21 h à Paris est déjà dimanche en UTC en été. L'arithmétique civile vit dans `shared`.
+
+**Unités.** Tout endroit qui affiche une charge doit passer par le système d'unités du profil. Un volume en tonnes à côté de livres, c'est un profil impérial mal servi ; et « t » pour une tonne courte ferait passer 1 000 kg pour 907 kg.
+
+**Formulaires.** Tester `!data` sans tester l'état de chargement laisse le squelette affiché pour toujours quand la requête échoue.
+
+**Clés de cache TanStack Query.** Toute donnée qui entre dans la clé de lecture doit entrer dans la clé d'écriture. L'oubli écrit la réponse à côté de ce que l'écran lit, et l'interface affiche les anciennes valeurs après un enregistrement pourtant réussi.
+
+**MMKV 4.** `createMMKV({ id })` et non `new MMKV()`, `storage.remove()` et non `delete()`, et `react-native-nitro-modules` est une dépendance de pair obligatoire. **Il n'existe pas de plugin de configuration** malgré ce qu'annonce le `package.json` : l'ajouter fait échouer `expo export` sur une erreur qui ne mentionne jamais `app.json`. L'autolinking suffit.
+
+**Builds natifs.** `expo run:android` est définitivement bloqué sur cette machine : les chemins du magasin pnpm dépassent la limite de CMake et `ninja` tourne en rond. Les builds natifs restent chez EAS ; l'émulateur ne sert qu'à exécuter. L'APK EAS est universel, donc installable tel quel sur un émulateur x86_64. Sur émulateur, l'API se joint en `10.0.2.2`.
+
+**Glisser-déposer imbriqué.** Un contexte unique couvrant deux listes imbriquées exige une détection de collision qui **filtre les cibles de même nature** avant de chercher la plus proche. Sinon le déposé est rejeté en silence — invisible à la souris, révélé seulement au clavier.
+
+**Graphiques.** Une bibliothèque qui anime en JavaScript échappe au bloc `prefers-reduced-motion` de la feuille de style, qui ne pilote que du CSS. L'animation doit être désactivée explicitement.
+
+**Avis de sécurité.** Un correctif d'audit va sur une branche dédiée partant de la principale, jamais dans une branche de fonctionnalité — enterré dans une PR, il rend les autres rouges et interdit de les rebaser sans conflit de fichier de verrouillage.
+
+**Compilation incrémentale.** Après une série de rebases, TypeScript peut se croire à jour sur un `.tsbuildinfo` périmé et échouer sur des symboles pourtant présents dans la source. Le remède est de forcer la reconstruction paquet par paquet, **de bas en haut**.
