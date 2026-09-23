@@ -1648,13 +1648,20 @@ export function NavLaterale() {
 
 `apps/web/src/components/shell/app-shell.tsx` — `autoSaveId` persiste les tailles en `localStorage`, **ce qui est lu avant le premier rendu** : c'est précisément ce que Next.js ne permettait pas sans rendre toutes les routes dynamiques.
 
+> **L'API de `react-resizable-panels` a changé : le code ci-dessous est celui qui fonctionne contre la 4.13.1 réellement installée.** Trois pièges, tous vérifiés dans le code compilé de la bibliothèque :
+>
+> - `direction` et `autoSaveId` **n'existent plus**. L'orientation s'écrit `orientation="horizontal"`, et la persistance passe par le hook `useDefaultLayout`.
+> - **Une taille numérique nue est interprétée en pixels**, pas en pourcentage : `defaultSize={16}` donne un panneau de 16 px. Les pourcentages s'écrivent en chaînes, `"16%"`.
+> - Le groupe impose `height: 100%` **en style inline**, que rien ne peut surcharger : une classe `h-screen` dessus est inerte. Le remplissage de la fenêtre vient de `html, body, #root { height: 100% }` dans `globals.css`.
+>
+> `useDefaultLayout` lit `localStorage` par `useSyncExternalStore`, donc **pendant le rendu** et non après montage : la largeur est restituée sans saut de mise en page. C'est la promesse que l'ancien projet ne pouvait tenir qu'en lisant un cookie côté serveur.
+>
+> Sa clé de stockage vaut `react-resizable-panels:<id>:<panelIds joints>`. Conséquence à connaître pour la suite : **`panelIds` change quand le panneau de détail apparaît ou disparaît**, donc les largeurs d'un affichage à deux panneaux ne sont pas celles d'un affichage à trois. C'est le comportement voulu par la bibliothèque, mais la largeur de la navigation peut sembler « sauter » à l'ouverture du détail.
+
 ```tsx
 import type { ReactNode } from "react";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { useDefaultLayout } from "react-resizable-panels";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { NavLaterale } from "./nav-lateral";
 
 type Props = {
@@ -1663,26 +1670,39 @@ type Props = {
 };
 
 export function AppShell({ liste, detail }: Props) {
+  // react-resizable-panels 4 n'a plus de prop `autoSaveId` (API des versions 1/2) : la
+  // persistance passe par ce hook, qui lit `localStorage` de façon SYNCHRONE au rendu
+  // (via useSyncExternalStore) — donc bien avant le premier affichage.
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: "better-lift-shell",
+    storage: localStorage,
+    panelIds: detail ? ["nav", "liste", "detail"] : ["nav", "liste"],
+  });
+
   return (
     <ResizablePanelGroup
-      direction="horizontal"
-      autoSaveId="better-lift-shell"
+      orientation="horizontal"
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
       className="h-screen w-screen"
     >
-      <ResizablePanel defaultSize={16} minSize={12} maxSize={26}>
+      {/* Tailles en pourcentage : react-resizable-panels 4 interprète un nombre NU comme
+          des pixels (API v1/v2 : c'était toujours un pourcentage) — sans le suffixe "%",
+          nav se retrouverait contraint entre 12 px et 26 px. */}
+      <ResizablePanel id="nav" defaultSize="16%" minSize="12%" maxSize="26%">
         <NavLaterale />
       </ResizablePanel>
 
       <ResizableHandle className="bg-(--line)" />
 
-      <ResizablePanel defaultSize={detail ? 56 : 84} minSize={30}>
+      <ResizablePanel id="liste" defaultSize={detail ? "56%" : "84%"} minSize="30%">
         {liste}
       </ResizablePanel>
 
       {detail ? (
         <>
           <ResizableHandle className="bg-(--line)" />
-          <ResizablePanel defaultSize={28} minSize={20} maxSize={44}>
+          <ResizablePanel id="detail" defaultSize="28%" minSize="20%" maxSize="44%">
             <aside aria-label="Détail" className="h-full bg-(--surface-1)">
               {detail}
             </aside>
@@ -1777,22 +1797,26 @@ export function Palette() {
 
 - [ ] **Étape 2 : Habiller la palette au registre flottant**
 
-Ajouter dans `apps/web/src/styles/globals.css` :
+> **Ne pas passer par un sélecteur CSS global.** Le slot `command-dialog-content` n'existe pas : `CommandDialog` rend un `DialogContent`, dont le slot `data-slot="dialog-content"` est partagé par **tous** les dialogues, présents et à venir. Un sélecteur global dessus ferait flotter n'importe quel dialogue ultérieur — exactement ce que D27 interdit, puisque l'élévation est réservée au passager.
+>
+> La bonne voie est de passer les classes par les composants. `DialogContent` ne sait habiller que son contenu : ajoute-lui un prop **`overlayClassName?: string`**, optionnel, transmis à `<DialogOverlay />` — et le même sur `CommandDialog`, qui le relaie.
 
-```css
-[data-slot="command-dialog-content"] {
-  background: var(--float-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--float-line);
-  box-shadow: var(--float-shadow);
-}
+Puis, dans `Palette` :
 
-[data-slot="dialog-overlay"] {
-  background: var(--scrim);
-}
+```tsx
+<CommandDialog
+  open={ouverte}
+  onOpenChange={setOuverte}
+  title="Palette de commandes"
+  description="Rechercher un exercice ou lancer une action"
+  className="border-(--float-line) bg-(--float-bg) shadow-(--float-shadow) backdrop-blur-[20px]"
+  overlayClassName="bg-(--scrim)"
+>
 ```
 
-> Si les sélecteurs ne mordent pas, inspecter le composant généré : le CLI shadcn peut nommer ses parties autrement selon la version. Corriger le sélecteur plutôt que de dupliquer les valeurs.
+La syntaxe `bg-(--float-bg)` fonctionne en Tailwind 4 **même pour une variable non exposée** par `@theme inline` : elle produit `background-color: var(--float-bg)`. Vérifié dans le CSS émis. Et `cn` évince bien les classes par défaut du composant (`bg-background`, `shadow-lg`, `p-6`) au profit des nôtres.
+
+**Traduire les primitives au passage** : `command.tsx` porte « Command Palette » et « Search for a command to run… », `dialog.tsx` porte deux fois « Close ». Ces fichiers sont vendorisés dans le dépôt et l'application est en français — les traduire est légitime. Aucun de ces textes ne sert d'identifiant : Radix relie `aria-labelledby` par contexte, pas par contenu.
 
 - [ ] **Étape 3 : Monter la palette**
 

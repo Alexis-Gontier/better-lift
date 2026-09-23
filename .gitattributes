@@ -1,0 +1,20 @@
+# Le dépôt stocke tout en LF. Sans cette règle, core.autocrlf=true sous Windows
+# reconvertit les fichiers à chaque checkout, et Biome les signale en erreur
+# alors que la CI, sous Linux, les voit corrects.
+* text=auto eol=lf
+
+# Fichiers binaires : jamais de conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.mp4 binary
+*.mov binary

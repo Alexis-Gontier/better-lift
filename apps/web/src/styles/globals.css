@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  /* Vocabulaire du projet : surfaces, filets, quatre niveaux d’encre. */
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-faint: var(--ink-faint);
+
+  /* Le lime EN TEXTE, c’est-à-dire le contour du record. L’aplat de l’action passe
+     par `primary` plus bas : la distinction par la forme vaut aussi pour les noms
+     de classes, un registre par nom. */
+  --color-accent-ink: var(--accent-ink);
+
+  /* Vocabulaire des primitives shadcn vendorisées. Elles ne connaissent que leurs
+     propres noms de rôles, et un rôle absent d’ici n’émet AUCUNE règle, en silence :
+     l’élément hérite alors de son parent. C’est ce qui rendait la ligne sélectionnée
+     de la palette illisible : `bg-accent` touchait le lime, mais `text-accent-foreground`
+     n’existait pas, le texte restait en --ink, soit 1,6:1. */
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-popover: var(--surface-1);
+  --color-popover-foreground: var(--ink);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--ink-subtle);
+  --color-border: var(--line);
+  --color-input: var(--line-strong);
+  --color-ring: var(--accent);
+
+  /* `primary` chez shadcn porte l’action : c’est exactement l’aplat de la doctrine,
+     fond lime et texte sombre. */
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-on);
+  --color-secondary: var(--surface-3);
+  --color-secondary-foreground: var(--ink);
+
+  /* `accent` chez shadcn ne désigne PAS la marque mais la surface de survol ou de
+     sélection : `bg-accent` habille l’item de command.tsx et les variantes `ghost`
+     et `outline` de button.tsx. Le faire pointer sur le lime peindrait un aplat de
+     marque sous chaque survol, et la couleur unique n’aurait plus de sens. */
+  --color-accent: var(--surface-3);
+  --color-accent-foreground: var(--ink);
+
+  /* `destructive` n’est volontairement pas traduit : la doctrine ne connaît qu’une
+     couleur, et lui en donner une seconde relève de la conception, pas de
+     l’intégration. Tant que la décision n’est pas prise, les variantes qui s’en
+     servent (bouton `destructive`, `aria-invalid` de input.tsx) restent sans effet. */
+}
+
+/* react-resizable-panels fixe `height: 100%` en style inline sur le groupe (non
+   surchargeable, cf. sa doc) : sans cette chaîne, il s'effondre à la hauteur de son
+   contenu plutôt que de remplir la fenêtre. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+}
+
+/* Les animations pilotées en JavaScript échappent à cette règle : toute
+   bibliothèque de graphiques devra désactiver les siennes explicitement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: la réduction de mouvement doit primer sur toute animation déclarée ailleurs. */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: même raison, pour les transitions. */
+    transition-duration: 0.01ms !important;
+  }
+}
