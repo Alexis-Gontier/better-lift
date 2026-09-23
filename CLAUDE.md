@@ -8,10 +8,18 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. **Le lot 0 est fusionné** : le monorepo tient
-debout, les trois applications démarrent, et la chaîne émulateur → Metro → API → Neon est
-prouvée de bout en bout. Le développement est en cours sur les lots suivants — voir le plan
-`docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md`.
+Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 2 sont fusionnés**, ce qui clôt le
+plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
+
+- **Lot 0** — le monorepo tient debout, les trois applications démarrent, et la chaîne
+  émulateur → Metro → API → Neon est prouvée de bout en bout.
+- **Lot 1** — la coquille web : tokens des deux thèmes, trois panneaux redimensionnables dont
+  les tailles survivent au rechargement, palette `Cmd+K`, bascule de thème.
+- **Lot 2** — les trois écrans web dessinés sur données factices : catalogue, routines,
+  historique, chacun avec ses quatre états.
+
+**Le lot 3 n'est pas encore planifié**, et c'est voulu : les lots 3 à 7 dépendent de ce que le
+dessin des écrans a appris. Prochaine étape : Better Auth, liste blanche, connexion web et mobile.
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
@@ -48,6 +56,9 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 - La logique métier vit dans `services/` côté API et ne connaît jamais le contexte Hono.
 - **L'interface n'est pas partagée** entre web et mobile. Deux surfaces, deux ergonomies.
 - Contrat typé par **Hono RPC**, pas d'OpenAPI. Zod dans `shared` est la source unique.
+- **`AppShell` est monté par chaque route, jamais par `__root.tsx`.** Seule la route sait s'il y
+  a un détail à ouvrir, et la coquille change son jeu de panneaux — donc sa clé de persistance —
+  selon qu'il y en a un. Montée dans la racine, elle imposerait une coquille imbriquée.
 
 ## Interface
 
@@ -66,11 +77,26 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 - **Un token par rôle, deux valeurs par token.** `--accent` (aplat) reste `#a8cf45` dans les deux
   thèmes ; `--accent-ink` (lime en texte) passe à `#5c7a14` en clair — sur blanc, `#a8cf45`
   tombe sous 2:1. Jamais de couleur en dur réutilisée dans les deux registres.
+- **Les primitives shadcn parlent leur propre vocabulaire de rôles**, traduit vers les tokens du
+  projet dans `@theme inline`. **Un rôle non déclaré n'émet aucune règle, en silence** — le
+  défaut ne se voit ni à la lecture ni au typecheck. L'aplat de la doctrine est `bg-primary` /
+  `text-primary-foreground` ; `accent`, qui chez shadcn désigne la **surface de survol** et non
+  la marque, pointe vers `--surface-3`. Ne jamais rendre `bg-accent` au lime : chaque survol de
+  bouton fantôme deviendrait un aplat de marque.
+- **`destructive` n'est pas traduit, et c'est une décision en attente.** La doctrine ne connaît
+  qu'une couleur ; lui en donner une seconde relève de la conception. En attendant, la variante
+  `destructive` de `button.tsx` et l'`aria-invalid` de `input.tsx` sont **sans effet, en
+  silence**. À trancher avant les premiers formulaires.
 - **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et on valide un écran avant de lui brancher
   des données — avec ses **quatre états** dès le dessin (vide, chargement, erreur, nominal), sans
   quoi le branchement les découvre trop tard.
+- **Les quatre états sont atteignables depuis l'URL** : `?etat=chargement`, `?etat=erreur` et
+  `?etat=vide` sur chaque écran, derrière `import.meta.env.DEV` — éliminés du bundle de
+  production. `vide` vide le jeu de données plutôt que de substituer un composant, pour que
+  l'écran rende son propre état vide par son chemin de code réel. Tout nouvel écran les porte :
+  un état qu'on ne peut atteindre est un état qu'on ne revérifiera pas après le branchement.
 
 ## Commandes
 
@@ -112,6 +138,12 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
   pour CMake). Les builds natifs passent par **EAS**. L'émulateur ne sert qu'à exécuter.
   Sur émulateur, l'API se joint en `http://10.0.2.2:3001`.
 - **`.tsbuildinfo` périmé** après des rebases : reconstruire paquet par paquet, de bas en haut.
+- **Serveur de dev laissé tournant** : le greffon de routes réécrit `routeTree.gen.ts` en
+  arrière-plan, et `core.autocrlf=true` sur cette machine le rend « modifié » sans la moindre
+  différence de contenu — ce qui **bloque un `git pull` ou un changement de branche** avec un
+  `git diff` vide, donc incompréhensible. Le `.gitattributes` (`* text=auto eol=lf`) règle les
+  fins de ligne ; arrêter le serveur avant de fusionner règle le reste. Vérifier que le port
+  3000 est libre, `TaskStop` ne tuant pas toujours le processus Vite enfant.
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 
