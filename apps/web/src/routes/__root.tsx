@@ -1,16 +1,24 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { Palette } from "@/components/shell/palette";
+import type { Session } from "@/lib/auth-client";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000 } },
 });
 
+export type ContexteRouteur = {
+  auth: { session: Session };
+};
+
 // La coquille n'est PAS montée ici : seule la route sait s'il y a un détail à
 // ouvrir, et `AppShell` change son jeu de panneaux — donc sa clé de persistance —
-// selon qu'il y en a un ou non. Un `AppShell` racine obligerait chaque route à en
+// selon qu'il y en a un. Un `AppShell` racine obligerait chaque route à en
 // imbriquer un second, avec deux navigations et deux groupes de panneaux.
-export const Route = createRootRoute({
+//
+// La garde d'authentification n'est pas ici non plus : la racine rend TOUJOURS,
+// quelle que soit la session. La frontière est `_protege.tsx`.
+export const Route = createRootRouteWithContext<ContexteRouteur>()({
   component: () => (
     <QueryClientProvider client={queryClient}>
       <Outlet />

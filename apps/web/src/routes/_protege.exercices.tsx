@@ -15,7 +15,7 @@ const recherche = z.object({
   etat: champEtat,
 });
 
-export const Route = createFileRoute("/exercices")({
+export const Route = createFileRoute("/_protege/exercices")({
   validateSearch: recherche,
   component: PageExercices,
 });

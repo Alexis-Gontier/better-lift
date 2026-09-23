@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
+import { auth } from "./auth.js";
 import { health } from "./routes/health.js";
 
 // Ce module construit l'app, sans aucun effet de bord (pas de `serve()`) : il
@@ -21,6 +22,11 @@ app.use(
     credentials: true,
   }),
 );
+
+// Better Auth gère lui-même ses routes : elles ne passent pas par le RPC Hono,
+// et n'apparaissent donc pas dans `AppType`. Le client web a son propre client
+// d'authentification pour les joindre.
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 const routes = app.route("/health", health);
 

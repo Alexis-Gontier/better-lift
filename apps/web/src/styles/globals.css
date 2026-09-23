@@ -48,10 +48,14 @@
   --color-accent: var(--surface-3);
   --color-accent-foreground: var(--ink);
 
-  /* `destructive` n’est volontairement pas traduit : la doctrine ne connaît qu’une
-     couleur, et lui en donner une seconde relève de la conception, pas de
-     l’intégration. Tant que la décision n’est pas prise, les variantes qui s’en
-     servent (bouton `destructive`, `aria-invalid` de input.tsx) restent sans effet. */
+  /* `destructive` est désormais traduit (D36). Le rouge est borné au danger : il
+     ne porte jamais l’action ni le record, qui restent au lime. C’est parce que
+     le lime porte déjà deux rôles qu’il ne peut pas en porter un troisième — un
+     champ invalide cerclé de lime dirait « agis ici » au moment où il faut dire
+     « quelque chose ne va pas ». */
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--danger-on);
+  --color-destructive-ink: var(--danger-ink);
 }
 
 /* react-resizable-panels fixe `height: 100%` en style inline sur le groupe (non

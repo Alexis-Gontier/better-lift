@@ -1,6 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import { Moon, Sun } from "lucide-react";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { chargerSession } from "@/lib/auth-session";
 import { appliquerTheme, type Theme, themeInitial } from "@/lib/theme";
 
 const ENTREES = [
@@ -11,6 +13,18 @@ const ENTREES = [
 
 export function NavLaterale() {
   const [theme, setTheme] = useState<Theme>(() => themeInitial());
+  const navigate = useNavigate();
+  const router = useRouter();
+
+  async function seDeconnecter() {
+    await authClient.signOut();
+    // Relire puis invalider, dans cet ordre : une deconnexion qui ne rafraichit
+    // pas le contexte laisse l'ancienne session a l'ecran, et la garde continue
+    // de laisser passer.
+    await chargerSession();
+    await router.invalidate();
+    await navigate({ to: "/connexion" });
+  }
 
   function basculerTheme() {
     const suivant: Theme = theme === "dark" ? "light" : "dark";
@@ -43,19 +57,30 @@ export function NavLaterale() {
         </Link>
       ))}
 
-      <button
-        type="button"
-        onClick={basculerTheme}
-        aria-label={theme === "dark" ? "Passer au thème clair" : "Passer au thème sombre"}
-        className="mt-auto flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-(--ink-muted) hover:bg-(--surface-3) hover:text-(--ink)"
-      >
-        {theme === "dark" ? (
-          <Sun aria-hidden="true" className="size-4" />
-        ) : (
-          <Moon aria-hidden="true" className="size-4" />
-        )}
-        {theme === "dark" ? "Thème clair" : "Thème sombre"}
-      </button>
+      <div className="mt-auto flex flex-col gap-0.5">
+        <button
+          type="button"
+          onClick={basculerTheme}
+          aria-label={theme === "dark" ? "Passer au thème clair" : "Passer au thème sombre"}
+          className="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-(--ink-muted) hover:bg-(--surface-3) hover:text-(--ink)"
+        >
+          {theme === "dark" ? (
+            <Sun aria-hidden="true" className="size-4" />
+          ) : (
+            <Moon aria-hidden="true" className="size-4" />
+          )}
+          {theme === "dark" ? "Thème clair" : "Thème sombre"}
+        </button>
+
+        <button
+          type="button"
+          onClick={seDeconnecter}
+          className="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-(--ink-muted) hover:bg-(--surface-3) hover:text-(--ink) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
+        >
+          <LogOut aria-hidden="true" className="size-4" />
+          Se déconnecter
+        </button>
+      </div>
     </nav>
   );
 }

@@ -1,35 +1,57 @@
-import { useQuery } from "@tanstack/react-query";
-import { StyleSheet, Text, View } from "react-native";
-
-const API = process.env.EXPO_PUBLIC_API_URL ?? "http://10.0.2.2:3001";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { authClient } from "../lib/auth-client";
 
 export default function Accueil() {
-  const { data, isPending, isError } = useQuery({
-    queryKey: ["health"],
-    queryFn: async () => {
-      const res = await fetch(`${API}/health`);
-      if (!res.ok) throw new Error("API injoignable");
-      return res.json() as Promise<{ status: string; db: boolean }>;
-    },
-  });
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) router.replace("/connexion");
+  }, [isPending, session, router]);
+
+  if (isPending) {
+    return (
+      <View style={styles.ecran}>
+        <Text style={styles.texte}>Chargement…</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.ecran}>
       <Text style={styles.titre}>better-lift</Text>
-      {isPending && <Text style={styles.texte}>Vérification de l'API…</Text>}
-      {isError && <Text style={styles.texte}>API injoignable.</Text>}
-      {data && (
-        <Text style={styles.texte}>
-          API {data.status === "ok" ? "opérationnelle" : "dégradée"} — base{" "}
-          {data.db ? "connectée" : "injoignable"}.
-        </Text>
-      )}
+      <Text style={styles.texte}>Connecté : {session?.user.email}</Text>
+      <Pressable
+        style={styles.bouton}
+        onPress={async () => {
+          await authClient.signOut();
+          router.replace("/connexion");
+        }}
+      >
+        <Text style={styles.boutonTexte}>Se déconnecter</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  ecran: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#08090a" },
-  titre: { color: "#f2f3f5", fontSize: 24, fontWeight: "600", marginBottom: 8 },
+  ecran: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    backgroundColor: "#08090a",
+  },
+  titre: { color: "#f2f3f5", fontSize: 24, fontWeight: "600" },
   texte: { color: "#b6bcc4", fontSize: 15 },
+  bouton: {
+    borderWidth: 1,
+    borderColor: "#24272b",
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  boutonTexte: { color: "#b6bcc4", fontSize: 15 },
 });

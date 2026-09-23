@@ -8,7 +8,7 @@ import { ROUTINES } from "@/mocks/routines";
 
 const recherche = z.object({ id: z.string().optional(), etat: champEtat });
 
-export const Route = createFileRoute("/routines")({
+export const Route = createFileRoute("/_protege/routines")({
   validateSearch: recherche,
   component: PageRoutines,
 });
