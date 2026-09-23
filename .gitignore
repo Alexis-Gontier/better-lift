@@ -4,6 +4,7 @@ build/
 coverage/
 .turbo/
 .expo/
+.tanstack/
 *.tsbuildinfo
 
 .env
