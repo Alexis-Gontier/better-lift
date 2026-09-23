@@ -14,11 +14,13 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
+    "@better-auth/expo": "1.7.5",
     "@better-lift/db": "workspace:*",
     "@better-lift/shared": "workspace:*",
     "@hono/node-server": "2.1.1",
     "better-auth": "1.7.5",
-    "hono": "4.13.8"
+    "hono": "4.13.8",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@better-lift/config": "workspace:*",

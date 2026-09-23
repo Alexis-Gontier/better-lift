@@ -1,5 +1,6 @@
 import "./env.js";
 
+import { expo } from "@better-auth/expo";
 import { prisma } from "@better-lift/db";
 import { estAutorisee, normaliserListe } from "@better-lift/shared";
 import { betterAuth } from "better-auth";
@@ -22,7 +23,16 @@ const MESSAGE_REFUS = "Cette adresse n'est pas autorisée à créer un compte.";
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: { enabled: true },
-  trustedOrigins: ["http://localhost:3000", "better-lift://"],
+  // Le plugin serveur du mobile : il fait accepter le schéma de l'application
+  // comme origine, et sert le jeton porteur là où le web reçoit un cookie.
+  plugins: [expo()],
+
+  trustedOrigins: [
+    "http://localhost:3000",
+    "better-lift://",
+    // Le schéma `exp://` d'Expo Go n'est de confiance QU'en développement.
+    ...(process.env.NODE_ENV !== "production" ? ["exp://", "exp://**"] : []),
+  ],
 
   // LE garde (D30). Lié à la création d'un utilisateur, donc valable pour tout
   // chemin présent ou futur — y compris un fournisseur OAuth ajouté plus tard,
