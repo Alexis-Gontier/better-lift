@@ -36,7 +36,7 @@ d'origines de confiance ne sert qu'en développement, où Vite occupe le 3000 et
 | **D33** | **Un seul écran `/connexion`**, portant connexion et création | Avec l'inscription close, l'exposer est sans risque — et c'est le seul moyen d'amorcer les comptes |
 | **D34** | **Le mobile va jusqu'à la persistance au redémarrage**, pas au-delà | C'est le point jamais éprouvé ; le dessin attend le lot 6 |
 | **D35** | **`estAutorisee` est une fonction pure dans `shared`** | Le seul endroit du lot où un test attrape vraiment quelque chose |
-| **D36** | **Une seconde couleur, bornée au danger** — proposée, § 5, **demande un accord** | Le lime porte déjà deux rôles ; un troisième casserait la distinction par la forme |
+| **D36** | **Une seconde couleur, bornée au danger** (§ 5) — amende la ligne « une seule couleur » | Le lime porte déjà deux rôles ; un troisième casserait la distinction par la forme |
 
 ---
 
@@ -164,9 +164,9 @@ Le formulaire de connexion est **le premier écran du projet à avoir besoin d'u
 La question laissée en suspens au lot 2 — `destructive` n'est pas traduit dans `@theme inline`,
 donc `aria-invalid` de `input.tsx` est sans effet, en silence — se tranche donc ici.
 
-**D36, proposée : une seconde couleur est introduite, strictement bornée au danger.** Un rouge
-sourd, déclaré comme `destructive` / `destructive-foreground`, avec un invariant : **il ne porte
-jamais l'action ni le record**, qui restent au lime. C'est précisément parce que le lime porte
+**D36 : une seconde couleur est introduite, strictement bornée au danger.** Un rouge sourd,
+déclaré comme `destructive` / `destructive-foreground`, avec un invariant : **il ne porte jamais
+l'action ni le record**, qui restent au lime. C'est précisément parce que le lime porte
 déjà deux rôles — d'où la distinction par la forme, aplat contre contour — qu'il ne peut pas en
 porter un troisième : un champ invalide cerclé de lime dirait « agis ici » au moment où il faut
 dire « quelque chose ne va pas ».
@@ -176,10 +176,15 @@ aussi en toutes lettres, et `aria-invalid` la porte pour les lecteurs d'écran. 
 que la rendre trouvable au premier coup d'œil.
 
 C'est un **amendement à la ligne « une seule couleur » de la doctrine**, et c'est le seul point de
-cette spec qui en modifie une. Il demande donc un accord explicite. L'alternative — aucune
-seconde couleur, l'erreur portée par le texte et la forme seules — reste tenable, mais rendra les
-confirmations destructrices des lots suivants (« supprimer cette séance ») difficiles à distinguer
-d'une action ordinaire.
+cette spec qui en modifie une. Il a été accepté le 23 septembre 2026. L'alternative écartée —
+aucune seconde couleur, l'erreur portée par le texte et la forme seules — était tenable, mais
+aurait rendu les confirmations destructrices des lots suivants (« supprimer cette séance »)
+difficiles à distinguer d'une action ordinaire.
+
+**Conséquence à porter dans `CLAUDE.md` au moment de l'implémentation**, et pas avant : la ligne
+« une seule couleur » y devient « une seule couleur pour l'action et le record ; le danger a la
+sienne, qui ne porte jamais ni l'une ni l'autre ». Tant que le token n'existe pas, écrire la
+règle serait décrire du code absent.
 
 ---
 
