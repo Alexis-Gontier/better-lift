@@ -1,10 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/shell/app-shell";
 import { api } from "../lib/api";
 
 export const Route = createFileRoute("/")({ component: Accueil });
 
+// Écran de contrôle hérité du lot 0. La coquille est montée par chaque route
+// depuis la tâche 14 : celle-ci la monte donc aussi, pour garder la navigation.
 function Accueil() {
+  return <AppShell liste={<Sante />} />;
+}
+
+function Sante() {
   const { data, isPending, isError } = useQuery({
     queryKey: ["health"],
     queryFn: async () => {

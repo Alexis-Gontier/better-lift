@@ -17,4 +17,10 @@ describe("données factices du catalogue", () => {
   it("contient des exercices sans record, pour éprouver l'absence", () => {
     expect(EXERCICES.some((e) => e.record === undefined)).toBe(true);
   });
+
+  // Séparés, un nom long et un badge ne montrent rien : la troncature ne se juge
+  // que lorsque les deux se disputent la même ligne.
+  it("contient un nom très long PORTANT un record, pour éprouver la troncature face au badge", () => {
+    expect(EXERCICES.some((e) => e.nom.length > 45 && e.record !== undefined)).toBe(true);
+  });
 });

@@ -34,10 +34,14 @@ export const EXERCICES: ExerciceFactice[] = [
     equipement: "Machine",
   },
   {
+    // Nom long ET record : c'est la combinaison qui éprouve vraiment la troncature,
+    // puisque le libellé doit céder sans pousser le badge hors de la ligne. Séparés,
+    // les deux cas ne montrent rien.
     id: "6",
     nom: "Écarté couché aux haltères sur banc incliné à 30 degrés",
     groupe: "Pectoraux",
     equipement: "Haltères",
+    record: { kg: 22, reps: 12 },
   },
   {
     id: "7",
