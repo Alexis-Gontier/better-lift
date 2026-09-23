@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { champEtat, etatForceRendu } from "@/components/etats/etat-force";
 import { AppShell } from "@/components/shell/app-shell";
 import { DetailExercice } from "@/features/exercices/detail-exercice";
 import { ListeExercices } from "@/features/exercices/liste-exercices";
@@ -11,6 +12,7 @@ const recherche = z.object({
   q: z.string().optional(),
   groupe: z.string().optional(),
   id: z.string().optional(),
+  etat: champEtat,
 });
 
 export const Route = createFileRoute("/exercices")({
@@ -19,7 +21,7 @@ export const Route = createFileRoute("/exercices")({
 });
 
 function PageExercices() {
-  const { q, groupe, id } = Route.useSearch();
+  const { q, groupe, id, etat } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   const visibles = EXERCICES.filter((e) => {
@@ -33,13 +35,19 @@ function PageExercices() {
   return (
     <AppShell
       liste={
-        <ListeExercices
-          exercices={visibles}
-          q={q ?? ""}
-          idSelectionne={id}
-          onRecherche={(valeur) => navigate({ search: (s) => ({ ...s, q: valeur || undefined }) })}
-          onSelection={(exId) => navigate({ search: (s) => ({ ...s, id: exId }) })}
-        />
+        etatForceRendu(etat, "Le catalogue n'a pas pu être chargé.", () =>
+          navigate({ search: (s) => ({ ...s, etat: undefined }) }),
+        ) ?? (
+          <ListeExercices
+            exercices={visibles}
+            q={q ?? ""}
+            idSelectionne={id}
+            onRecherche={(valeur) =>
+              navigate({ search: (s) => ({ ...s, q: valeur || undefined }) })
+            }
+            onSelection={(exId) => navigate({ search: (s) => ({ ...s, id: exId }) })}
+          />
+        )
       }
       detail={
         selectionne ? (
