@@ -8,7 +8,7 @@ import { SEANCES } from "@/mocks/seances";
 
 const recherche = z.object({ id: z.string().optional(), etat: champEtat });
 
-export const Route = createFileRoute("/seances")({
+export const Route = createFileRoute("/_protege/seances")({
   validateSearch: recherche,
   component: PageSeances,
 });

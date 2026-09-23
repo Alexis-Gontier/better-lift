@@ -10,63 +10,84 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ExercicesRouteImport } from './routes/exercices'
-import { Route as RoutinesRouteImport } from './routes/routines'
-import { Route as SeancesRouteImport } from './routes/seances'
+import { Route as ProtegeRouteImport } from './routes/_protege'
+import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
+import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
+import { Route as ProtegeSeancesRouteImport } from './routes/_protege.seances'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExercicesRoute = ExercicesRouteImport.update({
+const ProtegeRoute = ProtegeRouteImport.update({
+  id: '/_protege',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionRoute = ConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtegeExercicesRoute = ProtegeExercicesRouteImport.update({
   id: '/exercices',
   path: '/exercices',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ProtegeRoute,
 } as any)
-const RoutinesRoute = RoutinesRouteImport.update({
+const ProtegeRoutinesRoute = ProtegeRoutinesRouteImport.update({
   id: '/routines',
   path: '/routines',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ProtegeRoute,
 } as any)
-const SeancesRoute = SeancesRouteImport.update({
+const ProtegeSeancesRoute = ProtegeSeancesRouteImport.update({
   id: '/seances',
   path: '/seances',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ProtegeRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/exercices': typeof ExercicesRoute
-  '/routines': typeof RoutinesRoute
-  '/seances': typeof SeancesRoute
+  '/connexion': typeof ConnexionRoute
+  '/exercices': typeof ProtegeExercicesRoute
+  '/routines': typeof ProtegeRoutinesRoute
+  '/seances': typeof ProtegeSeancesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/exercices': typeof ExercicesRoute
-  '/routines': typeof RoutinesRoute
-  '/seances': typeof SeancesRoute
+  '/connexion': typeof ConnexionRoute
+  '/exercices': typeof ProtegeExercicesRoute
+  '/routines': typeof ProtegeRoutinesRoute
+  '/seances': typeof ProtegeSeancesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/exercices': typeof ExercicesRoute
-  '/routines': typeof RoutinesRoute
-  '/seances': typeof SeancesRoute
+  '/_protege': typeof ProtegeRouteWithChildren
+  '/connexion': typeof ConnexionRoute
+  '/_protege/exercices': typeof ProtegeExercicesRoute
+  '/_protege/routines': typeof ProtegeRoutinesRoute
+  '/_protege/seances': typeof ProtegeSeancesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/exercices' | '/routines' | '/seances'
+  fullPaths: '/' | '/connexion' | '/exercices' | '/routines' | '/seances'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/exercices' | '/routines' | '/seances'
-  id: '__root__' | '/' | '/exercices' | '/routines' | '/seances'
+  to: '/' | '/connexion' | '/exercices' | '/routines' | '/seances'
+  id:
+    | '__root__'
+    | '/'
+    | '/_protege'
+    | '/connexion'
+    | '/_protege/exercices'
+    | '/_protege/routines'
+    | '/_protege/seances'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ExercicesRoute: typeof ExercicesRoute
-  RoutinesRoute: typeof RoutinesRoute
-  SeancesRoute: typeof SeancesRoute
+  ProtegeRoute: typeof ProtegeRouteWithChildren
+  ConnexionRoute: typeof ConnexionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,35 +99,63 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/exercices': {
-      id: '/exercices'
+    '/_protege': {
+      id: '/_protege'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtegeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion': {
+      id: '/connexion'
+      path: '/connexion'
+      fullPath: '/connexion'
+      preLoaderRoute: typeof ConnexionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_protege/exercices': {
+      id: '/_protege/exercices'
       path: '/exercices'
       fullPath: '/exercices'
-      preLoaderRoute: typeof ExercicesRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ProtegeExercicesRouteImport
+      parentRoute: typeof ProtegeRoute
     }
-    '/routines': {
-      id: '/routines'
+    '/_protege/routines': {
+      id: '/_protege/routines'
       path: '/routines'
       fullPath: '/routines'
-      preLoaderRoute: typeof RoutinesRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ProtegeRoutinesRouteImport
+      parentRoute: typeof ProtegeRoute
     }
-    '/seances': {
-      id: '/seances'
+    '/_protege/seances': {
+      id: '/_protege/seances'
       path: '/seances'
       fullPath: '/seances'
-      preLoaderRoute: typeof SeancesRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ProtegeSeancesRouteImport
+      parentRoute: typeof ProtegeRoute
     }
   }
 }
 
+interface ProtegeRouteChildren {
+  ProtegeExercicesRoute: typeof ProtegeExercicesRoute
+  ProtegeRoutinesRoute: typeof ProtegeRoutinesRoute
+  ProtegeSeancesRoute: typeof ProtegeSeancesRoute
+}
+
+const ProtegeRouteChildren: ProtegeRouteChildren = {
+  ProtegeExercicesRoute: ProtegeExercicesRoute,
+  ProtegeRoutinesRoute: ProtegeRoutinesRoute,
+  ProtegeSeancesRoute: ProtegeSeancesRoute,
+}
+
+const ProtegeRouteWithChildren =
+  ProtegeRoute._addFileChildren(ProtegeRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ExercicesRoute: ExercicesRoute,
-  RoutinesRoute: RoutinesRoute,
-  SeancesRoute: SeancesRoute,
+  ProtegeRoute: ProtegeRouteWithChildren,
+  ConnexionRoute: ConnexionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
