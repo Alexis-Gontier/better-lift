@@ -22,6 +22,15 @@
   --accent-wash: rgb(168 207 69 / 0.14);
   --focus-ring: rgb(168 207 69 / 0.45);
 
+  /* Danger (D36) — borné au danger, ne porte jamais l'action ni le record.
+     `--danger` est choisi sur deux contraintes à la fois : assez sombre pour que
+     `--danger-on` tienne 5,65:1 dessus, assez clair pour que l'aplat lui-même se
+     détache du fond à 3,24:1 — plus foncé, le bouton disparaîtrait dans la page. */
+  --danger: #a83e39;
+  --danger-on: #fdf3f2;
+  --danger-ink: #e98b85;
+  --danger-wash: rgb(168 62 57 / 0.16);
+
   /* Élévation — réservée au passager (D27) */
   --float-bg: rgb(28 32 36 / 0.9);
   --float-line: #383d44;
@@ -52,6 +61,13 @@
   --accent-ink: #5c7a14;
   --accent-wash: rgb(92 122 20 / 0.12);
   --focus-ring: rgb(92 122 20 / 0.45);
+
+  /* Même logique que l'accent : l'aplat garde sa teinte dans les deux thèmes,
+     le rouge EN TEXTE s'assombrit pour tenir 7,5:1 sur blanc. */
+  --danger: #a83e39;
+  --danger-on: #fdf3f2;
+  --danger-ink: #9a2f2a;
+  --danger-wash: rgb(154 47 42 / 0.1);
 
   --float-bg: rgb(255 255 255 / 0.92);
   --float-line: #d6d6dc;

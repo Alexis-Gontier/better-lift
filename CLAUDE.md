@@ -71,9 +71,10 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   momentané : palette, menus, dialogues. **Si ça flotte, ça se ferme.**
 - **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux
   d'encre. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
-- **Une seule couleur : le lime sourd `#a8cf45`.** Elle porte l'action ET le record, donc la
-  distinction se fait **par la forme** : l'action est un **aplat** (fond lime, texte sombre), le
-  record est un **contour** (lime en texte sur fond teinté, flèche montante). Invariant.
+- **Une seule couleur pour l'action et le record : le lime sourd `#a8cf45`.** Elle porte les
+  deux, donc la distinction se fait **par la forme** : l'action est un **aplat** (fond lime,
+  texte sombre), le record est un **contour** (lime en texte sur fond teinté, flèche montante).
+  Invariant. Le danger a la sienne, qui ne porte ni l'une ni l'autre.
 - **Un token par rôle, deux valeurs par token.** `--accent` (aplat) reste `#a8cf45` dans les deux
   thèmes ; `--accent-ink` (lime en texte) passe à `#5c7a14` en clair — sur blanc, `#a8cf45`
   tombe sous 2:1. Jamais de couleur en dur réutilisée dans les deux registres.
@@ -83,10 +84,12 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   `text-primary-foreground` ; `accent`, qui chez shadcn désigne la **surface de survol** et non
   la marque, pointe vers `--surface-3`. Ne jamais rendre `bg-accent` au lime : chaque survol de
   bouton fantôme deviendrait un aplat de marque.
-- **`destructive` n'est pas traduit, et c'est une décision en attente.** La doctrine ne connaît
-  qu'une couleur ; lui en donner une seconde relève de la conception. En attendant, la variante
-  `destructive` de `button.tsx` et l'`aria-invalid` de `input.tsx` sont **sans effet, en
-  silence**. À trancher avant les premiers formulaires.
+- **Le danger a sa propre couleur, et elle ne fait que ça** (D36). `--danger` porte l'aplat
+  destructeur, `--danger-ink` le rouge en texte — qui s'assombrit en thème clair, comme
+  `--accent-ink`. **Il ne porte jamais l'action ni le record**, qui restent au lime. La valeur
+  `#a83e39` tient deux contraintes à la fois : assez sombre pour que son encre passe à 5,65:1,
+  assez claire pour que l'aplat se détache du fond à 3,24:1. Plus foncé, le bouton disparaît
+  dans la page.
 - **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et on valide un écran avant de lui brancher
