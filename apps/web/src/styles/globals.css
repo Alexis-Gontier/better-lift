@@ -76,7 +76,9 @@ body {
   *,
   *::before,
   *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: la réduction de mouvement doit primer sur toute animation déclarée ailleurs. */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: même raison, pour les transitions. */
     transition-duration: 0.01ms !important;
   }
 }
