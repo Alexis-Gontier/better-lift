@@ -35,11 +35,22 @@ jobs:
 
       - run: pnpm typecheck
 
+      # `apps/api/src/auth.ts` lit SIGNUP_ALLOWLIST au chargement du module et
+      # REFUSE DE DÉMARRER si elle est vide — c'est voulu : une liste blanche
+      # vide ouvrirait l'inscription à tous. Toute étape qui charge ce module a
+      # donc besoin de valeurs factices, jamais contactées ni réutilisées.
       - run: pnpm test
+        env:
+          SIGNUP_ALLOWLIST: ci@example.com
+          BETTER_AUTH_SECRET: secret-factice-de-ci-jamais-utilise-ailleurs
+          BETTER_AUTH_URL: http://localhost:3001
 
       - run: pnpm build
         env:
           VITE_API_URL: http://localhost:3001
+          SIGNUP_ALLOWLIST: ci@example.com
+          BETTER_AUTH_SECRET: secret-factice-de-ci-jamais-utilise-ailleurs
+          BETTER_AUTH_URL: http://localhost:3001
 
       # Le plugin Prisma de knip charge aussi `prisma.config.ts` pour
       # localiser le schéma : même piège que `generate` ci-dessus, sur une
@@ -50,3 +61,6 @@ jobs:
       - run: pnpm knip
         env:
           DIRECT_URL: postgresql://ci:ci@localhost:5432/better_lift_ci
+          SIGNUP_ALLOWLIST: ci@example.com
+          BETTER_AUTH_SECRET: secret-factice-de-ci-jamais-utilise-ailleurs
+          BETTER_AUTH_URL: http://localhost:3001
