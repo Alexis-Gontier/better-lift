@@ -3,13 +3,15 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".output/**"]
+      "outputs": ["dist/**", ".output/**"],
+      "env": ["VITE_API_URL", "SIGNUP_ALLOWLIST", "BETTER_AUTH_SECRET", "BETTER_AUTH_URL"]
     },
     "typecheck": {
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "env": ["SIGNUP_ALLOWLIST", "BETTER_AUTH_SECRET", "BETTER_AUTH_URL"]
     },
     "dev": {
       "cache": false,

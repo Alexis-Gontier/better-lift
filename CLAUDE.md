@@ -35,6 +35,13 @@ La CI n'a pas de base de données. Les étapes qui chargent `packages/db/prisma.
 contactée. Toute nouvelle étape qui touche cette configuration en aura besoin aussi : le piège
 ne se voit pas en local, où le `.env` existe.
 
+**Poser une variable sur une étape du workflow ne suffit pas.** Turborepo filtre l'environnement
+en mode strict : une variable non déclarée dans la tâche de `turbo.json` n'atteint jamais le
+processus. `pnpm test` et `pnpm build` passent par turbo et ont donc un bloc `env` ; `pnpm knip`
+et `prisma generate` sont des appels pnpm directs et n'en ont pas besoin. Le symptôme est
+déroutant — la variable est visible dans le workflow et absente dans le code — et il ne se
+reproduit pas en local, où le `.env` la fournit par un autre chemin.
+
 ## Stack
 
 | Brique | Choix |
