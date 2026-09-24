@@ -23,13 +23,26 @@ enum BodyPart {
 
 model Exercise {
   id           String   @id @default(cuid())
+  // Dérivé du nom ANGLAIS, qui ne bouge jamais : c'est la clé de l'`upsert` du
+  // semis, et l'identifiant de l'URL. Corriger un nom français ne le change pas.
   slug         String   @unique
+  // Le nom anglais du dataset, conservé pour la recherche (D44).
   name         String
+  // Le nom français, affiché. Vient de `catalogue/noms-fr.json` (D45).
+  nomFr        String
+  // Les deux noms dépouillés de leurs accents et de leur casse, remplis au semis
+  // par `texteRecherche` de `shared` — qui passe par LA MÊME fonction que celle
+  // qui normalise la saisie à la lecture (D39, D40). Deux normalisations
+  // différentes rendraient la colonne inutile sans la moindre erreur.
+  nomRecherche String
   instructions String[]
   bodyPart     BodyPart
   target       String
   equipment    String
   secondary    String[]
+  // URL de l'animation dans le dépôt du dataset, figée sur un commit. Les médias
+  // appartiennent à Gym visual : affichés avec attribution, jamais copiés (D46)
+  // — voir catalogue/LICENSE-dataset.md.
   gifUrl       String?
   archivedAt   DateTime?
   createdAt    DateTime @default(now())
@@ -37,6 +50,7 @@ model Exercise {
 
   @@index([bodyPart])
   @@index([equipment])
+  @@index([nomRecherche])
 }
 
 // --- Better Auth ------------------------------------------------------------

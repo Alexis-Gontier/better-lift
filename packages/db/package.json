@@ -11,6 +11,7 @@
     "migrate": "prisma migrate dev",
     "studio": "prisma studio",
     "extraire": "tsx catalogue/extraire.ts",
+    "seed": "tsx prisma/seed.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo node_modules src/generated"

@@ -8,8 +8,8 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 2 sont fusionnés**, ce qui clôt le
-plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
+Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 3 sont fusionnés** ; les lots 0 à 2
+clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
 
 - **Lot 0** — le monorepo tient debout, les trois applications démarrent, et la chaîne
   émulateur → Metro → API → Neon est prouvée de bout en bout.
@@ -18,8 +18,11 @@ plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
 - **Lot 2** — les trois écrans web dessinés sur données factices : catalogue, routines,
   historique, chacun avec ses quatre états.
 
-**Le lot 3 n'est pas encore planifié**, et c'est voulu : les lots 3 à 7 dépendent de ce que le
-dessin des écrans a appris. Prochaine étape : Better Auth, liste blanche, connexion web et mobile.
+- **Lot 3** — Better Auth, liste blanche, connexion sur les deux surfaces.
+
+**Le lot 4 est en cours** (plan `docs/superpowers/plans/2026-09-23-lot-4-catalogue-francais.md`,
+révisé le 24 septembre après une revue à la lumière d'opengym) : catalogue à deux noms, anglais
+et français, semé sur `dev` ; reste à le servir et à le brancher (PR 2).
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
@@ -154,6 +157,21 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
   `git diff` vide, donc incompréhensible. Le `.gitattributes` (`* text=auto eol=lf`) règle les
   fins de ligne ; arrêter le serveur avant de fusionner règle le reste. Vérifier que le port
   3000 est libre, `TaskStop` ne tuant pas toujours le processus Vite enfant.
+- **Le catalogue porte deux noms.** `name` est l'anglais du dataset, `nomFr` le français
+  affiché, et `nomRecherche` les deux normalisés : la recherche trouve dans les deux langues.
+  Les noms français sont **écrits** dans `packages/db/catalogue/noms-fr.json`, par id du
+  dataset — corriger un nom, c'est modifier une ligne et relancer `pnpm db:seed`. Le slug
+  dérive du nom anglais et ne bouge donc jamais.
+- **Les médias du catalogue sont affichés, jamais copiés.** Les données du dataset sont MIT, les
+  GIF appartiennent à **Gym visual**. Choix assumé pour une application privée (D46) :
+  `gifUrl` pointe vers le dépôt du dataset, figé sur un commit, et l'attribution « © Gym
+  visual » accompagne chaque animation. Aucun média n'entre dans le dépôt.
+- **Clés numériques en JSON** : un objet JavaScript range les clés numériques canoniques
+  (« 1000 ») avant les autres (« 0001 »). `JSON.stringify` d'un objet d'ids réordonne donc le
+  fichier en silence ; écrire `noms-fr.json` ligne à ligne, et vérifier l'ordre sur le texte.
+- **Prisma 7 : `migrate dev` ne régénère plus le client.** Après une migration, lancer
+  `pnpm --filter @better-lift/db generate`, sinon le client rejette les nouvelles colonnes
+  avec une `PrismaClientValidationError` qui ne dit pas pourquoi.
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 
@@ -190,6 +208,9 @@ Neon et Context7 viennent des **plugins** déjà configurés sur cette machine �
 dans le dépôt, qui ferait doublon et imposerait une clé API en clair.
 
 - **Neon** : projet `better-lift`, id `late-bar-51472267`, Francfort, PostgreSQL 18.
-  Branches `production` (catalogue semé, 1 324 exercices) et `dev` (archivée, à réactiver).
+  Branches `production` (V1 seule, non reprise) et `dev`. **Sur `dev`, deux bases** : `neondb`
+  porte encore la V1 (1 331 exercices, anciennes migrations) ; **`betterlift` est celle du
+  nouveau dépôt** (catalogue semé, 1 316 exercices). Toute requête MCP doit passer
+  `database_name: "betterlift"`, sans quoi elle lit la V1 et affiche un état trompeur.
 - **Context7** : à utiliser pour toute question de version sur une bibliothèque, plutôt que
   de répondre de mémoire.
