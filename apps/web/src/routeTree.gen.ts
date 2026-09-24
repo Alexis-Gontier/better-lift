@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtegeRouteImport } from './routes/_protege'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
+import { Route as ProtegeParametresRouteImport } from './routes/_protege.parametres'
 import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
 import { Route as ProtegeSeancesRouteImport } from './routes/_protege.seances'
 
@@ -35,6 +36,11 @@ const ProtegeExercicesRoute = ProtegeExercicesRouteImport.update({
   path: '/exercices',
   getParentRoute: () => ProtegeRoute,
 } as any)
+const ProtegeParametresRoute = ProtegeParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => ProtegeRoute,
+} as any)
 const ProtegeRoutinesRoute = ProtegeRoutinesRouteImport.update({
   id: '/routines',
   path: '/routines',
@@ -50,6 +56,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
   '/exercices': typeof ProtegeExercicesRoute
+  '/parametres': typeof ProtegeParametresRoute
   '/routines': typeof ProtegeRoutinesRoute
   '/seances': typeof ProtegeSeancesRoute
 }
@@ -57,6 +64,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
   '/exercices': typeof ProtegeExercicesRoute
+  '/parametres': typeof ProtegeParametresRoute
   '/routines': typeof ProtegeRoutinesRoute
   '/seances': typeof ProtegeSeancesRoute
 }
@@ -66,20 +74,24 @@ export interface FileRoutesById {
   '/_protege': typeof ProtegeRouteWithChildren
   '/connexion': typeof ConnexionRoute
   '/_protege/exercices': typeof ProtegeExercicesRoute
+  '/_protege/parametres': typeof ProtegeParametresRoute
   '/_protege/routines': typeof ProtegeRoutinesRoute
   '/_protege/seances': typeof ProtegeSeancesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/connexion' | '/exercices' | '/routines' | '/seances'
+  fullPaths:
+    '/' | '/connexion' | '/exercices' | '/parametres' | '/routines' | '/seances'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/connexion' | '/exercices' | '/routines' | '/seances'
+  to:
+    '/' | '/connexion' | '/exercices' | '/parametres' | '/routines' | '/seances'
   id:
     | '__root__'
     | '/'
     | '/_protege'
     | '/connexion'
     | '/_protege/exercices'
+    | '/_protege/parametres'
     | '/_protege/routines'
     | '/_protege/seances'
   fileRoutesById: FileRoutesById
@@ -120,6 +132,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtegeExercicesRouteImport
       parentRoute: typeof ProtegeRoute
     }
+    '/_protege/parametres': {
+      id: '/_protege/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof ProtegeParametresRouteImport
+      parentRoute: typeof ProtegeRoute
+    }
     '/_protege/routines': {
       id: '/_protege/routines'
       path: '/routines'
@@ -139,12 +158,14 @@ declare module '@tanstack/react-router' {
 
 interface ProtegeRouteChildren {
   ProtegeExercicesRoute: typeof ProtegeExercicesRoute
+  ProtegeParametresRoute: typeof ProtegeParametresRoute
   ProtegeRoutinesRoute: typeof ProtegeRoutinesRoute
   ProtegeSeancesRoute: typeof ProtegeSeancesRoute
 }
 
 const ProtegeRouteChildren: ProtegeRouteChildren = {
   ProtegeExercicesRoute: ProtegeExercicesRoute,
+  ProtegeParametresRoute: ProtegeParametresRoute,
   ProtegeRoutinesRoute: ProtegeRoutinesRoute,
   ProtegeSeancesRoute: ProtegeSeancesRoute,
 }

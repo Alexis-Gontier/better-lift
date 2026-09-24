@@ -1,12 +1,6 @@
-import {
-  avecPrecedents,
-  demarrerDepuisRoutine,
-  demarrerVide,
-  secondesEcoulees,
-} from "@better-lift/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { secondesEcoulees } from "@better-lift/shared";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,47 +11,24 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { chargerPrecedents, optionsRoutine, optionsRoutines } from "../../lib/requetes";
+import { useDemarrer } from "../../lib/demarrer";
+import { optionsRoutines } from "../../lib/requetes";
 import { useSeance } from "../../lib/seance";
-import { formaterDuree, nouvelId, useMaintenant } from "../../lib/temps";
+import { formaterDuree, useMaintenant } from "../../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
 
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 export default function Accueil() {
   const router = useRouter();
-  const {
-    seance,
-    file,
-    envoiEnCours,
-    demarrer: demarrerSeance,
-    synchroniser,
-    reprendreRefusee,
-    supprimerRefusee,
-  } = useSeance();
+  const { seance, file, envoiEnCours, synchroniser, reprendreRefusee, supprimerRefusee } =
+    useSeance();
   const enAttente = file.filter((e) => e.erreur === null);
   const refusees = file.filter((e) => e.erreur !== null);
   const maintenant = useMaintenant();
-  const client = useQueryClient();
   // La garde de session est dans `(onglets)/_layout.tsx` : ici, on est connecté.
   const routines = useQuery(optionsRoutines());
-  const [ouverture, setOuverture] = useState<string | null>(null);
-
-  /**
-   * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
-   * relit le DISQUE au moment de l'appui, pas l'état de cet écran.
-   */
-  const demarrer = async (creer: () => ReturnType<typeof demarrerVide>) => {
-    if (!(await demarrerSeance(creer()))) {
-      Alert.alert(
-        "Une séance est en cours",
-        "Termine-la ou abandonne-la avant d'en commencer une autre.",
-        [{ text: "Reprendre", onPress: () => router.push("/seance") }],
-      );
-      return;
-    }
-    router.push("/seance");
-  };
+  const { vide, routine, ouverture } = useDemarrer();
 
   return (
     <SafeAreaView style={styles.ecran}>
@@ -135,11 +106,7 @@ export default function Accueil() {
           </View>
         ))}
 
-        <Pressable
-          style={styles.vide}
-          onPress={() => void demarrer(() => demarrerVide(nouvelId(), new Date()))}
-          accessibilityRole="button"
-        >
+        <Pressable style={styles.vide} onPress={() => void vide()} accessibilityRole="button">
           <Text style={styles.videTexte}>Séance vide</Text>
         </Pressable>
 
@@ -167,25 +134,7 @@ export default function Accueil() {
             key={r.id}
             style={[styles.routine, ouverture === r.id && { opacity: 0.6 }]}
             disabled={ouverture !== null}
-            onPress={async () => {
-              // Le résumé ne porte pas les séries : le détail se charge à l'appui.
-              setOuverture(r.id);
-              try {
-                const detail = await client.fetchQuery(optionsRoutine(r.id));
-                // La dernière fois entre dans le brouillon AVANT son écriture (D67).
-                const precedents = await chargerPrecedents(detail.exercices.map((e) => e.slug));
-                await demarrer(() =>
-                  avecPrecedents(demarrerDepuisRoutine(detail, nouvelId(), new Date()), precedents),
-                );
-              } catch {
-                Alert.alert(
-                  "Routine indisponible",
-                  "Elle n'a pas pu être chargée. Vérifie ta connexion.",
-                );
-              } finally {
-                setOuverture(null);
-              }
-            }}
+            onPress={() => void routine(r.id)}
             accessibilityRole="button"
             accessibilityHint="Démarre une séance depuis cette routine"
           >

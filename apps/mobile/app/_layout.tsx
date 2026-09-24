@@ -10,9 +10,14 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SeanceProvider>
         <StatusBar style="light" />
-        <Stack
-          screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#08090a" } }}
-        />
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#08090a" } }}>
+          {/* Les onglets EN PREMIER : une pile qui déclare ses écrans prend le
+              premier pour route initiale — déclarée seule, la modale ouvrait
+              l'application. */}
+          <Stack.Screen name="(onglets)" />
+          {/* Le choix du bouton central flotte : il s'ouvre par-dessus les onglets. */}
+          <Stack.Screen name="demarrer" options={{ presentation: "modal" }} />
+        </Stack>
       </SeanceProvider>
     </QueryClientProvider>
   );

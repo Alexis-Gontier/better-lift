@@ -26,14 +26,20 @@ export type LigneExercice = {
   gifUrl: string | null;
 };
 
-const CHAMPS_RESUME = { slug: true, nomFr: true, bodyPart: true, equipment: true } as const;
+// `gifUrl` entre dans le résumé : la liste affiche une vignette par exercice.
+const CHAMPS_RESUME = {
+  slug: true,
+  nomFr: true,
+  bodyPart: true,
+  equipment: true,
+  gifUrl: true,
+} as const;
 const CHAMPS_DETAIL = {
   ...CHAMPS_RESUME,
   name: true,
   target: true,
   secondary: true,
   instructions: true,
-  gifUrl: true,
 } as const;
 
 export function filtreCatalogue(requete: RequeteCatalogue): Record<string, unknown> {
@@ -52,13 +58,14 @@ export function filtreCatalogue(requete: RequeteCatalogue): Record<string, unkno
 
 // Ne reçoit que les champs du résumé : c'est tout ce que `CHAMPS_RESUME` lit.
 export function versResume(
-  ligne: Pick<LigneExercice, "slug" | "nomFr" | "bodyPart" | "equipment">,
+  ligne: Pick<LigneExercice, "slug" | "nomFr" | "bodyPart" | "equipment" | "gifUrl">,
 ): ExerciceResume {
   return {
     slug: ligne.slug,
     nom: ligne.nomFr,
     groupe: ligne.bodyPart,
     equipement: ligne.equipment,
+    gif: ligne.gifUrl,
   };
 }
 
@@ -66,7 +73,6 @@ export function versDetail(ligne: LigneExercice): ExerciceDetail {
   return {
     ...versResume(ligne),
     nomAnglais: ligne.name,
-    gif: ligne.gifUrl,
     cible: ligne.target,
     secondaires: ligne.secondary,
     instructions: ligne.instructions,

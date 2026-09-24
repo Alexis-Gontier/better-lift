@@ -1,15 +1,13 @@
-import { Link, useNavigate, useRouteContext, useRouter } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import {
   ChevronsUpDown,
   Dumbbell,
   History,
   ListChecks,
   LogOut,
-  Moon,
   Search,
-  Sun,
+  Settings,
 } from "lucide-react";
-import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -29,15 +27,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
-import { chargerSession } from "@/lib/auth-session";
-import { appliquerTheme, type Theme, themeInitial } from "@/lib/theme";
+import { useDeconnexion } from "@/lib/deconnexion";
 import { OUVRIR_PALETTE } from "./palette";
 
 const ENTREES = [
   { to: "/seances", label: "Séances", icone: History },
   { to: "/routines", label: "Routines", icone: ListChecks },
   { to: "/exercices", label: "Exercices", icone: Dumbbell },
+  { to: "/parametres", label: "Paramètres", icone: Settings },
 ] as const;
 
 /** Deux lettres tirées de l'adresse : « alexis.gontier » → « AG ». */
@@ -47,29 +44,11 @@ function initiales(email: string) {
 }
 
 export function NavLaterale() {
-  const [theme, setTheme] = useState<Theme>(() => themeInitial());
-  const navigate = useNavigate();
-  const router = useRouter();
+  const seDeconnecter = useDeconnexion();
   const email = useRouteContext({ strict: false }).auth?.session?.user.email ?? "";
 
-  async function seDeconnecter() {
-    await authClient.signOut();
-    // Relire puis invalider, dans cet ordre : une deconnexion qui ne rafraichit
-    // pas le contexte laisse l'ancienne session a l'ecran, et la garde continue
-    // de laisser passer.
-    await chargerSession();
-    await router.invalidate();
-    await navigate({ to: "/connexion" });
-  }
-
-  function basculerTheme() {
-    const suivant: Theme = theme === "dark" ? "light" : "dark";
-    appliquerTheme(suivant);
-    setTheme(suivant);
-  }
-
   return (
-    <Sidebar variant="inset" collapsible="icon" aria-label="Navigation principale">
+    <Sidebar variant="inset" collapsible="none" aria-label="Navigation principale">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -140,9 +119,11 @@ export function NavLaterale() {
                   {email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={basculerTheme}>
-                  {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-                  {theme === "dark" ? "Thème clair" : "Thème sombre"}
+                <DropdownMenuItem asChild>
+                  <Link to="/parametres">
+                    <Settings aria-hidden="true" />
+                    Paramètres
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={seDeconnecter}>
                   <LogOut aria-hidden="true" />

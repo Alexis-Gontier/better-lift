@@ -99,11 +99,14 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 ## Interface
 
 - **Coquille web** (D69–D73, [`2026-09-24-coquille-shadcn-design.md`](docs/superpowers/specs/2026-09-24-coquille-shadcn-design.md)) :
-  `Sidebar variant="inset" collapsible="icon"` de shadcn (repli `Ctrl+B`, état dans le cookie
-  `sidebar_state`, relu par `AppShell` faute de rendu serveur), puis liste et détail
+  `Sidebar variant="inset" collapsible="none"` de shadcn — **ni bouton de repli ni en-tête** (demande
+  de l'utilisateur) ; non repliable, shadcn n'applique plus les marges de l'`inset`, recopiées sur
+  le `SidebarInset` dans `AppShell`. Le titre reste en `sr-only`. Puis liste et détail
   redimensionnables dans le `SidebarInset`, tailles persistées, et **le détail ouvert vit dans
   l'URL** avec les filtres. Un rechargement retombe au même endroit. Composants shadcn plutôt que
   maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
+  Page **Paramètres** (`/parametres`) : compte, thème (seul endroit où il se change), unités et
+  fuseau affichés. La liste des exercices montre la vignette GIF (`gif` fait partie du résumé).
 - `Resizable`, `Sidebar` et `Command` de shadcn fournissent panneaux, navigation et `Cmd+K`.
 - **Le permanent est jointif, le passager flotte — une exception bornée** (D71). Seule la zone
   de contenu (`SidebarInset`) flotte, une fois : marge, coins arrondis, ombre légère. Liste et
@@ -135,7 +138,12 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   assez claire pour que l'aplat se détache du fond à 3,24:1. Plus foncé, le bouton disparaît
   dans la page.
 - **Mobile à quatre onglets** (D74–D80, [`2026-09-24-mobile-onglets-design.md`](docs/superpowers/specs/2026-09-24-mobile-onglets-design.md)) :
-  Accueil · Historique · Exercices · Profil, groupe `app/(onglets)/` dont le `_layout` porte la
+  Accueil · Historique | **bouton central** | Exercices · Profil, façon opengym. Le bouton
+  central (aplat lime) reprend la séance en cours, sinon ouvre la modale `app/demarrer.tsx`
+  (séance vide ou routine, logique partagée dans `lib/demarrer.ts`). **Piège** : une pile qui
+  déclare ses écrans prend le premier pour route initiale — `(onglets)` est donc déclaré avant
+  `demarrer` dans `app/_layout.tsx`, sinon l'application s'ouvre sur la modale. Groupe
+  `app/(onglets)/` dont le `_layout` porte la
   garde de session. `seance` et `fin` restent hors des onglets, en plein écran. L'historique est
   désormais aussi sur mobile (D68 levée). Onglet actif en encre, jamais en lime. Une séance
   envoyée invalide `["seances"]` et `["records"]`. Pas de hauteur fixe sur la barre d'onglets :
