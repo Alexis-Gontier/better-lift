@@ -4,21 +4,25 @@
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 > Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal :** mettre en base les 1 318 exercices du catalogue, en français, et les servir aux écrans
-dessinés au lot 2 — de sorte que n'importe quel exercice se retrouve par une recherche tapée sans
-accents.
+**Goal :** mettre en base les 1 316 exercices du catalogue, avec leur nom anglais et leur nom
+français, et les servir aux écrans dessinés au lot 2 — de sorte que n'importe quel exercice se
+retrouve par une recherche tapée sans accents, en français comme en anglais.
 
-**Architecture :** la traduction est un artefact **produit hors ligne et commité**, pas un
-traitement de semis. Trois fichiers d'entrée (`source.json` vendorisé, `glossaire.json` de règles,
-`corrections.json` d'exceptions) donnent un seul fichier de sortie, `traductions.json`, que le
-semis se contente de lire. Deux tests tiennent l'ensemble : l'un refuse qu'un mot anglais n'ait
-pas d'entrée au glossaire, l'autre refuse que la sortie diverge de ses entrées. Côté service, la
-recherche s'appuie sur une colonne normalisée remplie au semis par **la même fonction** que celle
-qui normalise la saisie.
+**Architecture :** le nom français est **une donnée écrite**, pas le produit d'un moteur (D45) :
+`noms-fr.json` (id du dataset → nom français) est rédigé une fois, commité, relu en diff, et le
+semis le lit à côté de l'extrait vendorisé `source.json`. Le nom anglais reste en `name`, le
+français s'ajoute en `nomFr` (D44). La recherche s'appuie sur une colonne `nomRecherche` qui porte
+**les deux noms**, normalisés au semis par **la même fonction** que celle qui normalise la saisie.
+Les animations s'affichent depuis le dépôt du dataset, URL figée sur un commit (D46).
 
 **Tech Stack :** Prisma 7 (`prisma-client`, `prisma.config.ts`), PostgreSQL sur Neon (branche
 `dev`), Hono + Hono RPC, `@hono/zod-validator`, Zod 4, TanStack Query, Vitest 5, Biome 2.5.14,
 Knip 6, tsx.
+
+> **Plan régénéré le 24 septembre 2026** après la révision de la conception (D37 et D38
+> abandonnées, D44 à D46 ajoutées). Les tâches 1, 2 et la PR 2 reprennent l'essentiel du plan
+> précédent ; la chaîne glossaire → moteur → traductions générées a disparu au profit de la
+> tâche 4.
 
 **Spec :** [`docs/superpowers/specs/2026-09-23-lot-4-catalogue-francais-design.md`](../specs/2026-09-23-lot-4-catalogue-francais-design.md)
 
@@ -67,26 +71,15 @@ principale, et sont recopiées à l'identique.
 
 ## Ce que l'exploration a corrigé dans la spec
 
-Sept écarts entre la conception et le terrain, relevés avant d'écrire les tâches. Chacun est
+Quatre écarts entre la conception et le terrain, relevés avant d'écrire les tâches. Chacun est
 absorbé par le plan ; ils sont listés ici pour que l'écart soit visible plutôt que caché.
 
 | # | La spec dit | Le terrain dit | Ce que fait le plan |
 |---|---|---|---|
-| 1 | **1 324 exercices** | 1 324 entrées mais **1 318 noms distincts** : 6 paires de doublons exacts — même nom, même équipement, même groupe, même cible ; seuls l'id et le média diffèrent | Déduplication sur le nom, id le plus petit conservé → **1 318 exercices**. Un `slug @unique` rendrait le semis impossible autrement, et deux lignes identiques dans une liste sont un défaut, pas une donnée. Tâche 3. |
-| 2 | `normaliserRecherche` est en **PR 2** (§ 7) | Le semis remplit `nomRecherche` (§ 5), et le semis est en PR 1 | `normaliserRecherche` passe en **PR 1**, tâche 1. C'est une contradiction interne à la spec, entre son § 5 et son § 7. |
-| 3 | Le dataset est « cloné dans `Desktop/dev/exercises-dataset` » | Ce chemin est **hors du dépôt** : ni la CI ni un clone nu ne pourraient lancer les tests de couverture ou le semis | Un extrait des champs utiles (0,89 Mo) est **vendorisé** en `packages/db/catalogue/source.json`. La licence le permet : les **données** du dataset sont MIT. Tâche 3. |
-| 4 | « `gif_url` pointe vers un dépôt tiers », à héberger ou non au lot 7 | `gif_url` est un **chemin relatif** (`videos/0001-2gPfomN.gif`), et les médias ne sont **pas** MIT : propriété de Gym visual, redistribués dans le dataset par permission écrite séparée, 180×180 imposé, attribution obligatoire, et « cloner ce dépôt ne vaut pas licence » | Le champ est stocké **tel quel, comme identifiant**, et **jamais rendu**. Le lot 7 n'a donc pas un choix d'hébergement à faire mais une licence à obtenir auprès de Gym visual. Consigné dans le schéma et dans `CLAUDE.md`. |
-| 5 | Le glossaire substitue les locutions de la plus longue à la plus courte | Substituer de gauche à droite donne **« haltères développé couché »** : l'anglais est à tête finale, le français à tête initiale | Règle ajoutée : quand le nom **commence par la locution d'équipement** — 905 noms sur 1 324 — elle est retirée et rendue en **suffixe** (« aux haltères »). Le reste des irrégularités vit dans `corrections.json`. Tâches 4 et 5. |
-| 6 | — | Cinq noms portent un **mojibake** (`sled 45в° leg press` et ses variantes, 4 entrées : `°` décodé en cp1251) et un porte un artefact de colonne (`dumbbell rear delt row_shoulder`) | Réparés à l'extraction, et un test refuse qu'il en reste. Tâche 3. |
-| 7 | Test de **résidu** : « aucun nom de `traductions.json` ne contient encore un mot du glossaire sous sa forme anglaise » | Inapplicable : beaucoup d'entrées se traduisent par elles-mêmes (`squat` → `squat`, `curl` → `curl`), donc l'identité de chaîne ne distingue pas un résidu d'une traduction juste | Remplacé par un test de **reproductibilité** : `traductions.json` doit être exactement ce que `traduire.ts` produit de ses entrées. Plus exact, et il attrape en prime la retouche à la main du fichier généré. Tâche 6. |
-
-**Le point 5 mérite d'être compris avant de commencer.** La spec pose le glossaire comme une
-substitution de locutions. C'est nécessaire, pas suffisant : `bench press` → `développé couché`
-règle la locution, pas la place de l'équipement. D'où une chaîne à trois entrées plutôt qu'à
-deux — `glossaire.json` porte les **règles**, `corrections.json` porte les **exceptions**, et
-`traductions.json` reste **entièrement généré**, donc rejouable. C'est la lecture littérale de
-D37 (« une correction sur un nom irrégulier doit pouvoir vivre sans tordre une règle
-générale ») : elle vit dans `corrections.json`.
+| 1 | **1 318 exercices** (six paires de doublons exacts) | Deux paires de plus ne diffèrent que par la ponctuation — `dumbbell close-grip press` / `dumbbell close grip press`, et `… curl (over incline bench)` / `… curl over incline bench` — avec groupe, équipement, cible et muscles identiques. Elles produisent le **même slug** | Déduplication sur le **slug du nom anglais**, et non sur le nom brut, id le plus petit conservé → **1 316 exercices**. Le slug devient unique par construction, ce qui permet à l'`upsert` du semis de s'y appuyer. Tâche 3. |
+| 2 | `normaliserRecherche` est en PR 1 | Le semis a besoin de plus : composer les deux noms avant de normaliser | `texteRecherche(nomFr, nomAnglais)` s'ajoute à côté, dans `shared`, testée. Le semis et les tests de service l'emploient tous deux. Tâche 1. |
+| 3 | Le dataset est « cloné dans `Desktop/dev/exercises-dataset` » | Ce chemin est **hors du dépôt** : ni la CI ni un clone nu ne pourraient lancer les tests de données ou le semis | Un extrait des champs utiles (0,89 Mo) est **vendorisé** en `packages/db/catalogue/source.json`. La licence le permet : les **données** du dataset sont MIT. Tâche 3. |
+| 4 | — | Cinq noms portent un **mojibake** (`sled 45в° leg press` et ses variantes, 4 entrées : `°` décodé en cp1251) et un porte un artefact de colonne (`dumbbell rear delt row_shoulder`) | Réparés à l'extraction, et un test refuse qu'il en reste. Tâche 3. |
 
 ---
 
@@ -96,21 +89,20 @@ générale ») : elle vit dans `corrections.json`.
 
 | Fichier | Responsabilité |
 |---|---|
-| `packages/shared/src/recherche.ts` | `normaliserRecherche` — la seule normalisation, écriture et lecture |
+| `packages/shared/src/recherche.ts` | `normaliserRecherche`, `texteRecherche`, `slugifier` — la seule normalisation, écriture et lecture |
 | `packages/shared/src/recherche.test.ts` | Ses tests (TDD) |
-| `packages/shared/src/vocabulaire.ts` | Les 97 libellés français des vocabulaires fixes, et l'union `Groupe` |
-| `packages/shared/src/vocabulaire.test.ts` | Exhaustivité des trois tables que le typage ne tient pas |
+| `packages/shared/src/vocabulaire.ts` | L'union `Groupe` et ses dix libellés français |
+| `packages/shared/src/vocabulaire.test.ts` | Unicité et exhaustivité des libellés |
 | `packages/db/catalogue/extraire.ts` | Script manuel : lit le dataset externe, répare, déduplique, écrit `source.json` |
-| `packages/db/catalogue/source.json` | **Généré, commité.** 1 318 entrées, champs utiles seulement |
+| `packages/db/catalogue/source.json` | **Généré une fois, commité.** 1 316 entrées, champs utiles, noms anglais |
 | `packages/db/catalogue/source.test.ts` | Les invariants de l'extrait : compte, unicité, propreté |
-| `packages/db/catalogue/traduire.ts` | Moteur pur + script manuel : `source + glossaire + corrections → traductions` |
-| `packages/db/catalogue/traduire.test.ts` | Le moteur, en TDD, sur des glossaires minuscules |
-| `packages/db/catalogue/glossaire.json` | **Écrit à la main.** Les règles : suffixes d'équipement et locutions |
-| `packages/db/catalogue/corrections.json` | **Écrit à la main.** Les exceptions, par id |
-| `packages/db/catalogue/traductions.json` | **Généré, commité.** id → nom français. La seule entrée du semis |
-| `packages/db/catalogue/couverture.test.ts` | D38 : aucun mot anglais sans entrée, et sortie reproductible |
-| `packages/db/prisma/seed.ts` | Le semis : lit les deux JSON, `upsert` par lots |
-| `packages/db/prisma/schema.prisma` | `nomRecherche` et son index, et le commentaire sur `gifUrl` |
+| `packages/db/catalogue/LICENSE-dataset.md` | L'avis MIT des données, et le statut des médias (D46) |
+| `packages/db/catalogue/vocabulaire.json` | **Écrit.** Équipements, cibles, muscles : anglais → français |
+| `packages/db/catalogue/noms-fr.json` | **Écrit.** id → nom français (D45) |
+| `packages/db/catalogue/noms-fr.test.ts` | Complétude et unicité des noms, couverture des vocabulaires |
+| `packages/db/prisma/seed.ts` | Le semis : lit les trois JSON, `upsert` par lots sur le slug |
+| `packages/db/prisma/env.ts` | Charge le `.env` avant l'import du client Prisma |
+| `packages/db/prisma/schema.prisma` | `nomFr`, `nomRecherche` et son index |
 | `packages/db/vitest.config.ts` | Nouveau : `packages/db` n'avait pas de tests |
 
 ### PR 2 — servir le catalogue
@@ -120,14 +112,15 @@ générale ») : elle vit dans `corrections.json`.
 | `packages/shared/src/exercices.ts` | Les schémas Zod du contrat : requête de liste, forme d'un exercice |
 | `packages/shared/src/exercices.test.ts` | Les bornes du schéma : pagination, valeurs refusées |
 | `apps/api/src/services/exercices.ts` | La logique : recherche, filtres, pagination, détail. Ignore Hono |
-| `apps/api/src/services/exercices.test.ts` | Ses tests, sur un double de `prisma` |
+| `apps/api/src/services/exercices.test.ts` | Ses tests : fonctions pures, sans base |
 | `apps/api/src/routes/exercices.ts` | Les deux routes Hono, validation Zod, rien d'autre |
 | `apps/api/src/routes/exercices.test.ts` | Le montage, les codes de retour, le 404 |
 | `packages/api-client/` | D42 : le client RPC, extrait de `apps/web/src/lib/api.ts` |
 | `apps/web/src/features/exercices/requetes.ts` | Les `queryOptions` TanStack Query, clés comprises |
 | `apps/web/src/routes/_protege.exercices.tsx` | Branchement : `EXERCICES` factice → `useQuery` |
 | `apps/web/src/features/exercices/liste-exercices.tsx` | Le type change, le dessin ne change pas |
-| `apps/web/src/features/exercices/detail-exercice.tsx` | Idem, plus les instructions et les muscles |
+| `apps/web/src/features/exercices/detail-exercice.tsx` | Idem, plus le nom anglais, l'animation, les muscles et les instructions |
+| `apps/web/src/features/exercices/animation-exercice.tsx` | Le GIF, son attribution, et son repli s'il ne charge pas (D46) |
 
 ---
 
@@ -155,6 +148,8 @@ D'où sa place dans `shared`, et d'où le TDD.
 - Consumes: rien.
 - Produces, exportés depuis `@better-lift/shared` :
   - `normaliserRecherche(valeur: string): string`
+  - `texteRecherche(nomFr: string, nomAnglais: string): string` — ce que le semis écrit dans
+    `nomRecherche` : les deux noms, normalisés (D44)
   - `slugifier(nom: string): string` — la même normalisation, espaces en tirets
 
 - [ ] **Step 1: Write the failing test**
@@ -163,7 +158,7 @@ Créer `packages/shared/src/recherche.test.ts` :
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { normaliserRecherche, slugifier } from "./recherche.js";
+import { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 
 describe("normaliserRecherche", () => {
   it("dépouille les accents, cédille comprise", () => {
@@ -207,10 +202,37 @@ describe("normaliserRecherche", () => {
   });
 });
 
+// Le critère de sortie du lot, réduit à des assertions pures : la colonne
+// `nomRecherche` est `texteRecherche(nomFr, name)`, et la saisie passe par
+// `normaliserRecherche` avant un `contains`. Si ces deux-là s'accordent, la
+// recherche trouve — en français sans accents comme en anglais.
+describe("texteRecherche", () => {
+  const colonne = texteRecherche("Développé couché aux haltères", "dumbbell bench press");
+
+  it("porte le nom français, dépouillé de ses accents", () => {
+    expect(colonne).toContain(normaliserRecherche("developpe couche"));
+    expect(colonne).toContain(normaliserRecherche("Développé Couché"));
+  });
+
+  it("porte aussi le nom anglais d'origine (D44)", () => {
+    expect(colonne).toContain(normaliserRecherche("Bench Press"));
+    expect(colonne).toContain(normaliserRecherche("dumbbell"));
+  });
+
+  it("met le français en tête, pour que le tri de la liste suive le nom affiché", () => {
+    expect(colonne.startsWith("developpe couche")).toBe(true);
+  });
+
+  it("est déjà normalisé", () => {
+    expect(normaliserRecherche(colonne)).toBe(colonne);
+  });
+});
+
 describe("slugifier", () => {
   it("rend un slug lisible, sans accent ni ponctuation", () => {
-    expect(slugifier("Développé couché aux haltères")).toBe("developpe-couche-aux-halteres");
-    expect(slugifier("3/4 relevé de buste")).toBe("3-4-releve-de-buste");
+    expect(slugifier("dumbbell bench press")).toBe("dumbbell-bench-press");
+    expect(slugifier("3/4 sit-up")).toBe("3-4-sit-up");
+    expect(slugifier("Développé couché")).toBe("developpe-couche");
   });
 
   // Le slug DOIT dériver de la même normalisation que `nomRecherche` : deux
@@ -240,8 +262,8 @@ Créer `packages/shared/src/recherche.ts` :
 /**
  * La normalisation de recherche, en un seul endroit.
  *
- * Elle sert DEUX FOIS et doit donc être unique : le semis la passe sur le nom
- * français pour remplir `Exercise.nomRecherche`, et l'API la passe sur la saisie
+ * Elle sert DEUX FOIS et doit donc être unique : le semis la passe sur les noms
+ * pour remplir `Exercise.nomRecherche`, et l'API la passe sur la saisie
  * avant de comparer. Deux implémentations qui divergeraient d'une casse ou d'un
  * accent rendraient la colonne inutile — la requête ne trouverait rien, sans la
  * moindre erreur pour le signaler.
@@ -262,12 +284,23 @@ export function normaliserRecherche(valeur: string): string {
 }
 
 /**
+ * Le contenu de `Exercise.nomRecherche` : le nom français PUIS le nom anglais,
+ * normalisés ensemble (D44). « developpe couche » et « bench press » trouvent
+ * donc le même exercice. Le français vient en tête pour que trier sur cette
+ * colonne revienne à trier sur le nom affiché.
+ */
+export function texteRecherche(nomFr: string, nomAnglais: string): string {
+  return normaliserRecherche(`${nomFr} ${nomAnglais}`);
+}
+
+/**
  * Le slug d'un exercice : son identifiant dans l'URL.
  *
- * Il DÉRIVE de `normaliserRecherche` plutôt que d'avoir sa propre normalisation,
- * pour que l'identifiant d'URL et la colonne de recherche ne puissent jamais
- * diverger pour un même nom. Le détourage fait le reste : aucun tiret en tête,
- * en queue, ni en double.
+ * Il est tiré du nom ANGLAIS, qui ne bouge jamais : corriger un nom français ne
+ * doit pas casser une URL, ni faire créer une ligne de plus au semis, qui
+ * `upsert` sur le slug. Il dérive de `normaliserRecherche` plutôt que d'avoir sa
+ * propre normalisation, et le détourage fait le reste : aucun tiret en tête, en
+ * queue, ni en double.
  */
 export function slugifier(nom: string): string {
   return normaliserRecherche(nom).replace(/ /g, "-");
@@ -277,7 +310,7 @@ export function slugifier(nom: string): string {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm --filter @better-lift/shared exec vitest run src/recherche.test.ts`
-Expected: PASS — 10 tests.
+Expected: PASS — 14 tests.
 
 - [ ] **Step 5: Exporter depuis l'index du paquet**
 
@@ -286,7 +319,7 @@ Modifier `packages/shared/src/index.ts` — les exports sont triés alphabétiqu
 ```ts
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
-export { normaliserRecherche, slugifier } from "./recherche.js";
+export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 ```
@@ -315,7 +348,7 @@ type, qui se contenterait de valoir `never` sans rien signaler.
 Les 87 autres termes des vocabulaires fixes — équipements, cibles, muscles secondaires — **ne
 passent pas par `shared`** : la spec les fait stocker en français en base (§ 4), ils sont donc
 traduits au semis et jamais au rendu. Les envoyer au navigateur serait 87 chaînes mortes. Ils
-vivent en tâche 5, dans `packages/db/catalogue/vocabulaire.json`.
+vivent en tâche 4, dans `packages/db/catalogue/vocabulaire.json`.
 
 **Files:**
 - Create: `packages/shared/src/vocabulaire.ts`
@@ -425,7 +458,7 @@ Modifier `packages/shared/src/index.ts` :
 ```ts
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
-export { normaliserRecherche, slugifier } from "./recherche.js";
+export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export { type Groupe, GROUPES, LIBELLE_GROUPE } from "./vocabulaire.js";
@@ -442,9 +475,9 @@ git commit -m "feat(shared): libellés français des groupes musculaires"
 
 ### Task 3: vendoriser l'extrait du dataset
 
-Le dataset vit **hors du dépôt**, dans `C:\Users\alexi\Desktop\dev\exercises-dataset`. Les tests
-de couverture de D38 et le semis doivent tourner sur un clone nu et en CI : la source doit donc
-entrer dans le dépôt. On n'y met pas les 17,5 Mo du fichier original — dix langues d'instructions,
+Le dataset vit **hors du dépôt**, dans `C:\Users\alexi\Desktop\dev\exercises-dataset` (commit
+`7455efa`). Les tests de données et le semis doivent tourner sur un clone nu et en CI : la source
+doit donc entrer dans le dépôt. On n'y met pas les 17,5 Mo du fichier original — dix langues d'instructions,
 des champs de média inutiles — mais un extrait des champs utiles, **0,89 Mo**.
 
 **La licence le permet, et seulement pour les données.** Le `LICENSE` du dataset est MIT et
@@ -452,7 +485,8 @@ couvre explicitement « names, categories, body parts, equipment, targets, muscl
 multilingual instructions ». Les **médias** en sont exclus : ils appartiennent à Gym visual,
 redistribués dans ce dataset par permission écrite séparée, en 180×180, avec attribution
 obligatoire, et le `NOTICE.md` précise que « cloning this repo is not a license ». On ne copie
-donc **aucune image**, et `gifUrl` n'est stocké que comme identifiant de média.
+donc **aucune image** ; `gif` garde le chemin relatif, et c'est le semis qui en fait une URL vers
+le dépôt du dataset (D46, tâche 5).
 
 Cette tâche installe aussi l'outillage de test de `packages/db`, qui n'en avait pas.
 
@@ -468,13 +502,13 @@ Cette tâche installe aussi l'outillage de test de `packages/db`, qui n'en avait
 - Modify: `knip.json`
 
 **Interfaces:**
-- Consumes: `GROUPES` de `@better-lift/shared` (tâche 2).
+- Consumes: `GROUPES` de `@better-lift/shared` (tâche 2) ; `slugifier` (tâche 1).
 - Produces : `packages/db/catalogue/source.json`, un tableau de
 
   ```ts
   type EntreeSource = {
     id: string;          // l'id du dataset, « 0001 » à « 3000 », conservé tel quel
-    nom: string;         // le nom ANGLAIS, réparé. La traduction vient en tâche 6
+    nom: string;         // le nom ANGLAIS, réparé. Le français vient en tâche 4
     groupe: string;      // une valeur de l'enum BodyPart : « CHEST », « UPPER_LEGS »…
     equipement: string;  // anglais : « dumbbell », « barbell »…
     cible: string;       // anglais : « pectorals », « quads »…
@@ -484,7 +518,7 @@ Cette tâche installe aussi l'outillage de test de `packages/db`, qui n'en avait
   };
   ```
 
-  `source.json` est **trié par id** et contient **1 318 entrées**.
+  `source.json` est **trié par id** et contient **1 316 entrées**, dont les slugs sont uniques.
 
 - [ ] **Step 1: Installer l'outillage de test de `packages/db`**
 
@@ -541,7 +575,7 @@ Créer `packages/db/catalogue/extraire.ts` :
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { type Groupe, GROUPES } from "@better-lift/shared";
+import { type Groupe, GROUPES, slugifier } from "@better-lift/shared";
 
 /**
  * Extrait le catalogue depuis le dataset externe.
@@ -556,7 +590,8 @@ import { type Groupe, GROUPES } from "@better-lift/shared";
  *
  * Trois choses se passent ici, et une seule fois :
  *  - la RÉPARATION des noms abîmés dans la source ;
- *  - la DÉDUPLICATION, six paires d'entrées étant identiques en tout sauf l'id ;
+ *  - la DÉDUPLICATION, huit paires d'entrées étant identiques en tout sauf l'id
+ *    et, pour deux d'entre elles, la ponctuation du nom ;
  *  - la RÉDUCTION aux champs utiles — 17,5 Mo de dix langues deviennent 0,89 Mo.
  */
 
@@ -603,7 +638,8 @@ const GROUPE_DEPUIS_DATASET: Record<string, Groupe> = {
  *  - « sled 45в° leg press » et trois variantes : le `°` (C2 B0 en UTF-8) a été
  *    relu en cp1251, ce qui donne « в° ». Quatre entrées.
  *  - « dumbbell rear delt row_shoulder » : un reste de colonne collé au nom.
- * Sans cette réparation, le glossaire devrait porter une entrée pour « 45в° ».
+ * Sans cette réparation, le nom anglais affiché en sous-titre et la recherche
+ * porteraient « 45в° ».
  */
 function reparer(nom: string): string {
   return nom.replace(/в°/g, "°").replace(/_shoulder$/, "");
@@ -616,17 +652,23 @@ if (!chemin) {
 
 const brut = JSON.parse(readFileSync(chemin, "utf8")) as Brut[];
 
-// Déduplication sur le nom réparé, l'id le plus petit l'emportant. Six paires
-// d'entrées ne diffèrent que par l'id et le média : « lever chest press »,
-// « ez barbell spider curl », « barbell seated calf raise », « smith reverse
-// calf raises », « self assisted inverse leg curl », « push-up (on stability
-// ball) ». Le `slug` est `@unique` : sans cette passe le semis échouerait, et
-// avec un suffixe la liste afficherait deux fois la même chose.
-const parNom = new Map<string, EntreeSource>();
+// Déduplication sur le SLUG du nom réparé, l'id le plus petit l'emportant.
+// Six paires d'entrées ne diffèrent que par l'id et le média : « lever chest
+// press », « ez barbell spider curl », « barbell seated calf raise », « smith
+// reverse calf raises », « self assisted inverse leg curl », « push-up (on
+// stability ball) ». Deux autres ne diffèrent en plus que par la ponctuation —
+// « dumbbell close-grip press » / « dumbbell close grip press », et « dumbbell
+// standing one arm curl (over incline bench) » / « … over incline bench » —
+// avec groupe, équipement, cible et muscles identiques : dédupliquer sur le nom
+// brut les laisserait passer, et elles tomberaient sur le même slug. Le `slug`
+// est `@unique` et c'est la clé de l'`upsert` du semis : cette passe le rend
+// unique par construction.
+const parSlug = new Map<string, EntreeSource>();
 
 for (const e of [...brut].sort((a, b) => a.id.localeCompare(b.id))) {
   const nom = reparer(e.name);
-  if (parNom.has(nom)) continue;
+  const slug = slugifier(nom);
+  if (parSlug.has(slug)) continue;
 
   const groupe = GROUPE_DEPUIS_DATASET[e.body_part];
   if (!groupe) throw new Error(`body_part inconnu : « ${e.body_part} » (id ${e.id})`);
@@ -634,7 +676,7 @@ for (const e of [...brut].sort((a, b) => a.id.localeCompare(b.id))) {
   const etapes = e.instruction_steps.fr;
   if (!etapes?.length) throw new Error(`instructions françaises absentes (id ${e.id})`);
 
-  parNom.set(nom, {
+  parSlug.set(slug, {
     id: e.id,
     nom,
     groupe,
@@ -650,7 +692,7 @@ if (GROUPES.length !== Object.keys(GROUPE_DEPUIS_DATASET).length) {
   throw new Error("La correspondance des groupes ne couvre plus l'union `Groupe` de `shared`.");
 }
 
-const sortie = [...parNom.values()].sort((a, b) => a.id.localeCompare(b.id));
+const sortie = [...parSlug.values()].sort((a, b) => a.id.localeCompare(b.id));
 const ici = path.dirname(fileURLToPath(import.meta.url));
 writeFileSync(path.join(ici, "source.json"), `${JSON.stringify(sortie, null, 2)}\n`, "utf8");
 
@@ -664,7 +706,7 @@ pnpm --filter @better-lift/db exec tsx catalogue/extraire.ts \
   "C:/Users/alexi/Desktop/dev/exercises-dataset/data/exercises.json"
 ```
 
-Expected : `1318 exercices écrits dans source.json (1324 en entrée)`.
+Expected : `1316 exercices écrits dans source.json (1324 en entrée)`.
 
 Si le compte diffère, **ne pas ajuster le test** : le dataset a changé, et c'est l'écart qu'il
 faut comprendre d'abord.
@@ -698,23 +740,25 @@ groupes, équipements, cibles, instructions multilingues — sont sous licence M
 > DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Les médias sont exclus, et le resteront tant qu'une licence n'aura pas été obtenue
+## Les médias : affichés, jamais copiés (D46)
 
 La MIT ci-dessus **ne couvre pas** les images et les GIF du dataset. Ils appartiennent à
 **Gym visual — https://gymvisual.com/**, et n'y sont redistribués qu'en vertu d'une permission
 écrite séparée, à trois conditions : résolution 180×180, attribution visible, et — textuellement —
 « cloning this repo is not a license ».
 
-En conséquence, dans ce dépôt :
+better-lift est une application **privée, à trois comptes**, sans public ni monétisation. Le
+24 septembre 2026, il a été décidé d'afficher les animations comme le fait opengym, sans les
+héberger :
 
-- **aucun média n'est copié** ;
-- le champ `gif` de `source.json`, repris en `Exercise.gifUrl`, est un **chemin relatif dans le
-  dataset** (`videos/0001-2gPfomN.gif`), conservé comme identifiant stable — ce n'est pas une URL
-  et il ne se résout nulle part ;
-- rien ne le rend à l'écran.
+- **aucun média n'est copié** dans ce dépôt ;
+- le champ `gif` de `source.json` garde le chemin relatif du dataset (`videos/0001-2gPfomN.gif`) ;
+  le semis en fait une URL vers le dépôt du dataset, **figée sur le commit `7455efa`** ;
+- chaque animation est affichée en 180×180 au plus, avec la mention **« © Gym visual —
+  https://gymvisual.com/ »**.
 
-Le lot 7 n'a donc pas un choix d'hébergement à faire, mais une **licence à obtenir auprès de Gym
-visual** — ou des médias à produire autrement.
+Si l'application devait s'ouvrir à d'autres, cette décision serait la première à reprendre : il
+faudrait alors une licence auprès de Gym visual, ou d'autres médias.
 ```
 
 - [ ] **Step 5: Write the failing test**
@@ -723,7 +767,7 @@ Créer `packages/db/catalogue/source.test.ts` :
 
 ```ts
 import { readFileSync } from "node:fs";
-import { GROUPES } from "@better-lift/shared";
+import { GROUPES, slugifier } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 
 type EntreeSource = {
@@ -742,15 +786,20 @@ const source = JSON.parse(
 ) as EntreeSource[];
 
 describe("source.json", () => {
-  it("porte 1 318 exercices", () => {
-    expect(source).toHaveLength(1318);
+  it("porte 1 316 exercices", () => {
+    expect(source).toHaveLength(1316);
   });
 
-  // Le slug dérive du nom et il est `@unique` en base : un doublon ici fait
-  // échouer le semis à la 1 200e ligne, une heure après l'avoir lancé.
-  it("n'a ni id ni nom en double", () => {
+  // Le slug dérive du nom anglais, il est `@unique` en base et c'est la clé de
+  // l'`upsert` : un doublon ici fait échouer le semis au milieu d'un lot, ou
+  // pire, fait écraser un exercice par un autre.
+  it("n'a ni id ni slug en double", () => {
     expect(new Set(source.map((e) => e.id)).size).toBe(source.length);
-    expect(new Set(source.map((e) => e.nom)).size).toBe(source.length);
+    expect(new Set(source.map((e) => slugifier(e.nom))).size).toBe(source.length);
+  });
+
+  it("garde des chemins de média relatifs, jamais des URL", () => {
+    for (const e of source) expect(e.gif).toMatch(/^videos\/[\w-]+\.gif$/);
   });
 
   it("ne garde aucun nom abîmé par l'encodage", () => {
@@ -786,7 +835,7 @@ describe("source.json", () => {
 - [ ] **Step 6: Run test to verify it passes**
 
 Run: `pnpm --filter @better-lift/db exec vitest run catalogue/source.test.ts`
-Expected: PASS — 5 tests. *(Le fichier `source.json` existe déjà depuis l'étape 3 : ce test
+Expected: PASS — 6 tests. *(Le fichier `source.json` existe déjà depuis l'étape 3 : ce test
 constate l'extraction plutôt que de la piloter. C'est délibéré — il n'y a pas de comportement à
 faire émerger, seulement des invariants de données à verrouiller.)*
 
@@ -839,722 +888,42 @@ bloc `env` de la tâche concernée — la poser sur l'étape du workflow ne suff
 ```bash
 git add packages/db/catalogue packages/db/vitest.config.ts packages/db/package.json \
         packages/db/tsconfig.json biome.json knip.json pnpm-lock.yaml
-git commit -m "feat(db): vendorise l'extrait du dataset, 1 318 exercices dédupliqués"
+git commit -m "feat(db): vendorise l'extrait du dataset, 1 316 exercices dédupliqués"
 ```
 
 ---
 
-### Task 4: le moteur de traduction
+### Task 4: les noms français et les vocabulaires
 
-Du calcul pur, en TDD, sur des glossaires minuscules. Aucune donnée réelle n'entre ici : le
-moteur se teste sur cinq entrées inventées, où l'on voit ce qu'on vérifie. Le vrai glossaire vient
-en tâche 5.
+D45 : **le nom français est une donnée écrite, pas le produit d'un moteur.** Il n'y a ni
+glossaire, ni script de traduction, ni fichier généré. `noms-fr.json` est rédigé une fois, par
+lots, relu en diff, et commité ; le semis le lit tel quel. Corriger un nom plus tard, c'est
+modifier une ligne et relancer le semis.
 
-**Deux règles, et elles suffisent à expliquer tout le fichier :**
+Deux fichiers **écrits** entrent ici, tenus par un seul fichier de tests :
 
-1. **La locution la plus longue gagne.** `bench press` se rend par `développé couché` d'un bloc ;
-   mot à mot, on obtiendrait « banc presse ».
-2. **L'équipement en tête passe en suffixe.** L'anglais est à tête finale, le français à tête
-   initiale : `dumbbell bench press` n'est pas « haltères développé couché » mais « développé
-   couché **aux haltères** ». 905 noms sur 1 324 commencent par leur équipement, et la règle ne
-   s'applique qu'à eux — jamais au milieu d'un nom, jamais sur un nom entier.
-
-Ce que le moteur **ne sait pas faire** : l'accord (`assisted pull-up` donnera « traction
-assisté », pas « assistée ») et l'ordre des compléments (`3/4 sit-up` donnera « 3/4 relevé de
-buste »). Ces cas-là vivent dans `corrections.json`, tâche 6 — c'est exactement ce que D37
-prévoit : « une correction sur un nom irrégulier doit pouvoir vivre sans tordre une règle
-générale ».
-
-**Files:**
-- Create: `packages/db/catalogue/traduire.ts`
-- Test: `packages/db/catalogue/traduire.test.ts`
-
-**Interfaces:**
-- Consumes: rien (module pur).
-- Produces:
-
-  ```ts
-  export type Glossaire = {
-    equipements: Record<string, string>; // « dumbbell » -> « aux haltères » (suffixe)
-    locutions: Record<string, string>;   // « bench press » -> « développé couché »
-  };
-  export function decouper(nom: string): string[];
-  export function traduireNom(nom: string, glossaire: Glossaire): string;
-  export function motsRestants(nom: string, glossaire: Glossaire): string[];
-  ```
-
-- [ ] **Step 1: Write the failing test**
-
-Créer `packages/db/catalogue/traduire.test.ts` :
-
-```ts
-import { describe, expect, it } from "vitest";
-import { decouper, type Glossaire, motsRestants, traduireNom } from "./traduire.js";
-
-const G: Glossaire = {
-  equipements: {
-    dumbbell: "aux haltères",
-    barbell: "à la barre",
-    "ez barbell": "à la barre EZ",
-  },
-  locutions: {
-    bench: "banc",
-    press: "presse",
-    "bench press": "développé couché",
-    seated: "assis",
-    curl: "curl",
-    male: "",
-  },
-};
-
-describe("decouper", () => {
-  it("garde les fractions, les degrés et les traits d'union", () => {
-    expect(decouper("3/4 sit-up")).toEqual(["3/4", "sit-up"]);
-    expect(decouper("45° side bend")).toEqual(["45°", "side", "bend"]);
-  });
-
-  // Le français n'a pas l'usage des parenthèses du dataset : elles séparent,
-  // et disparaissent. Sans ça, « (on » serait un mot à traduire.
-  it("laisse tomber les parenthèses et la ponctuation", () => {
-    expect(decouper("push-up (on stability ball)")).toEqual([
-      "push-up",
-      "on",
-      "stability",
-      "ball",
-    ]);
-    expect(decouper("barbell rear lunge v. 2")).toEqual(["barbell", "rear", "lunge", "v", "2"]);
-  });
-});
-
-describe("traduireNom", () => {
-  // La règle 1. Si la locution ne gagnait pas, on lirait « banc presse ».
-  it("préfère la locution la plus longue aux mots qui la composent", () => {
-    expect(traduireNom("bench press", G)).toBe("Développé couché");
-  });
-
-  // La règle 2, et le cœur du lot : sans elle, « haltères développé couché ».
-  it("déplace l'équipement de tête en suffixe", () => {
-    expect(traduireNom("dumbbell bench press", G)).toBe("Développé couché aux haltères");
-  });
-
-  it("préfère la locution d'équipement la plus longue", () => {
-    expect(traduireNom("ez barbell curl", G)).toBe("Curl à la barre EZ");
-  });
-
-  // L'équipement ne se déplace QUE depuis la tête : au milieu, c'est un mot
-  // comme un autre, et le glossaire doit lui donner une entrée de locution.
-  it("ne déplace pas un équipement qui n'est pas en tête", () => {
-    expect(traduireNom("seated dumbbell curl", G)).toBe("Assis dumbbell curl");
-  });
-
-  // Le garde qui évite de produire un nom vide : « dumbbell » seul reste un mot.
-  it("ne consomme jamais le nom entier comme équipement", () => {
-    expect(traduireNom("dumbbell", G)).toBe("Dumbbell");
-  });
-
-  it("supprime les mots dont la traduction est vide", () => {
-    expect(traduireNom("bench press male", G)).toBe("Développé couché");
-  });
-
-  it("laisse passer tel quel un mot absent du glossaire", () => {
-    expect(traduireNom("bench press zercher", G)).toBe("Développé couché zercher");
-  });
-
-  it("met la première lettre en capitale", () => {
-    expect(traduireNom("curl", G)).toBe("Curl");
-  });
-});
-
-describe("motsRestants", () => {
-  it("ne rend rien quand tout est couvert", () => {
-    expect(motsRestants("dumbbell bench press", G)).toEqual([]);
-  });
-
-  // C'est ce que le test de couverture (D38) exploite : il nomme le mot qui
-  // manque, et un exercice qui le porte.
-  it("nomme les mots sans entrée au glossaire", () => {
-    expect(motsRestants("barbell zercher squat", G)).toEqual(["zercher", "squat"]);
-  });
-
-  // Un mot consommé par une locution n'a pas à figurer seul au glossaire :
-  // c'est ce qui permet de ne PAS exiger une traduction de « bench » isolé.
-  it("ne réclame pas les mots avalés par une locution", () => {
-    expect(motsRestants("bench press", G)).toEqual([]);
-  });
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `pnpm --filter @better-lift/db exec vitest run catalogue/traduire.test.ts`
-Expected: FAIL — `Failed to resolve import "./traduire.js"`.
-
-- [ ] **Step 3: Write minimal implementation**
-
-Créer `packages/db/catalogue/traduire.ts` :
-
-```ts
-/**
- * Le moteur de traduction des noms d'exercices.
- *
- * Il ne tourne NI au semis NI en CI : c'est un script manuel dont le résultat,
- * `traductions.json`, est commité (D37). Deux semis donnent donc le même
- * catalogue, sans dépendre du code de traduction du jour.
- *
- * Deux règles, et rien d'autre :
- *
- *  1. La LOCUTION LA PLUS LONGUE gagne. « bench press » se rend par « développé
- *     couché » d'un bloc ; mot à mot on obtiendrait « banc presse ». C'est aussi
- *     ce qui dispense d'inventer une traduction pour « bench » isolé, qui n'en a
- *     pas hors contexte.
- *
- *  2. L'ÉQUIPEMENT DE TÊTE passe en suffixe. L'anglais est à tête finale, le
- *     français à tête initiale : « dumbbell bench press » n'est pas « haltères
- *     développé couché » mais « développé couché aux haltères ». La règle ne
- *     s'applique qu'en tête de nom, et jamais au nom entier.
- *
- * Ce qu'il ne sait pas faire — l'accord (« traction assisté ») et l'ordre des
- * compléments (« 3/4 relevé de buste ») — se corrige dans `corrections.json`,
- * pas en tordant une règle.
- */
-
-export type Glossaire = {
-  /** Locution anglaise en TÊTE de nom -> suffixe français. */
-  equipements: Record<string, string>;
-  /** Mot ou locution anglaise -> français. Une valeur vide efface le mot. */
-  locutions: Record<string, string>;
-};
-
-/**
- * Découpe un nom anglais en mots.
- *
- * Les fractions (« 3/4 »), les degrés (« 45° ») et les traits d'union
- * (« push-up ») font partie du mot ; tout le reste sépare. Les parenthèses du
- * dataset disparaissent donc — « push-up (on stability ball) » devient « pompes
- * sur swiss ball », et non « pompes (sur swiss ball) ».
- */
-export function decouper(nom: string): string[] {
-  return nom.toLowerCase().match(/[a-z0-9°]+(?:[-/][a-z0-9°]+)*/g) ?? [];
-}
-
-function longueurMax(table: Record<string, string>): number {
-  return Math.max(1, ...Object.keys(table).map((cle) => cle.split(" ").length));
-}
-
-/** Retire l'équipement de tête, s'il y en a un, et rend le suffixe à poser. */
-function detacherEquipement(
-  mots: string[],
-  equipements: Record<string, string>,
-): { reste: string[]; suffixe: string | null } {
-  // `mots.length - 1` : jamais le nom entier, sinon « dumbbell » seul
-  // produirait un nom vide suivi d'un suffixe.
-  for (let n = Math.min(longueurMax(equipements), mots.length - 1); n >= 1; n -= 1) {
-    const suffixe = equipements[mots.slice(0, n).join(" ")];
-    if (suffixe !== undefined) return { reste: mots.slice(n), suffixe };
-  }
-  return { reste: mots, suffixe: null };
-}
-
-type Segment = { mots: string[]; fr: string | null };
-
-/** Consomme les mots de gauche à droite, la plus longue locution d'abord. */
-function segmenter(mots: string[], locutions: Record<string, string>): Segment[] {
-  const max = longueurMax(locutions);
-  const segments: Segment[] = [];
-  let i = 0;
-
-  while (i < mots.length) {
-    let pris = 0;
-    for (let n = Math.min(max, mots.length - i); n >= 1; n -= 1) {
-      const fr = locutions[mots.slice(i, i + n).join(" ")];
-      if (fr !== undefined) {
-        segments.push({ mots: mots.slice(i, i + n), fr });
-        pris = n;
-        break;
-      }
-    }
-    if (pris === 0) {
-      segments.push({ mots: [mots[i] as string], fr: null });
-      pris = 1;
-    }
-    i += pris;
-  }
-
-  return segments;
-}
-
-export function traduireNom(nom: string, glossaire: Glossaire): string {
-  const { reste, suffixe } = detacherEquipement(decouper(nom), glossaire.equipements);
-
-  const corps = segmenter(reste, glossaire.locutions)
-    .map((s) => s.fr ?? s.mots.join(" "))
-    .filter((t) => t !== "")
-    .join(" ");
-
-  const complet = (suffixe ? `${corps} ${suffixe}` : corps).replace(/\s+/g, " ").trim();
-  return complet.charAt(0).toUpperCase() + complet.slice(1);
-}
-
-/**
- * Les mots qui restent en anglais une fois les locutions consommées.
- *
- * C'est la mesure sur laquelle repose D38 : la couverture du glossaire est un
- * TEST, pas une relecture. Un nom resté à moitié anglais ne se corrige à l'usage
- * que le jour où on le cherche — c'est-à-dire trop tard.
- */
-export function motsRestants(nom: string, glossaire: Glossaire): string[] {
-  const { reste } = detacherEquipement(decouper(nom), glossaire.equipements);
-  return segmenter(reste, glossaire.locutions)
-    .filter((s) => s.fr === null)
-    .flatMap((s) => s.mots);
-}
-```
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `pnpm --filter @better-lift/db exec vitest run catalogue/traduire.test.ts`
-Expected: PASS — 13 tests.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add packages/db/catalogue/traduire.ts packages/db/catalogue/traduire.test.ts
-git commit -m "feat(db): moteur de traduction, locution longue d'abord et équipement en suffixe"
-```
-
----
-
-### Task 5: le glossaire, et le test qui le complète
-
-**C'est la tâche la plus longue du lot, et la seule qui se fasse en écrivant du français.**
-
-D38 : la couverture du glossaire est un **test**, pas une relecture. Le test ci-dessous échoue
-tant qu'un mot du catalogue n'a pas d'entrée, en nommant le mot, le nombre d'exercices qui le
-portent et un exemple. La boucle est mécanique : **lancer le test, lire la liste, écrire les
-entrées, recommencer** — jusqu'au vert. Il y a 566 mots distincts dans les 1 318 noms ; l'amorce
-ci-dessous en couvre les plus fréquents, le test réclame le reste.
-
-**Le glossaire se relit AVANT la passe de masse**, parce qu'une erreur y est multipliée :
-`dumbbell` ouvre 286 noms, `curl` en touche 180, `press` 164, `barbell` 158, `cable` 156.
-
-**Le registre : le français d'usage** (D21 et spec § 3). Les anglicismes réellement employés en
-salle sont conservés, parce que ce sont eux qu'on tape dans une recherche : `curl` reste `curl`,
-`squat` reste `squat`, `pushdown` reste `pushdown`. Personne ne cherche « flexion des
-avant-bras ».
-
-**Files:**
-- Create: `packages/db/catalogue/glossaire.json`
-- Test: `packages/db/catalogue/couverture.test.ts`
-
-**Interfaces:**
-- Consumes: `motsRestants`, `type Glossaire` de `./traduire.js` (tâche 4) ; `source.json`
-  (tâche 3).
-- Produces: `glossaire.json`, conforme au type `Glossaire` — deux objets, `equipements` et
-  `locutions`.
-
-- [ ] **Step 1: Write the failing test**
-
-Créer `packages/db/catalogue/couverture.test.ts` :
-
-```ts
-import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
-import { type Glossaire, motsRestants } from "./traduire.js";
-
-type EntreeSource = { id: string; nom: string };
-
-const source = JSON.parse(
-  readFileSync(new URL("./source.json", import.meta.url), "utf8"),
-) as EntreeSource[];
-
-const glossaire = JSON.parse(
-  readFileSync(new URL("./glossaire.json", import.meta.url), "utf8"),
-) as Glossaire;
-
-// Un mot sans lettre ne se traduit pas : « 45° », « 3/4 », « 180 ». Il traverse
-// le moteur inchangé, et on ne demande pas au glossaire une entrée par chiffre.
-const porteDuSens = (mot: string) => /[a-z]/.test(mot);
-
-describe("couverture du glossaire (D38)", () => {
-  /**
-   * L'invariant du lot. La spec principale disait « la longue traîne se corrige
-   * à l'usage » : c'est tenable pour la QUALITÉ d'une traduction, pas pour son
-   * EXHAUSTIVITÉ. Un nom resté à moitié anglais ne se corrige à l'usage que le
-   * jour où on le cherche — donc trop tard.
-   *
-   * Le message d'échec est la liste de travail : le mot, combien d'exercices le
-   * portent, et un exemple pour savoir dans quel contexte le traduire.
-   */
-  it("ne laisse aucun mot du catalogue sans entrée", () => {
-    const manquants = new Map<string, { compte: number; exemple: string }>();
-
-    for (const e of source) {
-      for (const mot of motsRestants(e.nom, glossaire)) {
-        if (!porteDuSens(mot)) continue;
-        const vu = manquants.get(mot);
-        if (vu) vu.compte += 1;
-        else manquants.set(mot, { compte: 1, exemple: e.nom });
-      }
-    }
-
-    const rapport = [...manquants.entries()]
-      .sort(([, a], [, b]) => b.compte - a.compte)
-      .map(([mot, { compte, exemple }]) => `  « ${mot} » ×${compte} — ex. « ${exemple} »`)
-      .join("\n");
-
-    expect(
-      manquants.size === 0
-        ? ""
-        : `${manquants.size} mot(s) sans entrée au glossaire :\n${rapport}`,
-    ).toBe("");
-  });
-
-  it("n'a pas de clé vide ni de clé en double entre les deux tables", () => {
-    for (const cle of [...Object.keys(glossaire.equipements), ...Object.keys(glossaire.locutions)]) {
-      expect(cle.trim()).not.toBe("");
-      expect(cle).toBe(cle.toLowerCase());
-    }
-  });
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `pnpm --filter @better-lift/db exec vitest run catalogue/couverture.test.ts`
-Expected: FAIL — `ENOENT ... glossaire.json`.
-
-- [ ] **Step 3: Écrire l'amorce du glossaire**
-
-Créer `packages/db/catalogue/glossaire.json`. Les clés sont **en minuscules**, sans ponctuation
-— exactement ce que `decouper` produit. Une valeur vide efface le mot.
-
-`equipements` ne s'applique **qu'en tête de nom** et pose un suffixe ; les mêmes mots ont aussi
-une entrée dans `locutions`, pour les 419 noms où ils apparaissent ailleurs qu'en tête.
-
-```json
-{
-  "equipements": {
-    "dumbbell": "aux haltères",
-    "barbell": "à la barre",
-    "ez barbell": "à la barre EZ",
-    "ez-barbell": "à la barre EZ",
-    "olympic barbell": "à la barre olympique",
-    "trap bar": "à la trap bar",
-    "cable": "à la poulie",
-    "lever": "à la machine",
-    "smith": "à la Smith machine",
-    "band": "à l'élastique",
-    "resistance band": "à l'élastique",
-    "kettlebell": "au kettlebell",
-    "sled": "à la machine guidée",
-    "weighted": "lesté",
-    "assisted": "assisté",
-    "self assisted": "en auto-assistance",
-    "stability ball": "sur swiss ball",
-    "exercise ball": "sur swiss ball",
-    "bosu ball": "sur bosu",
-    "medicine ball": "au médecine-ball",
-    "roller": "au rouleau",
-    "wheel": "à la roue",
-    "rope": "à la corde",
-    "bodyweight": "au poids du corps",
-    "body weight": "au poids du corps"
-  },
-  "locutions": {
-    "bench press": "développé couché",
-    "incline bench press": "développé incliné",
-    "decline bench press": "développé décliné",
-    "chest press": "développé pectoraux",
-    "shoulder press": "développé épaules",
-    "military press": "développé militaire",
-    "overhead press": "développé au-dessus de la tête",
-    "leg press": "presse à cuisses",
-    "calf press": "presse à mollets",
-    "press": "développé",
-    "curl": "curl",
-    "bicep curl": "curl biceps",
-    "biceps curl": "curl biceps",
-    "preacher curl": "curl au pupitre",
-    "concentration curl": "curl concentré",
-    "hammer curl": "curl marteau",
-    "wrist curl": "curl poignets",
-    "leg curl": "leg curl",
-    "row": "rowing",
-    "upright row": "rowing menton",
-    "bent over row": "rowing buste penché",
-    "raise": "élévation",
-    "lateral raise": "élévations latérales",
-    "front raise": "élévations frontales",
-    "calf raise": "extension mollets",
-    "leg raise": "relevé de jambes",
-    "knee raise": "relevé de genoux",
-    "extension": "extension",
-    "triceps extension": "extension triceps",
-    "leg extension": "leg extension",
-    "squat": "squat",
-    "front squat": "squat avant",
-    "hack squat": "hack squat",
-    "split squat": "fente bulgare",
-    "sumo squat": "squat sumo",
-    "deadlift": "soulevé de terre",
-    "romanian deadlift": "soulevé de terre roumain",
-    "stiff leg deadlift": "soulevé de terre jambes tendues",
-    "lunge": "fente",
-    "rear lunge": "fente arrière",
-    "pulldown": "tirage vertical",
-    "lat pulldown": "tirage vertical",
-    "pushdown": "pushdown",
-    "pullover": "pullover",
-    "pull-up": "traction",
-    "chin-up": "traction supination",
-    "push-up": "pompes",
-    "dip": "dips",
-    "dips": "dips",
-    "fly": "écarté",
-    "crunch": "crunch",
-    "sit-up": "relevé de buste",
-    "twist": "rotation",
-    "shrug": "shrug",
-    "kickback": "kickback",
-    "stretch": "étirement",
-    "plank": "gainage",
-    "bridge": "pont",
-    "thruster": "thruster",
-    "clean": "épaulé",
-    "snatch": "arraché",
-    "jerk": "jeté",
-    "good morning": "good morning",
-    "swing": "swing",
-    "step-up": "montée sur banc",
-    "burpee": "burpee",
-    "jump": "saut",
-    "run": "course",
-    "walk": "marche",
-    "flip": "retournement",
-    "throw": "lancer",
-    "slam": "slam",
-    "carry": "port",
-    "seated": "assis",
-    "standing": "debout",
-    "lying": "allongé",
-    "kneeling": "à genoux",
-    "prone": "à plat ventre",
-    "supine": "sur le dos",
-    "incline": "incliné",
-    "decline": "décliné",
-    "reverse": "inversé",
-    "alternate": "alterné",
-    "alternating": "alterné",
-    "one arm": "à un bras",
-    "single arm": "à un bras",
-    "one leg": "à une jambe",
-    "two legs": "à deux jambes",
-    "close grip": "prise serrée",
-    "close-grip": "prise serrée",
-    "wide grip": "prise large",
-    "wide-grip": "prise large",
-    "reverse grip": "prise inversée",
-    "reverse-grip": "prise inversée",
-    "neutral grip": "prise neutre",
-    "underhand": "en supination",
-    "overhand": "en pronation",
-    "grip": "prise",
-    "behind the neck": "nuque",
-    "behind head": "derrière la nuque",
-    "overhead": "au-dessus de la tête",
-    "side": "latéral",
-    "lateral": "latéral",
-    "front": "avant",
-    "rear": "arrière",
-    "high": "haut",
-    "low": "bas",
-    "wide": "large",
-    "narrow": "serré",
-    "straight": "tendu",
-    "bent": "fléchi",
-    "bent-over": "buste penché",
-    "single": "unilatéral",
-    "double": "à deux",
-    "half": "demi",
-    "full": "complet",
-    "floor": "au sol",
-    "wall": "au mur",
-    "on": "sur",
-    "with": "avec",
-    "and": "et",
-    "to": "vers",
-    "in": "en",
-    "of": "de",
-    "from": "depuis",
-    "over": "au-dessus",
-    "under": "sous",
-    "between": "entre",
-    "against": "contre",
-    "up": "vers le haut",
-    "down": "vers le bas",
-    "the": "",
-    "a": "",
-    "male": "",
-    "female": "",
-    "v": "variante",
-    "chest": "pectoraux",
-    "back": "dos",
-    "shoulder": "épaules",
-    "biceps": "biceps",
-    "bicep": "biceps",
-    "triceps": "triceps",
-    "tricep": "triceps",
-    "leg": "jambes",
-    "legs": "jambes",
-    "arm": "bras",
-    "arms": "bras",
-    "calf": "mollets",
-    "calves": "mollets",
-    "glute": "fessiers",
-    "hamstring": "ischio-jambiers",
-    "quads": "quadriceps",
-    "abs": "abdominaux",
-    "oblique": "obliques",
-    "lat": "grand dorsal",
-    "delt": "deltoïdes",
-    "deltoid": "deltoïdes",
-    "hip": "hanche",
-    "knee": "genou",
-    "wrist": "poignet",
-    "neck": "nuque",
-    "spine": "rachis",
-    "core": "gainage",
-    "trap": "trapèzes",
-    "dumbbell": "haltères",
-    "barbell": "barre",
-    "cable": "poulie",
-    "bar": "barre",
-    "v-bar": "barre en V",
-    "ball": "ballon",
-    "stability ball": "swiss ball",
-    "exercise ball": "swiss ball",
-    "medicine ball": "médecine-ball",
-    "bosu ball": "bosu",
-    "bench": "banc",
-    "machine": "machine",
-    "smith": "Smith machine",
-    "band": "élastique",
-    "rope": "corde",
-    "kettlebell": "kettlebell",
-    "ez": "EZ",
-    "preacher": "pupitre",
-    "roller": "rouleau",
-    "wheel": "roue",
-    "sled": "machine guidée",
-    "hammer": "marteau",
-    "attachment": "poignée",
-    "handle": "poignée",
-    "pulley": "poulie",
-    "support": "support",
-    "cage": "cage",
-    "platform": "plateforme",
-    "box": "caisse",
-    "chair": "chaise",
-    "towel": "serviette",
-    "strap": "sangle",
-    "straps": "sangles",
-    "weighted": "lesté",
-    "assisted": "assisté",
-    "exercise": "exercice",
-    "stability": "stabilité",
-    "resistance": "résistance",
-    "bodyweight": "poids du corps",
-    "body": "corps"
-  }
-}
-```
-
-- [ ] **Step 4: Dérouler la boucle jusqu'au vert**
-
-```bash
-pnpm --filter @better-lift/db exec vitest run catalogue/couverture.test.ts
-```
-
-L'échec liste les mots manquants, **du plus fréquent au plus rare** :
-
-```
-  « zercher » ×2 — ex. « barbell zercher squat »
-  « pallof » ×2 — ex. « cable pallof press »
-  …
-```
-
-Pour chaque mot : ouvrir l'exemple, décider de la traduction dans **ce** contexte, ajouter
-l'entrée dans `locutions`, relancer. Trois règles pour trancher :
-
-- **Un anglicisme de salle reste tel quel** (`zercher` → `zercher`, `pallof` → `pallof`,
-  `burpee` → `burpee`). Une entrée identique à sa clé est une décision, pas un oubli — c'est
-  précisément ce que le test rend explicite.
-- **Un mot qui n'a de sens qu'en groupe devient une locution**, pas un mot : si « mountain »
-  n'a pas de traduction utile seul, l'entrée est `"mountain climber": "climber"`, et le mot
-  isolé disparaît de la liste.
-- **Un mot de remplissage se traduit par la chaîne vide** (`"the": ""`), ce qui l'efface.
-
-Ne jamais ajouter d'entrée sans avoir regardé l'exemple : c'est la seule chose qui distingue une
-traduction d'un mot placé pour faire taire un test.
-
-- [ ] **Step 5: Run test to verify it passes**
-
-Run: `pnpm --filter @better-lift/db exec vitest run catalogue/couverture.test.ts`
-Expected: PASS — 2 tests. Le message d'échec est vide, donc plus aucun mot du catalogue n'échappe
-au glossaire.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add packages/db/catalogue/glossaire.json packages/db/catalogue/couverture.test.ts
-git commit -m "feat(db): glossaire du catalogue, couverture tenue par un test"
-```
-
----
-
-### Task 6: les artefacts générés — vocabulaires, corrections, traductions
-
-Trois fichiers entrent, un sort. `traductions.json` est **entièrement généré** : personne ne le
-retouche à la main, et un test le vérifie. Les irrégularités que le moteur ne sait pas produire —
-l'accord, l'ordre des compléments — vivent dans `corrections.json`, ce qui rend le pipeline
-rejouable et rend visible, en une seule liste, ce qui a dû être corrigé.
-
-C'est la lecture littérale de D37. La spec parlait de deux fichiers ; il en faut trois, parce
-qu'avec deux seulement une correction à la main se ferait dans le fichier généré et serait
-écrasée à la régénération suivante — silencieusement.
+- `vocabulaire.json` — les trois vocabulaires fermés (28 équipements, 19 cibles, 40 muscles),
+  stockés en français en base ;
+- `noms-fr.json` — id du dataset → nom français, 1 316 entrées.
 
 **Files:**
 - Create: `packages/db/catalogue/vocabulaire.json`
-- Create: `packages/db/catalogue/corrections.json`
-- Create: `packages/db/catalogue/generer.ts`
-- Create: `packages/db/catalogue/traductions.json` *(généré)*
-- Test: `packages/db/catalogue/traductions.test.ts`
-- Modify: `packages/db/catalogue/traduire.ts` *(ajout de `composer`)*
-- Modify: `knip.json`
+- Create: `packages/db/catalogue/noms-fr.json`
+- Test: `packages/db/catalogue/noms-fr.test.ts`
+- Modify: `biome.json`
 
 **Interfaces:**
-- Consumes: `traduireNom`, `type Glossaire` (tâche 4) ; `slugifier` de `@better-lift/shared`
-  (tâche 1) ; `source.json` (tâche 3) ; `glossaire.json` (tâche 5).
+- Consumes: `source.json` (tâche 3).
 - Produces:
-  ```ts
-  // dans traduire.ts
-  export function composer(
-    source: { id: string; nom: string }[],
-    glossaire: Glossaire,
-    corrections: Record<string, string>,
-  ): Record<string, string>;
-  ```
-  et trois fichiers :
-  - `vocabulaire.json` : `{ equipements: Record<string,string>, cibles: Record<string,string>, muscles: Record<string,string> }` — 28 + 19 + 40 termes
-  - `corrections.json` : `Record<string, string>` — id du dataset → nom français définitif
-  - `traductions.json` : `Record<string, string>` — id du dataset → nom français, 1 318 entrées
+  - `vocabulaire.json` : `{ equipements: Record<string,string>, cibles: Record<string,string>, muscles: Record<string,string> }`
+  - `noms-fr.json` : `Record<string, string>` — id du dataset (« 0001 ») → nom français, clés
+    triées par id, 1 316 entrées
 
 - [ ] **Step 1: Écrire les 87 termes des vocabulaires fixes**
 
-Créer `packages/db/catalogue/vocabulaire.json`. Ces trois vocabulaires sont **fermés** : 28
-équipements, 19 cibles, 40 muscles secondaires, écrits une fois. Le catalogue est aplati et sans
-table de traductions (D20) : rien ne justifie de garder l'anglais en base, ces valeurs y entrent
-donc déjà en français.
+Créer `packages/db/catalogue/vocabulaire.json`. Ces trois vocabulaires sont **fermés** et écrits
+une fois. Ce sont des étiquettes d'affichage, sans usage de recherche : ils entrent en base
+directement en français.
 
 ```json
 {
@@ -1654,96 +1023,15 @@ donc déjà en français.
 }
 ```
 
-- [ ] **Step 2: Ajouter `composer` au moteur**
+- [ ] **Step 2: Write the failing test**
 
-Modifier `packages/db/catalogue/traduire.ts` — ajouter à la fin du fichier :
-
-```ts
-/**
- * Assemble le fichier de traductions.
- *
- * Une correction l'emporte TOUJOURS sur le moteur : c'est ce qui permet de
- * régler un cas irrégulier sans tordre une règle générale (D37). Le moteur ne
- * sait produire ni l'accord (« traction assisté ») ni l'ordre des compléments
- * (« 3/4 relevé de buste ») ; ces cas vivent dans `corrections.json`, et le
- * fichier de sortie reste entièrement reproductible.
- */
-export function composer(
-  source: { id: string; nom: string }[],
-  glossaire: Glossaire,
-  corrections: Record<string, string>,
-): Record<string, string> {
-  const sortie: Record<string, string> = {};
-  for (const e of source) {
-    sortie[e.id] = corrections[e.id] ?? traduireNom(e.nom, glossaire);
-  }
-  return sortie;
-}
-```
-
-- [ ] **Step 3: Écrire le script de génération**
-
-Créer `packages/db/catalogue/generer.ts` :
-
-```ts
-import { readFileSync, writeFileSync } from "node:fs";
-import { composer, type Glossaire } from "./traduire.js";
-
-/**
- * Produit `traductions.json` à partir de `source.json`, `glossaire.json` et
- * `corrections.json`.
- *
- * Script MANUEL — il ne tourne ni au semis ni en CI. C'est un fichier à part de
- * `traduire.ts` pour que le moteur reste importable sans effet de bord : un
- * script qui s'exécute à l'import ferait écrire sur le disque chaque fois qu'un
- * test importe le moteur.
- *
- *     pnpm --filter @better-lift/db exec tsx catalogue/generer.ts
- */
-const lire = <T>(nom: string): T =>
-  JSON.parse(readFileSync(new URL(`./${nom}`, import.meta.url), "utf8")) as T;
-
-const source = lire<{ id: string; nom: string }[]>("source.json");
-const glossaire = lire<Glossaire>("glossaire.json");
-const corrections = lire<Record<string, string>>("corrections.json");
-
-const traductions = composer(source, glossaire, corrections);
-
-writeFileSync(
-  new URL("./traductions.json", import.meta.url),
-  `${JSON.stringify(traductions, null, 2)}\n`,
-  "utf8",
-);
-
-const corriges = Object.keys(corrections).length;
-console.log(`${Object.keys(traductions).length} traductions écrites (${corriges} corrigées).`);
-```
-
-- [ ] **Step 4: Première génération, avec des corrections vides**
-
-Créer `packages/db/catalogue/corrections.json` avec un objet vide :
-
-```json
-{}
-```
-
-Puis générer :
-
-```bash
-pnpm --filter @better-lift/db exec tsx catalogue/generer.ts
-```
-
-Expected : `1318 traductions écrites (0 corrigées).`
-
-- [ ] **Step 5: Write the failing test**
-
-Créer `packages/db/catalogue/traductions.test.ts` :
+Créer `packages/db/catalogue/noms-fr.test.ts`. C'est le **seul** garde-fou de D45 : il garantit
+qu'aucun nom n'est **absent**, pas qu'il soit **bon** — la relecture de l'étape 5 s'en charge, et
+un nom maladroit reste de toute façon trouvable par son nom anglais (D44).
 
 ```ts
 import { readFileSync } from "node:fs";
-import { slugifier } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
-import { composer, type Glossaire } from "./traduire.js";
 
 type EntreeSource = {
   id: string;
@@ -1757,58 +1045,55 @@ const lire = <T>(nom: string): T =>
   JSON.parse(readFileSync(new URL(`./${nom}`, import.meta.url), "utf8")) as T;
 
 const source = lire<EntreeSource[]>("source.json");
-const glossaire = lire<Glossaire>("glossaire.json");
-const corrections = lire<Record<string, string>>("corrections.json");
-const traductions = lire<Record<string, string>>("traductions.json");
+const nomsFr = lire<Record<string, string>>("noms-fr.json");
 const vocabulaire = lire<{
   equipements: Record<string, string>;
   cibles: Record<string, string>;
   muscles: Record<string, string>;
 }>("vocabulaire.json");
 
-describe("traductions.json", () => {
-  /**
-   * Remplace le « test de résidu » de la spec, qui était inapplicable : beaucoup
-   * d'entrées se traduisent par elles-mêmes (« squat » -> « squat »), donc
-   * l'identité de chaîne ne distingue pas un résidu anglais d'une traduction
-   * juste. Ce test-ci est exact, et il attrape en plus la retouche à la main du
-   * fichier généré — qui serait perdue à la régénération suivante.
-   */
-  it("est exactement ce que le moteur produit de ses entrées", () => {
-    expect(traductions).toEqual(composer(source, glossaire, corrections));
+describe("noms-fr.json", () => {
+  // Le message nomme les exercices en cause, avec leur nom anglais : on sait
+  // quoi écrire sans aller fouiller `source.json`.
+  it("donne un nom français à chacun des exercices de la source", () => {
+    const manquants = source
+      .filter((e) => !nomsFr[e.id]?.trim())
+      .map((e) => `${e.id} « ${e.nom} »`);
+    expect(manquants).toEqual([]);
   });
 
-  it("donne un nom non vide à chacun des 1 318 exercices", () => {
-    expect(Object.keys(traductions)).toHaveLength(source.length);
-    for (const e of source) {
-      expect(traductions[e.id]?.trim()).toBeTruthy();
-    }
-  });
-
-  /**
-   * Le slug est `@unique` en base. Deux noms anglais distincts peuvent très bien
-   * retomber sur le même français — « close grip » et « close-grip » donnent tous
-   * deux « prise serrée ». Sans ce test, le semis échouerait au milieu du lot,
-   * sur une contrainte d'unicité, sans dire quel nom est en cause.
-   */
-  it("ne produit jamais deux fois le même slug", () => {
-    const parSlug = new Map<string, string[]>();
-    for (const [id, nom] of Object.entries(traductions)) {
-      const slug = slugifier(nom);
-      parSlug.set(slug, [...(parSlug.get(slug) ?? []), `${id} « ${nom} »`]);
-    }
-    const collisions = [...parSlug.entries()]
-      .filter(([, ids]) => ids.length > 1)
-      .map(([slug, ids]) => `  ${slug} <- ${ids.join(" / ")}`)
-      .join("\n");
-    expect(collisions === "" ? "" : `Slugs en collision :\n${collisions}`).toBe("");
-  });
-
-  // Une correction sur un id absent de la source ne fait rien et ne le dit pas.
-  it("ne porte aucune correction sur un exercice inexistant", () => {
+  // Une entrée sur un id absent de la source ne fait rien et ne le dit pas —
+  // typiquement une faute de frappe dans l'id, qui laisse le vrai sans nom.
+  it("ne porte aucun id inconnu de la source", () => {
     const ids = new Set(source.map((e) => e.id));
-    const orphelines = Object.keys(corrections).filter((id) => !ids.has(id));
-    expect(orphelines).toEqual([]);
+    expect(Object.keys(nomsFr).filter((id) => !ids.has(id))).toEqual([]);
+  });
+
+  it("n'a ni espace en bord, ni minuscule initiale", () => {
+    const fautifs = Object.entries(nomsFr).filter(
+      ([, nom]) => nom !== nom.trim() || nom[0] !== nom[0]?.toLocaleUpperCase("fr"),
+    );
+    expect(fautifs).toEqual([]);
+  });
+
+  // Deux exercices distincts affichés sous le même nom seraient
+  // indistinguables dans la liste. Le typage ne l'interdit pas, ce test si :
+  // quand deux noms anglais retombent sur le même français, c'est le détail que
+  // l'anglais porte (prise, inclinaison, un bras…) qui doit les départager.
+  it("ne donne jamais deux fois le même nom", () => {
+    const parNom = new Map<string, string[]>();
+    for (const [id, nom] of Object.entries(nomsFr)) {
+      parNom.set(nom, [...(parNom.get(nom) ?? []), id]);
+    }
+    const doublons = [...parNom.entries()]
+      .filter(([, ids]) => ids.length > 1)
+      .map(([nom, ids]) => `« ${nom} » <- ${ids.join(", ")}`);
+    expect(doublons).toEqual([]);
+  });
+
+  it("garde ses clés triées par id, pour que le diff reste lisible", () => {
+    const cles = Object.keys(nomsFr);
+    expect(cles).toEqual([...cles].sort());
   });
 });
 
@@ -1834,85 +1119,179 @@ describe("vocabulaire.json", () => {
 });
 ```
 
-- [ ] **Step 6: Run the tests and act on what they say**
+Créer `packages/db/catalogue/noms-fr.json` avec un objet vide, pour que le test échoue sur ce
+qui compte — les noms manquants — et non sur un fichier introuvable :
 
-Run: `pnpm --filter @better-lift/db exec vitest run catalogue/traductions.test.ts`
+```json
+{}
+```
 
-Trois issues possibles, et une seule bonne réponse pour chacune :
+- [ ] **Step 3: Run test to verify it fails**
 
-| Échec | Ce qu'il veut dire | Ce qu'on fait |
-|---|---|---|
-| « Slugs en collision » | Deux exercices retombent sur le même nom français | Ajouter une entrée dans **`corrections.json`** pour l'un des deux, puis relancer `generer.ts` |
-| « n'est pas exactement ce que le moteur produit » | `traductions.json` a été retouché à la main, ou le glossaire a changé depuis | Relancer `generer.ts` — et si la retouche était voulue, la déplacer dans `corrections.json` |
-| Un vocabulaire manquant | Une valeur est apparue dans la source | L'ajouter à `vocabulaire.json` |
+Run: `pnpm --filter @better-lift/db exec vitest run catalogue/noms-fr.test.ts`
+Expected: FAIL — « donne un nom français à chacun des exercices » liste les 1 316 ids manquants.
+Le test du vocabulaire, lui, passe déjà.
 
-- [ ] **Step 7: Relire les 1 318 noms, et corriger ce qui se lit mal**
+- [ ] **Step 4: Écrire les 1 316 noms, par lots de 100**
 
-C'est la relecture que les tests ne remplacent pas : ils garantissent qu'aucune traduction
-n'est **absente**, pas qu'elle soit **bonne**. Parcourir `traductions.json` et noter ce qui
-accroche. Les deux familles attendues, connues d'avance :
+Afficher un lot à la fois — une commande jetable, rien n'est commité :
 
-- **l'accord** — `assisted pull-up` donne « Traction assisté », à corriger en « Traction
-  assistée » ;
-- **l'ordre des compléments** — `3/4 sit-up` donne « 3/4 relevé de buste », à corriger en
-  « Relevé de buste 3/4 ».
+```bash
+node -e "
+const s = require('./packages/db/catalogue/source.json');
+const [debut, fin] = [0, 100];   // puis 100-200, 200-300… jusqu'à 1316
+for (const e of s.slice(debut, fin)) console.log(e.id + '\t' + e.nom + '\t' + e.equipement);
+"
+```
 
-Chaque correction s'écrit dans `corrections.json`, par id :
+Pour chaque lot, ajouter les entrées à `noms-fr.json`, **clés dans l'ordre des ids**. Les règles
+de rédaction — c'est le « français d'usage » de la spec, celui qu'on tape dans une recherche :
+
+**Structure : le mouvement d'abord, puis ses précisions, puis l'équipement en suffixe.**
+L'anglais est à tête finale, le français à tête initiale : « Dumbbell Incline Bench Press »
+devient « Développé couché incliné aux haltères », jamais « Haltères développé… ».
+
+| Équipement (`equipement`) | Suffixe |
+|---|---|
+| dumbbell | aux haltères — **à l'haltère** si un seul est en jeu (*one arm*, *single*) |
+| barbell | à la barre |
+| ez barbell | à la barre EZ |
+| olympic barbell | à la barre olympique |
+| trap bar | à la trap bar |
+| cable | à la poulie |
+| leverage machine, sled machine | à la machine |
+| smith machine | à la Smith machine |
+| band, resistance band | à l'élastique |
+| kettlebell | au kettlebell |
+| medicine ball | au médecine-ball |
+| stability ball | sur swiss ball |
+| bosu ball | sur bosu |
+| rope | à la corde |
+| body weight | *(aucun suffixe)* |
+| weighted | lesté(e), accordé au mouvement |
+| assisted | assisté(e), accordé au mouvement |
+
+**Les anglicismes d'usage restent** : curl, squat, pushdown, crunch, sit-up, shrug, hip thrust,
+kickback, pullover, face pull, good morning, burpee, leg extension, leg curl, dips.
+
+**Les termes qui se traduisent** :
+
+| Anglais | Français |
+|---|---|
+| bench press | développé couché |
+| shoulder press, overhead press, military press | développé militaire |
+| arnold press | développé Arnold |
+| deadlift | soulevé de terre |
+| romanian deadlift | soulevé de terre roumain |
+| row | rowing |
+| pull-up / chin-up | traction / traction supination |
+| push-up | pompe |
+| lunge | fente |
+| fly | écarté |
+| lateral raise / front raise | élévations latérales / élévations frontales |
+| calf raise | extension des mollets |
+| leg press | presse à cuisses |
+| skull crusher | barre au front |
+| hammer curl / preacher curl / concentration curl | curl marteau / curl pupitre / curl concentré |
+| plank | gainage |
+| incline / decline | incliné / décliné |
+| close grip / wide grip / reverse grip | prise serrée / prise large / prise inversée |
+| one arm / single leg | à un bras / sur une jambe |
+| seated / standing / lying / kneeling | assis / debout / allongé / à genoux |
+| alternate | alterné |
+
+**L'accord se fait** : « Traction assistée », « Pompe déclinée », « Fente lestée ».
+
+**Majuscule à l'initiale seulement**, sauf noms propres et sigles (Arnold, Smith, EZ).
+
+Un exemple de lot rédigé — des ids réels, clés dans l'ordre :
 
 ```json
 {
-  "0001": "Relevé de buste 3/4",
-  "0017": "Traction assistée"
+  "0001": "Sit-up 3/4",
+  "0017": "Traction assistée",
+  "0025": "Développé couché à la barre",
+  "0032": "Soulevé de terre à la barre",
+  "0241": "Pushdown triceps à la poulie (barre en V)",
+  "0289": "Développé couché aux haltères",
+  "0314": "Développé couché incliné aux haltères",
+  "0585": "Leg extension à la machine"
 }
 ```
 
-Puis régénérer et relancer :
+Après chaque lot, relancer le test : le nombre de manquants doit baisser de 100, et le test
+d'unicité signale immédiatement deux noms qui se télescopent — c'est le détail de l'anglais
+(prise, inclinaison, un bras, assis ou debout) qui doit les départager.
 
 ```bash
-pnpm --filter @better-lift/db exec tsx catalogue/generer.ts
-pnpm --filter @better-lift/db exec vitest run catalogue/
+pnpm --filter @better-lift/db exec vitest run catalogue/noms-fr.test.ts
 ```
 
-Expected: PASS — l'ensemble des tests de `catalogue/`.
+- [ ] **Step 5: Faire relire les exercices courants par l'utilisateur**
 
-- [ ] **Step 8: Déclarer le nouveau script à Knip**
+Les tests garantissent qu'aucun nom n'est absent ; seul un humain dit s'il est **bon**. La spec
+prévoit une relecture ciblée : les exercices qu'on fait vraiment passent sous les yeux de
+l'utilisateur, la longue traîne se corrige à l'usage.
 
-Modifier `knip.json` — `generer.ts` est un point d'entrée, comme `extraire.ts` :
+Extraire les exercices courants — les mouvements de base, sur les équipements de base :
+
+```bash
+node -e "
+const s = require('./packages/db/catalogue/source.json');
+const fr = require('./packages/db/catalogue/noms-fr.json');
+const base = /bench press|squat|deadlift|\brow\b|pull-up|chin-up|push-up|curl|shoulder press|overhead press|lateral raise|lunge|\bdip|leg press|leg extension|leg curl|hip thrust|pushdown|fly|shrug|calf raise|crunch|plank/;
+const equip = new Set(['barbell','dumbbell','cable','leverage machine','body weight','smith machine','ez barbell']);
+for (const e of s) if (base.test(e.nom) && equip.has(e.equipement) && e.nom.split(' ').length <= 4)
+  console.log(e.id + '  ' + e.nom.padEnd(40) + '→ ' + fr[e.id]);
+"
+```
+
+**Présenter cette liste à l'utilisateur dans la conversation, et attendre son retour.** Appliquer
+ses corrections dans `noms-fr.json`, relancer le test.
+
+- [ ] **Step 6: Run test to verify it passes**
+
+Run: `pnpm --filter @better-lift/db exec vitest run catalogue/`
+Expected: PASS — les tests de `source.test.ts` et de `noms-fr.test.ts`.
+
+- [ ] **Step 7: Tenir Biome à l'écart des noms**
+
+Modifier `biome.json` — le diff de `noms-fr.json` ne doit montrer que des noms, jamais un
+reformatage :
 
 ```json
-    "packages/db": {
-      "entry": ["src/index.ts", "catalogue/extraire.ts", "catalogue/generer.ts"],
-      "project": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/**/*.{ts,prisma}"]
-    },
+      "!packages/db/catalogue/source.json",
+      "!packages/db/catalogue/noms-fr.json"
 ```
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 8: Vérifier, puis commit**
 
 ```bash
-git add packages/db/catalogue knip.json
-git commit -m "feat(db): traductions générées des 1 318 noms, vocabulaires et corrections"
+pnpm test && pnpm lint && pnpm knip
+```
+
+```bash
+git add packages/db/catalogue biome.json
+git commit -m "feat(db): noms français des 1 316 exercices et vocabulaires fixes"
 ```
 
 ---
 
-### Task 7: le schéma, la migration et le semis
+### Task 5: le schéma, la migration et le semis
 
-Dernière tâche de la PR 1. À la fin, les 1 318 exercices sont dans la branche Neon `dev`, en
-français, et se retrouvent par une requête SQL tapée sans accents.
+Dernière tâche de la PR 1. À la fin, les 1 316 exercices sont dans la branche Neon `dev`, avec
+leurs deux noms, et se retrouvent par une requête SQL tapée sans accents — ou en anglais.
 
-**Deux colonnes s'ajoutent, pas une.**
+**Deux colonnes s'ajoutent** : `nomFr` (D44), le nom affiché, et `nomRecherche` (D39), les deux
+noms normalisés. `name` garde le nom anglais du dataset.
 
-`nomRecherche` vient de D39. `sourceId` est une addition de ce plan, et elle mérite sa
-justification : **le semis doit être rejouable** (piège connu du § 9 de la spec), donc il
-`upsert`. Sur quoi ? Pas sur le slug : le slug dérive du nom français, et une correction de
-traduction changerait le slug, ce qui créerait une **ligne de plus** au lieu de mettre à jour
-l'existante. L'id du dataset, lui, ne bouge jamais. C'est donc lui la clé d'idempotence, et le
-slug reste libre de changer.
+**Le semis `upsert` sur le slug**, et c'est sûr parce que le slug dérive du **nom anglais**, qui
+ne bouge jamais : corriger un nom français modifie `nomFr` et `nomRecherche`, jamais le slug, donc
+jamais une URL ni l'identité d'une ligne. La tâche 3 a rendu les slugs uniques par construction.
 
 > **Un écart de nommage à noter** : les champs du modèle sont en anglais depuis le lot 0 (`name`,
-> `bodyPart`, `gifUrl`), et la spec nomme cette colonne `nomRecherche` en français (D39/D40). Le
-> plan suit la spec, qui fait foi. Si tu préfères l'homogénéité du modèle, c'est le moment de le
-> dire — après la migration, le renommage coûte une migration de plus.
+> `bodyPart`, `gifUrl`), et la spec nomme les deux nouvelles colonnes en français (`nomFr`,
+> `nomRecherche`). Le plan suit la spec, qui fait foi.
 
 **Files:**
 - Modify: `packages/db/prisma/schema.prisma`
@@ -1923,9 +1302,10 @@ slug reste libre de changer.
 - Modify: `CLAUDE.md`
 
 **Interfaces:**
-- Consumes: `normaliserRecherche`, `slugifier` de `@better-lift/shared` (tâche 1) ; `source.json`
-  (tâche 3) ; `traductions.json` et `vocabulaire.json` (tâche 6).
-- Produces: 1 318 lignes dans `Exercise`, sur la branche Neon `dev`.
+- Consumes: `texteRecherche`, `slugifier` de `@better-lift/shared` (tâche 1) ; `source.json`
+  (tâche 3) ; `noms-fr.json` et `vocabulaire.json` (tâche 4).
+- Produces: 1 316 lignes dans `Exercise`, sur la branche Neon `dev` ; `gifUrl` porte une URL
+  complète.
 
 - [ ] **Step 1: Vérifier la branche Neon visée — AVANT toute migration**
 
@@ -1948,27 +1328,26 @@ Modifier `packages/db/prisma/schema.prisma`, modèle `Exercise` :
 ```prisma
 model Exercise {
   id           String   @id @default(cuid())
-  // L'id du dataset d'origine (« 0001 »). C'est la CLÉ D'IDEMPOTENCE du semis :
-  // le slug dérive du nom français et changerait à la moindre correction de
-  // traduction, ce qui ferait créer une ligne de plus au lieu d'en mettre une à
-  // jour. L'id de la source, lui, ne bouge jamais.
-  sourceId     String   @unique
+  // Dérivé du nom ANGLAIS, qui ne bouge jamais : c'est la clé de l'`upsert` du
+  // semis, et l'identifiant de l'URL. Corriger un nom français ne le change pas.
   slug         String   @unique
+  // Le nom anglais du dataset, conservé pour la recherche (D44).
   name         String
-  // Le nom dépouillé de ses accents et de sa casse, rempli au semis par
-  // `normaliserRecherche` de `shared` — LA MÊME fonction que celle qui normalise
-  // la saisie à la lecture (D39, D40). Deux normalisations différentes rendraient
-  // la colonne inutile sans la moindre erreur pour le signaler.
+  // Le nom français, affiché. Vient de `catalogue/noms-fr.json` (D45).
+  nomFr        String
+  // Les deux noms dépouillés de leurs accents et de leur casse, remplis au semis
+  // par `texteRecherche` de `shared` — qui passe par LA MÊME fonction que celle
+  // qui normalise la saisie à la lecture (D39, D40). Deux normalisations
+  // différentes rendraient la colonne inutile sans la moindre erreur.
   nomRecherche String
   instructions String[]
   bodyPart     BodyPart
   target       String
   equipment    String
   secondary    String[]
-  // Chemin RELATIF dans le dataset d'origine (« videos/0001-2gPfomN.gif »), et
-  // non une URL : il ne se résout nulle part. Conservé comme identifiant de
-  // média. Les médias appartiennent à Gym visual et ne sont pas redistribuables
-  // — voir catalogue/LICENSE-dataset.md. Rien ne le rend à l'écran.
+  // URL de l'animation dans le dépôt du dataset, figée sur un commit. Les médias
+  // appartiennent à Gym visual : affichés avec attribution, jamais copiés (D46)
+  // — voir catalogue/LICENSE-dataset.md.
   gifUrl       String?
   archivedAt   DateTime?
   createdAt    DateTime @default(now())
@@ -1987,7 +1366,7 @@ comportement identique en local, en CI et sur Neon.
 - [ ] **Step 3: Appliquer la migration**
 
 La table est vide (la branche `dev` ne porte aucun exercice), donc les deux colonnes non nulles
-s'ajoutent sans valeur par défaut et sans invite.
+`nomFr` et `nomRecherche` s'ajoutent sans valeur par défaut et sans invite.
 
 ```bash
 pnpm db:migrate --name catalogue_recherche
@@ -2031,21 +1410,25 @@ Créer `packages/db/prisma/seed.ts` :
 import "./env.js";
 
 import { readFileSync } from "node:fs";
-import { type Groupe, normaliserRecherche, slugifier } from "@better-lift/shared";
+import { type Groupe, slugifier, texteRecherche } from "@better-lift/shared";
 import { prisma } from "../src/index.js";
 
 /**
  * Le semis du catalogue.
  *
- * Il ne traduit RIEN : il lit `traductions.json`, produit hors ligne et commité
- * (D37). Deux semis donnent donc exactement le même catalogue, sans dépendre du
- * code de traduction du jour.
+ * Il ne traduit RIEN : il lit `noms-fr.json`, écrit et commité (D45). Corriger
+ * un nom, c'est modifier une ligne de ce fichier et relancer le semis.
  *
  *     pnpm db:seed
  *
- * Il est REJOUABLE : `upsert` sur `sourceId`, jamais `create`. Le relancer ne
- * duplique rien et n'échoue pas.
+ * Il est REJOUABLE : `upsert` sur le slug, jamais `create`. Le slug dérive du
+ * nom anglais, qui ne bouge pas ; le relancer ne duplique rien et n'échoue pas.
  */
+
+// Les animations restent dans le dépôt du dataset (D46) : on n'en copie aucune.
+// L'URL est FIGÉE sur un commit, pour qu'un renommage en amont ne casse rien.
+const BASE_MEDIAS =
+  "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efae41b330c265e7cd4b78dfa848e7ce5ebd";
 
 type EntreeSource = {
   id: string;
@@ -2068,10 +1451,10 @@ const lire = <T>(nom: string): T =>
   JSON.parse(readFileSync(new URL(`../catalogue/${nom}`, import.meta.url), "utf8")) as T;
 
 const source = lire<EntreeSource[]>("source.json");
-const traductions = lire<Record<string, string>>("traductions.json");
+const nomsFr = lire<Record<string, string>>("noms-fr.json");
 const vocabulaire = lire<Vocabulaire>("vocabulaire.json");
 
-// Les 1 318 lignes en une seule transaction sont lentes depuis Francfort et
+// Les 1 316 lignes en une seule transaction sont lentes depuis Francfort et
 // tiennent un verrou bien trop longtemps. Par lots de 100, chaque lot est un
 // aller-retour et une transaction courte.
 const TAILLE_LOT = 100;
@@ -2084,8 +1467,8 @@ async function semer(): Promise<void> {
 
     await prisma.$transaction(
       lot.map((e) => {
-        const nom = traductions[e.id];
-        if (!nom) throw new Error(`Aucune traduction pour l'exercice ${e.id} (« ${e.nom} »)`);
+        const nomFr = nomsFr[e.id];
+        if (!nomFr) throw new Error(`Aucun nom français pour l'exercice ${e.id} (« ${e.nom} »)`);
 
         const equipment = vocabulaire.equipements[e.equipement];
         const target = vocabulaire.cibles[e.cible];
@@ -2098,21 +1481,22 @@ async function semer(): Promise<void> {
           return fr;
         });
 
+        const slug = slugifier(e.nom);
         const donnees = {
-          slug: slugifier(nom),
-          name: nom,
-          nomRecherche: normaliserRecherche(nom),
+          name: e.nom,
+          nomFr,
+          nomRecherche: texteRecherche(nomFr, e.nom),
           instructions: e.etapes,
           bodyPart: e.groupe,
           target,
           equipment,
           secondary,
-          gifUrl: e.gif,
+          gifUrl: `${BASE_MEDIAS}/${e.gif}`,
         };
 
         return prisma.exercise.upsert({
-          where: { sourceId: e.id },
-          create: { sourceId: e.id, ...donnees },
+          where: { slug },
+          create: { slug, ...donnees },
           update: donnees,
         });
       }),
@@ -2139,12 +1523,7 @@ Modifier `knip.json` — `prisma/seed.ts` est un point d'entrée de plus :
 
 ```json
     "packages/db": {
-      "entry": [
-        "src/index.ts",
-        "catalogue/extraire.ts",
-        "catalogue/generer.ts",
-        "prisma/seed.ts"
-      ],
+      "entry": ["src/index.ts", "catalogue/extraire.ts", "prisma/seed.ts"],
       "project": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/**/*.{ts,prisma}"]
     },
 ```
@@ -2155,8 +1534,8 @@ Modifier `knip.json` — `prisma/seed.ts` est un point d'entrée de plus :
 pnpm db:seed
 ```
 
-Expected : le compteur monte de 100 en 100 jusqu'à `1318 / 1318`, puis
-`Catalogue semé : 1318 exercices.`
+Expected : le compteur monte de 100 en 100 jusqu'à `1316 / 1316`, puis
+`Catalogue semé : 1316 exercices.`
 
 **Relancer immédiatement la même commande.** C'est le contrôle de rejouabilité, et il ne coûte
 rien :
@@ -2172,19 +1551,24 @@ Expected : même sortie, sans erreur de contrainte d'unicité.
 Par le MCP Neon (`run_sql`, branche `dev`) :
 
 ```sql
--- 1 318, et pas un de plus après deux semis.
+-- 1 316, et pas un de plus après deux semis.
 SELECT count(*) FROM "Exercise";
 
--- Le critère de sortie du lot, réduit à une requête : trouver un exercice
--- accentué en tapant sans accents.
-SELECT slug, name FROM "Exercise" WHERE "nomRecherche" LIKE '%developpe couche%' LIMIT 5;
+-- Le critère de sortie du lot, réduit à deux requêtes : trouver un exercice
+-- accentué en tapant sans accents, puis le même en tapant son nom anglais.
+SELECT slug, "nomFr" FROM "Exercise" WHERE "nomRecherche" LIKE '%developpe couche%' LIMIT 5;
+SELECT slug, "nomFr" FROM "Exercise" WHERE "nomRecherche" LIKE '%bench press%' LIMIT 5;
 
 -- Aucun résidu anglais visible sur les vocabulaires fixes.
 SELECT DISTINCT equipment FROM "Exercise" ORDER BY 1;
+
+-- Une URL d'animation complète, figée sur le commit.
+SELECT "gifUrl" FROM "Exercise" LIMIT 1;
 ```
 
-Expected : 1 318 lignes ; la seconde requête rend des développés couchés ; la troisième ne rend
-que du français.
+Expected : 1 316 lignes ; les deux requêtes de recherche rendent les mêmes développés couchés ;
+la troisième ne rend que du français ; la dernière une URL `https://raw.githubusercontent.com/…/7455efae…/videos/….gif`
+— l'ouvrir dans un navigateur doit afficher l'animation.
 
 - [ ] **Step 8: Mettre `CLAUDE.md` à jour**
 
@@ -2192,18 +1576,15 @@ Trois points de ce lot appartiennent à la mémoire durable du dépôt, pas au p
 section **Pièges qui coûtent cher** :
 
 ```markdown
-- **Le catalogue est un artefact commité, pas un calcul.** `packages/db/catalogue/` porte la
-  source vendorisée, le glossaire, les corrections et les traductions **générées**. Ne jamais
-  retoucher `traductions.json` à la main : un test le regénère et compare. Une correction
-  s'écrit dans `corrections.json`, par id du dataset. Le semis, lui, ne traduit rien.
-- **Les médias du catalogue ne sont pas redistribuables.** Les données du dataset sont MIT, les
-  images et GIF appartiennent à **Gym visual** et n'y figurent qu'en vertu d'une permission
-  écrite séparée — « cloning this repo is not a license ». `Exercise.gifUrl` n'est qu'un chemin
-  relatif conservé comme identifiant ; il ne se résout nulle part et rien ne le rend. Les
-  afficher demande une licence, pas un choix d'hébergement.
-- **Le semis `upsert` sur `sourceId`, jamais sur le slug.** Le slug dérive du nom français :
-  corriger une traduction le change, et un `upsert` sur le slug créerait une ligne au lieu d'en
-  mettre une à jour.
+- **Le catalogue porte deux noms.** `name` est l'anglais du dataset, `nomFr` le français
+  affiché, et `nomRecherche` les deux normalisés : la recherche trouve dans les deux langues.
+  Les noms français sont **écrits** dans `packages/db/catalogue/noms-fr.json`, par id du
+  dataset — corriger un nom, c'est modifier une ligne et relancer `pnpm db:seed`. Le slug
+  dérive du nom anglais et ne bouge donc jamais.
+- **Les médias du catalogue sont affichés, jamais copiés.** Les données du dataset sont MIT, les
+  GIF appartiennent à **Gym visual**. Choix assumé pour une application privée (D46) :
+  `gifUrl` pointe vers le dépôt du dataset, figé sur un commit, et l'attribution « © Gym
+  visual » accompagne chaque animation. Aucun média n'entre dans le dépôt.
 ```
 
 Et mettre à jour la section **État** : le lot 3 est fusionné, le lot 4 est en cours.
@@ -2212,7 +1593,7 @@ de la section **MCP** devient :
 
 ```markdown
   Branches `production` (catalogue de la V1, non repris) et `dev` (active — catalogue semé,
-  1 318 exercices).
+  1 316 exercices).
 ```
 
 - [ ] **Step 9: `/verif` et commit**
@@ -2233,9 +1614,9 @@ git push -u origin feat/lot-4-catalogue-francais
 gh pr create --title "feat: lot 4 (1/2) — le catalogue français, fabriqué et semé" --body "..."
 ```
 
-Le corps de la PR doit dire, en clair : le compte réel (1 318 et pourquoi pas 1 324), ce que les
-tests garantissent (l'exhaustivité) et ce qu'ils ne garantissent pas (la qualité d'une
-traduction), et la contrainte de licence sur les médias. Attendre le check
+Le corps de la PR doit dire, en clair : le compte réel (1 316 et pourquoi pas 1 324), ce que les
+tests garantissent (aucun nom absent ni en double) et ce qu'ils ne garantissent pas (la qualité
+d'un nom — relue sur les exercices courants), et le statut des médias (D46). Attendre le check
 `Qualité · typecheck · test · build`, puis fusionner en squash.
 
 ---
@@ -2248,7 +1629,7 @@ marche à la frappe.
 
 ---
 
-### Task 8: le contrat partagé
+### Task 6: le contrat partagé
 
 Zod dans `shared` est la source unique du contrat (règle d'architecture). Ce module ne décrit que
 **l'entrée** : la sortie, elle, est inférée par Hono RPC depuis le gestionnaire — la décrire deux
@@ -2269,8 +1650,10 @@ fois ferait diverger les deux descriptions.
   };
   export type ExerciceResume = { slug: string; nom: string; groupe: Groupe; equipement: string };
   export type ExerciceDetail = ExerciceResume & {
+    nomAnglais: string; gif: string | null;
     cible: string; secondaires: string[]; instructions: string[];
   };
+  export const ATTRIBUTION_MEDIAS: string; // « © Gym visual — https://gymvisual.com/ »
   ```
 
 - [ ] **Step 1: Write the failing test**
@@ -2352,6 +1735,7 @@ export type RequeteCatalogue = z.infer<typeof requeteCatalogue>;
 /** Ce qu'une ligne de liste montre — et rien de plus. */
 export type ExerciceResume = {
   slug: string;
+  /** Le nom français, affiché (D44). */
   nom: string;
   /** La clé de données, pas le libellé : le français vient de `LIBELLE_GROUPE`. */
   groupe: Groupe;
@@ -2359,10 +1743,24 @@ export type ExerciceResume = {
 };
 
 export type ExerciceDetail = ExerciceResume & {
+  /**
+   * Le nom d'origine, affiché en sous-titre : il explique pourquoi « bench » a
+   * trouvé « Développé couché », et reste la référence si un nom français est
+   * maladroit (D44).
+   */
+  nomAnglais: string;
+  /** URL de l'animation, ou `null` : l'interface a toujours un repli sans visuel. */
+  gif: string | null;
   cible: string;
   secondaires: string[];
   instructions: string[];
 };
+
+/**
+ * La mention que chaque animation doit porter (D46). Elle vit ici, et non dans
+ * un composant, pour que le web et le mobile affichent exactement la même.
+ */
+export const ATTRIBUTION_MEDIAS = "© Gym visual — https://gymvisual.com/";
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -2384,12 +1782,13 @@ Modifier `packages/shared/src/index.ts` :
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
 export {
+  ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
   type ExerciceResume,
   requeteCatalogue,
   type RequeteCatalogue,
 } from "./exercices.js";
-export { normaliserRecherche, slugifier } from "./recherche.js";
+export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export { type Groupe, GROUPES, LIBELLE_GROUPE } from "./vocabulaire.js";
@@ -2404,7 +1803,7 @@ git commit -m "feat(shared): contrat zod du catalogue"
 
 ---
 
-### Task 9: le service du catalogue
+### Task 7: le service du catalogue
 
 La logique métier vit dans `services/` et **ne connaît jamais le contexte Hono** (règle
 d'architecture). Elle est ici découpée en deux : des **fonctions pures** — construction du filtre,
@@ -2423,12 +1822,12 @@ oublier d'exclure les archivés.
 **Interfaces:**
 - Consumes: `normaliserRecherche`, `requeteCatalogue`, `type RequeteCatalogue`,
   `type ExerciceResume`, `type ExerciceDetail`, `type Groupe` de `@better-lift/shared`
-  (tâches 1, 2, 8) ; `prisma` de `@better-lift/db`.
+  (tâches 1, 2, 6) ; `prisma` de `@better-lift/db`.
 - Produces:
   ```ts
   export type LigneExercice = {
-    slug: string; name: string; bodyPart: Groupe; equipment: string;
-    target: string; secondary: string[]; instructions: string[];
+    slug: string; name: string; nomFr: string; bodyPart: Groupe; equipment: string;
+    target: string; secondary: string[]; instructions: string[]; gifUrl: string | null;
   };
   export function filtreCatalogue(r: RequeteCatalogue): Record<string, unknown>;
   export function versResume(l: LigneExercice): ExerciceResume;
@@ -2445,28 +1844,49 @@ oublier d'exclure les archivés.
 Créer `apps/api/src/services/exercices.test.ts` :
 
 ```ts
-import { normaliserRecherche } from "@better-lift/shared";
+import { texteRecherche } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 import { filtreCatalogue, type LigneExercice, versDetail, versResume } from "./exercices.js";
 
 const ligne: LigneExercice = {
-  slug: "developpe-couche-a-la-barre",
-  name: "Développé couché à la barre",
+  slug: "barbell-bench-press",
+  name: "barbell bench press",
+  nomFr: "Développé couché à la barre",
   bodyPart: "CHEST",
   equipment: "Barre",
   target: "Pectoraux",
   secondary: ["Triceps", "Deltoïdes"],
   instructions: ["Allonge-toi sur le banc.", "Descends la barre."],
+  gifUrl: "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efa/videos/0025.gif",
 };
 
+// Ce que le semis écrit dans la colonne pour cette ligne.
+const colonne = texteRecherche(ligne.nomFr, ligne.name);
+
+/** Rejoue le `contains` de Prisma : la colonne contient-elle ce que le filtre cherche ? */
+function trouve(q: string): boolean {
+  const filtre = filtreCatalogue({ q, page: 1, taille: 50 }) as {
+    nomRecherche: { contains: string };
+  };
+  return colonne.includes(filtre.nomRecherche.contains);
+}
+
 describe("filtreCatalogue", () => {
-  // L'erreur la plus coûteuse du lot, et la plus silencieuse : comparer la
-  // saisie brute à une colonne normalisée ne renvoie jamais rien, sans erreur.
-  it("compare la saisie NORMALISÉE à la colonne normalisée", () => {
-    const filtre = filtreCatalogue({ q: "Développé Couché", page: 1, taille: 50 });
-    expect(filtre).toMatchObject({
-      nomRecherche: { contains: normaliserRecherche("Développé Couché") },
-    });
+  // Le critère de sortie du lot, réduit à des assertions — sans base, donc
+  // exécutable en CI. L'erreur la plus coûteuse, et la plus silencieuse :
+  // comparer la saisie brute à une colonne normalisée ne renvoie jamais rien.
+  it("trouve l'exercice accentué en tapant sans accents", () => {
+    expect(trouve("developpe couche")).toBe(true);
+    expect(trouve("Développé Couché")).toBe(true);
+  });
+
+  it("trouve le même exercice par son nom anglais (D44)", () => {
+    expect(trouve("bench press")).toBe(true);
+    expect(trouve("Barbell Bench")).toBe(true);
+  });
+
+  it("ne trouve pas ce qui n'y est pas", () => {
+    expect(trouve("squat")).toBe(false);
   });
 
   // Rien dans le type ne rappelle d'exclure les archivés : sans ce test, un
@@ -2491,19 +1911,21 @@ describe("filtreCatalogue", () => {
 describe("projections", () => {
   // Le résumé ne doit PAS transporter les instructions : une liste de 50
   // exercices ferait descendre 250 étapes que personne ne lit.
-  it("réduit une ligne à ce qu'une liste affiche", () => {
+  it("réduit une ligne à ce qu'une liste affiche, sous son nom français", () => {
     expect(versResume(ligne)).toEqual({
-      slug: "developpe-couche-a-la-barre",
+      slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
       groupe: "CHEST",
       equipement: "Barre",
     });
   });
 
-  it("rend le détail complet, instructions comprises", () => {
+  it("rend le détail complet : nom anglais, animation, instructions", () => {
     expect(versDetail(ligne)).toEqual({
-      slug: "developpe-couche-a-la-barre",
+      slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
+      nomAnglais: "barbell bench press",
+      gif: ligne.gifUrl,
       groupe: "CHEST",
       equipement: "Barre",
       cible: "Pectoraux",
@@ -2546,28 +1968,34 @@ import { normaliserRecherche } from "@better-lift/shared";
 /** Ce qu'on lit en base. Les champs sont ceux du modèle, donc en anglais. */
 export type LigneExercice = {
   slug: string;
+  /** Le nom anglais du dataset (D44). */
   name: string;
+  nomFr: string;
   bodyPart: Groupe;
   equipment: string;
   target: string;
   secondary: string[];
   instructions: string[];
+  gifUrl: string | null;
 };
 
-const CHAMPS_RESUME = { slug: true, name: true, bodyPart: true, equipment: true } as const;
+const CHAMPS_RESUME = { slug: true, nomFr: true, bodyPart: true, equipment: true } as const;
 const CHAMPS_DETAIL = {
   ...CHAMPS_RESUME,
+  name: true,
   target: true,
   secondary: true,
   instructions: true,
+  gifUrl: true,
 } as const;
 
 export function filtreCatalogue(requete: RequeteCatalogue): Record<string, unknown> {
   const filtre: Record<string, unknown> = { archivedAt: null };
 
-  // LA ligne qui fait tout marcher : la colonne contient le nom passé par
-  // `normaliserRecherche`, la saisie doit donc y passer aussi. Comparer la
-  // saisie brute ne rendrait jamais rien — et sans erreur pour le dire.
+  // LA ligne qui fait tout marcher : la colonne contient les deux noms passés
+  // par `normaliserRecherche` (via `texteRecherche`), la saisie doit donc y
+  // passer aussi. Comparer la saisie brute ne rendrait jamais rien — et sans
+  // erreur pour le dire.
   if (requete.q) filtre.nomRecherche = { contains: normaliserRecherche(requete.q) };
   if (requete.groupe) filtre.bodyPart = requete.groupe;
   if (requete.equipement) filtre.equipment = requete.equipement;
@@ -2575,10 +2003,13 @@ export function filtreCatalogue(requete: RequeteCatalogue): Record<string, unkno
   return filtre;
 }
 
-export function versResume(ligne: LigneExercice): ExerciceResume {
+// Ne reçoit que les champs du résumé : c'est tout ce que `CHAMPS_RESUME` lit.
+export function versResume(
+  ligne: Pick<LigneExercice, "slug" | "nomFr" | "bodyPart" | "equipment">,
+): ExerciceResume {
   return {
     slug: ligne.slug,
-    nom: ligne.name,
+    nom: ligne.nomFr,
     groupe: ligne.bodyPart,
     equipement: ligne.equipment,
   };
@@ -2587,6 +2018,8 @@ export function versResume(ligne: LigneExercice): ExerciceResume {
 export function versDetail(ligne: LigneExercice): ExerciceDetail {
   return {
     ...versResume(ligne),
+    nomAnglais: ligne.name,
+    gif: ligne.gifUrl,
     cible: ligne.target,
     secondaires: ligne.secondary,
     instructions: ligne.instructions,
@@ -2611,7 +2044,9 @@ export const depotPrisma: DepotExercices = {
       }),
       prisma.exercise.count({ where }),
     ]);
-    return { exercices: lignes.map((l) => versResume(l as LigneExercice)), total };
+    // `bodyPart` sort de Prisma typé par son enum, dont les valeurs sont celles de
+    // `Groupe` — `source.test.ts` tient les deux d'accord.
+    return { exercices: lignes.map((l) => versResume(l as Parameters<typeof versResume>[0])), total };
   },
 
   async parSlug(slug) {
@@ -2627,7 +2062,7 @@ export const depotPrisma: DepotExercices = {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm --filter @better-lift/api exec vitest run src/services/exercices.test.ts`
-Expected: PASS — 5 tests.
+Expected: PASS — 7 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -2638,7 +2073,7 @@ git commit -m "feat(api): service du catalogue, filtre et projections testés sa
 
 ---
 
-### Task 10: les deux routes
+### Task 8: les deux routes
 
 Les routes ne font que trois choses : valider, appeler le dépôt, choisir un code. Le dépôt est
 **injecté**, ce qui rend les tests exécutables sans base — la CI n'en a pas.
@@ -2657,8 +2092,8 @@ Les routes ne font que trois choses : valider, appeler le dépôt, choisir un co
 - Modify: `apps/api/package.json`
 
 **Interfaces:**
-- Consumes: `requeteCatalogue` de `@better-lift/shared` (tâche 8) ; `type DepotExercices`,
-  `depotPrisma` de `../services/exercices.js` (tâche 9).
+- Consumes: `requeteCatalogue` de `@better-lift/shared` (tâche 6) ; `type DepotExercices`,
+  `depotPrisma` de `../services/exercices.js` (tâche 7).
 - Produces: `export function routesExercices(depot?: DepotExercices)`, et deux routes dans
   `AppType` :
   - `GET /exercices?q&groupe&equipement&page&taille`
@@ -2686,14 +2121,16 @@ import type { DepotExercices } from "../services/exercices.js";
 import { routesExercices } from "./exercices.js";
 
 const resume: ExerciceResume = {
-  slug: "squat-a-la-barre",
-  nom: "Squat à la barre",
+  slug: "barbell-full-squat",
+  nom: "Squat complet à la barre",
   groupe: "UPPER_LEGS",
   equipement: "Barre",
 };
 
 const detail: ExerciceDetail = {
   ...resume,
+  nomAnglais: "barbell full squat",
+  gif: null,
   cible: "Quadriceps",
   secondaires: ["Fessiers"],
   instructions: ["Place la barre sur tes trapèzes."],
@@ -2840,11 +2277,14 @@ Dans un autre terminal :
 
 ```bash
 curl -s "http://localhost:3001/exercices?q=developpe%20couche&taille=3" | head -c 600
+curl -s "http://localhost:3001/exercices?q=bench%20press&taille=3" | head -c 600
+curl -s "http://localhost:3001/exercices/barbell-bench-press" | head -c 600
 curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3001/exercices/nexiste-pas"
 ```
 
-Expected : la première commande rend des développés couchés — **c'est le critère de sortie du
-lot, tapé sans accents** ; la seconde affiche `404`.
+Expected : les deux premières commandes rendent des développés couchés — **c'est le critère de
+sortie du lot, tapé sans accents puis en anglais** ; la troisième rend le détail avec `nom`,
+`nomAnglais` et une URL `gif` ; la dernière affiche `404`.
 
 - [ ] **Step 7: Commit**
 
@@ -2855,7 +2295,7 @@ git commit -m "feat(api): routes du catalogue, liste filtrée et détail par slu
 
 ---
 
-### Task 11: extraire `packages/api-client`
+### Task 9: extraire `packages/api-client`
 
 D42 : c'est le lot où ce paquet gagne sa raison d'être. La conception principale avait
 explicitement reporté sa création faute d'un second consommateur ; il y en a deux maintenant.
@@ -2870,7 +2310,7 @@ lui soit propre : l'URL de base.
 - Modify: `apps/web/package.json`
 
 **Interfaces:**
-- Consumes: `type AppType` de `@better-lift/api` (tâche 10).
+- Consumes: `type AppType` de `@better-lift/api` (tâche 8).
 - Produces:
   ```ts
   export function creerClient(baseUrl: string): Client;
@@ -2995,7 +2435,7 @@ git commit -m "refactor: extrait le client rpc dans packages/api-client"
 
 ---
 
-### Task 12: brancher l'écran des exercices
+### Task 10: brancher l'écran des exercices
 
 **Le moment de vérité de la méthode du lot 2.** Les quatre états cessent d'être des simulations :
 chargement et erreur deviennent réels. Si le dessin était juste, le branchement ne découvre rien.
@@ -3009,14 +2449,16 @@ l'identifiant stable et lisible du catalogue), et `?groupe=` devient une valeur 
 
 **Files:**
 - Create: `apps/web/src/features/exercices/requetes.ts`
+- Create: `apps/web/src/features/exercices/animation-exercice.tsx`
 - Modify: `apps/web/src/routes/_protege.exercices.tsx`
 - Modify: `apps/web/src/features/exercices/liste-exercices.tsx`
 - Modify: `apps/web/src/features/exercices/detail-exercice.tsx`
 - Delete: `apps/web/src/mocks/exercices.ts`, `apps/web/src/mocks/exercices.test.ts`
 
 **Interfaces:**
-- Consumes: `api` de `@/lib/api` (tâche 11) ; `type ExerciceResume`, `type ExerciceDetail`,
-  `type Groupe`, `GROUPES`, `LIBELLE_GROUPE` de `@better-lift/shared` (tâches 2 et 8).
+- Consumes: `api` de `@/lib/api` (tâche 9) ; `type ExerciceResume`, `type ExerciceDetail`,
+  `type Groupe`, `GROUPES`, `LIBELLE_GROUPE`, `ATTRIBUTION_MEDIAS` de `@better-lift/shared`
+  (tâches 2 et 6).
 - Produces: `optionsCatalogue({ q, groupe })` et `optionsExercice(slug)`, deux `queryOptions`.
 
 - [ ] **Step 1: Écrire les requêtes**
@@ -3194,14 +2636,68 @@ Dans le corps, trois remplacements :
 > `features/seances/detail-seance.tsx`, donc Knip ne le signalera pas. L'invariant D28 — l'aplat
 > pour l'action, le contour pour le record — reste éprouvable sur l'écran des séances.
 
-- [ ] **Step 4: Adapter le détail, et lui donner ce que l'API rend en plus**
+- [ ] **Step 4: L'animation, son attribution et son repli**
+
+Créer `apps/web/src/features/exercices/animation-exercice.tsx`. Trois exigences de D46, et une
+de la méthode du projet :
+
+- **180×180 au plus** — la résolution que Gym visual autorise ;
+- **l'attribution sous chaque visuel**, lue depuis `shared` pour que le mobile affiche la même ;
+- **un repli** : si l'URL est absente ou que le chargement échoue — dépôt amont indisponible,
+  réseau coupé en salle —, le bloc disparaît et la fiche reste lisible. Une image cassée n'est
+  jamais affichée.
+
+```tsx
+import { ATTRIBUTION_MEDIAS } from "@better-lift/shared";
+import { useState } from "react";
+
+/**
+ * L'animation d'un exercice (D46).
+ *
+ * Le GIF reste dans le dépôt du dataset : on l'affiche, on ne le copie pas. Il
+ * appartient à Gym visual, d'où la mention sous le visuel, et la taille bornée
+ * à 180×180 — la résolution à laquelle il est distribué.
+ *
+ * L'appelant passe `key={gif}` : changer d'exercice remonte le composant, ce qui
+ * remet `echec` à faux sans effet à écrire.
+ */
+export function AnimationExercice({ gif, nom }: { gif: string | null; nom: string }) {
+  const [echec, setEchec] = useState(false);
+
+  // Le repli : pas d'URL, ou une URL qui n'a pas chargé. Rien plutôt qu'une
+  // image cassée — la fiche reste complète sans visuel.
+  if (!gif || echec) return null;
+
+  return (
+    <figure className="flex flex-col items-center gap-1.5">
+      <img
+        src={gif}
+        alt={`Animation de l'exercice : ${nom}`}
+        width={180}
+        height={180}
+        loading="lazy"
+        onError={() => setEchec(true)}
+        className="size-45 rounded-md bg-white object-contain"
+      />
+      <figcaption className="text-[11px] text-(--ink-faint)">{ATTRIBUTION_MEDIAS}</figcaption>
+    </figure>
+  );
+}
+```
+
+*(Le fond blanc est voulu : les GIF du dataset sont dessinés sur blanc, et les poser sur la
+surface sombre du thème ferait apparaître un carré clair aux bords irréguliers. Un cadre franc
+reste plus propre.)*
+
+- [ ] **Step 5: Adapter le détail, et lui donner ce que l'API rend en plus**
 
 Modifier `apps/web/src/features/exercices/detail-exercice.tsx` : le type devient `ExerciceDetail`,
-et le panneau gagne les deux blocs que le catalogue permet enfin d'afficher — les muscles et les
-instructions.
+et le panneau gagne ce que le catalogue permet enfin d'afficher — le nom anglais, l'animation, les
+muscles et les instructions.
 
 ```tsx
 import { type ExerciceDetail, LIBELLE_GROUPE } from "@better-lift/shared";
+import { AnimationExercice } from "./animation-exercice";
 
 export function DetailExercice({
   exercice,
@@ -3212,11 +2708,26 @@ export function DetailExercice({
 }) {
 ```
 
-- l'en-tête : `{exercice.groupe} · {exercice.equipement}` →
-  `{LIBELLE_GROUPE[exercice.groupe]} · {exercice.equipement}` ;
+- l'en-tête : sous le `<h2>` du nom français, ajouter le nom d'origine en sous-titre discret —
+  c'est lui qui explique pourquoi « bench » a trouvé « Développé couché » (D44) :
+
+  ```tsx
+  <h2 className="text-base font-semibold tracking-tight">{exercice.nom}</h2>
+  <p className="mt-0.5 text-xs text-(--ink-faint)">{exercice.nomAnglais}</p>
+  <p className="mt-1 text-xs text-(--ink-subtle)">
+    {LIBELLE_GROUPE[exercice.groupe]} · {exercice.equipement}
+  </p>
+  ```
+
+- en tête du corps (`<div className="flex flex-col gap-4 px-5 py-4">`), **avant** le bouton :
+
+  ```tsx
+  <AnimationExercice key={exercice.gif ?? exercice.slug} gif={exercice.gif} nom={exercice.nom} />
+  ```
+
 - le bouton `Démarrer la séance` reste — c'est l'aplat de D28, et il est toujours là ;
-- le bloc `Record` est remplacé par les deux blocs ci-dessous, la phrase « Aucun record pour
-  l'instant » étant reprise telle quelle dans le second.
+- le bloc `Record` est remplacé par les trois blocs ci-dessous, la phrase « Aucun record pour
+  l'instant » étant reprise telle quelle dans le dernier.
 
 ```tsx
 <div>
@@ -3249,7 +2760,7 @@ export function DetailExercice({
 </div>
 ```
 
-- [ ] **Step 5: Supprimer les données factices**
+- [ ] **Step 6: Supprimer les données factices**
 
 ```bash
 git rm apps/web/src/mocks/exercices.ts apps/web/src/mocks/exercices.test.ts
@@ -3258,7 +2769,7 @@ git rm apps/web/src/mocks/exercices.ts apps/web/src/mocks/exercices.test.ts
 Elles ont fait leur travail : éprouver le dessin avant les données. Les garder ferait deux
 sources de vérité pour le même écran.
 
-- [ ] **Step 6: Le voir fonctionner — et ne rien déclarer avant**
+- [ ] **Step 7: Le voir fonctionner — et ne rien déclarer avant**
 
 *Ne jamais considérer un écran comme acquis sans l'avoir vu fonctionner.* Les défauts marquants
 de l'ancien projet étaient tous invisibles à la lecture comme aux tests unitaires.
@@ -3270,17 +2781,22 @@ pnpm dev
 Sur `http://localhost:3000/exercices`, vérifier **une par une** :
 
 1. la liste se remplit, et le compteur affiche un nombre cohérent ;
-2. taper `developpe couche` **sans accents** filtre bien sur « Développé couché » — c'est le
-   critère de sortie du lot ;
+2. taper `developpe couche` **sans accents** filtre bien sur « Développé couché », et taper
+   `bench press` rend les mêmes — c'est le critère de sortie du lot ;
 3. taper n'importe quoi rend l'état vide, avec le terme cherché dans le message ;
-4. cliquer un exercice ouvre le détail, avec ses muscles et ses étapes numérotées ;
-5. **recharger la page** : la recherche et le détail ouvert sont toujours là — c'est D19 ;
-6. `?etat=chargement`, `?etat=erreur`, `?etat=vide` rendent toujours les trois états ;
-7. couper l'API (`Ctrl+C` sur le terminal de `@better-lift/api`), recharger : **l'état d'erreur
+4. cliquer un exercice ouvre le détail : nom français, nom anglais en sous-titre, **l'animation
+   avec « © Gym visual — https://gymvisual.com/ » dessous**, les muscles et les étapes
+   numérotées ;
+5. dans les outils de développement, bloquer `raw.githubusercontent.com` et rouvrir un
+   exercice : **l'animation disparaît proprement**, sans image cassée, et la fiche reste
+   complète ;
+6. **recharger la page** : la recherche et le détail ouvert sont toujours là — c'est D19 ;
+7. `?etat=chargement`, `?etat=erreur`, `?etat=vide` rendent toujours les trois états ;
+8. couper l'API (`Ctrl+C` sur le terminal de `@better-lift/api`), recharger : **l'état d'erreur
    réel s'affiche**, et le bouton « Réessayer » refonctionne une fois l'API relancée. C'est la
    seule vérification que le lot 2 ne pouvait pas faire.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add apps/web
@@ -3289,7 +2805,7 @@ git commit -m "feat(web): branche l'écran des exercices sur le catalogue"
 
 ---
 
-### Task 13: clôture du lot
+### Task 11: clôture du lot
 
 - [ ] **Step 1: `/verif`, en entier**
 
@@ -3338,7 +2854,9 @@ gh pr create --title "feat: lot 4 (2/2) — le catalogue servi et à l'écran" -
 
 Le corps doit dire : les deux routes et ce qu'elles ne gardent pas (pas de session sur le
 catalogue, et pourquoi), l'extraction de `api-client` et le contrôle d'inférence RPC, le passage
-de `?id=` à `?slug=`, et la disparition du badge de record en attendant le lot 6.
+de `?id=` à `?slug=` (slug tiré du nom anglais), la recherche bilingue, les animations affichées
+depuis le dépôt du dataset avec leur attribution (D46), et la disparition du badge de record en
+attendant le lot 6.
 
 Attendre `Qualité · typecheck · test · build`, puis fusionner en squash.
 
@@ -3358,10 +2876,13 @@ sur cette machine le rend « modifié » sans la moindre différence de contenu 
 
 ## Ce que ce lot ne fait pas
 
-Repris de la spec § 10, pour qu'aucune de ces absences ne passe pour un oubli.
+Repris de la spec § 11, pour qu'aucune de ces absences ne passe pour un oubli.
 
-- **L'hébergement des images et des GIF** — et, on le sait maintenant, cela demande une licence
-  auprès de Gym visual, pas seulement un choix d'hébergement.
+- **L'hébergement des GIF** — on pointe vers le dépôt du dataset (D46). Si l'application
+  s'ouvrait un jour, il faudrait une licence auprès de Gym visual.
+- **Le glossaire et la traduction générée** — abandonnés (D37, D38) : les noms sont écrits.
+- **Les animations sur mobile** — `ATTRIBUTION_MEDIAS` est dans `shared` pour que le lot 6 les
+  affiche avec la même mention.
 - **La recherche floue** (tolérance aux fautes de frappe) — la normalisation des accents couvre le
   cas fréquent ; le reste attendra qu'il manque vraiment.
 - **Les exercices personnalisés** créés par l'utilisateur — hors du catalogue, et hors de ce lot.
