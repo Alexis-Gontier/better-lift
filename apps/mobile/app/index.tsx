@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "../lib/auth-client";
 import { optionsRoutine, optionsRoutines } from "../lib/requetes";
-import { useSeance } from "../lib/seance-memoire";
+import { useSeance } from "../lib/seance";
 import { formaterDuree, nouvelId, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 
@@ -23,7 +23,17 @@ const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 export default function Accueil() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const { seance, setSeance } = useSeance();
+  const {
+    seance,
+    file,
+    envoiEnCours,
+    demarrer: demarrerSeance,
+    synchroniser,
+    reprendreRefusee,
+    supprimerRefusee,
+  } = useSeance();
+  const enAttente = file.filter((e) => e.erreur === null);
+  const refusees = file.filter((e) => e.erreur !== null);
   const maintenant = useMaintenant();
   const client = useQueryClient();
   const routines = useQuery({ ...optionsRoutines(), enabled: Boolean(session) });
@@ -34,11 +44,11 @@ export default function Accueil() {
   }, [isPending, session, router]);
 
   /**
-   * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8). En PR 3, la
-   * vérification relira le disque au moment même de l'appui.
+   * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
+   * relit le DISQUE au moment de l'appui, pas l'état de cet écran.
    */
-  const demarrer = (creer: () => ReturnType<typeof demarrerVide>) => {
-    if (seance) {
+  const demarrer = async (creer: () => ReturnType<typeof demarrerVide>) => {
+    if (!(await demarrerSeance(creer()))) {
       Alert.alert(
         "Une séance est en cours",
         "Termine-la ou abandonne-la avant d'en commencer une autre.",
@@ -46,7 +56,6 @@ export default function Accueil() {
       );
       return;
     }
-    setSeance(creer());
     router.push("/seance");
   };
 
@@ -79,9 +88,64 @@ export default function Accueil() {
           </Pressable>
         ) : null}
 
+        {enAttente.length > 0 ? (
+          <View style={styles.file}>
+            <Text style={styles.fileTexte}>
+              {enAttente.length === 1
+                ? "1 séance en attente d'envoi"
+                : `${enAttente.length} séances en attente d'envoi`}
+            </Text>
+            <Pressable
+              onPress={() => void synchroniser()}
+              disabled={envoiEnCours}
+              style={styles.fileBouton}
+            >
+              <Text style={styles.videTexte}>{envoiEnCours ? "Envoi…" : "Réessayer"}</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {refusees.map((e) => (
+          <View key={e.seance.id} style={[styles.file, styles.refusee]}>
+            <Text style={styles.fileTexte}>
+              « {e.seance.nom} » refusée : {e.erreur}
+            </Text>
+            <View style={{ flexDirection: "row", gap: espace.s }}>
+              <Pressable
+                style={styles.fileBouton}
+                onPress={async () => {
+                  if (await reprendreRefusee(e.seance.id)) router.push("/seance");
+                  else
+                    Alert.alert(
+                      "Une séance est en cours",
+                      "Termine-la avant de reprendre celle-ci.",
+                    );
+                }}
+              >
+                <Text style={styles.videTexte}>Reprendre</Text>
+              </Pressable>
+              <Pressable
+                style={styles.fileBouton}
+                onPress={() =>
+                  Alert.alert("Supprimer cette séance ?", "Elle ne sera jamais enregistrée.", [
+                    { text: "Garder", style: "cancel" },
+                    {
+                      text: "Supprimer",
+                      style: "destructive",
+                      onPress: () => void supprimerRefusee(e.seance.id),
+                    },
+                  ])
+                }
+              >
+                <Text style={styles.dangerTexte}>Supprimer</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))}
+
         <Pressable
           style={styles.vide}
-          onPress={() => demarrer(() => demarrerVide(nouvelId(), new Date()))}
+          onPress={() => void demarrer(() => demarrerVide(nouvelId(), new Date()))}
           accessibilityRole="button"
         >
           <Text style={styles.videTexte}>Séance vide</Text>
@@ -116,7 +180,7 @@ export default function Accueil() {
               setOuverture(r.id);
               try {
                 const detail = await client.fetchQuery(optionsRoutine(r.id));
-                demarrer(() => demarrerDepuisRoutine(detail, nouvelId(), new Date()));
+                await demarrer(() => demarrerDepuisRoutine(detail, nouvelId(), new Date()));
               } catch {
                 Alert.alert(
                   "Routine indisponible",
@@ -203,6 +267,27 @@ const styles = StyleSheet.create({
   },
   routineNom: { color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "600" },
   message: { gap: espace.m, marginVertical: espace.m },
+  file: {
+    padding: espace.m,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: couleurs.ligneForte,
+    backgroundColor: couleurs.surface1,
+    gap: espace.s,
+  },
+  refusee: { borderColor: couleurs.danger },
+  fileTexte: { color: couleurs.encreDouce, fontSize: taille.petit + 1 },
+  fileBouton: {
+    minHeight: CIBLE - 4,
+    paddingHorizontal: espace.l,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: couleurs.ligneForte,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
+  dangerTexte: { color: couleurs.dangerEncre, fontSize: taille.courant },
   deconnexion: {
     marginTop: espace.xl,
     alignItems: "center",

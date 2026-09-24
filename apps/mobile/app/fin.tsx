@@ -2,14 +2,14 @@ import { bilanSeance, formaterCharge, secondesEcoulees } from "@better-lift/shar
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSeance } from "../lib/seance-memoire";
+import { useSeance } from "../lib/seance";
 import { formaterDuree } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 
 export default function Fin() {
   const router = useRouter();
-  const { seance, setSeance } = useSeance();
+  const { seance, terminer } = useSeance();
   if (!seance) return null;
 
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
@@ -30,13 +30,13 @@ export default function Fin() {
       </View>
 
       <View style={styles.pied}>
-        {/* DESSIN : en PR 3, « Enregistrer » place la séance dans la file
-            d'envoi (sur disque) avant de quitter l'écran. */}
         <Pressable
           style={styles.enregistrer}
           accessibilityRole="button"
-          onPress={() => {
-            setSeance(null);
+          onPress={async () => {
+            // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
+            // ensuite, et se retentera tant qu'il n'aura pas abouti.
+            await terminer();
             router.replace("/");
           }}
         >
