@@ -1,15 +1,19 @@
-import {
-  demarrerDepuisRoutine,
-  demarrerVide,
-  type RoutineDetail,
-  secondesEcoulees,
-} from "@better-lift/shared";
+import { demarrerDepuisRoutine, demarrerVide, secondesEcoulees } from "@better-lift/shared";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "../lib/auth-client";
-import { ROUTINES } from "../lib/factices";
+import { optionsRoutine, optionsRoutines } from "../lib/requetes";
 import { useSeance } from "../lib/seance-memoire";
 import { formaterDuree, nouvelId, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
@@ -21,6 +25,9 @@ export default function Accueil() {
   const { data: session, isPending } = authClient.useSession();
   const { seance, setSeance } = useSeance();
   const maintenant = useMaintenant();
+  const client = useQueryClient();
+  const routines = useQuery({ ...optionsRoutines(), enabled: Boolean(session) });
+  const [ouverture, setOuverture] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isPending && !session) router.replace("/connexion");
@@ -81,21 +88,50 @@ export default function Accueil() {
         </Pressable>
 
         <Text style={styles.section}>Routines</Text>
-        {ROUTINES.map((r: RoutineDetail) => (
+        {routines.isPending ? (
+          <ActivityIndicator color={couleurs.encrePale} style={{ marginVertical: espace.xl }} />
+        ) : routines.isError ? (
+          <View style={styles.message}>
+            <Text style={styles.pale}>Les routines n'ont pas pu être chargées.</Text>
+            <Pressable
+              onPress={() => routines.refetch()}
+              style={styles.vide}
+              accessibilityRole="button"
+            >
+              <Text style={styles.videTexte}>Réessayer</Text>
+            </Pressable>
+          </View>
+        ) : routines.data.length === 0 ? (
+          <Text style={[styles.pale, styles.message]}>
+            Aucune routine. Prépare-en une sur le web, elle apparaîtra ici.
+          </Text>
+        ) : null}
+        {(routines.data ?? []).map((r) => (
           <Pressable
             key={r.id}
-            style={styles.routine}
-            onPress={() => demarrer(() => demarrerDepuisRoutine(r, nouvelId(), new Date()))}
+            style={[styles.routine, ouverture === r.id && { opacity: 0.6 }]}
+            disabled={ouverture !== null}
+            onPress={async () => {
+              // Le résumé ne porte pas les séries : le détail se charge à l'appui.
+              setOuverture(r.id);
+              try {
+                const detail = await client.fetchQuery(optionsRoutine(r.id));
+                demarrer(() => demarrerDepuisRoutine(detail, nouvelId(), new Date()));
+              } catch {
+                Alert.alert(
+                  "Routine indisponible",
+                  "Elle n'a pas pu être chargée. Vérifie ta connexion.",
+                );
+              } finally {
+                setOuverture(null);
+              }
+            }}
             accessibilityRole="button"
             accessibilityHint="Démarre une séance depuis cette routine"
           >
             <Text style={styles.routineNom}>{r.nom}</Text>
             <Text style={styles.pale}>
-              {pluriel(r.exercices.length, "exercice")} ·{" "}
-              {pluriel(
-                r.exercices.reduce((n, e) => n + e.series.length, 0),
-                "série",
-              )}
+              {pluriel(r.nbExercices, "exercice")} · {pluriel(r.nbSeries, "série")}
             </Text>
           </Pressable>
         ))}
@@ -104,6 +140,9 @@ export default function Accueil() {
           style={styles.deconnexion}
           onPress={async () => {
             await authClient.signOut();
+            // Les clés de cache ne portent pas l'utilisateur : sans ce vidage, le
+            // compte suivant verrait un instant les routines du précédent.
+            client.clear();
             router.replace("/connexion");
           }}
         >
@@ -163,6 +202,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   routineNom: { color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "600" },
+  message: { gap: espace.m, marginVertical: espace.m },
   deconnexion: {
     marginTop: espace.xl,
     alignItems: "center",

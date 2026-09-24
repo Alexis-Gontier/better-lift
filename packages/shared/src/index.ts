@@ -38,9 +38,12 @@ export {
   retirerExercice,
   retirerSerie,
   type SeanceEnCours,
+  type SeanceSaisie,
   type SerieEnCours,
+  seanceSaisie,
   secondesEcoulees,
   validerSerie,
+  versEnvoi,
 } from "./seance.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";

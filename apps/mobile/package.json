@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@better-auth/expo": "1.7.5",
+    "@better-lift/api-client": "workspace:*",
     "@better-lift/shared": "workspace:*",
     "@tanstack/react-query": "5.103.2",
     "better-auth": "1.7.5",

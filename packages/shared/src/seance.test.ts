@@ -12,8 +12,10 @@ import {
   reposRestant,
   retirerExercice,
   retirerSerie,
+  seanceSaisie,
   secondesEcoulees,
   validerSerie,
+  versEnvoi,
 } from "./seance.js";
 
 const T0 = new Date("2026-09-24T18:00:00.000Z");
@@ -166,5 +168,66 @@ describe("bilanSeance", () => {
     s = validerSerie(s, 0, 1, T0); // 6 × 82,5 = 495
     s = validerSerie(s, 1, 0, T0); // traction sans charge : faite, volume nul
     expect(bilanSeance(s)).toEqual({ seriesFaites: 3, volumeKg: 495 });
+  });
+});
+
+describe("versEnvoi et seanceSaisie", () => {
+  const fin = plus(3600);
+  const envoi = () =>
+    versEnvoi(validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, T0), fin);
+
+  it("recopie la séance, ordre et valeurs compris, en dates ISO", () => {
+    const e = envoi();
+    expect(e).toMatchObject({
+      id: "s1",
+      routineId: "r1",
+      nom: "Push",
+      debut: T0.toISOString(),
+      fin: fin.toISOString(),
+    });
+    expect(e.exercices.map((x) => x.slug)).toEqual(["barbell-bench-press", "pull-up"]);
+    expect(e.exercices[0]?.series[1]).toEqual({
+      type: "NORMALE",
+      reps: 6,
+      chargeKg: 82.5,
+      faite: true,
+    });
+    expect(seanceSaisie.parse(e)).toEqual(e);
+  });
+
+  // D57 : perdre un entraînement réel envoyé par la file est pire qu'accepter
+  // un champ ignoré. Une version plus récente du mobile peut en ajouter.
+  it("tolère les champs inconnus, à tous les niveaux", () => {
+    const e = envoi() as Record<string, unknown> & ReturnType<typeof envoi>;
+    const avecExtras = {
+      ...e,
+      appareil: "pixel",
+      exercices: e.exercices.map((x) => ({
+        ...x,
+        note: "x",
+        series: x.series.map((s) => ({ ...s, rpe: 8 })),
+      })),
+    };
+    expect(() => seanceSaisie.parse(avecExtras)).not.toThrow();
+  });
+
+  it("accepte une séance sans série faite, et une séance vide", () => {
+    expect(() => seanceSaisie.parse(versEnvoi(demarrerVide("s2", T0), fin))).not.toThrow();
+  });
+
+  it("refuse une fin antérieure au début, et une date illisible", () => {
+    expect(() => seanceSaisie.parse({ ...envoi(), fin: plus(-60).toISOString() })).toThrow();
+    expect(() => seanceSaisie.parse({ ...envoi(), debut: "hier" })).toThrow();
+  });
+
+  it("refuse des valeurs hors bornes", () => {
+    const e = envoi();
+    const serie = (s: object) => ({
+      ...e,
+      exercices: [{ ...e.exercices[0], series: [{ ...e.exercices[0]?.series[0], ...s }] }],
+    });
+    expect(() => seanceSaisie.parse(serie({ reps: -1 }))).toThrow();
+    expect(() => seanceSaisie.parse(serie({ chargeKg: 1001 }))).toThrow();
+    expect(() => seanceSaisie.parse(serie({ type: "SUPER" }))).toThrow();
   });
 });

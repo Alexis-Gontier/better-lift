@@ -8,6 +8,7 @@ import {
   secondesEcoulees,
   validerSerie,
 } from "@better-lift/shared";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -24,7 +25,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice } from "../components/seance/carte-exercice";
-import { CATALOGUE } from "../lib/factices";
+import { optionsCatalogue } from "../lib/requetes";
 import { useSeance } from "../lib/seance-memoire";
 import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
@@ -35,6 +36,8 @@ export default function Seance() {
   const maintenant = useMaintenant();
   const [ajout, setAjout] = useState(false);
   const [filtre, setFiltre] = useState("");
+  // La recherche du catalogue réel : bilingue, sans accents (lot 4).
+  const catalogue = useQuery({ ...optionsCatalogue(filtre.trim()), enabled: ajout });
 
   if (!seance) {
     return (
@@ -129,7 +132,16 @@ export default function Seance() {
             </Pressable>
           </View>
           <FlatList
-            data={CATALOGUE.filter((x) => x.nom.toLowerCase().includes(filtre.toLowerCase()))}
+            data={catalogue.data ?? []}
+            ListEmptyComponent={
+              <Text style={[styles.pale, { padding: espace.l }]}>
+                {catalogue.isPending
+                  ? "Chargement…"
+                  : catalogue.isError
+                    ? "Le catalogue n'a pas pu être chargé."
+                    : "Aucun exercice trouvé."}
+              </Text>
+            }
             keyExtractor={(x) => x.slug}
             contentContainerStyle={styles.contenu}
             renderItem={({ item }) => (

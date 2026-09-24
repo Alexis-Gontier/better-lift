@@ -15,8 +15,20 @@ import { hc } from "hono/client";
  * `credentials: "include"` est requis dès que le client et l'API sont sur deux
  * origines — c'est le cas en développement, 3000 contre 3001.
  */
-export function creerClient(baseUrl: string) {
-  return hc<AppType>(baseUrl, { init: { credentials: "include" } });
+/**
+ * `entetes` est relue à CHAQUE requête. Le web n'en a pas besoin : le
+ * navigateur joint le cookie de lui-même. Le mobile, lui, doit poser le cookie
+ * de Better Auth à la main — et le relire à chaque fois, puisqu'il change à la
+ * connexion et à la déconnexion.
+ */
+export function creerClient(
+  baseUrl: string,
+  entetes?: () => Record<string, string> | Promise<Record<string, string>>,
+) {
+  return hc<AppType>(baseUrl, {
+    init: { credentials: "include" },
+    ...(entetes ? { headers: entetes } : {}),
+  });
 }
 
 export type Client = ReturnType<typeof creerClient>;
