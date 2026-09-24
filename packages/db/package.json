@@ -10,16 +10,22 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "studio": "prisma studio",
+    "extraire": "tsx catalogue/extraire.ts",
+    "seed": "tsx prisma/seed.ts",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo node_modules src/generated"
   },
   "dependencies": {
+    "@better-lift/shared": "workspace:*",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0"
   },
   "devDependencies": {
     "@better-lift/config": "workspace:*",
     "prisma": "7.10.0",
-    "typescript": "catalog:"
+    "tsx": "^4.23.15",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

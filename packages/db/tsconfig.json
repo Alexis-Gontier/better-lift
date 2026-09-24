@@ -1,5 +1,5 @@
 {
   "extends": "@better-lift/config/tsconfig.base.json",
   "compilerOptions": { "noEmit": true },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/*.ts"]
 }
