@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
 import type { LireSession } from "../middlewares/session.js";
 import { SlugInconnu } from "../services/routines.js";
-import { type DepotSeances, versEcriture } from "../services/seances.js";
+import { type DepotLectureSeances, type DepotSeances, versEcriture } from "../services/seances.js";
 import { routesSeances } from "./seances.js";
 
 const saisie: SeanceSaisie = {
@@ -64,6 +64,46 @@ function fauxDepot() {
   return { depot, ecritures: () => ecritures };
 }
 
+/** La lecture : une séance « s-1 » à alice, et une réponse reconnaissable pour « precedentes ». */
+const fauxLecture: DepotLectureSeances = {
+  async lister(userId) {
+    return userId === "alice"
+      ? {
+          seances: [
+            {
+              id: "s-1",
+              nom: "Push",
+              debut: saisie.debut,
+              fin: saisie.fin,
+              seriesFaites: 1,
+              volumeKg: 495,
+            },
+          ],
+          total: 1,
+        }
+      : { seances: [], total: 0 };
+  },
+  async lire(userId, id) {
+    return userId === "alice" && id === "s-1"
+      ? {
+          id,
+          nom: "Push",
+          debut: saisie.debut,
+          fin: saisie.fin,
+          seriesFaites: 1,
+          volumeKg: 495,
+          exercices: [],
+        }
+      : null;
+  },
+  async precedentes(_userId, slugs) {
+    return Object.fromEntries(slugs.map((s) => [s, [{ reps: 6, chargeKg: 82.5 }]]));
+  },
+  async records() {
+    return [];
+  },
+};
+
 const lireSession: LireSession = async (h) => {
   const u = h.get("x-test-user");
   return u ? { user: { id: u } } : null;
@@ -71,14 +111,16 @@ const lireSession: LireSession = async (h) => {
 
 function monter() {
   const f = fauxDepot();
-  const app = new Hono().route("/seances", routesSeances(f.depot, lireSession));
+  const app = new Hono().route("/seances", routesSeances(f.depot, fauxLecture, lireSession));
   const poster = (corps: unknown, user: string | null = "alice") =>
     app.request("/seances", {
       method: "POST",
       headers: { "content-type": "application/json", ...(user ? { "x-test-user": user } : {}) },
       body: JSON.stringify(corps),
     });
-  return { poster, ecritures: f.ecritures };
+  const lire = (chemin: string, user: string | null = "alice") =>
+    app.request(chemin, { headers: user ? { "x-test-user": user } : {} });
+  return { poster, lire, ecritures: f.ecritures };
 }
 
 describe("POST /seances", () => {
@@ -119,5 +161,34 @@ describe("POST /seances", () => {
     expect((await monter().poster({ ...saisie, fin: "2026-09-24T17:00:00.000Z" })).status).toBe(
       400,
     );
+  });
+});
+
+describe("la lecture des séances", () => {
+  it("rend 401 sans session", async () => {
+    expect((await monter().lire("/seances", null)).status).toBe(401);
+  });
+
+  it("liste les séances de l'utilisateur, et elles seules", async () => {
+    const { lire } = monter();
+    expect(((await (await lire("/seances")).json()) as { total: number }).total).toBe(1);
+    expect(((await (await lire("/seances", "bob")).json()) as { total: number }).total).toBe(0);
+  });
+
+  it("rend 404, jamais 403, sur la séance d'un autre", async () => {
+    const { lire } = monter();
+    expect((await lire("/seances/s-1")).status).toBe(200);
+    expect((await lire("/seances/s-1", "bob")).status).toBe(404);
+  });
+
+  // « precedentes » ne doit pas être pris pour un identifiant de séance.
+  it("rend les séries précédentes par slug, sans doublon", async () => {
+    const res = await monter().lire("/seances/precedentes?slugs=pull-up,barbell-curl,pull-up");
+    expect(res.status).toBe(200);
+    expect(Object.keys((await res.json()) as object)).toEqual(["pull-up", "barbell-curl"]);
+  });
+
+  it("refuse une liste de slugs vide", async () => {
+    expect((await monter().lire("/seances/precedentes?slugs=,")).status).toBe(400);
   });
 });

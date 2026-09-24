@@ -1,5 +1,15 @@
 import { prisma } from "@better-lift/db";
-import type { SeanceSaisie, TypeSerie } from "@better-lift/shared";
+import {
+  marquerRecords,
+  type RecordExercice,
+  recordsDe,
+  type SeanceDetail,
+  type SeanceResume,
+  type SeanceSaisie,
+  type SerieHisto,
+  type TypeRecord,
+  type TypeSerie,
+} from "@better-lift/shared";
 import { SlugInconnu } from "./routines.js";
 
 /**
@@ -115,5 +125,216 @@ export const depotPrisma: DepotSeances = {
       if (courant) return "conflit";
       throw erreur;
     }
+  },
+};
+
+// --- La lecture (lot 7) -------------------------------------------------------
+// Tout est DÉRIVÉ ici (D58, D65) : volume, séries faites, records. Rien n'est
+// stocké, donc rien n'est à recalculer quand une séance change.
+
+/** Ce qu'on lit d'une série. `chargeKg` est un `Decimal` Prisma, ramené ici à un nombre. */
+type LigneSerie = {
+  type: TypeSerie;
+  reps: number | null;
+  chargeKg: { toString(): string } | null;
+  faite: boolean;
+};
+
+const enNombre = (d: { toString(): string } | null) => (d === null ? null : Number(d.toString()));
+
+export type LigneSeance = {
+  id: string;
+  nom: string;
+  debut: Date;
+  fin: Date;
+  exercices: {
+    exerciseId: string;
+    exercise: { slug: string; nomFr: string };
+    series: LigneSerie[];
+  }[];
+};
+
+/** Volume : séries faites, hors échauffement et hors poids du corps (D5). */
+export function versResume(l: LigneSeance): SeanceResume {
+  let seriesFaites = 0;
+  let volumeKg = 0;
+  for (const e of l.exercices) {
+    for (const s of e.series) {
+      if (!s.faite) continue;
+      seriesFaites++;
+      const charge = enNombre(s.chargeKg);
+      if (s.type !== "ECHAUFFEMENT" && s.reps !== null && charge !== null)
+        volumeKg += s.reps * charge;
+    }
+  }
+  return {
+    id: l.id,
+    nom: l.nom,
+    debut: l.debut.toISOString(),
+    fin: l.fin.toISOString(),
+    seriesFaites,
+    volumeKg: Math.round(volumeKg * 100) / 100,
+  };
+}
+
+/**
+ * Le détail, chaque série portant les records qu'elle a battus À CE MOMENT-LÀ
+ * (D64). `anterieur` : par exercice, l'historique chronologique d'AVANT cette
+ * séance. Un exercice présent deux fois dans la séance est jugé d'un seul
+ * tenant, dans l'ordre : la seconde occurrence se mesure à la première.
+ */
+export function versDetail(
+  l: LigneSeance,
+  anterieur: Map<string, (SerieHisto & { date: string })[]>,
+): SeanceDetail {
+  const marques = new Map<string, TypeRecord[][]>();
+  for (const exerciseId of new Set(l.exercices.map((e) => e.exerciseId))) {
+    const series = l.exercices
+      .filter((e) => e.exerciseId === exerciseId)
+      .flatMap((e) => e.series.map((s) => ({ ...s, chargeKg: enNombre(s.chargeKg) })));
+    marques.set(exerciseId, marquerRecords(recordsDe(anterieur.get(exerciseId) ?? []), series));
+  }
+  const curseur = new Map<string, number>();
+  return {
+    ...versResume(l),
+    exercices: l.exercices.map((e) => ({
+      slug: e.exercise.slug,
+      nom: e.exercise.nomFr,
+      series: e.series.map((s) => {
+        const i = curseur.get(e.exerciseId) ?? 0;
+        curseur.set(e.exerciseId, i + 1);
+        return {
+          type: s.type,
+          reps: s.reps,
+          chargeKg: enNombre(s.chargeKg),
+          faite: s.faite,
+          records: marques.get(e.exerciseId)?.[i] ?? [],
+        };
+      }),
+    })),
+  };
+}
+
+export type DepotLectureSeances = {
+  lister(
+    userId: string,
+    page: number,
+    taille: number,
+  ): Promise<{ seances: SeanceResume[]; total: number }>;
+  lire(userId: string, id: string): Promise<SeanceDetail | null>;
+  /** Par slug, les séries FAITES de la dernière séance qui contenait l'exercice. */
+  precedentes(
+    userId: string,
+    slugs: string[],
+  ): Promise<Record<string, { reps: number | null; chargeKg: number | null }[]>>;
+  /** Les records actuels ; `null` si l'exercice n'existe pas. */
+  records(userId: string, slug: string): Promise<RecordExercice[] | null>;
+};
+
+const LECTURE_SEANCE = {
+  id: true,
+  nom: true,
+  debut: true,
+  fin: true,
+  exercices: {
+    orderBy: { position: "asc" },
+    select: {
+      exerciseId: true,
+      exercise: { select: { slug: true, nomFr: true } },
+      series: {
+        orderBy: { position: "asc" },
+        select: { type: true, reps: true, chargeKg: true, faite: true },
+      },
+    },
+  },
+} as const;
+
+/** L'historique chronologique d'un utilisateur sur des exercices, avant une date. */
+async function historique(userId: string, exerciseIds: string[], avant?: Date) {
+  const lignes = await prisma.seanceSerie.findMany({
+    where: {
+      exercice: {
+        exerciseId: { in: exerciseIds },
+        seance: { userId, ...(avant ? { debut: { lt: avant } } : {}) },
+      },
+    },
+    orderBy: [
+      { exercice: { seance: { debut: "asc" } } },
+      { exercice: { position: "asc" } },
+      { position: "asc" },
+    ],
+    select: {
+      type: true,
+      reps: true,
+      chargeKg: true,
+      faite: true,
+      exercice: { select: { exerciseId: true, seance: { select: { debut: true } } } },
+    },
+  });
+  const parExercice = new Map<string, (SerieHisto & { date: string })[]>();
+  for (const l of lignes) {
+    const id = l.exercice.exerciseId;
+    const liste = parExercice.get(id) ?? [];
+    liste.push({
+      type: l.type,
+      reps: l.reps,
+      chargeKg: enNombre(l.chargeKg),
+      faite: l.faite,
+      date: l.exercice.seance.debut.toISOString(),
+    });
+    parExercice.set(id, liste);
+  }
+  return parExercice;
+}
+
+export const depotLecture: DepotLectureSeances = {
+  async lister(userId, page, taille) {
+    const [lignes, total] = await Promise.all([
+      prisma.seance.findMany({
+        where: { userId },
+        orderBy: { debut: "desc" },
+        skip: (page - 1) * taille,
+        take: taille,
+        select: LECTURE_SEANCE,
+      }),
+      prisma.seance.count({ where: { userId } }),
+    ]);
+    return { seances: lignes.map((l) => versResume(l as LigneSeance)), total };
+  },
+
+  async lire(userId, id) {
+    const ligne = await prisma.seance.findFirst({ where: { id, userId }, select: LECTURE_SEANCE });
+    if (!ligne) return null;
+    const ids = [...new Set(ligne.exercices.map((e) => e.exerciseId))];
+    return versDetail(ligne as LigneSeance, await historique(userId, ids, ligne.debut));
+  },
+
+  async precedentes(userId, slugs) {
+    const paires = await Promise.all(
+      slugs.map(async (slug) => {
+        const derniere = await prisma.seanceExercice.findFirst({
+          where: { exercise: { slug }, seance: { userId } },
+          orderBy: [{ seance: { debut: "desc" } }, { position: "desc" }],
+          select: {
+            series: {
+              where: { faite: true },
+              orderBy: { position: "asc" },
+              select: { reps: true, chargeKg: true },
+            },
+          },
+        });
+        return [
+          slug,
+          (derniere?.series ?? []).map((s) => ({ reps: s.reps, chargeKg: enNombre(s.chargeKg) })),
+        ] as const;
+      }),
+    );
+    return Object.fromEntries(paires);
+  },
+
+  async records(userId, slug) {
+    const exercice = await prisma.exercise.findUnique({ where: { slug }, select: { id: true } });
+    if (!exercice) return null;
+    return recordsDe((await historique(userId, [exercice.id])).get(exercice.id) ?? []);
   },
 };

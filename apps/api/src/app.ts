@@ -7,10 +7,11 @@ import { secureHeaders } from "hono/secure-headers";
 import { auth } from "./auth.js";
 import { routesExercices } from "./routes/exercices.js";
 import { health } from "./routes/health.js";
+import { routesRecords } from "./routes/records.js";
 import { routesRoutines } from "./routes/routines.js";
 import { routesSeances } from "./routes/seances.js";
 import { depotPrisma as depotRoutines } from "./services/routines.js";
-import { depotPrisma as depotSeances } from "./services/seances.js";
+import { depotLecture, depotPrisma as depotSeances } from "./services/seances.js";
 
 // Ce module construit l'app, sans aucun effet de bord (pas de `serve()`) : il
 // peut donc être importé tel quel par les tests, y compris pour vérifier le
@@ -40,8 +41,9 @@ const lireSession = (headers: Headers) => auth.api.getSession({ headers });
 const routes = app
   .route("/health", health)
   .route("/exercices", routesExercices())
+  .route("/exercices", routesRecords(depotLecture, lireSession))
   .route("/routines", routesRoutines(depotRoutines, lireSession))
-  .route("/seances", routesSeances(depotSeances, lireSession));
+  .route("/seances", routesSeances(depotSeances, depotLecture, lireSession));
 
 export type AppType = typeof routes;
 export default app;

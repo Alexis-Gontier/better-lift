@@ -17,6 +17,18 @@ export {
 } from "./file-envoi.js";
 export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
+  LIBELLE_RECORD,
+  marquerRecords,
+  type RecordExercice,
+  recordsDe,
+  type SeanceDetail,
+  type SeanceResume,
+  type SerieHisto,
+  type SerieLue,
+  TYPES_RECORD,
+  type TypeRecord,
+} from "./records.js";
+export {
   ABREGE_TYPE_SERIE,
   type ExerciceRoutine,
   exerciceSaisi,

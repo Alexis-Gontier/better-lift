@@ -9,6 +9,7 @@ import { AppShell } from "@/components/shell/app-shell";
 import { DetailExercice } from "@/features/exercices/detail-exercice";
 import { ListeExercices } from "@/features/exercices/liste-exercices";
 import { optionsCatalogue, optionsExercice } from "@/features/exercices/requetes";
+import { optionsRecords } from "@/features/seances/requetes";
 
 // Le détail ouvert et la recherche vivent dans l'URL, validés par schéma (D19).
 // `slug` remplace `id` : c'est l'identifiant stable et lisible du catalogue.
@@ -32,6 +33,7 @@ function PageExercices() {
 
   const liste = useInfiniteQuery(optionsCatalogue({ q, groupe }));
   const detail = useQuery({ ...optionsExercice(slug ?? ""), enabled: Boolean(slug) });
+  const records = useQuery({ ...optionsRecords(slug ?? ""), enabled: Boolean(slug) });
 
   const abandonner = () => navigate({ search: (s) => ({ ...s, etat: undefined }) });
   const vide = estVideForce(etat);
@@ -83,6 +85,7 @@ function PageExercices() {
     }
     return (
       <DetailExercice
+        records={records.isError ? null : records.data}
         exercice={detail.data}
         onFermer={() => navigate({ search: (s) => ({ ...s, slug: undefined }) })}
       />
