@@ -59,11 +59,12 @@ export function CarteExercice({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       // Pendant le glisser, la carte FLOTTE : elle gagne l'ombre que la doctrine
       // réserve au passager, et la perd en se posant.
-      className={`group relative rounded-xl border border-(--line) bg-(--surface-2) ${
+      className={`relative flex overflow-hidden rounded-xl border border-(--line) bg-(--surface-2) ${
         isDragging ? "z-10 shadow-lg" : ""
       }`}
     >
-      {/* La poignée seule déclenche le glisser : les champs restent cliquables.
+      {/* La poignée est une bande sur toute la hauteur, à gauche : visible, facile
+          à saisir. Elle seule déclenche le glisser : les champs restent cliquables.
           Au clavier : Espace pour saisir, flèches, Espace pour poser. */}
       <button
         type="button"
@@ -71,88 +72,91 @@ export function CarteExercice({
         {...attributes}
         {...listeners}
         aria-label={`Déplacer ${exercice.nom}`}
-        className="absolute top-1/2 -left-3 grid h-10 w-5 -translate-y-1/2 cursor-grab place-items-center rounded text-(--ink-faint) opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-(--focus-ring) active:cursor-grabbing"
+        className="grid w-7 shrink-0 cursor-grab place-items-center border-r border-(--line) text-(--ink-faint) hover:bg-(--surface-3) hover:text-(--ink) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--focus-ring) active:cursor-grabbing"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
 
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        {fiche.data?.image ? (
-          <img
-            src={fiche.data.image}
-            alt=""
-            width={48}
-            height={48}
-            className="size-12 shrink-0 rounded-lg bg-white object-contain"
-          />
-        ) : (
-          <span aria-hidden="true" className="size-12 shrink-0 rounded-lg bg-(--surface-3)" />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-(--ink)">{exercice.nom}</p>
-          <p className="mt-0.5 truncate font-mono text-[11.5px] text-(--ink-faint)">
-            {fiche.data ? `${LIBELLE_GROUPE[fiche.data.groupe]} · ${fiche.data.equipement}` : " "}
-            {derniere
-              ? ` · dernière fois : ${formaterSerie(derniere.chargeKg, derniere.reps)}`
-              : ""}
-          </p>
+      {/* Le contenu à droite de la bande de préhension, sur toute sa hauteur. */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+          {fiche.data?.image ? (
+            <img
+              src={fiche.data.image}
+              alt=""
+              width={48}
+              height={48}
+              className="size-12 shrink-0 rounded-lg bg-white object-contain"
+            />
+          ) : (
+            <span aria-hidden="true" className="size-12 shrink-0 rounded-lg bg-(--surface-3)" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-(--ink)">{exercice.nom}</p>
+            <p className="mt-0.5 truncate font-mono text-[11.5px] text-(--ink-faint)">
+              {fiche.data ? `${LIBELLE_GROUPE[fiche.data.groupe]} · ${fiche.data.equipement}` : " "}
+              {derniere
+                ? ` · dernière fois : ${formaterSerie(derniere.chargeKg, derniere.reps)}`
+                : ""}
+            </p>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full font-mono text-xs"
+                aria-label={`${libelleRepos(exercice.repos)}, modifier`}
+              >
+                <Timer aria-hidden="true" />
+                {libelleRepos(exercice.repos)}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-40">
+              <DropdownMenuLabel className="text-(--ink-subtle)">
+                Repos entre les séries
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={exercice.repos}
+                onValueChange={(repos) => onChange({ ...exercice, repos })}
+              >
+                {choix.map((r) => (
+                  <DropdownMenuRadioItem key={r} value={r} className="font-mono text-xs">
+                    {r === "" ? "Sans repos" : enChrono(Number(r))}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-(--ink-subtle)"
+                aria-label={`Actions pour ${exercice.nom}`}
+              >
+                <Ellipsis aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onRetirer} className="text-destructive-ink">
+                <Trash2 aria-hidden="true" />
+                Retirer l'exercice
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full font-mono text-xs"
-              aria-label={`${libelleRepos(exercice.repos)}, modifier`}
-            >
-              <Timer aria-hidden="true" />
-              {libelleRepos(exercice.repos)}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-40">
-            <DropdownMenuLabel className="text-(--ink-subtle)">
-              Repos entre les séries
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={exercice.repos}
-              onValueChange={(repos) => onChange({ ...exercice, repos })}
-            >
-              {choix.map((r) => (
-                <DropdownMenuRadioItem key={r} value={r} className="font-mono text-xs">
-                  {r === "" ? "Sans repos" : enChrono(Number(r))}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-(--ink-subtle)"
-              aria-label={`Actions pour ${exercice.nom}`}
-            >
-              <Ellipsis aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={onRetirer} className="text-destructive-ink">
-              <Trash2 aria-hidden="true" />
-              Retirer l'exercice
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TableauSeries
+          nomExercice={exercice.nom}
+          series={exercice.series}
+          onChange={(series) => onChange({ ...exercice, series })}
+        />
       </div>
-
-      <TableauSeries
-        nomExercice={exercice.nom}
-        series={exercice.series}
-        onChange={(series) => onChange({ ...exercice, series })}
-      />
     </li>
   );
 }

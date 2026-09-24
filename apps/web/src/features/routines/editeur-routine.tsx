@@ -136,7 +136,7 @@ export function EditeurRoutine({
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-8 py-6">
+        <div className="flex flex-col gap-4 px-6 py-6">
           {brouillon.exercices.length === 0 ? (
             <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
