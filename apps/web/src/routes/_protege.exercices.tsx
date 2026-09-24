@@ -92,5 +92,5 @@ function PageExercices() {
     );
   }
 
-  return <AppShell liste={panneauListe()} detail={panneauDetail()} />;
+  return <AppShell titre="Exercices" liste={panneauListe()} detail={panneauDetail()} />;
 }

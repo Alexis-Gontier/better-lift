@@ -98,13 +98,21 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 
 ## Interface
 
-- **Coquille web à trois panneaux** : navigation, liste, détail — redimensionnables, tailles
-  persistées, et **le détail ouvert vit dans l'URL** avec les filtres (paramètres de recherche
-  typés de TanStack Router). Un rechargement retombe au même endroit.
-- `Resizable` et `Command` de shadcn fournissent les panneaux et le `Cmd+K` : rien à écrire.
-- **Le permanent est jointif, le passager flotte.** Les trois panneaux se touchent, séparés par
-  un filet de 1 px. L'élévation — flou, ombre portée, voile — est réservée à ce qui est
-  momentané : palette, menus, dialogues. **Si ça flotte, ça se ferme.**
+- **Coquille web** (D69–D73, [`2026-09-24-coquille-shadcn-design.md`](docs/superpowers/specs/2026-09-24-coquille-shadcn-design.md)) :
+  `Sidebar variant="inset" collapsible="icon"` de shadcn (repli `Ctrl+B`, état dans le cookie
+  `sidebar_state`, relu par `AppShell` faute de rendu serveur), puis liste et détail
+  redimensionnables dans le `SidebarInset`, tailles persistées, et **le détail ouvert vit dans
+  l'URL** avec les filtres. Un rechargement retombe au même endroit. Composants shadcn plutôt que
+  maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
+- `Resizable`, `Sidebar` et `Command` de shadcn fournissent panneaux, navigation et `Cmd+K`.
+- **Le permanent est jointif, le passager flotte — une exception bornée** (D71). Seule la zone
+  de contenu (`SidebarInset`) flotte, une fois : marge, coins arrondis, ombre légère. Liste et
+  détail restent jointifs, séparés par un filet de 1 px. Le reste de l'élévation — flou, ombre
+  portée, voile — est réservé au momentané : palette, menus, dialogues. **Si ça flotte, ça se
+  ferme**, hormis cette zone.
+- **Rôles `--sidebar-*` et `card`** traduits dans `@theme inline` (D72) : l'élément actif de la
+  navigation est `--surface-3`, **jamais le lime**. La variante `dark:` des primitives suit
+  `data-theme`, pas la préférence du système (`@custom-variant` dans `globals.css`).
 - **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux
   d'encre. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
 - **Une seule couleur pour l'action et le record : le lime sourd `#a8cf45`.** Elle porte les

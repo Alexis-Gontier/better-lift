@@ -69,5 +69,5 @@ function PageSeances() {
     );
   }
 
-  return <AppShell liste={panneauListe()} detail={panneauDetail()} />;
+  return <AppShell titre="Séances" liste={panneauListe()} detail={panneauDetail()} />;
 }

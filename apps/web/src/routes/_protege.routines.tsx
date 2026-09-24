@@ -120,5 +120,5 @@ function PageRoutines() {
     );
   }
 
-  return <AppShell liste={panneauListe()} detail={panneauDetail()} />;
+  return <AppShell titre="Routines" liste={panneauListe()} detail={panneauDetail()} />;
 }

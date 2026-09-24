@@ -8,6 +8,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
+/** Ouvre la palette depuis un bouton : même chemin que `Cmd+K`, sans état partagé. */
+export const OUVRIR_PALETTE = "better-lift:ouvrir-palette";
+
 export function Palette() {
   const [ouverte, setOuverte] = useState(false);
 
@@ -18,8 +21,13 @@ export function Palette() {
         setOuverte((o) => !o);
       }
     }
+    const ouvrir = () => setOuverte(true);
     document.addEventListener("keydown", surTouche);
-    return () => document.removeEventListener("keydown", surTouche);
+    document.addEventListener(OUVRIR_PALETTE, ouvrir);
+    return () => {
+      document.removeEventListener("keydown", surTouche);
+      document.removeEventListener(OUVRIR_PALETTE, ouvrir);
+    };
   }, []);
 
   return (
