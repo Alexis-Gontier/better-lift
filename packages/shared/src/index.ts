@@ -1,6 +1,6 @@
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
-export { formaterCharge, lireCharge } from "./charge.js";
+export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 export {
   ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
@@ -28,6 +28,7 @@ export {
   ajouterExercice,
   ajouterSerie,
   arreterRepos,
+  bilanSeance,
   demarrerDepuisRoutine,
   demarrerVide,
   type ExerciceEnCours,

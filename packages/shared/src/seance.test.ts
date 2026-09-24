@@ -4,6 +4,7 @@ import {
   ajouterExercice,
   ajouterSerie,
   arreterRepos,
+  bilanSeance,
   demarrerDepuisRoutine,
   demarrerVide,
   marquerReposSignale,
@@ -153,5 +154,17 @@ describe("modifier la séance", () => {
     expect(e).toMatchObject({ slug: "barbell-curl", reposSec: null });
     expect(e?.series).toHaveLength(3);
     expect(e?.series[0]).toEqual({ type: "NORMALE", reps: null, chargeKg: null, faite: false });
+  });
+});
+
+describe("bilanSeance", () => {
+  // D5 : ni l'échauffement ni le poids du corps (charge absente) n'entrent dans
+  // le volume. Seules les séries FAITES comptent.
+  it("compte les séries faites et leur volume, sans échauffement ni série sans charge", () => {
+    let s = demarrerDepuisRoutine(routine, "s1", T0);
+    s = validerSerie(s, 0, 0, T0); // échauffement 10 × 40 : compté comme faite, pas dans le volume
+    s = validerSerie(s, 0, 1, T0); // 6 × 82,5 = 495
+    s = validerSerie(s, 1, 0, T0); // traction sans charge : faite, volume nul
+    expect(bilanSeance(s)).toEqual({ seriesFaites: 3, volumeKg: 495 });
   });
 });

@@ -1,6 +1,6 @@
 import {
+  chargeEnTexte,
   type ExerciceRoutine,
-  kgToLb,
   lireCharge,
   type RoutineDetail,
   type TypeSerie,
@@ -30,16 +30,8 @@ export type Brouillon = { nom: string; exercices: ExerciceBrouillon[] };
 
 const cle = () => crypto.randomUUID();
 
-/**
- * Le nombre affiché dans le champ charge : sans unité (elle est dans l'en-tête),
- * et SANS séparateur de milliers — « 1 000 » ne se relirait pas.
- */
-const FORMAT_CHAMP = new Intl.NumberFormat("fr-FR", {
-  maximumFractionDigits: 2,
-  useGrouping: false,
-});
-const texteCharge = (kg: number | null) =>
-  kg === null ? "" : FORMAT_CHAMP.format(SYSTEME_UNITES === "imperial" ? kgToLb(kg) : kg);
+/** Le nombre affiché dans le champ charge ; l'unité est dans l'en-tête du tableau. */
+const texteCharge = (kg: number | null) => (kg === null ? "" : chargeEnTexte(kg, SYSTEME_UNITES));
 
 export function versBrouillon(r: RoutineDetail | null): Brouillon {
   if (!r) return { nom: "", exercices: [] };

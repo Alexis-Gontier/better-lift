@@ -177,3 +177,22 @@ export function reposRestant(s: SeanceEnCours, maintenant: Date): number | null 
   if (restant < -3) return null;
   return Math.max(0, restant);
 }
+
+/**
+ * Le bilan d'une séance : séries faites et volume. Dérivé, jamais stocké (D58).
+ * D5 : l'échauffement et les séries sans charge (poids du corps) ne comptent
+ * pas dans le volume.
+ */
+export function bilanSeance(s: SeanceEnCours): { seriesFaites: number; volumeKg: number } {
+  let seriesFaites = 0;
+  let volumeKg = 0;
+  for (const e of s.exercices) {
+    for (const x of e.series) {
+      if (!x.faite) continue;
+      seriesFaites++;
+      if (x.type !== "ECHAUFFEMENT" && x.reps !== null && x.chargeKg !== null)
+        volumeKg += x.reps * x.chargeKg;
+    }
+  }
+  return { seriesFaites, volumeKg: Math.round(volumeKg * 100) / 100 };
+}
