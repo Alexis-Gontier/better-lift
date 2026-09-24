@@ -26,7 +26,7 @@ export type LigneExercice = {
   gifUrl: string | null;
 };
 
-// `gifUrl` entre dans le résumé : la liste affiche une vignette par exercice.
+// `gifUrl` entre dans le résumé : l'image fixe de la liste s'en déduit.
 const CHAMPS_RESUME = {
   slug: true,
   nomFr: true,
@@ -56,6 +56,18 @@ export function filtreCatalogue(requete: RequeteCatalogue): Record<string, unkno
   return filtre;
 }
 
+/**
+ * L'image fixe d'un exercice. Le dataset publie, pour chaque animation
+ * `videos/<id>.gif`, une image `images/<id>.jpg` au même commit : on la déduit
+ * plutôt que de la stocker (D46 — rien n'est copié, et pas de migration).
+ */
+export function imageDe(gifUrl: string | null): string | null {
+  if (!gifUrl) return null;
+  const image = gifUrl.replace("/videos/", "/images/").replace(/\.gif$/, ".jpg");
+  // Une URL qui ne suit pas la convention n'a pas d'image connue.
+  return image === gifUrl ? null : image;
+}
+
 // Ne reçoit que les champs du résumé : c'est tout ce que `CHAMPS_RESUME` lit.
 export function versResume(
   ligne: Pick<LigneExercice, "slug" | "nomFr" | "bodyPart" | "equipment" | "gifUrl">,
@@ -65,7 +77,7 @@ export function versResume(
     nom: ligne.nomFr,
     groupe: ligne.bodyPart,
     equipement: ligne.equipment,
-    gif: ligne.gifUrl,
+    image: imageDe(ligne.gifUrl),
   };
 }
 
@@ -73,6 +85,7 @@ export function versDetail(ligne: LigneExercice): ExerciceDetail {
   return {
     ...versResume(ligne),
     nomAnglais: ligne.name,
+    gif: ligne.gifUrl,
     cible: ligne.target,
     secondaires: ligne.secondary,
     instructions: ligne.instructions,

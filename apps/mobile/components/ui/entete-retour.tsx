@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
 
@@ -14,7 +14,7 @@ export function EnteteRetour({ titre }: { titre: string }) {
         accessibilityRole="button"
         accessibilityLabel="Retour"
       >
-        <Ionicons name="chevron-back" size={24} color={couleurs.encre} />
+        <ChevronLeft size={26} color={couleurs.encre} />
       </Pressable>
       <Text style={styles.titre} numberOfLines={2}>
         {titre}

@@ -31,11 +31,16 @@ export type ExerciceResume = {
   /** La clé de données, pas le libellé : le français vient de `LIBELLE_GROUPE`. */
   groupe: Groupe;
   equipement: string;
-  /** URL de l'animation, ou `null` : l'interface a toujours un repli sans visuel. */
-  gif: string | null;
+  /**
+   * URL de l'image fixe (JPG, ~6 Ko), ou `null` : c'est elle que montrent les
+   * listes — des centaines de GIF animés à la fois pèseraient trop.
+   */
+  image: string | null;
 };
 
 export type ExerciceDetail = ExerciceResume & {
+  /** URL de l'animation, ou `null` : l'interface a toujours un repli sans visuel. */
+  gif: string | null;
   /**
    * Le nom d'origine, affiché en sous-titre : il explique pourquoi « bench » a
    * trouvé « Développé couché », et reste la référence si un nom français est

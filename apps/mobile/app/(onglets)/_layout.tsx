@@ -1,24 +1,25 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Redirect, Tabs, useRouter } from "expo-router";
-import type { ComponentProps } from "react";
-import { type ColorValue, Pressable, StyleSheet, View } from "react-native";
+import { Dumbbell, History, House, List, type LucideIcon, Play, User } from "lucide-react-native";
+import { type ColorValue, Pressable, StyleSheet, Text, View } from "react-native";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
 import { couleurs } from "../../lib/theme";
 
-type Icone = ComponentProps<typeof Ionicons>["name"];
-
-/** Icône pleine quand l'onglet est actif, contour sinon : la forme dit la position. */
+/**
+ * Icônes Lucide, comme le web. L'onglet actif s'épaissit : avec la couleur,
+ * c'est la forme qui dit la position.
+ */
 const icone =
-  (plein: Icone, contour: Icone) =>
-  ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
-    <Ionicons name={focused ? plein : contour} color={color as string} size={size} />
+  (Icone: LucideIcon) =>
+  ({ focused, color }: { focused: boolean; color: ColorValue }) => (
+    <Icone color={color as string} size={24} strokeWidth={focused ? 2.4 : 1.8} />
   );
 
 /**
- * Les quatre onglets (D74). La garde de session vit ici : tout ce qui est sous
- * les onglets exige un compte, et un seul endroit le vérifie.
+ * Les onglets (D74), façon opengym : deux liens de chaque côté, l'action au
+ * centre. La garde de session vit ici : tout ce qui est sous les onglets exige
+ * un compte, et un seul endroit le vérifie.
  */
 export default function Onglets() {
   const { data: session, isPending } = authClient.useSession();
@@ -30,6 +31,8 @@ export default function Onglets() {
   if (isPending) return <Chargement />;
   if (!session) return <Redirect href="/connexion" />;
 
+  const Centrale = seance ? Play : Dumbbell;
+
   return (
     <Tabs
       screenOptions={{
@@ -39,68 +42,67 @@ export default function Onglets() {
         // n'est pas une action.
         tabBarActiveTintColor: couleurs.encre,
         tabBarInactiveTintColor: couleurs.encreFaible,
+        // Une marche au-dessus du canevas, coins du haut arrondis : la barre se
+        // pose sur l'écran. Pas de hauteur fixe : Expo Router y ajoute la marge
+        // de la zone de geste d'Android, qu'une hauteur imposée recouvrirait.
         tabBarStyle: {
-          backgroundColor: couleurs.canvas,
-          borderTopColor: couleurs.ligne,
-          // Pas de hauteur fixe : Expo Router y ajoute la marge de la zone de
-          // geste d'Android, qu'une hauteur imposée recouvrirait.
-          paddingTop: 6,
+          backgroundColor: couleurs.surface1,
+          borderTopWidth: 0,
+          borderTopLeftRadius: 22,
+          borderTopRightRadius: 22,
+          paddingTop: 8,
         },
-        tabBarLabelStyle: { fontSize: 12 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{ title: "Accueil", tabBarIcon: icone("barbell", "barbell-outline") }}
-      />
+      <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: icone(House) }} />
       <Tabs.Screen
         name="historique"
-        options={{ title: "Historique", tabBarIcon: icone("time", "time-outline") }}
+        options={{ title: "Historique", tabBarIcon: icone(History) }}
       />
-      {/* Au centre, façon opengym : l'action du moment, en aplat lime (D28).
-          Deux liens de chaque côté. */}
+      {/* Au centre, l'action du moment : un aplat lime (D28), plus grand que les
+          onglets et qui déborde au-dessus de la barre. */}
       <Tabs.Screen
         name="lancer"
         options={{
-          title: seance ? "Reprendre" : "Démarrer",
           tabBarButton: () => (
-            <View style={styles.place}>
-              <Pressable
-                onPress={lancer}
-                style={({ pressed }) => [styles.central, pressed && { opacity: 0.85 }]}
-                accessibilityRole="button"
-                accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
-              >
-                <Ionicons name={seance ? "play" : "add"} size={32} color={couleurs.surAccent} />
-              </Pressable>
-            </View>
+            <Pressable
+              onPress={lancer}
+              style={styles.place}
+              accessibilityRole="button"
+              accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
+            >
+              {({ pressed }) => (
+                <>
+                  <View style={[styles.central, pressed && { opacity: 0.85 }]}>
+                    <Centrale color={couleurs.surAccent} size={26} strokeWidth={2.4} />
+                  </View>
+                  <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
+                </>
+              )}
+            </Pressable>
           ),
         }}
       />
-      <Tabs.Screen
-        name="exercices"
-        options={{ title: "Exercices", tabBarIcon: icone("list", "list-outline") }}
-      />
-      <Tabs.Screen
-        name="profil"
-        options={{ title: "Profil", tabBarIcon: icone("person", "person-outline") }}
-      />
+      <Tabs.Screen name="exercices" options={{ title: "Exercices", tabBarIcon: icone(List) }} />
+      <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
     </Tabs>
   );
 }
 
 const styles = StyleSheet.create({
-  place: { flex: 1, alignItems: "center", justifyContent: "center" },
-  // Plus grand que les onglets et légèrement surélevé : c'est l'action.
+  // Le libellé central s'aligne sur ceux des onglets : la barre réserve sous
+  // chaque libellé une marge que ce bouton personnalisé ne reçoit pas.
+  place: { flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: -8 },
   central: {
-    width: 58,
-    height: 58,
-    marginTop: -18,
-    borderRadius: 29,
+    width: 60,
+    height: 60,
+    marginTop: -30,
+    borderRadius: 30,
     backgroundColor: couleurs.accent,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 4,
-    borderColor: couleurs.canvas,
   },
+  // En encre, pas en lime : le lime en texte est le registre du record (D28).
+  libelle: { color: couleurs.encre, fontSize: 11, fontWeight: "600", marginTop: 4 },
 });

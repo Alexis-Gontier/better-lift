@@ -1,5 +1,5 @@
 import { formaterCharge } from "@better-lift/shared";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowUp } from "lucide-react-native";
 import { StyleSheet, Text, View } from "react-native";
 import { couleurs, taille } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
@@ -11,7 +11,7 @@ import { SYSTEME_UNITES } from "../../lib/unites";
 export function BadgeRecord({ libelle }: { libelle: string }) {
   return (
     <View style={styles.badge}>
-      <Ionicons name="arrow-up" size={12} color={couleurs.accent} />
+      <ArrowUp size={12} strokeWidth={2.6} color={couleurs.accent} />
       <Text style={styles.texte}>{libelle}</Text>
     </View>
   );
