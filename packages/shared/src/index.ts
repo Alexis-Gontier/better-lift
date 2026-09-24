@@ -47,6 +47,7 @@ export {
   ajouterExercice,
   ajouterSerie,
   arreterRepos,
+  avecPrecedents,
   bilanSeance,
   demarrerDepuisRoutine,
   demarrerVide,

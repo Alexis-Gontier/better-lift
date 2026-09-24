@@ -25,6 +25,12 @@ export type ExerciceEnCours = {
   nom: string;
   reposSec: number | null;
   series: SerieEnCours[];
+  /**
+   * Ce qui a été fait la dernière fois sur cet exercice (D67) — une INDICATION
+   * affichée sous chaque série, jamais une valeur des cases (D59). Copiée dans
+   * le brouillon : elle survit hors ligne et à un arrêt forcé.
+   */
+  precedent?: { reps: number | null; chargeKg: number | null }[];
 };
 
 export type SeanceEnCours = {
@@ -243,5 +249,19 @@ export function versEnvoi(s: SeanceEnCours, fin: Date): SeanceSaisie {
       reposSec: e.reposSec,
       series: e.series.map(({ type, reps, chargeKg, faite }) => ({ type, reps, chargeKg, faite })),
     })),
+  };
+}
+
+/** Attache à chaque exercice ce qui a été fait la dernière fois, s'il y a une dernière fois. */
+export function avecPrecedents(
+  s: SeanceEnCours,
+  parSlug: Record<string, { reps: number | null; chargeKg: number | null }[]>,
+): SeanceEnCours {
+  return {
+    ...s,
+    exercices: s.exercices.map((e) => {
+      const precedent = parSlug[e.slug];
+      return precedent && precedent.length > 0 ? { ...e, precedent } : e;
+    }),
   };
 }
