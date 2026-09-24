@@ -3,6 +3,8 @@ import {
   marquerRecords,
   type RecordExercice,
   recordsDe,
+  type SeanceDetail,
+  type SeanceResume,
   type SeanceSaisie,
   type SerieHisto,
   type TypeRecord,
@@ -152,15 +154,6 @@ export type LigneSeance = {
   }[];
 };
 
-export type SeanceResume = {
-  id: string;
-  nom: string;
-  debut: string;
-  fin: string;
-  seriesFaites: number;
-  volumeKg: number;
-};
-
 /** Volume : séries faites, hors échauffement et hors poids du corps (D5). */
 export function versResume(l: LigneSeance): SeanceResume {
   let seriesFaites = 0;
@@ -183,20 +176,6 @@ export function versResume(l: LigneSeance): SeanceResume {
     volumeKg: Math.round(volumeKg * 100) / 100,
   };
 }
-
-export type SeanceDetail = SeanceResume & {
-  exercices: {
-    slug: string;
-    nom: string;
-    series: {
-      type: TypeSerie;
-      reps: number | null;
-      chargeKg: number | null;
-      faite: boolean;
-      records: TypeRecord[];
-    }[];
-  }[];
-};
 
 /**
  * Le détail, chaque série portant les records qu'elle a battus À CE MOMENT-LÀ

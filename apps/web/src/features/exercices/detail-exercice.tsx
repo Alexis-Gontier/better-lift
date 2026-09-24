@@ -1,11 +1,24 @@
-import { type ExerciceDetail, LIBELLE_GROUPE } from "@better-lift/shared";
+import {
+  type ExerciceDetail,
+  formaterCharge,
+  formatJour,
+  LIBELLE_GROUPE,
+  LIBELLE_RECORD,
+  type RecordExercice,
+} from "@better-lift/shared";
+import { FUSEAU } from "@/lib/fuseau";
+import { SYSTEME_UNITES } from "@/lib/unites";
 import { AnimationExercice } from "./animation-exercice";
+import { BadgeRecord, formaterSerie } from "./badge-record";
 
 export function DetailExercice({
   exercice,
+  records,
   onFermer,
 }: {
   exercice: ExerciceDetail;
+  /** `undefined` : en chargement ; `null` : en échec. */
+  records: RecordExercice[] | null | undefined;
   onFermer: () => void;
 }) {
   return (
@@ -78,10 +91,41 @@ export function DetailExercice({
         </div>
 
         <div>
-          <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">Record</p>
-          <p className="text-sm text-(--ink-faint)">
-            Aucun record pour l'instant — il apparaîtra après ta première séance.
-          </p>
+          <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">Records</p>
+          {records === undefined ? (
+            <p className="text-sm text-(--ink-faint)">Chargement…</p>
+          ) : records === null ? (
+            <p className="text-sm text-(--ink-faint)">Les records n'ont pas pu être chargés.</p>
+          ) : records.length === 0 ? (
+            <p className="text-sm text-(--ink-faint)">
+              Aucun record pour l'instant — il apparaîtra après ta première séance.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-1.5">
+              {records.map((r) => (
+                <li key={r.type} className="flex items-center gap-3 text-sm">
+                  <span className="w-24 shrink-0 text-(--ink-subtle)">
+                    {LIBELLE_RECORD[r.type]}
+                  </span>
+                  <span className="flex-1">
+                    {/* Le record est un CONTOUR (D28) : lime en texte sur fond teinté. */}
+                    <BadgeRecord
+                      libelle={
+                        // 1RM et volume sont des valeurs DÉRIVÉES : on montre aussi
+                        // la série qui les a donnés.
+                        r.type === "UN_RM" || r.type === "VOLUME"
+                          ? `${formaterCharge(r.valeur, SYSTEME_UNITES)} (${formaterSerie(r.chargeKg, r.reps)})`
+                          : formaterSerie(r.chargeKg, r.reps)
+                      }
+                    />
+                  </span>
+                  <span className="shrink-0 text-[11.5px] text-(--ink-faint)">
+                    {formatJour(r.date, FUSEAU)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

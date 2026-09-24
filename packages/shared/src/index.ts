@@ -21,7 +21,10 @@ export {
   marquerRecords,
   type RecordExercice,
   recordsDe,
+  type SeanceDetail,
+  type SeanceResume,
   type SerieHisto,
+  type SerieLue,
   TYPES_RECORD,
   type TypeRecord,
 } from "./records.js";

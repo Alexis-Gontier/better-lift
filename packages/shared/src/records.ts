@@ -104,3 +104,29 @@ export function marquerRecords(avant: RecordExercice[], series: SerieHisto[]): T
     return battus;
   });
 }
+
+// --- Ce que rend la lecture des séances (lot 7) ------------------------------
+// Partagé par l'API qui le produit et le web qui l'affiche.
+
+export type SeanceResume = {
+  id: string;
+  nom: string;
+  /** ISO 8601 ; le jour s'en déduit dans le fuseau de l'utilisateur, jamais en UTC. */
+  debut: string;
+  fin: string;
+  seriesFaites: number;
+  volumeKg: number;
+};
+
+export type SerieLue = {
+  type: TypeSerie;
+  reps: number | null;
+  chargeKg: number | null;
+  faite: boolean;
+  /** Les records que cette série a battus à ce moment-là (D64). */
+  records: TypeRecord[];
+};
+
+export type SeanceDetail = SeanceResume & {
+  exercices: { slug: string; nom: string; series: SerieLue[] }[];
+};
