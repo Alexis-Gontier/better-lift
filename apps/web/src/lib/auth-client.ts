@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react";
+import { URL_AUTH } from "./config";
 
 /**
  * `credentials: "include"` est requis tant que le client et l'API sont sur deux
@@ -6,7 +7,7 @@ import { createAuthClient } from "better-auth/react";
  * le SPA et l'API partagent une origine et il n'y a pas de CORS.
  */
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3001",
+  baseURL: URL_AUTH,
   fetchOptions: { credentials: "include" },
 });
 
