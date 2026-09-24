@@ -9,7 +9,8 @@
       "!.claude",
       "!**/.expo",
       "!**/generated",
-      "!**/routeTree.gen.ts"
+      "!**/routeTree.gen.ts",
+      "!packages/db/catalogue/source.json"
     ]
   },
   "formatter": {

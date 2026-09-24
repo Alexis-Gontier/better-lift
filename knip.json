@@ -6,7 +6,9 @@
     ".": { "entry": [], "project": [] },
     "packages/*": { "project": "src/**/*.ts" },
     "packages/config": { "entry": [], "project": [] },
-    "packages/db": { "project": ["src/**/*.ts", "prisma/**/*.prisma"] },
+    "packages/db": {
+      "project": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/**/*.{ts,prisma}"]
+    },
     "apps/api": { "project": "src/**/*.ts" },
     "apps/web": {
       "entry": ["src/components/ui/**/*.{ts,tsx}", "src/lib/utils.ts"],

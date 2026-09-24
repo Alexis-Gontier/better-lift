@@ -719,7 +719,7 @@ portion substantielle ; c'est le cas de `source.json`.
 ```markdown
 # Origine des données du catalogue
 
-`source.json` est un extrait de [exercises-dataset](https://github.com/yildirimemir/exercises-dataset),
+`source.json` est un extrait de [exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset),
 réduit aux champs utilisés par better-lift et dédupliqué. Les **données** — noms, catégories,
 groupes, équipements, cibles, instructions multilingues — sont sous licence MIT :
 
@@ -865,7 +865,7 @@ trouvent ne sont importés par personne : ce sont des points d'entrée, pas du c
 
 ```json
     "packages/db": {
-      "entry": ["src/index.ts", "catalogue/extraire.ts"],
+      "entry": ["catalogue/extraire.ts"],
       "project": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/**/*.{ts,prisma}"]
     },
 ```
@@ -1523,7 +1523,7 @@ Modifier `knip.json` — `prisma/seed.ts` est un point d'entrée de plus :
 
 ```json
     "packages/db": {
-      "entry": ["src/index.ts", "catalogue/extraire.ts", "prisma/seed.ts"],
+      "entry": ["catalogue/extraire.ts", "prisma/seed.ts"],
       "project": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/**/*.{ts,prisma}"]
     },
 ```
