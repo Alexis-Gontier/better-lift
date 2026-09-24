@@ -3,6 +3,7 @@ import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FileEnvoi } from "../../components/file-envoi";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
 import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
@@ -47,6 +48,9 @@ export default function Profil() {
         />
         <Ligne libelle="Version" valeur={Constants.expoConfig?.version ?? "—"} dernier />
       </View>
+      {/* Les séances pas encore arrivées au serveur : réessayer, reprendre ou
+          supprimer une séance refusée. */}
+      <FileEnvoi />
       <Pressable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
         <Text style={styles.dangerTexte}>Se déconnecter</Text>
       </Pressable>

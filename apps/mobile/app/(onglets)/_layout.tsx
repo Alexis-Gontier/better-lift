@@ -1,5 +1,13 @@
 import { Redirect, Tabs, useRouter } from "expo-router";
-import { Dumbbell, History, House, List, type LucideIcon, Play, User } from "lucide-react-native";
+import {
+  Dumbbell,
+  House,
+  List,
+  ListChecks,
+  type LucideIcon,
+  Play,
+  User,
+} from "lucide-react-native";
 import { type ColorValue, Pressable, StyleSheet, Text, View } from "react-native";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
@@ -38,28 +46,25 @@ export default function Onglets() {
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: couleurs.canvas },
-        // L'onglet actif est en encre pleine, jamais en lime (D76) : une position
-        // n'est pas une action.
-        tabBarActiveTintColor: couleurs.encre,
+        // L'onglet actif prend la couleur de l'application (choix de
+        // l'utilisateur, D76 révisée) ; les autres restent en encre faible.
+        tabBarActiveTintColor: couleurs.accent,
         tabBarInactiveTintColor: couleurs.encreFaible,
-        // Une marche au-dessus du canevas, coins du haut arrondis : la barre se
-        // pose sur l'écran. Pas de hauteur fixe : Expo Router y ajoute la marge
-        // de la zone de geste d'Android, qu'une hauteur imposée recouvrirait.
+        // Toute la largeur du bas, jusque sous la zone de geste : une marche
+        // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
+        // Router y ajoute la marge de la zone de geste d'Android, qu'une hauteur
+        // imposée recouvrirait.
         tabBarStyle: {
           backgroundColor: couleurs.surface1,
-          borderTopWidth: 0,
-          borderTopLeftRadius: 22,
-          borderTopRightRadius: 22,
+          borderTopWidth: 1,
+          borderTopColor: couleurs.ligne,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: icone(House) }} />
-      <Tabs.Screen
-        name="historique"
-        options={{ title: "Historique", tabBarIcon: icone(History) }}
-      />
+      <Tabs.Screen name="routines" options={{ title: "Routines", tabBarIcon: icone(ListChecks) }} />
       {/* Au centre, l'action du moment : un aplat lime (D28), plus grand que les
           onglets et qui déborde au-dessus de la barre. */}
       <Tabs.Screen
@@ -75,7 +80,11 @@ export default function Onglets() {
               {({ pressed }) => (
                 <>
                   <View style={[styles.central, pressed && { opacity: 0.85 }]}>
-                    <Centrale color={couleurs.surAccent} size={26} strokeWidth={2.4} />
+                    {/* L'haltère de Lucide est dessinée en diagonale : redressée de
+                        45° pour se lire à l'horizontale, comme une barre posée. */}
+                    <View style={seance ? undefined : styles.redresse}>
+                      <Centrale color={couleurs.surAccent} size={26} strokeWidth={2.4} />
+                    </View>
                   </View>
                   <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
                 </>
@@ -86,6 +95,9 @@ export default function Onglets() {
       />
       <Tabs.Screen name="exercices" options={{ title: "Exercices", tabBarIcon: icone(List) }} />
       <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
+      {/* L'historique quitte la barre ; ses écrans restent, joignables par lien,
+          le temps de décider où il vivra. */}
+      <Tabs.Screen name="historique" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -103,6 +115,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  redresse: { transform: [{ rotate: "45deg" }] },
   // En encre, pas en lime : le lime en texte est le registre du record (D28).
   libelle: { color: couleurs.encre, fontSize: 11, fontWeight: "600", marginTop: 4 },
 });
