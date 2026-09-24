@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SeanceProvider } from "../lib/seance-memoire";
+import { SeanceProvider } from "../lib/seance";
 
 const queryClient = new QueryClient();
 

@@ -8,7 +8,7 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 5 sont fusionnés** ; les lots 0 à 2
+Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 6 sont fusionnés** ; les lots 0 à 2
 clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
 
 - **Lot 0** — le monorepo tient debout, les trois applications démarrent, et la chaîne
@@ -28,7 +28,11 @@ clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interfac
   des exercices, souris et clavier), API protégée par session, remplacement complet à chaque
   enregistrement.
 
-**Prochaine étape : le lot 6**, les écrans mobiles puis la séance. Il n'est pas encore planifié.
+- **Lot 6** — la séance sur mobile : routines réelles, saisie série par série, chrono et repos,
+  brouillon sur disque qui survit à un arrêt forcé, file d'envoi idempotente. **Un entraînement
+  réel se saisit avec.**
+
+**Prochaine étape : le lot 7**, l'historique et les records dérivés. Il n'est pas encore planifié.
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
@@ -196,6 +200,23 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
   l'API sans la surcharge**. Le compte `controle@better-lift.local` existe sur `dev`
   (`betterlift`) depuis le lot 4 ; son mot de passe n'est conservé nulle part — le supprimer
   (tables `user` et `account`) et le recréer si besoin.
+- **Le mobile tourne dans Expo Go** : aucune dépendance native hors SDK (d'où AsyncStorage et non
+  MMKV, D55). Lancement : `npx expo start`, puis `adb reverse tcp:8081 tcp:8081` et
+  `adb reverse tcp:3001 tcp:3001`, puis `adb shell am start -a android.intent.action.VIEW -d
+  "exp://127.0.0.1:8081" host.exp.exponent`. Par l'IP du réseau local, Expo Go affiche un
+  ancien bundle en cache avec « Cannot connect to Expo CLI ». En `CI=1`, Metro ne surveille pas
+  les fichiers : le relancer après chaque modification.
+- **Metro et les paquets du dépôt** : `packages/*` s'importe en `./x.js` (convention ESM de `tsc`),
+  ce que Metro ne résout pas seul. `apps/mobile/metro.config.js` essaie la variante `.ts` pour
+  ces seuls paquets. Un nouveau paquet partagé en profite sans rien faire.
+- **Le cookie de session sur mobile** : `authClient.getCookie()` est ASYNCHRONE. Le client d'API
+  le pose par un en-tête asynchrone ; sans `await`, chaque requête part sans session.
+- **Séance mobile : le disque d'abord.** Tout changement de séance écrit le brouillon
+  (`better-lift:seance-en-cours`) ; démarrer relit le disque à l'appui ; terminer met en file
+  AVANT d'effacer le brouillon. La logique vit dans `shared` (`seance.ts`, `file-envoi.ts`),
+  pure et testée ; le mobile ne garde que le disque et les écrans.
+- **Dette connue** : l'avertissement « error during concurrent rendering » au démarrage du mobile,
+  présent depuis le lot 3. React s'en remet seul ; les journaux n'en donnent pas la cause.
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 

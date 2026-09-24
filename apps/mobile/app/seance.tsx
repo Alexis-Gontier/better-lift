@@ -2,6 +2,7 @@ import {
   ajouterExercice,
   ajouterSerie,
   arreterRepos,
+  marquerReposSignale,
   modifierSerie,
   reposRestant,
   retirerExercice,
@@ -9,8 +10,9 @@ import {
   validerSerie,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import * as Haptics from "expo-haptics";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -26,18 +28,39 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice } from "../components/seance/carte-exercice";
 import { optionsCatalogue } from "../lib/requetes";
-import { useSeance } from "../lib/seance-memoire";
+import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 
 export default function Seance() {
   const router = useRouter();
-  const { seance, setSeance } = useSeance();
+  const { pret, seance, modifier, abandonner: effacerSeance, recharger } = useSeance();
   const maintenant = useMaintenant();
   const [ajout, setAjout] = useState(false);
   const [filtre, setFiltre] = useState("");
   // La recherche du catalogue réel : bilingue, sans accents (lot 4).
   const catalogue = useQuery({ ...optionsCatalogue(filtre.trim()), enabled: ajout });
+
+  // L'écran RELIT le disque à chaque affichage (§ 8) : c'est le même chemin
+  // après un démarrage, une reprise, ou un arrêt forcé de l'application.
+  useFocusEffect(
+    useCallback(() => {
+      void recharger();
+    }, [recharger]),
+  );
+
+  const repos = seance ? reposRestant(seance, maintenant) : null;
+
+  // La fin du repos vibre UNE fois : `signale` est écrit dans le brouillon, donc
+  // un redémarrage ne refait pas vibrer un repos déjà annoncé.
+  useEffect(() => {
+    if (seance?.repos && !seance.repos.signale && repos === 0) {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      modifier(marquerReposSignale(seance));
+    }
+  }, [repos, seance, modifier]);
+
+  if (!pret) return <SafeAreaView style={styles.ecran} />;
 
   if (!seance) {
     return (
@@ -50,16 +73,14 @@ export default function Seance() {
     );
   }
 
-  const repos = reposRestant(seance, maintenant);
-
   const abandonner = () =>
     Alert.alert("Abandonner la séance ?", "Rien ne sera enregistré.", [
       { text: "Continuer", style: "cancel" },
       {
         text: "Abandonner",
         style: "destructive",
-        onPress: () => {
-          setSeance(null);
+        onPress: async () => {
+          await effacerSeance();
           router.replace("/");
         },
       },
@@ -94,10 +115,10 @@ export default function Seance() {
           <CarteExercice
             key={`${e.slug}-${iE}`}
             exercice={e}
-            onModifierSerie={(iS, patch) => setSeance(modifierSerie(seance, iE, iS, patch))}
-            onValiderSerie={(iS) => setSeance(validerSerie(seance, iE, iS, new Date()))}
-            onAjouterSerie={() => setSeance(ajouterSerie(seance, iE))}
-            onRetirer={() => setSeance(retirerExercice(seance, iE))}
+            onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
+            onValiderSerie={(iS) => modifier(validerSerie(seance, iE, iS, new Date()))}
+            onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
+            onRetirer={() => modifier(retirerExercice(seance, iE))}
           />
         ))}
         <Pressable
@@ -113,7 +134,7 @@ export default function Seance() {
       </ScrollView>
 
       {repos !== null ? (
-        <BandeauRepos restant={repos} onPasser={() => setSeance(arreterRepos(seance))} />
+        <BandeauRepos restant={repos} onPasser={() => modifier(arreterRepos(seance))} />
       ) : null}
 
       <Modal visible={ajout} animationType="slide" onRequestClose={() => setAjout(false)}>
@@ -148,7 +169,7 @@ export default function Seance() {
               <Pressable
                 style={styles.choix}
                 onPress={() => {
-                  setSeance(ajouterExercice(seance, item.slug, item.nom));
+                  modifier(ajouterExercice(seance, item.slug, item.nom));
                   setAjout(false);
                   setFiltre("");
                 }}
