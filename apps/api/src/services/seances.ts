@@ -49,7 +49,7 @@ export function versEcriture(
   });
 }
 
-export type IssueEnregistrement = "creee" | "existante" | "conflit";
+type IssueEnregistrement = "creee" | "existante" | "conflit";
 
 export type DepotSeances = {
   /**
