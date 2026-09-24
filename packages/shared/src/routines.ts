@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Les routines : des gabarits de séance, décrits série par série (D47).
  *
@@ -42,3 +44,33 @@ export type ExerciceRoutine = {
 export type RoutineDetail = { id: string; nom: string; exercices: ExerciceRoutine[] };
 
 export type RoutineResume = { id: string; nom: string; nbExercices: number; nbSeries: number };
+
+// --- Le contrat d'écriture ---------------------------------------------------
+// Ce que l'éditeur envoie. L'ordre des tableaux EST la position : le client
+// n'envoie aucune position, le serveur la déduit de l'index (D50).
+
+export const serieSaisie = z.object({
+  type: z.enum(TYPES_SERIE),
+  repsCible: z.number().int().min(0).max(999).nullable(),
+  chargeCibleKg: z.number().min(0).max(1000).nullable(),
+});
+
+export const exerciceSaisi = z.object({
+  slug: z.string().min(1).max(200),
+  reposSec: z.number().int().min(0).max(3600).nullable(),
+  series: z.array(serieSaisie).min(1).max(20),
+});
+
+export const routineSaisie = z.object({
+  nom: z.string().trim().min(1).max(120),
+  exercices: z.array(exerciceSaisi).min(1).max(50),
+});
+
+export type RoutineSaisie = z.infer<typeof routineSaisie>;
+
+export const ordreRoutines = z.object({
+  ids: z
+    .array(z.string().min(1))
+    .max(500)
+    .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
+});

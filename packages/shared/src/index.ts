@@ -12,10 +12,15 @@ export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
   ABREGE_TYPE_SERIE,
   type ExerciceRoutine,
+  exerciceSaisi,
   LIBELLE_TYPE_SERIE,
+  ordreRoutines,
   type RoutineDetail,
   type RoutineResume,
+  type RoutineSaisie,
+  routineSaisie,
   type SerieRoutine,
+  serieSaisie,
   TYPES_SERIE,
   type TypeSerie,
 } from "./routines.js";
