@@ -18,7 +18,7 @@ Registre à partir de **D63**.
 
 | | Décision | Pourquoi |
 |---|---|---|
-| **D63** | **Records à la Hevy** : charge max, 1RM estimé (Epley, D4), meilleure série en volume ; au poids du corps, reps max. Séries faites, hors échauffement | Choix délégué à l'agent, sur le modèle de Hevy demandé par l'utilisateur |
+| **D63** | **Records à la Hevy** : charge max, 1RM estimé (Epley, D4, **12 reps au plus** : au-delà, la formule n'a plus de sens), meilleure série en volume ; au poids du corps, reps max. Séries faites, hors échauffement | Choix délégué à l'agent, sur le modèle de Hevy demandé par l'utilisateur |
 | **D64** | **Un badge marque le record battu À CE MOMENT-LÀ**, pas le record actuel | C'est l'événement qu'on veut revoir ; un record battu depuis ne l'efface pas |
 | **D65** | **Tout est dérivé à la lecture** (D13) : aucune table de records | Corriger une séance ne demande aucun recalcul |
 | **D66** | **Fuseau `Europe/Paris` fixé en un seul endroit** (`apps/web/src/lib/fuseau.ts`) | Même logique que D52, en attendant un profil |

@@ -37,6 +37,12 @@ export type RecordExercice = {
 
 type Candidat = Omit<RecordExercice, "date">;
 
+/**
+ * Au-delà, Epley n'a plus de sens : 56 × 82,5 kg donnerait un 1RM de 236,5 kg.
+ * Une telle série compte pour la charge et le volume, pas pour le 1RM.
+ */
+const REPS_MAX_1RM = 12;
+
 function compte(s: SerieHisto): s is SerieHisto & { reps: number } {
   return s.faite && s.type !== "ECHAUFFEMENT" && s.reps !== null && s.reps > 0;
 }
@@ -47,7 +53,9 @@ function candidats(s: SerieHisto & { reps: number }): Candidat[] {
   const base = { reps: s.reps, chargeKg: s.chargeKg };
   return [
     { type: "CHARGE", valeur: s.chargeKg, ...base },
-    { type: "UN_RM", valeur: estimate1RM(s.chargeKg, s.reps), ...base },
+    ...(s.reps <= REPS_MAX_1RM
+      ? [{ type: "UN_RM" as const, valeur: estimate1RM(s.chargeKg, s.reps), ...base }]
+      : []),
     { type: "VOLUME", valeur: Math.round(s.chargeKg * s.reps * 100) / 100, ...base },
   ];
 }

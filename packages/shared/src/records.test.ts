@@ -89,3 +89,13 @@ describe("marquerRecords", () => {
     ]);
   });
 });
+
+describe("le 1RM estimé", () => {
+  // Epley n'a plus de sens au-delà d'une douzaine de reps : 56 × 82,5 donnerait
+  // 236,5 kg. Une telle série compte pour la charge et le volume, pas le 1RM.
+  it("n'est pas estimé au-delà de 12 reps", () => {
+    const r = recordsDe([avecDate(n(56, 82.5))]);
+    expect(r.map((x) => x.type)).toEqual(["CHARGE", "VOLUME"]);
+    expect(marquerRecords([], [n(13, 50)])).toEqual([["CHARGE", "VOLUME"]]);
+  });
+});
