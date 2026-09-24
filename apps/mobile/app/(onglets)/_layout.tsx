@@ -8,7 +8,14 @@ import {
   Play,
   User,
 } from "lucide-react-native";
-import { type ColorValue, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  type ColorValue,
+  Pressable,
+  type PressableProps,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
@@ -61,6 +68,11 @@ export default function Onglets() {
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
+        // Aucun retour visuel à l'appui (ni ondulation Android, ni opacité) :
+        // l'onglet actif se signale déjà par sa couleur.
+        tabBarButton: ({ ref: _ref, ...props }) => (
+          <Pressable {...(props as PressableProps)} android_ripple={null} />
+        ),
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: icone(House) }} />
@@ -77,9 +89,9 @@ export default function Onglets() {
               accessibilityRole="button"
               accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
             >
-              {({ pressed }) => (
+              {() => (
                 <>
-                  <View style={[styles.central, pressed && { opacity: 0.85 }]}>
+                  <View style={styles.central}>
                     {/* L'haltère de Lucide est dessinée en diagonale : redressée de
                         45° pour se lire à l'horizontale, comme une barre posée. */}
                     <View style={seance ? undefined : styles.redresse}>
