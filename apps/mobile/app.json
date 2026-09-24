@@ -12,6 +12,13 @@
     },
     "ios": {
       "bundleIdentifier": "com.algont.betterlift"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "971f278d-f407-494e-9840-eb357fc064db"
+      }
+    },
+    "owner": "algont"
   }
 }
