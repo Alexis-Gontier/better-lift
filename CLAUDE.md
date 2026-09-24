@@ -232,6 +232,14 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
   `/api` ; Better Auth sous `/api/auth`). Éprouver en local avec `scripts/essayer-vercel.mjs` avant
   tout envoi. Base de prod : `betterlift` sur la branche Neon `production` — jamais `neondb` (V1).
   Le web de production appelle `<origine>/api` ; `VITE_API_URL` ne sert qu'en développement.
+  En ligne sur **https://better-lift.vercel.app** ; le projet Vercel est relié à GitHub : **chaque
+  fusion sur `main` déploie la production**, chaque PR a sa prévisualisation. Le build Vercel n'a
+  **ni `.git` ni `DIRECT_URL`** : `prepare` tolère l'échec de `lefthook install`, et le script de
+  build pose une `DIRECT_URL` factice pour `prisma generate` — l'essai local, qui a les deux, ne
+  le voit pas. La console Neon propose `neondb` par défaut : **une URL de prod doit finir par
+  `/betterlift`**, sinon l'API tombe sur le schéma de la V1 (`column nomFr does not exist`).
+  Mobile : projet EAS `@algont/better-lift`, APK par `eas build --profile preview` (file
+  gratuite : jusqu'à une heure d'attente avant le build).
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 
