@@ -8,7 +8,7 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 4 sont fusionnés** ; les lots 0 à 2
+Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 5 sont fusionnés** ; les lots 0 à 2
 clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
 
 - **Lot 0** — le monorepo tient debout, les trois applications démarrent, et la chaîne
@@ -24,8 +24,11 @@ clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interfac
   d'opengym) : 1 316 exercices à deux noms, recherche bilingue sans accents, servis par l'API et
   branchés sur l'écran des exercices, avec les animations et leur attribution.
 
-**Prochaine étape : le lot 5**, les routines (API et branchement de l'éditeur). Il n'est pas
-encore planifié.
+- **Lot 5** — les routines, série par série : éditeur web dans le panneau détail (glisser-déposer
+  des exercices, souris et clavier), API protégée par session, remplacement complet à chaque
+  enregistrement.
+
+**Prochaine étape : le lot 6**, les écrans mobiles puis la séance. Il n'est pas encore planifié.
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
@@ -73,6 +76,13 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   expose `creerClient(baseUrl)` ; le web la tire de `import.meta.env`, le mobile d'une constante
   (l'émulateur joint l'API en `10.0.2.2`). Un paquet partagé qui lirait `import.meta.env` ne
   compilerait pas côté Expo.
+- **Toute route de données personnelles passe par `exigerSession`** (`apps/api/src/middlewares/`),
+  qui pose `userId` dans le contexte ; le service le reçoit en argument et filtre par lui. La donnée
+  d'autrui est **introuvable (404), jamais interdite (403)**. Le lecteur de session est injecté :
+  les routes se testent sans Better Auth, et `app.ts` branche le vrai.
+- **Toute charge affichée ou saisie passe par `formaterCharge` / `lireCharge`** de `shared`, avec
+  `SYSTEME_UNITES` (`apps/web/src/lib/unites.ts`) — l'unique endroit où le système est fixé tant
+  qu'aucun profil n'existe.
 - **`AppShell` est monté par chaque route, jamais par `__root.tsx`.** Seule la route sait s'il y
   a un détail à ouvrir, et la coquille change son jeu de panneaux — donc sa clé de persistance —
   selon qu'il y en a un. Montée dans la racine, elle imposerait une coquille imbriquée.

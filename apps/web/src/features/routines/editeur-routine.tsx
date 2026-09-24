@@ -33,6 +33,7 @@ export type RoutineEnregistree = { nom: string; exercices: ExerciceRoutine[] };
 export function EditeurRoutine({
   initiale,
   enregistrement,
+  erreur,
   onEnregistrer,
   onAnnuler,
   onSupprimer,
@@ -40,6 +41,8 @@ export function EditeurRoutine({
   /** `null` pour une routine neuve. */
   initiale: RoutineDetail | null;
   enregistrement: boolean;
+  /** L'échec du dernier enregistrement : il doit se voir, sinon on croit avoir enregistré. */
+  erreur?: string;
   onEnregistrer: (r: RoutineEnregistree) => void;
   onAnnuler: () => void;
   onSupprimer?: () => void;
@@ -124,6 +127,11 @@ export function EditeurRoutine({
         </button>
       </div>
 
+      {erreur ? (
+        <p role="alert" className="border-t border-(--line) px-5 pt-3 text-sm text-destructive-ink">
+          {erreur}
+        </p>
+      ) : null}
       <div className="flex items-center gap-2 border-t border-(--line) px-5 py-3">
         {onSupprimer ? (
           <button

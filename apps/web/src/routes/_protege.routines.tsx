@@ -1,13 +1,20 @@
-import type { RoutineDetail } from "@better-lift/shared";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { z } from "zod";
+import { EtatChargement } from "@/components/etats/etat-chargement";
+import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { AppShell } from "@/components/shell/app-shell";
 import { DetailRoutine } from "@/features/routines/detail-routine";
-import { EditeurRoutine, type RoutineEnregistree } from "@/features/routines/editeur-routine";
+import { EditeurRoutine } from "@/features/routines/editeur-routine";
 import { ListeRoutines } from "@/features/routines/liste-routines";
-import { ROUTINES, resumer } from "@/mocks/routines";
+import {
+  optionsRoutine,
+  optionsRoutines,
+  useCreerRoutine,
+  useRemplacerRoutine,
+  useSupprimerRoutine,
+} from "@/features/routines/requetes";
 
 /** L'identifiant réservé d'une routine pas encore enregistrée. */
 const NOUVELLE = "nouvelle";
@@ -28,28 +35,40 @@ export const Route = createFileRoute("/_protege/routines")({
 function PageRoutines() {
   const { id, edition, etat } = Route.useSearch();
   const navigate = Route.useNavigate();
-
-  // DESSIN (D54, PR 1) : les routines factices vivent dans un état local, pour
-  // que créer, modifier, réordonner et supprimer soient ÉPROUVABLES avant toute
-  // API. Le branchement remplacera cet état par des requêtes, sans toucher aux
-  // composants.
-  const [routines, setRoutines] = useState<RoutineDetail[]>(ROUTINES);
-
-  const visibles = estVideForce(etat) ? [] : routines;
-  const selectionnee = id && id !== NOUVELLE ? visibles.find((r) => r.id === id) : undefined;
   const aller = (s: { id?: string; edition?: "1" }) =>
     navigate({ search: (prec) => ({ ...prec, id: s.id, edition: s.edition }) });
 
-  const enregistrer = (r: RoutineEnregistree) => {
-    if (id === NOUVELLE) {
-      const nouvelId = `r${Date.now()}`;
-      setRoutines((rs) => [...rs, { id: nouvelId, ...r }]);
-      aller({ id: nouvelId });
-    } else if (selectionnee) {
-      setRoutines((rs) => rs.map((x) => (x.id === selectionnee.id ? { ...x, ...r } : x)));
-      aller({ id: selectionnee.id });
+  const existante = id && id !== NOUVELLE ? id : undefined;
+  const liste = useQuery(optionsRoutines());
+  const detail = useQuery({ ...optionsRoutine(existante ?? ""), enabled: Boolean(existante) });
+
+  const creer = useCreerRoutine();
+  const remplacer = useRemplacerRoutine(existante ?? "");
+  const supprimer = useSupprimerRoutine();
+
+  function panneauListe() {
+    const force = etatForceRendu(etat, "Les routines n'ont pas pu être chargées.", () =>
+      navigate({ search: (s) => ({ ...s, etat: undefined }) }),
+    );
+    if (force) return force;
+    if (liste.isPending) return <EtatChargement />;
+    if (liste.isError) {
+      return (
+        <EtatErreur
+          message="Les routines n'ont pas pu être chargées."
+          onReessayer={() => liste.refetch()}
+        />
+      );
     }
-  };
+    return (
+      <ListeRoutines
+        routines={estVideForce(etat) ? [] : liste.data}
+        idSelectionne={id}
+        onSelection={(rId) => aller({ id: rId })}
+        onCreer={() => aller({ id: NOUVELLE, edition: "1" })}
+      />
+    );
+  }
 
   function panneauDetail() {
     if (edition && id === NOUVELLE) {
@@ -57,54 +76,49 @@ function PageRoutines() {
         <EditeurRoutine
           key={NOUVELLE}
           initiale={null}
-          enregistrement={false}
-          onEnregistrer={enregistrer}
+          enregistrement={creer.isPending}
+          erreur={creer.error?.message}
+          onEnregistrer={(r) =>
+            creer.mutate(r, { onSuccess: (nouvelId) => aller({ id: nouvelId }) })
+          }
           onAnnuler={() => aller({})}
         />
       );
     }
-    if (!selectionnee) return undefined;
+    if (!existante) return undefined;
+    if (detail.isPending) return <EtatChargement lignes={6} />;
+    if (detail.isError) {
+      return (
+        <EtatErreur
+          message="Cette routine n'a pas pu être chargée."
+          onReessayer={() => detail.refetch()}
+        />
+      );
+    }
+    const routine = detail.data;
     if (edition) {
       return (
         <EditeurRoutine
           // La clé remonte l'éditeur quand on change de routine : sa copie de
           // travail repart de la bonne version.
-          key={selectionnee.id}
-          initiale={selectionnee}
-          enregistrement={false}
-          onEnregistrer={enregistrer}
-          onAnnuler={() => aller({ id: selectionnee.id })}
-          onSupprimer={() => {
-            setRoutines((rs) => rs.filter((x) => x.id !== selectionnee.id));
-            aller({});
-          }}
+          key={routine.id}
+          initiale={routine}
+          enregistrement={remplacer.isPending || supprimer.isPending}
+          erreur={remplacer.error?.message ?? supprimer.error?.message}
+          onEnregistrer={(r) => remplacer.mutate(r, { onSuccess: () => aller({ id: routine.id }) })}
+          onAnnuler={() => aller({ id: routine.id })}
+          onSupprimer={() => supprimer.mutate(routine.id, { onSuccess: () => aller({}) })}
         />
       );
     }
     return (
       <DetailRoutine
-        routine={selectionnee}
-        onModifier={() => aller({ id: selectionnee.id, edition: "1" })}
+        routine={routine}
+        onModifier={() => aller({ id: routine.id, edition: "1" })}
         onFermer={() => aller({})}
       />
     );
   }
 
-  return (
-    <AppShell
-      liste={
-        etatForceRendu(etat, "Les routines n'ont pas pu être chargées.", () =>
-          navigate({ search: (s) => ({ ...s, etat: undefined }) }),
-        ) ?? (
-          <ListeRoutines
-            routines={visibles.map(resumer)}
-            idSelectionne={id}
-            onSelection={(rId) => aller({ id: rId })}
-            onCreer={() => aller({ id: NOUVELLE, edition: "1" })}
-          />
-        )
-      }
-      detail={panneauDetail()}
-    />
-  );
+  return <AppShell liste={panneauListe()} detail={panneauDetail()} />;
 }
