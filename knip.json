@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignore": [".claude/**"],
-  "ignoreDependencies": ["@prisma/client", "zod"],
+  "ignoreDependencies": ["@prisma/client"],
   "workspaces": {
     ".": { "entry": [], "project": [] },
     "packages/*": { "project": "src/**/*.ts" },

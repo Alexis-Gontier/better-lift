@@ -8,7 +8,7 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 3 sont fusionnés** ; les lots 0 à 2
+Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 4 sont fusionnés** ; les lots 0 à 2
 clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
 
 - **Lot 0** — le monorepo tient debout, les trois applications démarrent, et la chaîne
@@ -20,9 +20,12 @@ clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interfac
 
 - **Lot 3** — Better Auth, liste blanche, connexion sur les deux surfaces.
 
-**Le lot 4 est en cours** (plan `docs/superpowers/plans/2026-09-23-lot-4-catalogue-francais.md`,
-révisé le 24 septembre après une revue à la lumière d'opengym) : catalogue à deux noms, anglais
-et français, semé sur `dev` ; reste à le servir et à le brancher (PR 2).
+- **Lot 4** — le catalogue français (plan révisé le 24 septembre après une revue à la lumière
+  d'opengym) : 1 316 exercices à deux noms, recherche bilingue sans accents, servis par l'API et
+  branchés sur l'écran des exercices, avec les animations et leur attribution.
+
+**Prochaine étape : le lot 5**, les routines (API et branchement de l'éditeur). Il n'est pas
+encore planifié.
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
@@ -66,6 +69,10 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 - La logique métier vit dans `services/` côté API et ne connaît jamais le contexte Hono.
 - **L'interface n'est pas partagée** entre web et mobile. Deux surfaces, deux ergonomies.
 - Contrat typé par **Hono RPC**, pas d'OpenAPI. Zod dans `shared` est la source unique.
+- **Le client d'API vit dans `packages/api-client`, l'URL de base chez l'appelant.** Le paquet
+  expose `creerClient(baseUrl)` ; le web la tire de `import.meta.env`, le mobile d'une constante
+  (l'émulateur joint l'API en `10.0.2.2`). Un paquet partagé qui lirait `import.meta.env` ne
+  compilerait pas côté Expo.
 - **`AppShell` est monté par chaque route, jamais par `__root.tsx`.** Seule la route sait s'il y
   a un détail à ouvrir, et la coquille change son jeu de panneaux — donc sa clé de persistance —
   selon qu'il y en a un. Montée dans la racine, elle imposerait une coquille imbriquée.
@@ -172,6 +179,13 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
 - **Prisma 7 : `migrate dev` ne régénère plus le client.** Après une migration, lancer
   `pnpm --filter @better-lift/db generate`, sinon le client rejette les nouvelles colonnes
   avec une `PrismaClientValidationError` qui ne dit pas pourquoi.
+- **Vérifier un écran protégé sans connaître les identifiants** : l'agent ne lit pas le `.env`.
+  Une variable d'environnement l'emporte sur le `.env` (`process.loadEnvFile` n'écrase rien) :
+  relancer l'API avec `SIGNUP_ALLOWLIST=controle@better-lift.local`, créer le compte par
+  `POST /api/auth/sign-up/email` (en-tête `Origin: http://localhost:3000`), puis **relancer
+  l'API sans la surcharge**. Le compte `controle@better-lift.local` existe sur `dev`
+  (`betterlift`) depuis le lot 4 ; son mot de passe n'est conservé nulle part — le supprimer
+  (tables `user` et `account`) et le recréer si besoin.
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 
