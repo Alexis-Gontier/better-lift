@@ -20,7 +20,7 @@
     "db:generate": "pnpm --filter @better-lift/db run generate",
     "db:migrate": "pnpm --filter @better-lift/db run migrate",
     "db:seed": "pnpm --filter @better-lift/db run seed",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install || exit 0"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
