@@ -222,11 +222,16 @@ export type DepotLectureSeances = {
     taille: number,
   ): Promise<{ seances: SeanceResume[]; total: number }>;
   lire(userId: string, id: string): Promise<SeanceDetail | null>;
-  /** Par slug, les séries FAITES de la dernière séance qui contenait l'exercice. */
+  /**
+   * Par slug, TOUTES les séries de la dernière séance qui contenait l'exercice,
+   * avec leur état : le mobile les aligne position par position, comme Hevy.
+   * Filtrer les séries faites décalerait tout — la série 1 d'hier se
+   * retrouverait en face de l'échauffement d'aujourd'hui.
+   */
   precedentes(
     userId: string,
     slugs: string[],
-  ): Promise<Record<string, { reps: number | null; chargeKg: number | null }[]>>;
+  ): Promise<Record<string, { reps: number | null; chargeKg: number | null; faite: boolean }[]>>;
   /** Les records actuels ; `null` si l'exercice n'existe pas. */
   records(userId: string, slug: string): Promise<RecordExercice[] | null>;
 };
@@ -317,15 +322,18 @@ export const depotLecture: DepotLectureSeances = {
           orderBy: [{ seance: { debut: "desc" } }, { position: "desc" }],
           select: {
             series: {
-              where: { faite: true },
               orderBy: { position: "asc" },
-              select: { reps: true, chargeKg: true },
+              select: { reps: true, chargeKg: true, faite: true },
             },
           },
         });
         return [
           slug,
-          (derniere?.series ?? []).map((s) => ({ reps: s.reps, chargeKg: enNombre(s.chargeKg) })),
+          (derniere?.series ?? []).map((s) => ({
+            reps: s.reps,
+            chargeKg: enNombre(s.chargeKg),
+            faite: s.faite,
+          })),
         ] as const;
       }),
     );

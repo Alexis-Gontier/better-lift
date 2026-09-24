@@ -2,6 +2,7 @@ import {
   ajouterExercice,
   ajouterSerie,
   arreterRepos,
+  avecPrecedents,
   marquerReposSignale,
   modifierSerie,
   reposRestant,
@@ -27,7 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice } from "../components/seance/carte-exercice";
-import { optionsCatalogue } from "../lib/requetes";
+import { chargerPrecedents, optionsCatalogue } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
@@ -168,8 +169,11 @@ export default function Seance() {
             renderItem={({ item }) => (
               <Pressable
                 style={styles.choix}
-                onPress={() => {
-                  modifier(ajouterExercice(seance, item.slug, item.nom));
+                onPress={async () => {
+                  const precedents = await chargerPrecedents([item.slug]);
+                  modifier(
+                    avecPrecedents(ajouterExercice(seance, item.slug, item.nom), precedents),
+                  );
                   setAjout(false);
                   setFiltre("");
                 }}

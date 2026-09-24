@@ -38,3 +38,27 @@ export function optionsCatalogue(q: string) {
     },
   });
 }
+
+type Precedents = Record<
+  string,
+  { reps: number | null; chargeKg: number | null; faite: boolean }[]
+>;
+
+/**
+ * Ce qui a été fait la dernière fois sur ces exercices (D67).
+ *
+ * Ne BLOQUE jamais : en salle, sans réseau, on démarre sans indication plutôt
+ * que d'attendre. D'où un délai court, et `{}` sur tout échec.
+ */
+export async function chargerPrecedents(slugs: string[]): Promise<Precedents> {
+  if (slugs.length === 0) return {};
+  try {
+    const res = await api.seances.precedentes.$get(
+      { query: { slugs: [...new Set(slugs)].join(",") } },
+      { init: { signal: AbortSignal.timeout(3000) } },
+    );
+    return res.ok ? ((await res.json()) as Precedents) : {};
+  } catch {
+    return {};
+  }
+}

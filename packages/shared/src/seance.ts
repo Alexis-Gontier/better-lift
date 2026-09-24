@@ -30,7 +30,7 @@ export type ExerciceEnCours = {
    * affichée sous chaque série, jamais une valeur des cases (D59). Copiée dans
    * le brouillon : elle survit hors ligne et à un arrêt forcé.
    */
-  precedent?: { reps: number | null; chargeKg: number | null }[];
+  precedent?: { reps: number | null; chargeKg: number | null; faite: boolean }[];
 };
 
 export type SeanceEnCours = {
@@ -255,7 +255,7 @@ export function versEnvoi(s: SeanceEnCours, fin: Date): SeanceSaisie {
 /** Attache à chaque exercice ce qui a été fait la dernière fois, s'il y a une dernière fois. */
 export function avecPrecedents(
   s: SeanceEnCours,
-  parSlug: Record<string, { reps: number | null; chargeKg: number | null }[]>,
+  parSlug: Record<string, { reps: number | null; chargeKg: number | null; faite: boolean }[]>,
 ): SeanceEnCours {
   return {
     ...s,
