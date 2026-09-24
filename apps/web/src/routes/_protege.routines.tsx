@@ -4,6 +4,7 @@ import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
+import { EtatVide } from "@/components/etats/etat-vide";
 import { AppShell } from "@/components/shell/app-shell";
 import { DetailRoutine } from "@/features/routines/detail-routine";
 import { EditeurRoutine } from "@/features/routines/editeur-routine";
@@ -85,7 +86,16 @@ function PageRoutines() {
         />
       );
     }
-    if (!existante) return undefined;
+    // Rien de choisi : l'espace de travail reste en place et invite à choisir,
+    // plutôt que de disparaître et de faire sauter la mise en page.
+    if (!existante) {
+      return (
+        <EtatVide
+          titre="Aucune routine ouverte"
+          message="Choisis une routine à gauche pour la voir ou la modifier, ou crées-en une."
+        />
+      );
+    }
     if (detail.isPending) return <EtatChargement lignes={6} />;
     if (detail.isError) {
       return (
@@ -120,5 +130,12 @@ function PageRoutines() {
     );
   }
 
-  return <AppShell titre="Routines" liste={panneauListe()} detail={panneauDetail()} />;
+  return (
+    <AppShell
+      titre="Routines"
+      disposition="colonne"
+      liste={panneauListe()}
+      detail={panneauDetail()}
+    />
+  );
 }
