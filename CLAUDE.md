@@ -106,7 +106,9 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   l'URL** avec les filtres. Un rechargement retombe au même endroit. Composants shadcn plutôt que
   maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
   Page **Paramètres** (`/parametres`) : compte, thème (seul endroit où il se change), unités et
-  fuseau affichés. La liste des exercices montre la vignette GIF (`gif` fait partie du résumé).
+  fuseau affichés. La liste des exercices montre l'**image fixe** (JPG ~6 Ko) : `image`
+  fait partie du résumé, déduite de `gifUrl` par `imageDe` (le dataset publie `images/<id>.jpg`
+  à côté de `videos/<id>.gif`) — aucune colonne ni migration. Le GIF reste réservé aux fiches.
 - `Resizable`, `Sidebar` et `Command` de shadcn fournissent panneaux, navigation et `Cmd+K`.
 - **Le permanent est jointif, le passager flotte — une exception bornée** (D71). Seule la zone
   de contenu (`SidebarInset`) flotte, une fois : marge, coins arrondis, ombre légère. Liste et
@@ -138,7 +140,8 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   assez claire pour que l'aplat se détache du fond à 3,24:1. Plus foncé, le bouton disparaît
   dans la page.
 - **Mobile à quatre onglets** (D74–D80, [`2026-09-24-mobile-onglets-design.md`](docs/superpowers/specs/2026-09-24-mobile-onglets-design.md)) :
-  Accueil · Historique | **bouton central** | Exercices · Profil, façon opengym. Le bouton
+  Accueil · Historique | **bouton central** | Exercices · Profil, façon opengym. Icônes
+  **Lucide** (`lucide-react-native` + `react-native-svg`, présent dans Expo Go), comme le web. Le bouton
   central (aplat lime) reprend la séance en cours, sinon ouvre la modale `app/demarrer.tsx`
   (séance vide ou routine, logique partagée dans `lib/demarrer.ts`). **Piège** : une pile qui
   déclare ses écrans prend le premier pour route initiale — `(onglets)` est donc déclaré avant

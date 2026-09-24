@@ -106,12 +106,13 @@ export function ListeExercices({
                     ex.slug === slugSelectionne ? "bg-(--surface-3)" : "hover:bg-(--surface-2)"
                   }`}
                 >
-                  {/* La vignette du GIF (D46, jamais copié). Fond blanc : les animations
-                      du dataset sont dessinées sur blanc. `lazy` : seules les lignes
-                      visibles la chargent. Sans image, une case vide garde l'alignement. */}
-                  {ex.gif ? (
+                  {/* L'image FIXE de l'exercice (D46, jamais copiée) : ~6 Ko, là où le GIF
+                      pèse cent fois plus et s'anime par centaines. Fond blanc : les
+                      visuels du dataset sont dessinés sur blanc. `lazy` : seules les
+                      lignes visibles la chargent. Sans image, une case garde l'alignement. */}
+                  {ex.image ? (
                     <img
-                      src={ex.gif}
+                      src={ex.image}
                       alt=""
                       width={40}
                       height={40}

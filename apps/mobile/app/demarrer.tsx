@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { X } from "lucide-react-native";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDemarrer } from "../lib/demarrer";
@@ -30,7 +30,7 @@ export default function Demarrer() {
           accessibilityRole="button"
           accessibilityLabel="Fermer"
         >
-          <Ionicons name="close" size={26} color={couleurs.encre} />
+          <X size={26} color={couleurs.encre} />
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.contenu}>

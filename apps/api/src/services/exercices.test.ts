@@ -1,6 +1,12 @@
 import { texteRecherche } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
-import { filtreCatalogue, type LigneExercice, versDetail, versResume } from "./exercices.js";
+import {
+  filtreCatalogue,
+  imageDe,
+  type LigneExercice,
+  versDetail,
+  versResume,
+} from "./exercices.js";
 
 const ligne: LigneExercice = {
   slug: "barbell-bench-press",
@@ -71,8 +77,17 @@ describe("projections", () => {
       nom: "Développé couché à la barre",
       groupe: "CHEST",
       equipement: "Barre",
-      gif: ligne.gifUrl,
+      image:
+        "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efa/images/0025.jpg",
     });
+  });
+
+  it("déduit l'image fixe de l'animation, jamais d'une URL qui ne suit pas la convention", () => {
+    expect(imageDe(null)).toBeNull();
+    expect(imageDe("https://exemple.test/autre/0025.png")).toBeNull();
+    expect(imageDe("https://exemple.test/videos/0025-ab.gif")).toBe(
+      "https://exemple.test/images/0025-ab.jpg",
+    );
   });
 
   it("rend le détail complet : nom anglais, animation, instructions", () => {
@@ -81,6 +96,7 @@ describe("projections", () => {
       nom: "Développé couché à la barre",
       nomAnglais: "barbell bench press",
       gif: ligne.gifUrl,
+      image: imageDe(ligne.gifUrl),
       groupe: "CHEST",
       equipement: "Barre",
       cible: "Pectoraux",
