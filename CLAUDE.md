@@ -92,9 +92,11 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
 - **Toute charge affichée ou saisie passe par `formaterCharge` / `lireCharge`** de `shared`, avec
   `SYSTEME_UNITES` (`apps/web/src/lib/unites.ts`) — l'unique endroit où le système est fixé tant
   qu'aucun profil n'existe.
-- **`AppShell` est monté par chaque route, jamais par `__root.tsx`.** Seule la route sait s'il y
-  a un détail à ouvrir, et la coquille change son jeu de panneaux — donc sa clé de persistance —
-  selon qu'il y en a un. Montée dans la racine, elle imposerait une coquille imbriquée.
+- **`AppShell` est monté par la route de MISE EN PAGE de chaque écran, jamais par `__root.tsx`.**
+  `_protege.exercices.tsx`, `_protege.seances.tsx`, `_protege.routines.tsx` montent la coquille et
+  la liste ; le détail est une **route enfant** rendue par `<Outlet />` (D81). La mise en page lit
+  le paramètre de l'enfant par `useParams({ strict: false })` : elle sait ainsi s'il y a un détail,
+  et la coquille change son jeu de panneaux — donc sa clé de persistance — selon qu'il y en a un.
 
 ## Interface
 
@@ -103,8 +105,15 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   de l'utilisateur) ; non repliable, shadcn n'applique plus les marges de l'`inset`, recopiées sur
   le `SidebarInset` dans `AppShell`. Le titre reste en `sr-only`. Puis liste et détail
   redimensionnables dans le `SidebarInset`, tailles persistées, et **le détail ouvert vit dans
-  l'URL** avec les filtres. Un rechargement retombe au même endroit. Composants shadcn plutôt que
+  le CHEMIN** (D81) : `/exercices/$slug`, `/seances/$id`, `/routines/$id`, `/routines/nouvelle`.
+  Les paramètres de recherche ne portent que ce qui filtre (`q`, `groupe`) ou force un état
+  (`etat`), et suivent d'un détail à l'autre (`search: (s) => s`). Un rechargement retombe au même endroit. Composants shadcn plutôt que
   maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
+  **Routines** en disposition `colonne` (`AppShell`) : colonne de cartes à gauche, routine ouverte
+  **toujours modifiable** à droite — plus de mode lecture ; la barre Annuler/Enregistrer n'apparaît
+  qu'une fois la copie différente de la version enregistrée (`empreinte`). Cartes d'exercice à la
+  Hevy : image, « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées
+  É/1/2/3 (`etiquettesSeries`).
   Page **Paramètres** (`/parametres`) : compte, thème (seul endroit où il se change), unités et
   fuseau affichés. La liste des exercices montre l'**image fixe** (JPG ~6 Ko) : `image`
   fait partie du résumé, déduite de `gifUrl` par `imageDe` (le dataset publie `images/<id>.jpg`

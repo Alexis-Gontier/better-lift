@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ordreRoutines, routineSaisie } from "./routines.js";
+import { etiquettesSeries, meilleureSerie, ordreRoutines, routineSaisie } from "./routines.js";
 
 const serie = { type: "NORMALE", repsCible: 8, chargeCibleKg: 82.5 };
 const exercice = { slug: "barbell-bench-press", reposSec: 120, series: [serie] };
@@ -71,5 +71,44 @@ describe("ordreRoutines", () => {
 
   it("refuse les doublons", () => {
     expect(() => ordreRoutines.parse({ ids: ["a", "a"] })).toThrow();
+  });
+});
+
+describe("etiquettesSeries", () => {
+  it("marque l'échauffement et numérote les autres séries à part", () => {
+    expect(etiquettesSeries(["ECHAUFFEMENT", "NORMALE", "NORMALE", "ECHEC", "DEGRESSIVE"])).toEqual(
+      ["É", "1", "2", "3", "4"],
+    );
+  });
+
+  it("numérote depuis 1 même après plusieurs échauffements", () => {
+    expect(etiquettesSeries(["ECHAUFFEMENT", "ECHAUFFEMENT", "NORMALE"])).toEqual(["É", "É", "1"]);
+  });
+});
+
+describe("meilleureSerie", () => {
+  it("retient la série faite la plus lourde, puis la plus longue à charge égale", () => {
+    expect(
+      meilleureSerie([
+        { reps: 10, chargeKg: 40, faite: true },
+        { reps: 8, chargeKg: 80, faite: true },
+        { reps: 9, chargeKg: 80, faite: true },
+        { reps: 5, chargeKg: 100, faite: false },
+      ]),
+    ).toEqual({ reps: 9, chargeKg: 80 });
+  });
+
+  it("au poids du corps, retient le plus de répétitions", () => {
+    expect(
+      meilleureSerie([
+        { reps: 8, chargeKg: null, faite: true },
+        { reps: 12, chargeKg: null, faite: true },
+      ]),
+    ).toEqual({ reps: 12, chargeKg: null });
+  });
+
+  it("sans série faite, ne rend rien", () => {
+    expect(meilleureSerie([{ reps: 8, chargeKg: 60, faite: false }])).toBeNull();
+    expect(meilleureSerie([])).toBeNull();
   });
 });

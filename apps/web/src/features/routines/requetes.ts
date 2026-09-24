@@ -108,3 +108,24 @@ export function useSupprimerRoutine() {
     },
   });
 }
+
+/**
+ * Ce qui a été fait la dernière fois sur ces exercices, série par série (D67).
+ * La clé porte les slugs triés : deux routines aux mêmes exercices partagent la
+ * lecture, et l'ordre des cartes ne la refait pas.
+ */
+export function optionsPrecedentes(slugs: string[]) {
+  const tries = [...new Set(slugs)].sort();
+  return queryOptions({
+    queryKey: ["seances", "precedentes", tries],
+    queryFn: async () => {
+      const res = await api.seances.precedentes.$get({ query: { slugs: tries.join(",") } });
+      if (!res.ok) throw new Error("La dernière fois n'a pas pu être chargée.");
+      return (await res.json()) as Record<
+        string,
+        { reps: number | null; chargeKg: number | null; faite: boolean }[]
+      >;
+    },
+    enabled: tries.length > 0,
+  });
+}

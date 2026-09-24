@@ -1,4 +1,4 @@
-import type { ExerciceRoutine, RoutineDetail } from "@better-lift/shared";
+import { type ExerciceRoutine, meilleureSerie, type RoutineDetail } from "@better-lift/shared";
 import {
   closestCenter,
   DndContext,
@@ -14,31 +14,51 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Ellipsis, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BoutonFermer } from "./bouton-fermer";
-import { brouillonValide, nouvelExercice, versBrouillon, versRoutine } from "./brouillon";
+import {
+  type Brouillon,
+  brouillonValide,
+  nouvelExercice,
+  versBrouillon,
+  versRoutine,
+} from "./brouillon";
 import { CarteExercice } from "./carte-exercice";
 import { ConfirmerSuppression } from "./confirmer-suppression";
+import { optionsPrecedentes } from "./requetes";
 import { SelecteurExercice } from "./selecteur-exercice";
+
+/** Le brouillon sans ses clés locales : ce qu'on compare pour savoir s'il a changé. */
+const empreinte = (b: Brouillon) =>
+  JSON.stringify({ ...b, exercices: b.exercices.map(({ cle: _cle, ...e }) => e) });
 
 export type RoutineEnregistree = { nom: string; exercices: ExerciceRoutine[] };
 
 /**
- * L'éditeur de routine, dans le panneau détail (D49).
+ * La routine ouverte, TOUJOURS modifiable (plus de mode lecture) : on la lit et
+ * on la retouche au même endroit, comme sur Hevy.
  *
- * Il travaille sur une COPIE : rien ne part tant qu'on n'enregistre pas, et
- * « Annuler » jette la copie. Seuls les exercices se glissent (D48) : pas de
- * contexte imbriqué, donc pas le piège de collision du § 13.
+ * Il travaille sur une COPIE : rien ne part tant qu'on n'enregistre pas. La
+ * barre « Annuler / Enregistrer » n'apparaît qu'une fois la copie différente de
+ * la version enregistrée — sinon elle ne dirait rien. Seuls les exercices se
+ * glissent (D48) : pas de contexte imbriqué, donc pas le piège de collision du § 13.
  */
 export function EditeurRoutine({
   initiale,
   enregistrement,
   erreur,
   onEnregistrer,
-  onAnnuler,
+  onFermer,
   onSupprimer,
 }: {
   /** `null` pour une routine neuve. */
@@ -47,10 +67,16 @@ export function EditeurRoutine({
   /** L'échec du dernier enregistrement : il doit se voir, sinon on croit avoir enregistré. */
   erreur?: string;
   onEnregistrer: (r: RoutineEnregistree) => void;
-  onAnnuler: () => void;
+  /** Ferme la routine (et abandonne une routine neuve). */
+  onFermer: () => void;
   onSupprimer?: () => void;
 }) {
   const [brouillon, setBrouillon] = useState(() => versBrouillon(initiale));
+  // La référence suit la version ENREGISTRÉE : après un enregistrement réussi,
+  // `initiale` devient la copie, et la barre disparaît d'elle-même.
+  const reference = useMemo(() => empreinte(versBrouillon(initiale)), [initiale]);
+  const modifiee = initiale === null || empreinte(brouillon) !== reference;
+  const precedentes = useQuery(optionsPrecedentes(brouillon.exercices.map((e) => e.slug)));
   const [selecteur, setSelecteur] = useState(false);
   const [confirmation, setConfirmation] = useState(false);
 
@@ -74,20 +100,43 @@ export function EditeurRoutine({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 border-b border-(--line) px-5 py-3">
+      <div className="flex items-center gap-2 border-b border-(--line) px-6 py-3">
         <input
           aria-label="Nom de la routine"
           placeholder="Nom de la routine"
           maxLength={120}
           value={brouillon.nom}
           onChange={(e) => setBrouillon({ ...brouillon, nom: e.target.value })}
-          className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-base font-semibold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="-ml-2 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xl font-semibold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
         />
-        <BoutonFermer onFermer={onAnnuler} />
+        {onSupprimer ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-(--ink-subtle)"
+                aria-label="Actions de la routine"
+              >
+                <Ellipsis aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={() => setConfirmation(true)}
+                className="text-destructive-ink"
+              >
+                <Trash2 aria-hidden="true" />
+                Supprimer la routine
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+        <BoutonFermer onFermer={onFermer} />
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-3 px-5 py-4">
+        <div className="flex flex-col gap-4 px-6 py-6">
           {brouillon.exercices.length === 0 ? (
             <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
@@ -103,6 +152,7 @@ export function EditeurRoutine({
                     <CarteExercice
                       key={ex.cle}
                       exercice={ex}
+                      derniere={meilleureSerie(precedentes.data?.[ex.slug] ?? [])}
                       onChange={(nouveau) =>
                         setBrouillon((b) => ({
                           ...b,
@@ -125,48 +175,53 @@ export function EditeurRoutine({
           <Button
             variant="outline"
             onClick={() => setSelecteur(true)}
-            className="border-dashed text-(--ink-subtle)"
+            className="h-11 border-dashed text-(--ink-subtle)"
           >
             <Plus aria-hidden="true" />
-            Exercice
+            Ajouter un exercice
           </Button>
         </div>
       </ScrollArea>
 
       {erreur ? (
-        <p role="alert" className="border-t border-(--line) px-5 pt-3 text-sm text-destructive-ink">
+        <p role="alert" className="border-t border-(--line) px-6 pt-3 text-sm text-destructive-ink">
           {erreur}
         </p>
       ) : null}
-      <div className="flex items-center gap-2 border-t border-(--line) px-5 py-3">
-        {onSupprimer ? (
+      {/* La barre n'apparaît qu'avec des changements à enregistrer. */}
+      {modifiee ? (
+        <div className="flex items-center gap-2 border-t border-(--line) px-6 py-3">
+          <span className="text-sm text-(--ink-subtle)">
+            {initiale ? "Modifications non enregistrées" : "Nouvelle routine"}
+          </span>
           <Button
-            variant="ghost"
-            onClick={() => setConfirmation(true)}
-            className="text-destructive-ink"
+            variant="outline"
+            // Annuler une routine neuve la ferme ; une existante revient à sa
+            // version enregistrée.
+            onClick={() => (initiale ? setBrouillon(versBrouillon(initiale)) : onFermer())}
+            className="ml-auto"
           >
-            Supprimer
+            Annuler
           </Button>
-        ) : null}
-        <Button variant="outline" onClick={onAnnuler} className="ml-auto">
-          Annuler
-        </Button>
-        <Button
-          disabled={!valide || enregistrement}
-          onClick={() => onEnregistrer(versRoutine(brouillon))}
-          className="font-semibold"
-        >
-          {enregistrement ? "Enregistrement…" : "Enregistrer"}
-        </Button>
-      </div>
+          <Button
+            disabled={!valide || enregistrement}
+            onClick={() => onEnregistrer(versRoutine(brouillon))}
+            className="font-semibold"
+          >
+            {enregistrement ? "Enregistrement…" : "Enregistrer"}
+          </Button>
+        </div>
+      ) : null}
 
       <SelecteurExercice
         ouvert={selecteur}
         onFermer={() => setSelecteur(false)}
-        onChoisir={(slug, nom) => {
-          setBrouillon((b) => ({ ...b, exercices: [...b.exercices, nouvelExercice(slug, nom)] }));
-          setSelecteur(false);
-        }}
+        onAjouter={(choisis) =>
+          setBrouillon((b) => ({
+            ...b,
+            exercices: [...b.exercices, ...choisis.map((c) => nouvelExercice(c.slug, c.nom))],
+          }))
+        }
       />
       {onSupprimer ? (
         <ConfirmerSuppression

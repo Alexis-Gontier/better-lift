@@ -1,26 +1,32 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { AppShell } from "@/components/shell/app-shell";
-import { DetailSeance } from "@/features/seances/detail-seance";
 import { ListeSeances } from "@/features/seances/liste-seances";
-import { optionsSeance, optionsSeances } from "@/features/seances/requetes";
+import { optionsSeances } from "@/features/seances/requetes";
 
-const recherche = z.object({ id: z.string().optional(), etat: champEtat });
+// La séance ouverte vit dans le CHEMIN (`/seances/$id`, D81) ; les paramètres de
+// recherche ne portent plus que ce qui filtre ou force un état.
+const recherche = z.object({ etat: champEtat });
 
+/**
+ * La mise en page des séances : la coquille et la liste. Le détail est la route
+ * enfant `$id`, rendue par l'`Outlet` — la liste ne se recharge pas quand on
+ * passe d'une séance à l'autre.
+ */
 export const Route = createFileRoute("/_protege/seances")({
   validateSearch: recherche,
   component: PageSeances,
 });
 
 function PageSeances() {
-  const { id, etat } = Route.useSearch();
+  const { etat } = Route.useSearch();
+  const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useInfiniteQuery(optionsSeances());
-  const detail = useQuery({ ...optionsSeance(id ?? ""), enabled: Boolean(id) });
 
   function panneauListe() {
     const force = etatForceRendu(etat, "L'historique n'a pas pu être chargé.", () =>
@@ -45,29 +51,14 @@ function PageSeances() {
         chargeSuite={liste.isFetchingNextPage}
         onSuite={() => liste.fetchNextPage()}
         idSelectionne={id}
-        onSelection={(sId) => navigate({ search: (s) => ({ ...s, id: sId }) })}
+        onSelection={(sId) =>
+          navigate({ to: "/seances/$id", params: { id: sId }, search: (s) => s })
+        }
       />
     );
   }
 
-  function panneauDetail() {
-    if (!id) return undefined;
-    if (detail.isPending) return <EtatChargement lignes={6} />;
-    if (detail.isError) {
-      return (
-        <EtatErreur
-          message="Cette séance n'a pas pu être chargée."
-          onReessayer={() => detail.refetch()}
-        />
-      );
-    }
-    return (
-      <DetailSeance
-        seance={detail.data}
-        onFermer={() => navigate({ search: (s) => ({ ...s, id: undefined }) })}
-      />
-    );
-  }
-
-  return <AppShell titre="Séances" liste={panneauListe()} detail={panneauDetail()} />;
+  // Le panneau de détail n'existe que lorsqu'une séance est ouverte : la coquille
+  // change alors son jeu de panneaux (et sa clé de persistance).
+  return <AppShell titre="Séances" liste={panneauListe()} detail={id ? <Outlet /> : undefined} />;
 }

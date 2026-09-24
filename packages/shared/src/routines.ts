@@ -74,3 +74,37 @@ export const ordreRoutines = z.object({
     .max(500)
     .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
 });
+
+// --- L'affichage des séries ---------------------------------------------------
+
+/**
+ * Les étiquettes d'une liste de séries, à la Hevy : « É » pour l'échauffement,
+ * puis 1, 2, 3… pour les autres — l'échauffement ne compte pas dans le numéro.
+ */
+export function etiquettesSeries(types: readonly TypeSerie[]): string[] {
+  let n = 0;
+  return types.map((t) => (t === "ECHAUFFEMENT" ? ABREGE_TYPE_SERIE.ECHAUFFEMENT : String(++n)));
+}
+
+/**
+ * La série qui résume une séance passée : la plus lourde des séries faites, la
+ * plus longue à charge égale (au poids du corps, la plus longue tout court).
+ */
+export function meilleureSerie(
+  series: readonly { reps: number | null; chargeKg: number | null; faite: boolean }[],
+): { reps: number | null; chargeKg: number | null } | null {
+  let meilleure: { reps: number | null; chargeKg: number | null } | null = null;
+  for (const s of series) {
+    if (!s.faite) continue;
+    const charge = s.chargeKg ?? -1;
+    const reps = s.reps ?? -1;
+    if (
+      !meilleure ||
+      charge > (meilleure.chargeKg ?? -1) ||
+      (charge === (meilleure.chargeKg ?? -1) && reps > (meilleure.reps ?? -1))
+    ) {
+      meilleure = { reps: s.reps, chargeKg: s.chargeKg };
+    }
+  }
+  return meilleure;
+}

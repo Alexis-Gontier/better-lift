@@ -16,6 +16,11 @@ import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercice
 import { Route as ProtegeParametresRouteImport } from './routes/_protege.parametres'
 import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
 import { Route as ProtegeSeancesRouteImport } from './routes/_protege.seances'
+import { Route as ProtegeExercicesSlugRouteImport } from './routes/_protege.exercices.$slug'
+import { Route as ProtegeRoutinesIndexRouteImport } from './routes/_protege.routines.index'
+import { Route as ProtegeRoutinesIdRouteImport } from './routes/_protege.routines.$id'
+import { Route as ProtegeRoutinesNouvelleRouteImport } from './routes/_protege.routines.nouvelle'
+import { Route as ProtegeSeancesIdRouteImport } from './routes/_protege.seances.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,40 +56,98 @@ const ProtegeSeancesRoute = ProtegeSeancesRouteImport.update({
   path: '/seances',
   getParentRoute: () => ProtegeRoute,
 } as any)
+const ProtegeExercicesSlugRoute = ProtegeExercicesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ProtegeExercicesRoute,
+} as any)
+const ProtegeRoutinesIndexRoute = ProtegeRoutinesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtegeRoutinesRoute,
+} as any)
+const ProtegeRoutinesIdRoute = ProtegeRoutinesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ProtegeRoutinesRoute,
+} as any)
+const ProtegeRoutinesNouvelleRoute = ProtegeRoutinesNouvelleRouteImport.update({
+  id: '/nouvelle',
+  path: '/nouvelle',
+  getParentRoute: () => ProtegeRoutinesRoute,
+} as any)
+const ProtegeSeancesIdRoute = ProtegeSeancesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ProtegeSeancesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
-  '/exercices': typeof ProtegeExercicesRoute
+  '/exercices': typeof ProtegeExercicesRouteWithChildren
   '/parametres': typeof ProtegeParametresRoute
-  '/routines': typeof ProtegeRoutinesRoute
-  '/seances': typeof ProtegeSeancesRoute
+  '/routines': typeof ProtegeRoutinesRouteWithChildren
+  '/seances': typeof ProtegeSeancesRouteWithChildren
+  '/exercices/$slug': typeof ProtegeExercicesSlugRoute
+  '/routines/$id': typeof ProtegeRoutinesIdRoute
+  '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
+  '/seances/$id': typeof ProtegeSeancesIdRoute
+  '/routines/': typeof ProtegeRoutinesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
-  '/exercices': typeof ProtegeExercicesRoute
+  '/exercices': typeof ProtegeExercicesRouteWithChildren
   '/parametres': typeof ProtegeParametresRoute
-  '/routines': typeof ProtegeRoutinesRoute
-  '/seances': typeof ProtegeSeancesRoute
+  '/seances': typeof ProtegeSeancesRouteWithChildren
+  '/exercices/$slug': typeof ProtegeExercicesSlugRoute
+  '/routines/$id': typeof ProtegeRoutinesIdRoute
+  '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
+  '/seances/$id': typeof ProtegeSeancesIdRoute
+  '/routines': typeof ProtegeRoutinesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_protege': typeof ProtegeRouteWithChildren
   '/connexion': typeof ConnexionRoute
-  '/_protege/exercices': typeof ProtegeExercicesRoute
+  '/_protege/exercices': typeof ProtegeExercicesRouteWithChildren
   '/_protege/parametres': typeof ProtegeParametresRoute
-  '/_protege/routines': typeof ProtegeRoutinesRoute
-  '/_protege/seances': typeof ProtegeSeancesRoute
+  '/_protege/routines': typeof ProtegeRoutinesRouteWithChildren
+  '/_protege/seances': typeof ProtegeSeancesRouteWithChildren
+  '/_protege/exercices/$slug': typeof ProtegeExercicesSlugRoute
+  '/_protege/routines/$id': typeof ProtegeRoutinesIdRoute
+  '/_protege/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
+  '/_protege/seances/$id': typeof ProtegeSeancesIdRoute
+  '/_protege/routines/': typeof ProtegeRoutinesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/connexion' | '/exercices' | '/parametres' | '/routines' | '/seances'
+    | '/'
+    | '/connexion'
+    | '/exercices'
+    | '/parametres'
+    | '/routines'
+    | '/seances'
+    | '/exercices/$slug'
+    | '/routines/$id'
+    | '/routines/nouvelle'
+    | '/seances/$id'
+    | '/routines/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/connexion' | '/exercices' | '/parametres' | '/routines' | '/seances'
+    | '/'
+    | '/connexion'
+    | '/exercices'
+    | '/parametres'
+    | '/seances'
+    | '/exercices/$slug'
+    | '/routines/$id'
+    | '/routines/nouvelle'
+    | '/seances/$id'
+    | '/routines'
   id:
     | '__root__'
     | '/'
@@ -94,6 +157,11 @@ export interface FileRouteTypes {
     | '/_protege/parametres'
     | '/_protege/routines'
     | '/_protege/seances'
+    | '/_protege/exercices/$slug'
+    | '/_protege/routines/$id'
+    | '/_protege/routines/nouvelle'
+    | '/_protege/seances/$id'
+    | '/_protege/routines/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,21 +221,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtegeSeancesRouteImport
       parentRoute: typeof ProtegeRoute
     }
+    '/_protege/exercices/$slug': {
+      id: '/_protege/exercices/$slug'
+      path: '/$slug'
+      fullPath: '/exercices/$slug'
+      preLoaderRoute: typeof ProtegeExercicesSlugRouteImport
+      parentRoute: typeof ProtegeExercicesRoute
+    }
+    '/_protege/routines/': {
+      id: '/_protege/routines/'
+      path: '/'
+      fullPath: '/routines/'
+      preLoaderRoute: typeof ProtegeRoutinesIndexRouteImport
+      parentRoute: typeof ProtegeRoutinesRoute
+    }
+    '/_protege/routines/$id': {
+      id: '/_protege/routines/$id'
+      path: '/$id'
+      fullPath: '/routines/$id'
+      preLoaderRoute: typeof ProtegeRoutinesIdRouteImport
+      parentRoute: typeof ProtegeRoutinesRoute
+    }
+    '/_protege/routines/nouvelle': {
+      id: '/_protege/routines/nouvelle'
+      path: '/nouvelle'
+      fullPath: '/routines/nouvelle'
+      preLoaderRoute: typeof ProtegeRoutinesNouvelleRouteImport
+      parentRoute: typeof ProtegeRoutinesRoute
+    }
+    '/_protege/seances/$id': {
+      id: '/_protege/seances/$id'
+      path: '/$id'
+      fullPath: '/seances/$id'
+      preLoaderRoute: typeof ProtegeSeancesIdRouteImport
+      parentRoute: typeof ProtegeSeancesRoute
+    }
   }
 }
 
+interface ProtegeExercicesRouteChildren {
+  ProtegeExercicesSlugRoute: typeof ProtegeExercicesSlugRoute
+}
+
+const ProtegeExercicesRouteChildren: ProtegeExercicesRouteChildren = {
+  ProtegeExercicesSlugRoute: ProtegeExercicesSlugRoute,
+}
+
+const ProtegeExercicesRouteWithChildren =
+  ProtegeExercicesRoute._addFileChildren(ProtegeExercicesRouteChildren)
+
+interface ProtegeRoutinesRouteChildren {
+  ProtegeRoutinesIdRoute: typeof ProtegeRoutinesIdRoute
+  ProtegeRoutinesNouvelleRoute: typeof ProtegeRoutinesNouvelleRoute
+  ProtegeRoutinesIndexRoute: typeof ProtegeRoutinesIndexRoute
+}
+
+const ProtegeRoutinesRouteChildren: ProtegeRoutinesRouteChildren = {
+  ProtegeRoutinesIdRoute: ProtegeRoutinesIdRoute,
+  ProtegeRoutinesNouvelleRoute: ProtegeRoutinesNouvelleRoute,
+  ProtegeRoutinesIndexRoute: ProtegeRoutinesIndexRoute,
+}
+
+const ProtegeRoutinesRouteWithChildren = ProtegeRoutinesRoute._addFileChildren(
+  ProtegeRoutinesRouteChildren,
+)
+
+interface ProtegeSeancesRouteChildren {
+  ProtegeSeancesIdRoute: typeof ProtegeSeancesIdRoute
+}
+
+const ProtegeSeancesRouteChildren: ProtegeSeancesRouteChildren = {
+  ProtegeSeancesIdRoute: ProtegeSeancesIdRoute,
+}
+
+const ProtegeSeancesRouteWithChildren = ProtegeSeancesRoute._addFileChildren(
+  ProtegeSeancesRouteChildren,
+)
+
 interface ProtegeRouteChildren {
-  ProtegeExercicesRoute: typeof ProtegeExercicesRoute
+  ProtegeExercicesRoute: typeof ProtegeExercicesRouteWithChildren
   ProtegeParametresRoute: typeof ProtegeParametresRoute
-  ProtegeRoutinesRoute: typeof ProtegeRoutinesRoute
-  ProtegeSeancesRoute: typeof ProtegeSeancesRoute
+  ProtegeRoutinesRoute: typeof ProtegeRoutinesRouteWithChildren
+  ProtegeSeancesRoute: typeof ProtegeSeancesRouteWithChildren
 }
 
 const ProtegeRouteChildren: ProtegeRouteChildren = {
-  ProtegeExercicesRoute: ProtegeExercicesRoute,
+  ProtegeExercicesRoute: ProtegeExercicesRouteWithChildren,
   ProtegeParametresRoute: ProtegeParametresRoute,
-  ProtegeRoutinesRoute: ProtegeRoutinesRoute,
-  ProtegeSeancesRoute: ProtegeSeancesRoute,
+  ProtegeRoutinesRoute: ProtegeRoutinesRouteWithChildren,
+  ProtegeSeancesRoute: ProtegeSeancesRouteWithChildren,
 }
 
 const ProtegeRouteWithChildren =
