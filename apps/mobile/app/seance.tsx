@@ -1,6 +1,7 @@
 import {
   ajouterExercice,
   ajouterSerie,
+  ajusterRepos,
   arreterRepos,
   avecPrecedents,
   marquerReposSignale,
@@ -12,6 +13,7 @@ import {
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
+import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -37,6 +39,9 @@ export default function Seance() {
   const router = useRouter();
   const { pret, seance, modifier, abandonner: effacerSeance, recharger } = useSeance();
   const maintenant = useMaintenant();
+  // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
+  // posé sur le banc ne doit pas se verrouiller entre deux séries.
+  useKeepAwake();
   const [ajout, setAjout] = useState(false);
   const [filtre, setFiltre] = useState("");
   // La recherche du catalogue réel : bilingue, sans accents (lot 4).
@@ -109,7 +114,7 @@ export default function Seance() {
 
       {/* De la marge en bas : le bandeau de repos ne doit jamais cacher la dernière série. */}
       <ScrollView
-        contentContainerStyle={[styles.contenu, { paddingBottom: 140 }]}
+        contentContainerStyle={[styles.contenu, { paddingBottom: 240 }]}
         keyboardShouldPersistTaps="handled"
       >
         {seance.exercices.map((e, iE) => (
@@ -135,7 +140,11 @@ export default function Seance() {
       </ScrollView>
 
       {repos !== null ? (
-        <BandeauRepos restant={repos} onPasser={() => modifier(arreterRepos(seance))} />
+        <BandeauRepos
+          restant={repos}
+          onPasser={() => modifier(arreterRepos(seance))}
+          onAjuster={(delta) => modifier(ajusterRepos(seance, delta, new Date()))}
+        />
       ) : null}
 
       <Modal visible={ajout} animationType="slide" onRequestClose={() => setAjout(false)}>

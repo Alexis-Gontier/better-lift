@@ -7,7 +7,16 @@ import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
  * Le repos restant, en grand, en bas de l'écran — là où le pouce et l'œil
  * tombent. Il FLOTTE (il se ferme), donc il a droit à l'élévation.
  */
-export function BandeauRepos({ restant, onPasser }: { restant: number; onPasser: () => void }) {
+export function BandeauRepos({
+  restant,
+  onPasser,
+  onAjuster,
+}: {
+  restant: number;
+  onPasser: () => void;
+  /** −15 s / +15 s (D79). */
+  onAjuster: (deltaSec: number) => void;
+}) {
   const fini = restant === 0;
   // Au-dessus de la barre de gestes du système, jamais dessous.
   const { bottom } = useSafeAreaInsets();
@@ -16,13 +25,32 @@ export function BandeauRepos({ restant, onPasser }: { restant: number; onPasser:
       style={[styles.bandeau, { bottom: espace.m + bottom }, fini && styles.fini]}
       accessibilityLiveRegion="polite"
     >
-      <View style={{ flex: 1 }}>
+      <View style={styles.haut}>
         <Text style={styles.libelle}>{fini ? "C'est reparti" : "Repos"}</Text>
+        {/* Lisible à bout de bras, téléphone posé sur le banc (D79). */}
         <Text style={[styles.temps, fini && styles.tempsFini]}>{formaterDuree(restant)}</Text>
       </View>
-      <Pressable onPress={onPasser} style={styles.passer} accessibilityRole="button">
-        <Text style={styles.passerTexte}>{fini ? "OK" : "Passer"}</Text>
-      </Pressable>
+      <View style={styles.boutons}>
+        <Pressable
+          onPress={() => onAjuster(-15)}
+          style={styles.bouton}
+          accessibilityRole="button"
+          accessibilityLabel="Retirer 15 secondes"
+        >
+          <Text style={styles.boutonTexte}>−15 s</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => onAjuster(15)}
+          style={styles.bouton}
+          accessibilityRole="button"
+          accessibilityLabel="Ajouter 15 secondes"
+        >
+          <Text style={styles.boutonTexte}>+15 s</Text>
+        </Pressable>
+        <Pressable onPress={onPasser} style={styles.bouton} accessibilityRole="button">
+          <Text style={styles.boutonTexte}>{fini ? "OK" : "Passer"}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -33,33 +61,33 @@ const styles = StyleSheet.create({
     left: espace.m,
     right: espace.m,
     bottom: espace.m,
-    flexDirection: "row",
-    alignItems: "center",
     padding: espace.l,
-    borderRadius: 14,
+    gap: espace.m,
+    borderRadius: 16,
     backgroundColor: couleurs.surface3,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     elevation: 12,
   },
   fini: { borderColor: couleurs.accent },
+  haut: { alignItems: "center" },
   libelle: { color: couleurs.encrePale, fontSize: taille.petit, textTransform: "uppercase" },
   temps: {
     color: couleurs.encre,
-    fontSize: taille.chrono,
+    fontSize: 56,
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
   tempsFini: { color: couleurs.accent },
-  passer: {
+  boutons: { flexDirection: "row", gap: espace.s },
+  bouton: {
+    flex: 1,
     minHeight: CIBLE,
-    minWidth: 88,
-    paddingHorizontal: espace.l,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     alignItems: "center",
     justifyContent: "center",
   },
-  passerTexte: { color: couleurs.encre, fontSize: taille.courant },
+  boutonTexte: { color: couleurs.encre, fontSize: taille.courant, fontVariant: ["tabular-nums"] },
 });

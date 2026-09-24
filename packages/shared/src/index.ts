@@ -46,6 +46,7 @@ export {
 export {
   ajouterExercice,
   ajouterSerie,
+  ajusterRepos,
   arreterRepos,
   avecPrecedents,
   bilanSeance,

@@ -7,6 +7,7 @@ import {
   type SeanceEnCours,
   versEnvoi,
 } from "@better-lift/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   type ReactNode,
@@ -72,6 +73,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   // Un seul envoi à la fois : deux boucles concurrentes enverraient deux fois
   // (sans doublon grâce à l'idempotence, mais pour rien).
   const verrou = useRef(false);
+  const client = useQueryClient();
 
   const recharger = useCallback(async () => {
     setSeance(await brouillon.lire());
@@ -95,8 +97,13 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     } finally {
       verrou.current = false;
       setEnvoiEnCours(false);
+      // Une séance arrivée au serveur change l'historique et peut-être des
+      // records : leurs clés sont invalidées, sinon l'onglet Historique
+      // resterait sur sa dernière lecture.
+      void client.invalidateQueries({ queryKey: ["seances"] });
+      void client.invalidateQueries({ queryKey: ["records"] });
     }
-  }, []);
+  }, [client]);
 
   // Au démarrage : relire le disque, puis retenter ce qui attend.
   useEffect(() => {
