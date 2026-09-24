@@ -23,6 +23,10 @@ const executer = (/** @type {string} */ cmd) => execSync(cmd, { stdio: "inherit"
 rmSync(SORTIE, { recursive: true, force: true });
 
 // Le client Prisma est généré, pas commité : il doit exister avant le bundle.
+// `prisma.config.ts` exige DIRECT_URL, que Vercel ne fournit pas (le runtime ne
+// lit que DATABASE_URL) : `generate` ne contacte jamais la base, une URL
+// factice suffit — comme en CI. Une vraie valeur, en local, l'emporte.
+process.env.DIRECT_URL ??= "postgresql://build:build@localhost:5432/build";
 executer("pnpm --filter @better-lift/db generate");
 executer("pnpm --filter @better-lift/web build");
 cpSync("apps/web/dist", `${SORTIE}/static`, { recursive: true });
