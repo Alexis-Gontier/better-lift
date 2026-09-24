@@ -10,7 +10,8 @@
       "!**/.expo",
       "!**/generated",
       "!**/routeTree.gen.ts",
-      "!packages/db/catalogue/source.json"
+      "!packages/db/catalogue/source.json",
+      "!packages/db/catalogue/noms-fr.json"
     ]
   },
   "formatter": {

@@ -1091,8 +1091,13 @@ describe("noms-fr.json", () => {
     expect(doublons).toEqual([]);
   });
 
+  // Lu dans le TEXTE du fichier, pas via `Object.keys` : un objet JavaScript range
+  // les clés numériques canoniques (« 1000 ») avant les autres (« 0001 »), ce qui
+  // rendrait ce test faux quel que soit l'ordre réel du fichier.
   it("garde ses clés triées par id, pour que le diff reste lisible", () => {
-    const cles = Object.keys(nomsFr);
+    const texte = readFileSync(new URL("./noms-fr.json", import.meta.url), "utf8");
+    const cles = [...texte.matchAll(/^\s*"(\d{4})":/gm)].map((m) => m[1]);
+    expect(cles).toHaveLength(Object.keys(nomsFr).length);
     expect(cles).toEqual([...cles].sort());
   });
 });
