@@ -16,7 +16,7 @@
     },
     "apps/mobile": {
       "entry": "app/**/*.{ts,tsx}",
-      "project": ["app/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}"]
+      "project": ["app/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"]
     }
   }
 }

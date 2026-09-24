@@ -36,3 +36,16 @@ export function lireCharge(texte: string, systeme: UnitSystem): number | null {
   const kg = systeme === "imperial" ? lbToKg(valeur) : Math.round(valeur * 100) / 100;
   return kg > CHARGE_MAX_KG ? Number.NaN : kg;
 }
+
+const FORMAT_CHAMP = new Intl.NumberFormat("fr-FR", {
+  maximumFractionDigits: 2,
+  useGrouping: false,
+});
+
+/**
+ * Le nombre à mettre DANS un champ de saisie : sans unité (elle est affichée à
+ * côté) et sans séparateur de milliers — « 1 000 » ne se relirait pas.
+ */
+export function chargeEnTexte(kg: number, systeme: UnitSystem): string {
+  return FORMAT_CHAMP.format(systeme === "imperial" ? kgToLb(kg) : kg);
+}

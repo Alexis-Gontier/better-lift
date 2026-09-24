@@ -1,6 +1,6 @@
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
-export { formaterCharge, lireCharge } from "./charge.js";
+export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 export {
   ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
@@ -24,6 +24,24 @@ export {
   TYPES_SERIE,
   type TypeSerie,
 } from "./routines.js";
+export {
+  ajouterExercice,
+  ajouterSerie,
+  arreterRepos,
+  bilanSeance,
+  demarrerDepuisRoutine,
+  demarrerVide,
+  type ExerciceEnCours,
+  marquerReposSignale,
+  modifierSerie,
+  reposRestant,
+  retirerExercice,
+  retirerSerie,
+  type SeanceEnCours,
+  type SerieEnCours,
+  secondesEcoulees,
+  validerSerie,
+} from "./seance.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formaterCharge, lireCharge } from "./charge.js";
+import { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 
 describe("formaterCharge", () => {
   it("écrit la charge avec la virgule française et l'unité", () => {
@@ -43,5 +43,19 @@ describe("lireCharge", () => {
   it("fait l'aller-retour à 0,01 près", () => {
     const kg = lireCharge(formaterCharge(82.5, "imperial").replace(" lb", ""), "imperial");
     expect(kg).toBeCloseTo(82.5, 1);
+  });
+});
+
+describe("chargeEnTexte", () => {
+  // Ce qu'on met DANS un champ : l'unité est à côté, et « 1 000 » ne se
+  // relirait pas — pas de séparateur de milliers.
+  it("rend le nombre seul, sans unité ni séparateur de milliers", () => {
+    expect(chargeEnTexte(82.5, "metric")).toBe("82,5");
+    expect(chargeEnTexte(1000, "metric")).toBe("1000");
+    expect(chargeEnTexte(100, "imperial")).toBe("220,46");
+  });
+
+  it("se relit par lireCharge", () => {
+    expect(lireCharge(chargeEnTexte(1000, "metric"), "metric")).toBe(1000);
   });
 });
