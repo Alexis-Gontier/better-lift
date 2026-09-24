@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { auth } from "./auth.js";
+import { routesExercices } from "./routes/exercices.js";
 import { health } from "./routes/health.js";
 
 // Ce module construit l'app, sans aucun effet de bord (pas de `serve()`) : il
@@ -28,7 +29,7 @@ app.use(
 // d'authentification pour les joindre.
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
-const routes = app.route("/health", health);
+const routes = app.route("/health", health).route("/exercices", routesExercices());
 
 export type AppType = typeof routes;
 export default app;
