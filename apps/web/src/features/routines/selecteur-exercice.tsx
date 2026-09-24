@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { optionsCatalogue } from "@/features/exercices/requetes";
 
 /** Radix interdit la valeur vide dans un `Select` : « tous » a sa propre clé. */
@@ -77,6 +78,8 @@ export function SelecteurExercice({
           Cherche dans le catalogue, en français ou en anglais, coche un ou plusieurs exercices,
           puis ajoute-les à la routine.
         </DialogDescription>
+        {/* Trois filets, bord à bord : titre, recherche, liste, actions. */}
+        <Separator className="-mx-5 w-auto!" />
 
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -111,6 +114,7 @@ export function SelecteurExercice({
             </SelectContent>
           </Select>
         </div>
+        <Separator className="-mx-5 w-auto!" />
 
         <ScrollArea className="-mx-1 min-h-0 flex-1">
           {catalogue.isPending ? (
@@ -192,6 +196,7 @@ export function SelecteurExercice({
           )}
         </ScrollArea>
 
+        <Separator className="-mx-5 w-auto!" />
         <DialogFooter className="items-center gap-2 sm:justify-between">
           <span className="text-sm text-(--ink-subtle)">
             {choisis.length === 0
