@@ -116,18 +116,20 @@ export function SelecteurExercice({
         </div>
         <Separator className="-mx-5 w-auto!" />
 
-        <ScrollArea className="-mx-1 min-h-0 flex-1">
+        {/* Bord à bord, comme les filets : la barre de défilement longe le bord du
+            dialogue, le contenu garde la marge intérieure. */}
+        <ScrollArea className="-mx-5 min-h-0 flex-1">
           {catalogue.isPending ? (
-            <p className="px-2 py-3 text-sm text-(--ink-faint)">Chargement…</p>
+            <p className="px-5 py-3 text-sm text-(--ink-faint)">Chargement…</p>
           ) : catalogue.isError ? (
-            <p className="px-2 py-3 text-sm text-destructive-ink">
+            <p className="px-5 py-3 text-sm text-destructive-ink">
               Le catalogue n'a pas pu être chargé.
             </p>
           ) : exercices.length === 0 ? (
-            <p className="px-2 py-3 text-sm text-(--ink-faint)">Aucun exercice ne correspond.</p>
+            <p className="px-5 py-3 text-sm text-(--ink-faint)">Aucun exercice ne correspond.</p>
           ) : (
             <>
-              <ul className="grid grid-cols-1 gap-2 px-1 sm:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-2 px-5 sm:grid-cols-2">
                 {exercices.map((ex) => {
                   const coche = estChoisi(ex.slug);
                   return (
@@ -181,7 +183,7 @@ export function SelecteurExercice({
                 })}
               </ul>
               {catalogue.hasNextPage ? (
-                <div className="px-1 pt-3">
+                <div className="px-5 pt-3">
                   <Button
                     variant="outline"
                     onClick={() => catalogue.fetchNextPage()}
