@@ -216,10 +216,12 @@ export function EditeurRoutine({
       <SelecteurExercice
         ouvert={selecteur}
         onFermer={() => setSelecteur(false)}
-        onChoisir={(slug, nom) => {
-          setBrouillon((b) => ({ ...b, exercices: [...b.exercices, nouvelExercice(slug, nom)] }));
-          setSelecteur(false);
-        }}
+        onAjouter={(choisis) =>
+          setBrouillon((b) => ({
+            ...b,
+            exercices: [...b.exercices, ...choisis.map((c) => nouvelExercice(c.slug, c.nom))],
+          }))
+        }
       />
       {onSupprimer ? (
         <ConfirmerSuppression
