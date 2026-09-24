@@ -117,85 +117,88 @@ export function SelecteurExercice({
         <Separator className="-mx-5 w-auto!" />
 
         {/* Bord à bord, comme les filets : la barre de défilement longe le bord du
-            dialogue, le contenu garde la marge intérieure. */}
-        <ScrollArea className="-mx-5 min-h-0 flex-1">
-          {catalogue.isPending ? (
-            <p className="px-5 py-3 text-sm text-(--ink-faint)">Chargement…</p>
-          ) : catalogue.isError ? (
-            <p className="px-5 py-3 text-sm text-destructive-ink">
-              Le catalogue n'a pas pu être chargé.
-            </p>
-          ) : exercices.length === 0 ? (
-            <p className="px-5 py-3 text-sm text-(--ink-faint)">Aucun exercice ne correspond.</p>
-          ) : (
-            <>
-              <ul className="grid grid-cols-1 gap-2 px-5 sm:grid-cols-2">
-                {exercices.map((ex) => {
-                  const coche = estChoisi(ex.slug);
-                  return (
-                    <li key={ex.slug}>
-                      {/* Toute la carte coche : un label autour de la case. */}
-                      <label
-                        htmlFor={`choix-${ex.slug}`}
-                        className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2.5 transition-colors ${
-                          coche
-                            ? "border-(--ink) bg-(--surface-2)"
-                            : "border-(--line) hover:border-(--line-strong) hover:bg-(--surface-2)"
-                        }`}
-                      >
-                        {ex.image ? (
-                          <img
-                            src={ex.image}
-                            alt=""
-                            width={48}
-                            height={48}
-                            loading="lazy"
-                            decoding="async"
-                            className="size-12 shrink-0 rounded-md bg-white object-contain"
+            dialogue et le haut du filet ; la marge passe À L'INTÉRIEUR, pour que la
+            liste défile jusqu'aux filets au lieu de s'arrêter avant. */}
+        <ScrollArea className="-mx-5 -my-4 min-h-0 flex-1">
+          <div className="py-4">
+            {catalogue.isPending ? (
+              <p className="px-5 py-3 text-sm text-(--ink-faint)">Chargement…</p>
+            ) : catalogue.isError ? (
+              <p className="px-5 py-3 text-sm text-destructive-ink">
+                Le catalogue n'a pas pu être chargé.
+              </p>
+            ) : exercices.length === 0 ? (
+              <p className="px-5 py-3 text-sm text-(--ink-faint)">Aucun exercice ne correspond.</p>
+            ) : (
+              <>
+                <ul className="grid grid-cols-1 gap-2 px-5 sm:grid-cols-2">
+                  {exercices.map((ex) => {
+                    const coche = estChoisi(ex.slug);
+                    return (
+                      <li key={ex.slug}>
+                        {/* Toute la carte coche : un label autour de la case. */}
+                        <label
+                          htmlFor={`choix-${ex.slug}`}
+                          className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2.5 transition-colors ${
+                            coche
+                              ? "border-(--ink) bg-(--surface-2)"
+                              : "border-(--line) hover:border-(--line-strong) hover:bg-(--surface-2)"
+                          }`}
+                        >
+                          {ex.image ? (
+                            <img
+                              src={ex.image}
+                              alt=""
+                              width={48}
+                              height={48}
+                              loading="lazy"
+                              decoding="async"
+                              className="size-12 shrink-0 rounded-md bg-white object-contain"
+                            />
+                          ) : (
+                            // Sans image, l'initiale — comme la capture de référence.
+                            <span
+                              aria-hidden="true"
+                              className="grid size-12 shrink-0 place-items-center rounded-md bg-(--surface-3) font-semibold text-(--ink-subtle)"
+                            >
+                              {ex.nom.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-(--ink)">
+                              {ex.nom}
+                            </span>
+                            <span className="mt-0.5 block truncate text-xs text-(--ink-faint)">
+                              {LIBELLE_GROUPE[ex.groupe]} · {ex.equipement}
+                            </span>
+                          </span>
+                          <Checkbox
+                            id={`choix-${ex.slug}`}
+                            checked={coche}
+                            onCheckedChange={() => basculer(ex)}
+                            aria-label={`Choisir ${ex.nom}`}
+                            className="mr-1"
                           />
-                        ) : (
-                          // Sans image, l'initiale — comme la capture de référence.
-                          <span
-                            aria-hidden="true"
-                            className="grid size-12 shrink-0 place-items-center rounded-md bg-(--surface-3) font-semibold text-(--ink-subtle)"
-                          >
-                            {ex.nom.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-(--ink)">
-                            {ex.nom}
-                          </span>
-                          <span className="mt-0.5 block truncate text-xs text-(--ink-faint)">
-                            {LIBELLE_GROUPE[ex.groupe]} · {ex.equipement}
-                          </span>
-                        </span>
-                        <Checkbox
-                          id={`choix-${ex.slug}`}
-                          checked={coche}
-                          onCheckedChange={() => basculer(ex)}
-                          aria-label={`Choisir ${ex.nom}`}
-                          className="mr-1"
-                        />
-                      </label>
-                    </li>
-                  );
-                })}
-              </ul>
-              {catalogue.hasNextPage ? (
-                <div className="px-5 pt-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => catalogue.fetchNextPage()}
-                    disabled={catalogue.isFetchingNextPage}
-                    className="w-full text-(--ink-subtle)"
-                  >
-                    {catalogue.isFetchingNextPage ? "Chargement…" : "Afficher plus"}
-                  </Button>
-                </div>
-              ) : null}
-            </>
-          )}
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {catalogue.hasNextPage ? (
+                  <div className="px-5 pt-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => catalogue.fetchNextPage()}
+                      disabled={catalogue.isFetchingNextPage}
+                      className="w-full text-(--ink-subtle)"
+                    >
+                      {catalogue.isFetchingNextPage ? "Chargement…" : "Afficher plus"}
+                    </Button>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
         </ScrollArea>
 
         <Separator className="-mx-5 w-auto!" />
