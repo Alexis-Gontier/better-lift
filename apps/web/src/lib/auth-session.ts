@@ -11,6 +11,14 @@ import { authClient, type Session } from "./auth-client";
 export const auth = { session: null as Session };
 
 export async function chargerSession(): Promise<void> {
-  const { data } = await authClient.getSession();
-  auth.session = data ?? null;
+  // `main.tsx` attend cette fonction AVANT le premier rendu. Si elle rejetait —
+  // API injoignable, réseau coupé —, l'application ne se rendrait jamais : une
+  // page blanche, sans un mot. Une API injoignable se traite donc comme « pas de
+  // session » : on retombe sur la connexion, qui dira l'échec à la tentative.
+  try {
+    const { data } = await authClient.getSession();
+    auth.session = data ?? null;
+  } catch {
+    auth.session = null;
+  }
 }
