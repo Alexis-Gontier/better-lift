@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 
 /**
@@ -35,6 +35,57 @@ export function optionsCatalogue(q: string) {
       const res = await api.exercices.$get({ query: q ? { q, taille: "30" } : { taille: "30" } });
       if (!res.ok) throw new Error("Le catalogue n'a pas pu être chargé.");
       return (await res.json()).exercices;
+    },
+    // Garde la liste pendant la frappe : sans lui, chaque lettre clignote.
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function optionsExercice(slug: string) {
+  return queryOptions({
+    queryKey: ["exercices", "detail", slug],
+    queryFn: async () => {
+      const res = await api.exercices[":slug"].$get({ param: { slug } });
+      if (!res.ok) throw new Error("Cet exercice n'a pas pu être chargé.");
+      return res.json();
+    },
+    // Le catalogue ne change qu'au semis : une fiche vue reste bonne.
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+}
+
+export function optionsRecords(slug: string) {
+  return queryOptions({
+    queryKey: ["records", slug],
+    queryFn: async () => {
+      const res = await api.exercices[":slug"].records.$get({ param: { slug } });
+      if (!res.ok) throw new Error("Les records n'ont pas pu être chargés.");
+      return (await res.json()).records;
+    },
+  });
+}
+
+/** L'historique, antéchronologique, par pages (mêmes clés que le web). */
+export function optionsSeances() {
+  return infiniteQueryOptions({
+    queryKey: ["seances", "liste"],
+    queryFn: async ({ pageParam }) => {
+      const res = await api.seances.$get({ query: { page: String(pageParam) } });
+      if (!res.ok) throw new Error("L'historique n'a pas pu être chargé.");
+      return res.json();
+    },
+    initialPageParam: 1,
+    getNextPageParam: (d) => (d.page * d.taille < d.total ? d.page + 1 : undefined),
+  });
+}
+
+export function optionsSeance(id: string) {
+  return queryOptions({
+    queryKey: ["seances", "detail", id],
+    queryFn: async () => {
+      const res = await api.seances[":id"].$get({ param: { id } });
+      if (!res.ok) throw new Error("Cette séance n'a pas pu être chargée.");
+      return res.json();
     },
   });
 }

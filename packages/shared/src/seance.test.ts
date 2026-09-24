@@ -3,6 +3,7 @@ import type { RoutineDetail } from "./routines.js";
 import {
   ajouterExercice,
   ajouterSerie,
+  ajusterRepos,
   arreterRepos,
   avecPrecedents,
   bilanSeance,
@@ -260,5 +261,32 @@ describe("avecPrecedents", () => {
       "barbell-bench-press": [{ reps: 6, chargeKg: 80, faite: true }],
     });
     expect(JSON.stringify(versEnvoi(avec, T0))).not.toContain("precedent");
+  });
+});
+
+describe("ajusterRepos", () => {
+  const maintenant = new Date(T0.getTime() + 60_000);
+  const enRepos = (restantSec: number, signale = false) => ({
+    ...demarrerVide("s", T0),
+    repos: { fin: new Date(maintenant.getTime() + restantSec * 1000).toISOString(), signale },
+  });
+
+  it("repousse ou avance la fin du repos", () => {
+    expect(reposRestant(ajusterRepos(enRepos(60), 15, maintenant), maintenant)).toBe(75);
+    expect(reposRestant(ajusterRepos(enRepos(60), -15, maintenant), maintenant)).toBe(45);
+  });
+
+  it("ne descend jamais sous zéro : le repos s'achève maintenant", () => {
+    expect(reposRestant(ajusterRepos(enRepos(10), -15, maintenant), maintenant)).toBe(0);
+  });
+
+  it("rallonger un repos déjà annoncé le fera vibrer de nouveau", () => {
+    const s = ajusterRepos(enRepos(0, true), 15, maintenant);
+    expect(s.repos?.signale).toBe(false);
+  });
+
+  it("sans repos en cours, ne fait rien", () => {
+    const s = demarrerVide("s", T0);
+    expect(ajusterRepos(s, 15, maintenant)).toBe(s);
   });
 });

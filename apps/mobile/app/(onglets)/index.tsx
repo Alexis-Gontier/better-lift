@@ -6,7 +6,7 @@ import {
 } from "@better-lift/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,17 +17,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { authClient } from "../lib/auth-client";
-import { chargerPrecedents, optionsRoutine, optionsRoutines } from "../lib/requetes";
-import { useSeance } from "../lib/seance";
-import { formaterDuree, nouvelId, useMaintenant } from "../lib/temps";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { chargerPrecedents, optionsRoutine, optionsRoutines } from "../../lib/requetes";
+import { useSeance } from "../../lib/seance";
+import { formaterDuree, nouvelId, useMaintenant } from "../../lib/temps";
+import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
 
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 export default function Accueil() {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
   const {
     seance,
     file,
@@ -41,12 +39,9 @@ export default function Accueil() {
   const refusees = file.filter((e) => e.erreur !== null);
   const maintenant = useMaintenant();
   const client = useQueryClient();
-  const routines = useQuery({ ...optionsRoutines(), enabled: Boolean(session) });
+  // La garde de session est dans `(onglets)/_layout.tsx` : ici, on est connecté.
+  const routines = useQuery(optionsRoutines());
   const [ouverture, setOuverture] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isPending && !session) router.replace("/connexion");
-  }, [isPending, session, router]);
 
   /**
    * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
@@ -63,14 +58,6 @@ export default function Accueil() {
     }
     router.push("/seance");
   };
-
-  if (isPending) {
-    return (
-      <View style={[styles.ecran, styles.centre]}>
-        <Text style={styles.pale}>Chargement…</Text>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.ecran}>
@@ -208,19 +195,6 @@ export default function Accueil() {
             </Text>
           </Pressable>
         ))}
-
-        <Pressable
-          style={styles.deconnexion}
-          onPress={async () => {
-            await authClient.signOut();
-            // Les clés de cache ne portent pas l'utilisateur : sans ce vidage, le
-            // compte suivant verrait un instant les routines du précédent.
-            client.clear();
-            router.replace("/connexion");
-          }}
-        >
-          <Text style={styles.pale}>Se déconnecter ({session?.user.email})</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -228,7 +202,6 @@ export default function Accueil() {
 
 const styles = StyleSheet.create({
   ecran: { flex: 1, backgroundColor: couleurs.canvas },
-  centre: { alignItems: "center", justifyContent: "center" },
   contenu: { padding: espace.l, gap: espace.m },
   titre: {
     color: couleurs.encre,
@@ -297,10 +270,4 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   dangerTexte: { color: couleurs.dangerEncre, fontSize: taille.courant },
-  deconnexion: {
-    marginTop: espace.xl,
-    alignItems: "center",
-    minHeight: CIBLE,
-    justifyContent: "center",
-  },
 });

@@ -165,6 +165,23 @@ export function arreterRepos(s: SeanceEnCours): SeanceEnCours {
   return { ...s, repos: null };
 }
 
+/**
+ * −15 s / +15 s sur le repos en cours (D79). La fin ne recule jamais avant
+ * `maintenant` : un repos raccourci au-delà s'achève, il ne devient pas négatif.
+ * Rallonger rouvre la vibration de fin : le repos n'est plus fini.
+ */
+export function ajusterRepos(s: SeanceEnCours, deltaSec: number, maintenant: Date): SeanceEnCours {
+  if (!s.repos) return s;
+  const fin = Math.max(Date.parse(s.repos.fin) + deltaSec * 1000, maintenant.getTime());
+  return {
+    ...s,
+    repos: {
+      fin: new Date(fin).toISOString(),
+      signale: fin > maintenant.getTime() ? false : s.repos.signale,
+    },
+  };
+}
+
 export function marquerReposSignale(s: SeanceEnCours): SeanceEnCours {
   return s.repos ? { ...s, repos: { ...s.repos, signale: true } } : s;
 }

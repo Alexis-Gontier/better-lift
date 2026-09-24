@@ -1,0 +1,38 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
+
+/** L'en-tête d'un écran empilé : retour à gauche, titre sur toute la largeur. */
+export function EnteteRetour({ titre }: { titre: string }) {
+  const router = useRouter();
+  return (
+    <View style={styles.entete}>
+      <Pressable
+        onPress={() => router.back()}
+        style={styles.retour}
+        accessibilityRole="button"
+        accessibilityLabel="Retour"
+      >
+        <Ionicons name="chevron-back" size={24} color={couleurs.encre} />
+      </Pressable>
+      <Text style={styles.titre} numberOfLines={2}>
+        {titre}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  entete: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.xs,
+    paddingHorizontal: espace.s,
+    paddingVertical: espace.s,
+    borderBottomWidth: 1,
+    borderBottomColor: couleurs.ligne,
+  },
+  retour: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
+  titre: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
+});

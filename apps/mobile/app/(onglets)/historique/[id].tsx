@@ -1,0 +1,109 @@
+import { formaterCharge, formatJour, LIBELLE_RECORD } from "@better-lift/shared";
+import { useQuery } from "@tanstack/react-query";
+import { useLocalSearchParams } from "expo-router";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
+import { EnteteRetour } from "../../../components/ui/entete-retour";
+import { Chargement, Erreur } from "../../../components/ui/etats";
+import { FUSEAU } from "../../../lib/fuseau";
+import { optionsSeance } from "../../../lib/requetes";
+import { dureeMin } from "../../../lib/temps";
+import { couleurs, espace, taille } from "../../../lib/theme";
+import { SYSTEME_UNITES } from "../../../lib/unites";
+
+export default function DetailSeance() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const seance = useQuery(optionsSeance(id));
+
+  if (seance.isPending || seance.isError) {
+    return (
+      <SafeAreaView style={styles.ecran} edges={["top"]}>
+        <EnteteRetour titre="" />
+        {seance.isPending ? (
+          <Chargement />
+        ) : (
+          <Erreur
+            message="Cette séance n'a pas pu être chargée."
+            onReessayer={() => seance.refetch()}
+          />
+        )}
+      </SafeAreaView>
+    );
+  }
+
+  const s = seance.data;
+  return (
+    <SafeAreaView style={styles.ecran} edges={["top"]}>
+      <EnteteRetour titre={s.nom} />
+      <ScrollView contentContainerStyle={styles.contenu}>
+        <Text style={styles.sous}>
+          {formatJour(s.debut, FUSEAU)} · {dureeMin(s)} min · {s.seriesFaites}{" "}
+          {s.seriesFaites > 1 ? "séries" : "série"} · {formaterCharge(s.volumeKg, SYSTEME_UNITES)}
+        </Text>
+        {s.exercices.map((ex, iE) => (
+          <View key={`${ex.slug}-${iE}`} style={styles.carte}>
+            <Text style={styles.exercice}>{ex.nom}</Text>
+            {ex.series.map((serie, i) => (
+              <View
+                key={`${ex.slug}-${iE}-${i}`}
+                // Une série non faite reste visible — c'était prévu, pas fait —
+                // mais s'efface derrière celles qui comptent.
+                style={[styles.serie, !serie.faite && styles.nonFaite]}
+              >
+                <Text style={styles.numero}>{i + 1}</Text>
+                <Text style={styles.valeur}>
+                  {formaterSerie(serie.chargeKg, serie.reps)}
+                  {serie.type === "ECHAUFFEMENT" ? (
+                    <Text style={styles.echauffement}> échauffement</Text>
+                  ) : null}
+                </Text>
+                {serie.records.length > 0 ? (
+                  <BadgeRecord libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")} />
+                ) : null}
+              </View>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+  contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl * 2 },
+  sous: { color: couleurs.encrePale, fontSize: taille.petit },
+  carte: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: couleurs.ligne,
+    backgroundColor: couleurs.surface1,
+    overflow: "hidden",
+  },
+  exercice: {
+    color: couleurs.encre,
+    fontSize: taille.courant,
+    fontWeight: "600",
+    padding: espace.m,
+    borderBottomWidth: 1,
+    borderBottomColor: couleurs.ligne,
+  },
+  serie: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: espace.s,
+    paddingHorizontal: espace.m,
+    paddingVertical: 10,
+  },
+  nonFaite: { opacity: 0.45 },
+  numero: { width: 18, color: couleurs.encreFaible, fontSize: taille.petit },
+  valeur: {
+    flex: 1,
+    color: couleurs.encreDouce,
+    fontSize: taille.courant,
+    fontVariant: ["tabular-nums"],
+  },
+  echauffement: { color: couleurs.encreFaible, fontSize: taille.petit },
+});

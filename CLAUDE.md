@@ -134,6 +134,15 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   `#a83e39` tient deux contraintes à la fois : assez sombre pour que son encre passe à 5,65:1,
   assez claire pour que l'aplat se détache du fond à 3,24:1. Plus foncé, le bouton disparaît
   dans la page.
+- **Mobile à quatre onglets** (D74–D80, [`2026-09-24-mobile-onglets-design.md`](docs/superpowers/specs/2026-09-24-mobile-onglets-design.md)) :
+  Accueil · Historique · Exercices · Profil, groupe `app/(onglets)/` dont le `_layout` porte la
+  garde de session. `seance` et `fin` restent hors des onglets, en plein écran. L'historique est
+  désormais aussi sur mobile (D68 levée). Onglet actif en encre, jamais en lime. Une séance
+  envoyée invalide `["seances"]` et `["records"]`. Pas de hauteur fixe sur la barre d'onglets :
+  elle recouvrirait la zone de geste d'Android.
+  Séance guidée : vignette GIF par exercice (agrandie à l'appui, `expo-image` en cache disque),
+  écran maintenu allumé (`useKeepAwake`), repos en grand bandeau avec −15 s / +15 s
+  (`ajusterRepos` dans `shared`).
 - **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et on valide un écran avant de lui brancher
