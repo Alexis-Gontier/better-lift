@@ -1,39 +1,39 @@
 import { GROUPES } from "@better-lift/shared";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { AppShell } from "@/components/shell/app-shell";
-import { DetailExercice } from "@/features/exercices/detail-exercice";
 import { ListeExercices } from "@/features/exercices/liste-exercices";
-import { optionsCatalogue, optionsExercice } from "@/features/exercices/requetes";
-import { optionsRecords } from "@/features/seances/requetes";
+import { optionsCatalogue } from "@/features/exercices/requetes";
 
-// Le détail ouvert et la recherche vivent dans l'URL, validés par schéma (D19).
-// `slug` remplace `id` : c'est l'identifiant stable et lisible du catalogue.
-// `.catch(undefined)` évite qu'une URL trafiquée fasse échouer tout l'écran —
-// un filtre inconnu s'ignore, il ne casse pas la page.
+// L'exercice ouvert vit dans le CHEMIN (`/exercices/$slug`, D81) ; la recherche
+// et le groupe restent en paramètres : ce sont des filtres, et ils suivent quand
+// on passe d'un exercice à l'autre. `.catch(undefined)` évite qu'une URL
+// trafiquée fasse échouer tout l'écran — un filtre inconnu s'ignore.
 const recherche = z.object({
   q: z.string().optional(),
   groupe: z.enum(GROUPES).optional().catch(undefined),
-  slug: z.string().optional(),
   etat: champEtat,
 });
 
+/**
+ * La mise en page du catalogue : la coquille et la liste filtrée. La fiche est
+ * la route enfant `$slug`, rendue par l'`Outlet`.
+ */
 export const Route = createFileRoute("/_protege/exercices")({
   validateSearch: recherche,
   component: PageExercices,
 });
 
 function PageExercices() {
-  const { q, groupe, slug, etat } = Route.useSearch();
+  const { q, groupe, etat } = Route.useSearch();
+  const { slug } = useParams({ strict: false });
   const navigate = Route.useNavigate();
 
   const liste = useInfiniteQuery(optionsCatalogue({ q, groupe }));
-  const detail = useQuery({ ...optionsExercice(slug ?? ""), enabled: Boolean(slug) });
-  const records = useQuery({ ...optionsRecords(slug ?? ""), enabled: Boolean(slug) });
 
   const abandonner = () => navigate({ search: (s) => ({ ...s, etat: undefined }) });
   const vide = estVideForce(etat);
@@ -69,30 +69,14 @@ function PageExercices() {
         slugSelectionne={slug}
         onRecherche={(valeur) => navigate({ search: (s) => ({ ...s, q: valeur || undefined }) })}
         onGroupe={(g) => navigate({ search: (s) => ({ ...s, groupe: g }) })}
-        onSelection={(choisi) => navigate({ search: (s) => ({ ...s, slug: choisi }) })}
+        onSelection={(choisi) =>
+          navigate({ to: "/exercices/$slug", params: { slug: choisi }, search: (s) => s })
+        }
       />
     );
   }
 
-  function panneauDetail() {
-    if (!slug) return undefined;
-    if (detail.isPending) return <EtatChargement />;
-    if (detail.isError) {
-      return (
-        <EtatErreur
-          message="Cet exercice n'a pas pu être chargé."
-          onReessayer={() => detail.refetch()}
-        />
-      );
-    }
-    return (
-      <DetailExercice
-        records={records.isError ? null : records.data}
-        exercice={detail.data}
-        onFermer={() => navigate({ search: (s) => ({ ...s, slug: undefined }) })}
-      />
-    );
-  }
-
-  return <AppShell titre="Exercices" liste={panneauListe()} detail={panneauDetail()} />;
+  return (
+    <AppShell titre="Exercices" liste={panneauListe()} detail={slug ? <Outlet /> : undefined} />
+  );
 }

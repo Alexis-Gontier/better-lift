@@ -1,50 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
-import { EtatVide } from "@/components/etats/etat-vide";
 import { AppShell } from "@/components/shell/app-shell";
-import { EditeurRoutine } from "@/features/routines/editeur-routine";
 import { ListeRoutines } from "@/features/routines/liste-routines";
-import {
-  optionsRoutine,
-  optionsRoutines,
-  useCreerRoutine,
-  useRemplacerRoutine,
-  useSupprimerRoutine,
-} from "@/features/routines/requetes";
+import { optionsRoutines } from "@/features/routines/requetes";
 
-/** L'identifiant réservé d'une routine pas encore enregistrée. */
-const NOUVELLE = "nouvelle";
+// La routine ouverte vit dans le CHEMIN (`/routines/$id`, `/routines/nouvelle`,
+// D81). Plus de paramètre `edition` : une routine ouverte est toujours modifiable.
+const recherche = z.object({ etat: champEtat });
 
-// Le détail ouvert ET le mode édition vivent dans l'URL (D49) : un rechargement
-// retombe dans l'éditeur. `edition` vaut « 1 » ou rien, pour une URL lisible.
-const recherche = z.object({
-  id: z.string().optional(),
-  edition: z.literal("1").optional().catch(undefined),
-  etat: champEtat,
-});
-
+/**
+ * La mise en page des routines, en disposition `colonne` : la colonne de
+ * sélection à gauche, l'espace de travail à droite — l'`Outlet`, toujours
+ * présent (invite, éditeur, ou routine neuve selon la route enfant).
+ */
 export const Route = createFileRoute("/_protege/routines")({
   validateSearch: recherche,
   component: PageRoutines,
 });
 
 function PageRoutines() {
-  const { id, edition, etat } = Route.useSearch();
+  const { etat } = Route.useSearch();
+  const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
-  const aller = (s: { id?: string; edition?: "1" }) =>
-    navigate({ search: (prec) => ({ ...prec, id: s.id, edition: s.edition }) });
-
-  const existante = id && id !== NOUVELLE ? id : undefined;
   const liste = useQuery(optionsRoutines());
-  const detail = useQuery({ ...optionsRoutine(existante ?? ""), enabled: Boolean(existante) });
-
-  const creer = useCreerRoutine();
-  const remplacer = useRemplacerRoutine(existante ?? "");
-  const supprimer = useSupprimerRoutine();
 
   function panneauListe() {
     const force = etatForceRendu(etat, "Les routines n'ont pas pu être chargées.", () =>
@@ -64,69 +46,13 @@ function PageRoutines() {
       <ListeRoutines
         routines={estVideForce(etat) ? [] : liste.data}
         idSelectionne={id}
-        onSelection={(rId) => aller({ id: rId })}
-        onCreer={() => aller({ id: NOUVELLE, edition: "1" })}
-      />
-    );
-  }
-
-  function panneauDetail() {
-    if (edition && id === NOUVELLE) {
-      return (
-        <EditeurRoutine
-          key={NOUVELLE}
-          initiale={null}
-          enregistrement={creer.isPending}
-          erreur={creer.error?.message}
-          onEnregistrer={(r) =>
-            creer.mutate(r, { onSuccess: (nouvelId) => aller({ id: nouvelId }) })
-          }
-          onFermer={() => aller({})}
-        />
-      );
-    }
-    // Rien de choisi : l'espace de travail reste en place et invite à choisir,
-    // plutôt que de disparaître et de faire sauter la mise en page.
-    if (!existante) {
-      return (
-        <EtatVide
-          titre="Aucune routine ouverte"
-          message="Choisis une routine à gauche pour la voir ou la modifier, ou crées-en une."
-        />
-      );
-    }
-    if (detail.isPending) return <EtatChargement lignes={6} />;
-    if (detail.isError) {
-      return (
-        <EtatErreur
-          message="Cette routine n'a pas pu être chargée."
-          onReessayer={() => detail.refetch()}
-        />
-      );
-    }
-    const routine = detail.data;
-    // Une routine ouverte est toujours modifiable : pas de mode lecture.
-    return (
-      <EditeurRoutine
-        // La clé remonte l'éditeur quand on change de routine : sa copie de
-        // travail repart de la bonne version.
-        key={routine.id}
-        initiale={routine}
-        enregistrement={remplacer.isPending || supprimer.isPending}
-        erreur={remplacer.error?.message ?? supprimer.error?.message}
-        onEnregistrer={(r) => remplacer.mutate(r)}
-        onFermer={() => aller({})}
-        onSupprimer={() => supprimer.mutate(routine.id, { onSuccess: () => aller({}) })}
+        onSelection={(rId) => navigate({ to: "/routines/$id", params: { id: rId } })}
+        onCreer={() => navigate({ to: "/routines/nouvelle" })}
       />
     );
   }
 
   return (
-    <AppShell
-      titre="Routines"
-      disposition="colonne"
-      liste={panneauListe()}
-      detail={panneauDetail()}
-    />
+    <AppShell titre="Routines" disposition="colonne" liste={panneauListe()} detail={<Outlet />} />
   );
 }
