@@ -15,5 +15,8 @@
     "@better-lift/config": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
   }
 }
