@@ -31,8 +31,10 @@ export {
 export {
   ABREGE_TYPE_SERIE,
   type ExerciceRoutine,
+  etiquettesSeries,
   exerciceSaisi,
   LIBELLE_TYPE_SERIE,
+  meilleureSerie,
   ordreRoutines,
   type RoutineDetail,
   type RoutineResume,

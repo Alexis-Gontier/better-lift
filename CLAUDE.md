@@ -105,6 +105,11 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   redimensionnables dans le `SidebarInset`, tailles persistées, et **le détail ouvert vit dans
   l'URL** avec les filtres. Un rechargement retombe au même endroit. Composants shadcn plutôt que
   maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
+  **Routines** en disposition `colonne` (`AppShell`) : colonne de cartes à gauche, routine ouverte
+  **toujours modifiable** à droite — plus de mode lecture ; la barre Annuler/Enregistrer n'apparaît
+  qu'une fois la copie différente de la version enregistrée (`empreinte`). Cartes d'exercice à la
+  Hevy : image, « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées
+  É/1/2/3 (`etiquettesSeries`).
   Page **Paramètres** (`/parametres`) : compte, thème (seul endroit où il se change), unités et
   fuseau affichés. La liste des exercices montre l'**image fixe** (JPG ~6 Ko) : `image`
   fait partie du résumé, déduite de `gifUrl` par `imageDe` (le dataset publie `images/<id>.jpg`

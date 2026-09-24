@@ -6,7 +6,6 @@ import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { EtatVide } from "@/components/etats/etat-vide";
 import { AppShell } from "@/components/shell/app-shell";
-import { DetailRoutine } from "@/features/routines/detail-routine";
 import { EditeurRoutine } from "@/features/routines/editeur-routine";
 import { ListeRoutines } from "@/features/routines/liste-routines";
 import {
@@ -82,7 +81,7 @@ function PageRoutines() {
           onEnregistrer={(r) =>
             creer.mutate(r, { onSuccess: (nouvelId) => aller({ id: nouvelId }) })
           }
-          onAnnuler={() => aller({})}
+          onFermer={() => aller({})}
         />
       );
     }
@@ -106,26 +105,18 @@ function PageRoutines() {
       );
     }
     const routine = detail.data;
-    if (edition) {
-      return (
-        <EditeurRoutine
-          // La clé remonte l'éditeur quand on change de routine : sa copie de
-          // travail repart de la bonne version.
-          key={routine.id}
-          initiale={routine}
-          enregistrement={remplacer.isPending || supprimer.isPending}
-          erreur={remplacer.error?.message ?? supprimer.error?.message}
-          onEnregistrer={(r) => remplacer.mutate(r, { onSuccess: () => aller({ id: routine.id }) })}
-          onAnnuler={() => aller({ id: routine.id })}
-          onSupprimer={() => supprimer.mutate(routine.id, { onSuccess: () => aller({}) })}
-        />
-      );
-    }
+    // Une routine ouverte est toujours modifiable : pas de mode lecture.
     return (
-      <DetailRoutine
-        routine={routine}
-        onModifier={() => aller({ id: routine.id, edition: "1" })}
+      <EditeurRoutine
+        // La clé remonte l'éditeur quand on change de routine : sa copie de
+        // travail repart de la bonne version.
+        key={routine.id}
+        initiale={routine}
+        enregistrement={remplacer.isPending || supprimer.isPending}
+        erreur={remplacer.error?.message ?? supprimer.error?.message}
+        onEnregistrer={(r) => remplacer.mutate(r)}
         onFermer={() => aller({})}
+        onSupprimer={() => supprimer.mutate(routine.id, { onSuccess: () => aller({}) })}
       />
     );
   }
