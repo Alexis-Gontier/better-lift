@@ -1,74 +1,201 @@
 import { useRouter } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "../lib/auth-client";
+import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 
-// Volontairement brut : le dessin mobile est le lot 6. Cet écran existe pour
-// prouver que la connexion passe et que la session tient au redémarrage.
+// La création de compte reste sur le web : ici, on ne fait qu'entrer.
+type GenreRefus = "identifiants" | "reseau";
+
+const MESSAGES: Record<GenreRefus, string> = {
+  identifiants: "Adresse ou mot de passe incorrect.",
+  reseau: "L'API est injoignable. Ce n'est pas toi — réessaie dans un instant.",
+};
+
+/**
+ * L'accroche en haut, le formulaire en bas : le bouton tombe sous le pouce, et
+ * le clavier remonte le tout plutôt que de le recouvrir.
+ */
 export default function Connexion() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [erreur, setErreur] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [refus, setRefus] = useState<GenreRefus | null>(null);
   const [enCours, setEnCours] = useState(false);
 
   async function seConnecter() {
     setEnCours(true);
-    setErreur(null);
+    setRefus(null);
     try {
       const { error } = await authClient.signIn.email({ email, password: motDePasse });
       if (error) {
-        setErreur("Adresse ou mot de passe incorrect.");
+        setRefus("identifiants");
         return;
       }
       router.replace("/");
     } catch {
-      setErreur("API injoignable.");
+      setRefus("reseau");
     } finally {
       setEnCours(false);
     }
   }
 
+  const champInvalide = refus === "identifiants" ? styles.champInvalide : null;
+
   return (
-    <View style={styles.ecran}>
-      <Text style={styles.titre}>better-lift</Text>
-      <TextInput
-        style={styles.champ}
-        placeholder="Adresse e-mail"
-        placeholderTextColor="#6a717a"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.champ}
-        placeholder="Mot de passe"
-        placeholderTextColor="#6a717a"
-        secureTextEntry
-        value={motDePasse}
-        onChangeText={setMotDePasse}
-      />
-      {erreur ? <Text style={styles.erreur}>{erreur}</Text> : null}
-      <Pressable style={styles.bouton} onPress={seConnecter} disabled={enCours}>
-        <Text style={styles.boutonTexte}>{enCours ? "…" : "Se connecter"}</Text>
-      </Pressable>
-    </View>
+    <SafeAreaView style={styles.ecran}>
+      <KeyboardAvoidingView style={styles.ecran} behavior="padding">
+        <ScrollView contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
+          <View style={styles.marque}>
+            <View style={styles.pastille} />
+            <Text style={styles.nom}>better-lift</Text>
+          </View>
+
+          <View style={styles.zoneAccroche}>
+            <Text style={styles.accroche}>Le carnet,{"\n"}sans le carnet.</Text>
+          </View>
+
+          <View style={styles.formulaire}>
+            <Text style={styles.titre}>Connexion</Text>
+            <Text style={styles.sousTitre}>Reprends là où tu t'étais arrêté.</Text>
+
+            <Text style={styles.libelle} nativeID="libelle-email">
+              Adresse e-mail
+            </Text>
+            <TextInput
+              style={[styles.champ, champInvalide]}
+              aria-labelledby="libelle-email"
+              placeholder="toi@exemple.fr"
+              placeholderTextColor={couleurs.encreFaible}
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+
+            <Text style={styles.libelle} nativeID="libelle-mdp">
+              Mot de passe
+            </Text>
+            <View>
+              <TextInput
+                style={[styles.champ, styles.champMdp, champInvalide]}
+                aria-labelledby="libelle-mdp"
+                placeholderTextColor={couleurs.encreFaible}
+                autoCapitalize="none"
+                autoComplete="current-password"
+                secureTextEntry={!visible}
+                value={motDePasse}
+                onChangeText={setMotDePasse}
+                onSubmitEditing={seConnecter}
+              />
+              <Pressable
+                style={styles.oeil}
+                onPress={() => setVisible((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  visible ? "Masquer le mot de passe" : "Afficher le mot de passe"
+                }
+                accessibilityState={{ selected: visible }}
+                hitSlop={4}
+              >
+                {visible ? (
+                  <EyeOff size={20} color={couleurs.encrePale} />
+                ) : (
+                  <Eye size={20} color={couleurs.encrePale} />
+                )}
+              </Pressable>
+            </View>
+
+            {refus ? (
+              <Text style={styles.erreur} accessibilityRole="alert">
+                {MESSAGES[refus]}
+              </Text>
+            ) : null}
+
+            <Pressable
+              style={[styles.bouton, enCours && styles.boutonAttente]}
+              onPress={seConnecter}
+              disabled={enCours}
+              accessibilityRole="button"
+            >
+              <Text style={styles.boutonTexte}>{enCours ? "…" : "Se connecter"}</Text>
+            </Pressable>
+
+            <Text style={styles.note}>Pas de compte ? Il se crée depuis le web.</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  ecran: { flex: 1, justifyContent: "center", padding: 24, gap: 12, backgroundColor: "#08090a" },
-  titre: { color: "#f2f3f5", fontSize: 24, fontWeight: "600", marginBottom: 12 },
-  champ: {
-    borderWidth: 1,
-    borderColor: "#24272b",
-    borderRadius: 8,
-    color: "#f2f3f5",
-    fontSize: 16,
-    padding: 14,
+  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+  contenu: { flexGrow: 1, padding: espace.xl },
+  marque: { flexDirection: "row", alignItems: "center", gap: espace.s },
+  pastille: { width: 18, height: 18, borderRadius: 5, backgroundColor: couleurs.accent },
+  nom: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
+  // Le seul élément fort de l'écran : il pousse le formulaire vers le bas.
+  zoneAccroche: { flex: 1, justifyContent: "center", paddingVertical: 40 },
+  accroche: {
+    color: couleurs.encre,
+    fontSize: 40,
+    lineHeight: 42,
+    fontWeight: "600",
+    letterSpacing: -1.2,
   },
-  erreur: { color: "#e98b85", fontSize: 14 },
-  bouton: { backgroundColor: "#a8cf45", borderRadius: 8, padding: 16, alignItems: "center" },
-  boutonTexte: { color: "#0b0f04", fontSize: 16, fontWeight: "700" },
+  formulaire: { gap: espace.s },
+  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "600" },
+  sousTitre: { color: couleurs.encrePale, fontSize: taille.courant, marginBottom: espace.m },
+  libelle: { color: couleurs.encre, fontSize: 14, fontWeight: "500", marginTop: espace.s },
+  champ: {
+    minHeight: CIBLE + 4,
+    borderWidth: 1,
+    borderColor: couleurs.ligne,
+    borderRadius: 10,
+    backgroundColor: couleurs.surface1,
+    color: couleurs.encre,
+    fontSize: taille.courant,
+    paddingHorizontal: 14,
+  },
+  champMdp: { paddingRight: CIBLE + 4 },
+  champInvalide: { borderColor: couleurs.danger },
+  oeil: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: CIBLE + 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  erreur: { color: couleurs.dangerEncre, fontSize: 14, marginTop: espace.xs },
+  bouton: {
+    minHeight: CIBLE + 8,
+    marginTop: espace.l,
+    borderRadius: 10,
+    backgroundColor: couleurs.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  boutonAttente: { opacity: 0.6 },
+  boutonTexte: { color: couleurs.surAccent, fontSize: taille.courant, fontWeight: "700" },
+  note: {
+    color: couleurs.encreFaible,
+    fontSize: taille.petit,
+    textAlign: "center",
+    marginTop: espace.m,
+  },
 });
