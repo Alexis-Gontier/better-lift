@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({ component: Accueil });
 // Écran de contrôle hérité du lot 0. La coquille est montée par chaque route
 // depuis la tâche 14 : celle-ci la monte donc aussi, pour garder la navigation.
 function Accueil() {
-  return <AppShell liste={<Sante />} />;
+  return <AppShell titre="Accueil" liste={<Sante />} />;
 }
 
 function Sante() {

@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "./tokens.css";
 
+/* Le sombre est le thème par défaut (`:root`), le clair se pose par
+   `data-theme="light"` : les variantes `dark:` des primitives shadcn suivent ce
+   mécanisme, pas la préférence du système. */
+@custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
+
 @theme inline {
   /* Vocabulaire du projet : surfaces, filets, quatre niveaux d’encre. */
   --color-canvas: var(--canvas);
@@ -56,6 +61,23 @@
   --color-destructive: var(--danger);
   --color-destructive-foreground: var(--danger-on);
   --color-destructive-ink: var(--danger-ink);
+
+  /* `card` : les blocs posés dans un panneau, une marche au-dessus de lui. */
+  --color-card: var(--surface-2);
+  --color-card-foreground: var(--ink);
+
+  /* La sidebar (D72). Même fond que le canevas : c'est la zone de contenu qui
+     flotte (variant `inset`, D71), pas la navigation. L'élément actif est une
+     SURFACE, jamais le lime — `sidebar-primary` n'est utilisé par aucun bloc
+     rendu ici, mais il reste traduit pour qu'aucun rôle n'émette en silence. */
+  --color-sidebar: var(--canvas);
+  --color-sidebar-foreground: var(--ink-muted);
+  --color-sidebar-primary: var(--accent);
+  --color-sidebar-primary-foreground: var(--accent-on);
+  --color-sidebar-accent: var(--surface-3);
+  --color-sidebar-accent-foreground: var(--ink);
+  --color-sidebar-border: var(--line);
+  --color-sidebar-ring: var(--accent);
 }
 
 /* react-resizable-panels fixe `height: 100%` en style inline sur le groupe (non
