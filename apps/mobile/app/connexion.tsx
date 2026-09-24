@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Logo } from "../components/ui/logo";
 import { authClient } from "../lib/auth-client";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 
@@ -58,7 +59,7 @@ export default function Connexion() {
       <KeyboardAvoidingView style={styles.ecran} behavior="padding">
         <ScrollView contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
           <View style={styles.marque}>
-            <View style={styles.pastille} />
+            <Logo taille={26} />
             <Text style={styles.nom}>better-lift</Text>
           </View>
 
@@ -145,7 +146,6 @@ const styles = StyleSheet.create({
   ecran: { flex: 1, backgroundColor: couleurs.canvas },
   contenu: { flexGrow: 1, padding: espace.xl },
   marque: { flexDirection: "row", alignItems: "center", gap: espace.s },
-  pastille: { width: 18, height: 18, borderRadius: 5, backgroundColor: couleurs.accent },
   nom: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
   // Le seul élément fort de l'écran : il pousse le formulaire vers le bas.
   zoneAccroche: { flex: 1, justifyContent: "center", paddingVertical: 40 },

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
 import { ListChecks, type LucideIcon, Trophy, WifiOff } from "lucide-react";
 import { z } from "zod";
 import { champEtat, etatForceRendu } from "@/components/etats/etat-force";
+import { Logo } from "@/components/logo";
 import { FormulaireConnexion } from "@/features/auth/formulaire-connexion";
 import { chargerSession } from "@/lib/auth-session";
 
@@ -71,7 +72,7 @@ function PageConnexion() {
 
       <main className="flex flex-col px-6 py-6 sm:px-8">
         <div className="flex items-center gap-2">
-          <span aria-hidden="true" className="size-5 rounded-md bg-primary" />
+          <Logo />
           <span className="text-sm font-semibold tracking-tight">better-lift</span>
         </div>
 

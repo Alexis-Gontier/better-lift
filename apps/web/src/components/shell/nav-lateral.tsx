@@ -8,6 +8,7 @@ import {
   Search,
   Settings,
 } from "lucide-react";
+import { Logo } from "@/components/logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -54,8 +55,7 @@ export function NavLaterale() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link to="/">
-                {/* La marque est un aplat : c'est l'unique pastille lime permanente. */}
-                <span aria-hidden="true" className="size-6 shrink-0 rounded-md bg-primary" />
+                <Logo />
                 <span className="text-sm font-semibold tracking-tight text-(--ink)">
                   better-lift
                 </span>
