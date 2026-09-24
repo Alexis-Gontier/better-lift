@@ -8,6 +8,13 @@ export {
   type RequeteCatalogue,
   requeteCatalogue,
 } from "./exercices.js";
+export {
+  aEnvoyer,
+  apresReponse,
+  classerReponse,
+  type ElementFile,
+  mettreEnFile,
+} from "./file-envoi.js";
 export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
   ABREGE_TYPE_SERIE,
