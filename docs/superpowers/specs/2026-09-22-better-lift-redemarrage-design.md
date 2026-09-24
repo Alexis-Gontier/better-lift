@@ -70,7 +70,9 @@ Le strict nécessaire pour abandonner Hevy :
 
 ### Hors périmètre, assumé
 
-Reporté après le premier jalon : dossiers de routines, vue calendrier, tableau de bord et courbes, supersets dans l'interface, exercices personnalisés, mensurations, import CSV, notifications push.
+Reporté après le premier jalon : dossiers de routines, vue calendrier, calendrier d'activité (heatmap), tableau de bord et courbes, supersets dans l'interface, exercices personnalisés, mensurations et suivi du poids de corps, import CSV (Hevy compris), calcul des disques à charger, méthodes de progression, notifications push.
+
+> **Revue du 24 septembre 2026.** Le périmètre a été relu à la lumière d'[opengym](https://github.com/alexpcosta/opengym), tracker libre bâti sur le même dataset. Ses fonctions absentes d'ici — poids de corps, heatmap, import Hevy, disques, progression — ont été examinées une à une et **laissées hors du premier jalon**. Deux choses en ont été retenues pour le lot 4 : garder le nom anglais à côté du français, et afficher les animations sans les héberger (D44, D46).
 
 Écarté sans échéance : social, nutrition, cardio GPS, montres connectées, coaching automatique, programmes tout faits.
 
@@ -188,7 +190,7 @@ Repris du schéma éprouvé, avec deux suppressions.
 
 | Table | Sort |
 |---|---|
-| `Exercise` | **Aplatie** : `name` et `instructions` en français portés directement |
+| `Exercise` | **Aplatie** : `nomFr` et `instructions` en français portés directement, `name` anglais conservé pour la recherche (D44) |
 | `ExerciseTranslation` | **Supprimée** |
 | `User` `Session` `Account` `Verification` | Better Auth, inchangées |
 | `Routine` `RoutineExercise` `RoutineSet` | Inchangées |
@@ -229,27 +231,25 @@ Better Auth, instance unique côté API, servant le cookie du web **et** le jeto
 
 Les instructions sont déjà traduites dans le dataset. **Les noms d'exercices ne le sont pas** : la ligne française porte encore « Band Bench Press ».
 
-Les chiffres rendent le chantier abordable : 1 324 noms, 5 583 mots au total, mais seulement **629 mots distincts**, avec une structure très régulière — `Dumbbell` ouvre 283 noms, `Cable` 155, `Barbell` 141, `Lever` 71, `Band` 54, `Smith` 48, `Kettlebell` 41.
+> **Révisé le 24 septembre 2026.** Le glossaire et la traduction générée prévus ici ont été abandonnés au profit d'une simple entrée par exercice. Le détail est dans la conception du lot 4, [`2026-09-23-lot-4-catalogue-francais-design.md`](2026-09-23-lot-4-catalogue-francais-design.md).
 
-Trois temps :
+**Le nom français s'ajoute, l'anglais reste** (D44). `name` garde le nom du dataset, `nomFr` porte le français affiché, et la recherche porte sur les deux : en salle, on tape aussi bien « bench press » que « développé couché ».
 
-1. **Glossaire d'abord**, environ 150 entrées, fichier versionné et relu avant toute traduction de masse : `bench press → développé couché`, `deadlift → soulevé de terre`, `lateral raise → élévations latérales`, `squat → squat`, `curl → curl`, `pushdown → pushdown`.
-2. **Traduction des 1 324 noms** en s'appuyant sur ce glossaire.
-3. **Relecture ciblée** : les exercices courants passent sous les yeux d'un humain, la longue traîne se corrige à l'usage. Une correction est un `UPDATE`, jamais une migration.
+**Le nom français est une donnée, pas le produit d'un moteur** (D45). Un fichier `noms-fr.json` — id du dataset → nom français — est écrit une fois, relu en diff et commité ; le semis le lit. Un test vérifie qu'aucun exercice n'en est absent. Une correction est une ligne modifiée et un semis relancé, jamais une migration.
 
 **Registre retenu : le français d'usage.** Les anglicismes réellement employés en salle sont conservés, parce qu'ils sont ce qu'on tape dans une barre de recherche. Personne ne cherche « flexion des avant-bras » pour trouver un curl.
 
 | Nom d'origine | Retenu |
 |---|---|
-| Dumbbell Bench Press | Développé couché haltères |
-| Barbell Deadlift | Soulevé de terre barre |
+| Dumbbell Bench Press | Développé couché aux haltères |
+| Barbell Deadlift | Soulevé de terre à la barre |
 | Cable Triceps Pushdown | Pushdown triceps à la poulie |
 | Lever Leg Extension | Leg extension à la machine |
 | Assisted Pull-up | Traction assistée |
 
 ### Médias
 
-Le dataset fournit une animation et une vignette par exercice. Ils ne sont pas hébergés au premier jalon : les deux interfaces basculent sur un repli sans visuel. La licence du dataset impose une attribution, qui doit figurer dans l'application dès que les médias sont servis.
+Le dataset fournit une animation 180×180 par exercice, propriété de Gym visual et hors de la licence MIT des données. **Elles sont affichées dès le lot 4, sans être hébergées** (D46) : l'URL pointe vers le dépôt du dataset, figée sur un commit, avec l'attribution « © Gym visual — https://gymvisual.com/ » sous chaque visuel. C'est un choix assumé pour une application privée à trois comptes ; il serait le premier à reprendre si elle s'ouvrait. Si le chargement échoue, les interfaces retombent sur un repli sans visuel.
 
 ## 8. L'invariant du mobile
 
@@ -318,7 +318,7 @@ Pas de `.mcp.json` : Neon et Context7 viennent des plugins déjà configurés su
 | D18 | **Un seul projet Vercel** : statique et fonction API sur la même origine, donc aucun CORS en production |
 | D19 | **TanStack Router**, pour le typage des routes et surtout des paramètres d'URL — les filtres du catalogue et de l'historique y sont persistés |
 | D20 | **Catalogue aplati**, sans table de traductions |
-| D21 | **Noms d'exercices en français d'usage**, guidés par un glossaire versionné et relu avant toute traduction de masse |
+| D21 | **Noms d'exercices en français d'usage.** *Révisée le 24 septembre 2026* : le glossaire est abandonné, les noms sont une entrée écrite par exercice, à côté du nom anglais conservé (D44, D45 au lot 4) |
 | D22 | **Inscription fermée par liste blanche d'adresses** |
 | D23 | **Coquille web à trois panneaux** — navigation, liste, détail, redimensionnables et persistés. Retenue parce que les trois écrans principaux sont des listes ; le détail en pleine page ferait perdre la liste et ses filtres à chaque consultation |
 | D24 | **Sombre par défaut, clair accessible.** Hiérarchie par échelle de surfaces et quatre niveaux d'encre. Densité réservée au web : le mobile partage la palette, pas l'échelle |
@@ -338,7 +338,7 @@ Pas de `.mcp.json` : Neon et Context7 viennent des plugins déjà configurés su
 | **1** | **Coquille web** : tokens des deux thèmes, shadcn, trois panneaux redimensionnables, `Cmd+K` | La coquille tient debout, les tailles survivent au rechargement |
 | **2** | **Écrans web dessinés** dans la coquille — catalogue, routines, historique — sur données factices | Les écrans sont validés visuellement, avant toute API |
 | **3** | Better Auth, liste blanche, connexion web et mobile | Connexion effective sur les deux surfaces |
-| **4** | Catalogue français : glossaire, traduction, migration aplatie, seed, API — puis branchement du lot 2 | N'importe quel exercice se retrouve, en français |
+| **4** | Catalogue français : noms français, migration, seed, API, animations — puis branchement du lot 2 | N'importe quel exercice se retrouve, en français comme en anglais |
 | **5** | Routines : API et branchement de l'éditeur | Une séance se prépare à l'avance |
 | **6** | **Écrans mobiles dessinés**, puis la séance : API, saisie, chrono, repos, hors ligne | **Un entraînement réel est saisi avec** |
 | **7** | Historique et records dérivés | L'historique et les meilleures charges sont consultables |
