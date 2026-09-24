@@ -6,6 +6,11 @@ import {
   LIBELLE_RECORD,
   type RecordExercice,
 } from "@better-lift/shared";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BoutonFermer } from "@/features/routines/bouton-fermer";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
 import { AnimationExercice } from "./animation-exercice";
@@ -31,103 +36,106 @@ export function DetailExercice({
             {LIBELLE_GROUPE[exercice.groupe]} · {exercice.equipement}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onFermer}
-          aria-label="Fermer le panneau de détail"
-          className="grid size-7 shrink-0 place-items-center rounded-md border border-(--line) text-(--ink-subtle) hover:text-(--ink) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-        >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
+        <BoutonFermer onFermer={onFermer} />
+      </div>
+
+      <Tabs defaultValue="infos" className="min-h-0 flex-1 gap-0">
+        <TabsList variant="line" className="mx-5 mt-2">
+          <TabsTrigger
+            value="infos"
+            className="flex-none text-(--ink-subtle) data-[state=active]:text-(--ink)"
           >
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+            Infos
+          </TabsTrigger>
+          <TabsTrigger
+            value="records"
+            className="flex-none text-(--ink-subtle) data-[state=active]:text-(--ink)"
+          >
+            Records{records && records.length > 0 ? ` · ${records.length}` : ""}
+          </TabsTrigger>
+        </TabsList>
+        <ScrollArea className="min-h-0 flex-1">
+          <TabsContent value="infos" className="flex flex-col gap-4 px-5 py-4">
+            <AnimationExercice
+              key={exercice.gif ?? exercice.slug}
+              gif={exercice.gif}
+              nom={exercice.nom}
+            />
 
-      <div className="flex flex-col gap-4 overflow-auto px-5 py-4">
-        <AnimationExercice
-          key={exercice.gif ?? exercice.slug}
-          gif={exercice.gif}
-          nom={exercice.nom}
-        />
+            {/* L'aplat face au contour, visibles en même temps : c'est exactement le
+                cas à éprouver pour D28. */}
+            <Button size="lg" className="w-full font-semibold">
+              Démarrer la séance
+            </Button>
 
-        {/* L'aplat face au contour, visibles en même temps : c'est exactement le
-            cas à éprouver pour D28. */}
-        <button
-          type="button"
-          className="w-full rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-        >
-          Démarrer la séance
-        </button>
+            <div>
+              <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">
+                Muscles
+              </p>
+              <p className="text-sm text-(--ink)">
+                {exercice.cible}
+                {exercice.secondaires.length > 0 ? (
+                  <span className="text-(--ink-faint)"> · {exercice.secondaires.join(", ")}</span>
+                ) : null}
+              </p>
+            </div>
 
-        <div>
-          <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">Muscles</p>
-          <p className="text-sm text-(--ink)">
-            {exercice.cible}
-            {exercice.secondaires.length > 0 ? (
-              <span className="text-(--ink-faint)"> · {exercice.secondaires.join(", ")}</span>
-            ) : null}
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">Exécution</p>
-          <ol className="flex flex-col gap-2">
-            {exercice.instructions.map((etape, i) => (
-              <li key={etape} className="flex gap-2.5 text-sm leading-relaxed text-(--ink)">
-                <span className="shrink-0 font-mono text-xs text-(--ink-faint)">{i + 1}</span>
-                <span>{etape}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        <div>
-          <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">Records</p>
-          {records === undefined ? (
-            <p className="text-sm text-(--ink-faint)">Chargement…</p>
-          ) : records === null ? (
-            <p className="text-sm text-(--ink-faint)">Les records n'ont pas pu être chargés.</p>
-          ) : records.length === 0 ? (
-            <p className="text-sm text-(--ink-faint)">
-              Aucun record pour l'instant — il apparaîtra après ta première séance.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-1.5">
-              {records.map((r) => (
-                <li key={r.type} className="flex items-center gap-3 text-sm">
-                  <span className="w-24 shrink-0 text-(--ink-subtle)">
-                    {LIBELLE_RECORD[r.type]}
-                  </span>
-                  <span className="flex-1">
-                    {/* Le record est un CONTOUR (D28) : lime en texte sur fond teinté. */}
-                    <BadgeRecord
-                      libelle={
-                        // 1RM et volume sont des valeurs DÉRIVÉES : on montre aussi
-                        // la série qui les a donnés.
-                        r.type === "UN_RM" || r.type === "VOLUME"
-                          ? `${formaterCharge(r.valeur, SYSTEME_UNITES)} (${formaterSerie(r.chargeKg, r.reps)})`
-                          : formaterSerie(r.chargeKg, r.reps)
-                      }
-                    />
-                  </span>
-                  <span className="shrink-0 text-[11.5px] text-(--ink-faint)">
-                    {formatJour(r.date, FUSEAU)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+            <div>
+              <p className="mb-2 text-[11px] uppercase tracking-wide text-(--ink-subtle)">
+                Exécution
+              </p>
+              <ol className="flex flex-col gap-2">
+                {exercice.instructions.map((etape, i) => (
+                  <li key={etape} className="flex gap-2.5 text-sm leading-relaxed text-(--ink)">
+                    <span className="shrink-0 font-mono text-xs text-(--ink-faint)">{i + 1}</span>
+                    <span>{etape}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </TabsContent>
+          <TabsContent value="records" className="px-5 py-4">
+            {records === undefined ? (
+              <p className="text-sm text-(--ink-faint)">Chargement…</p>
+            ) : records === null ? (
+              <p className="text-sm text-(--ink-faint)">Les records n'ont pas pu être chargés.</p>
+            ) : records.length === 0 ? (
+              <p className="text-sm text-(--ink-faint)">
+                Aucun record pour l'instant — il apparaîtra après ta première séance.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {records.map((r) => (
+                  <li key={r.type}>
+                    <Card className="gap-0 py-0 shadow-none bg-(--surface-2)">
+                      <CardContent className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
+                        <span className="w-24 shrink-0 text-(--ink-subtle)">
+                          {LIBELLE_RECORD[r.type]}
+                        </span>
+                        <span className="flex-1">
+                          {/* Le record est un CONTOUR (D28) : lime en texte sur fond teinté. */}
+                          <BadgeRecord
+                            libelle={
+                              // 1RM et volume sont des valeurs DÉRIVÉES : on montre aussi
+                              // la série qui les a donnés.
+                              r.type === "UN_RM" || r.type === "VOLUME"
+                                ? `${formaterCharge(r.valeur, SYSTEME_UNITES)} (${formaterSerie(r.chargeKg, r.reps)})`
+                                : formaterSerie(r.chargeKg, r.reps)
+                            }
+                          />
+                        </span>
+                        <span className="shrink-0 text-[11.5px] text-(--ink-faint)">
+                          {formatJour(r.date, FUSEAU)}
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TabsContent>
+        </ScrollArea>
+      </Tabs>
     </div>
   );
 }

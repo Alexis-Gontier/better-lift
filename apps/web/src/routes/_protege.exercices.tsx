@@ -65,8 +65,10 @@ function PageExercices() {
         chargeSuite={liste.isFetchingNextPage}
         onSuite={() => liste.fetchNextPage()}
         q={q ?? ""}
+        groupe={groupe}
         slugSelectionne={slug}
         onRecherche={(valeur) => navigate({ search: (s) => ({ ...s, q: valeur || undefined }) })}
+        onGroupe={(g) => navigate({ search: (s) => ({ ...s, groupe: g }) })}
         onSelection={(choisi) => navigate({ search: (s) => ({ ...s, slug: choisi }) })}
       />
     );

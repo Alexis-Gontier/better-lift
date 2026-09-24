@@ -1,15 +1,27 @@
 import { LIBELLE_TYPE_SERIE, TYPES_SERIE, type TypeSerie } from "@better-lift/shared";
+import { Plus, X } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { SYSTEME_UNITES } from "@/lib/unites";
 import { chargeInvalide, repsInvalides, type SerieBrouillon } from "./brouillon";
 
 const UNITE = SYSTEME_UNITES === "imperial" ? "lb" : "kg";
-
-const champ =
-  "w-full rounded border bg-(--surface-1) px-2 py-1 font-mono text-xs text-(--ink) outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)";
-
-/** Une saisie illisible se voit : bordure du danger, et l'enregistrement se bloque. */
-const bordure = (invalide: boolean) => (invalide ? "border-destructive" : "border-(--line)");
 
 export function TableauSeries({
   nomExercice,
@@ -34,81 +46,93 @@ export function TableauSeries({
 
   return (
     <div className="px-3 py-2">
-      <table className="w-full border-separate border-spacing-y-1 text-xs">
-        <thead>
-          <tr className="text-left text-[10.5px] uppercase tracking-wide text-(--ink-faint)">
-            <th className="w-6 font-normal">#</th>
-            <th className="w-32 font-normal">Type</th>
-            <th className="font-normal">Reps</th>
-            <th className="font-normal">Charge ({UNITE})</th>
-            <th className="w-7" />
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="text-xs">
+        <TableHeader>
+          <TableRow className="border-0 hover:bg-transparent">
+            <TableHead className="h-7 w-6 px-1 text-[10.5px] uppercase text-(--ink-faint)">
+              #
+            </TableHead>
+            <TableHead className="h-7 w-36 px-1 text-[10.5px] uppercase text-(--ink-faint)">
+              Type
+            </TableHead>
+            <TableHead className="h-7 px-1 text-[10.5px] uppercase text-(--ink-faint)">
+              Reps
+            </TableHead>
+            <TableHead className="h-7 px-1 text-[10.5px] uppercase text-(--ink-faint)">
+              Charge ({UNITE})
+            </TableHead>
+            <TableHead className="h-7 w-8 px-1" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {series.map((s, i) => {
             const etiquette = `${nomExercice}, série ${i + 1}`;
             return (
-              <tr key={i}>
-                <td className="font-mono text-(--ink-faint)">{i + 1}</td>
-                <td className="pr-2">
-                  <select
-                    aria-label={`${etiquette} : type`}
+              // Les séries n'ont pas d'identité propre : leur rang en tient lieu.
+              <TableRow key={i} className="border-0 hover:bg-transparent">
+                <TableCell className="px-1 py-1 font-mono text-(--ink-faint)">{i + 1}</TableCell>
+                <TableCell className="px-1 py-1">
+                  <Select
                     value={s.type}
-                    onChange={(e) => modifier(i, { type: e.target.value as TypeSerie })}
-                    className={`${champ} ${bordure(false)} font-sans`}
+                    onValueChange={(v) => modifier(i, { type: v as TypeSerie })}
                   >
-                    {TYPES_SERIE.map((t) => (
-                      <option key={t} value={t}>
-                        {LIBELLE_TYPE_SERIE[t]}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="pr-2">
-                  <input
+                    <SelectTrigger aria-label={`${etiquette} : type`} size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TYPES_SERIE.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {LIBELLE_TYPE_SERIE[t]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell className="px-1 py-1">
+                  {/* Une saisie illisible se voit : `aria-invalid` porte la bordure du
+                      danger, et l'enregistrement se bloque. */}
+                  <Input
                     aria-label={`${etiquette} : répétitions`}
                     inputMode="numeric"
                     placeholder="—"
                     value={s.reps}
                     onChange={(e) => modifier(i, { reps: e.target.value })}
                     aria-invalid={repsInvalides(s.reps) || undefined}
-                    className={`${champ} ${bordure(repsInvalides(s.reps))}`}
+                    className="h-8 font-mono text-xs"
                   />
-                </td>
-                <td className="pr-2">
-                  <input
+                </TableCell>
+                <TableCell className="px-1 py-1">
+                  <Input
                     aria-label={`${etiquette} : charge en ${UNITE}`}
                     inputMode="decimal"
                     placeholder="—"
                     value={s.charge}
                     onChange={(e) => modifier(i, { charge: e.target.value })}
                     aria-invalid={chargeInvalide(s.charge) || undefined}
-                    className={`${champ} ${bordure(chargeInvalide(s.charge))}`}
+                    className="h-8 font-mono text-xs"
                   />
-                </td>
-                <td>
-                  <button
-                    type="button"
+                </TableCell>
+                <TableCell className="px-1 py-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     aria-label={`Retirer la ${etiquette}`}
                     onClick={() => onChange(series.filter((_, j) => j !== i))}
-                    className="grid size-6 place-items-center rounded text-(--ink-faint) hover:bg-(--surface-2) hover:text-(--ink) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
+                    className="size-7 text-(--ink-faint) hover:text-(--ink)"
                   >
-                    ×
-                  </button>
-                </td>
-              </tr>
+                    <X aria-hidden="true" />
+                  </Button>
+                </TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
       <div className="mt-1 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={ajouter}
-          className="rounded px-2 py-1 text-xs text-(--ink-subtle) hover:bg-(--surface-2) hover:text-(--ink) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
-        >
-          + série
-        </button>
+        <Button variant="ghost" size="sm" onClick={ajouter} className="text-(--ink-subtle)">
+          <Plus aria-hidden="true" />
+          Série
+        </Button>
         {repos}
       </div>
     </div>

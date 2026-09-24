@@ -104,7 +104,12 @@ export function NavLaterale() {
                 {/* `isActive` passe par le `data-active` que pose le lien actif : la
                     route décide, pas un état recopié. */}
                 <SidebarMenuButton asChild tooltip={label}>
-                  <Link to={to} activeProps={{ "data-active": true, "aria-current": "page" }}>
+                  {/* Les filtres de l'URL (`?groupe=…`) ne doivent pas éteindre l'entrée. */}
+                  <Link
+                    to={to}
+                    activeOptions={{ includeSearch: false }}
+                    activeProps={{ "data-active": true, "aria-current": "page" }}
+                  >
                     <Icone aria-hidden="true" />
                     <span>{label}</span>
                   </Link>

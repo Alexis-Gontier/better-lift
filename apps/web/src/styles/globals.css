@@ -6,6 +6,16 @@
    mécanisme, pas la préférence du système. */
 @custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
 
+/* Tailwind 4 laisse `border` en `currentColor` : les primitives shadcn (Card,
+   Table…) posent `border` sans couleur et comptent sur ce défaut. */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+}
+
 @theme inline {
   /* Vocabulaire du projet : surfaces, filets, quatre niveaux d’encre. */
   --color-canvas: var(--canvas);
@@ -74,7 +84,7 @@
   --color-sidebar-foreground: var(--ink-muted);
   --color-sidebar-primary: var(--accent);
   --color-sidebar-primary-foreground: var(--accent-on);
-  --color-sidebar-accent: var(--surface-3);
+  --color-sidebar-accent: var(--nav-active);
   --color-sidebar-accent-foreground: var(--ink);
   --color-sidebar-border: var(--line);
   --color-sidebar-ring: var(--accent);
