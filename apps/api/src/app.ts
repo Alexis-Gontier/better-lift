@@ -7,6 +7,8 @@ import { secureHeaders } from "hono/secure-headers";
 import { auth } from "./auth.js";
 import { routesExercices } from "./routes/exercices.js";
 import { health } from "./routes/health.js";
+import { routesRoutines } from "./routes/routines.js";
+import { depotPrisma as depotRoutines } from "./services/routines.js";
 
 // Ce module construit l'app, sans aucun effet de bord (pas de `serve()`) : il
 // peut donc être importé tel quel par les tests, y compris pour vérifier le
@@ -29,7 +31,14 @@ app.use(
 // d'authentification pour les joindre.
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
-const routes = app.route("/health", health).route("/exercices", routesExercices());
+// Le lecteur de session réel : Better Auth, qui accepte le cookie du web et le
+// jeton porteur du mobile.
+const lireSession = (headers: Headers) => auth.api.getSession({ headers });
+
+const routes = app
+  .route("/health", health)
+  .route("/exercices", routesExercices())
+  .route("/routines", routesRoutines(depotRoutines, lireSession));
 
 export type AppType = typeof routes;
 export default app;
