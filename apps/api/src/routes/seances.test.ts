@@ -97,7 +97,7 @@ const fauxLecture: DepotLectureSeances = {
       : null;
   },
   async precedentes(_userId, slugs) {
-    return Object.fromEntries(slugs.map((s) => [s, [{ reps: 6, chargeKg: 82.5 }]]));
+    return Object.fromEntries(slugs.map((s) => [s, [{ reps: 6, chargeKg: 82.5, faite: true }]]));
   },
   async records() {
     return [];

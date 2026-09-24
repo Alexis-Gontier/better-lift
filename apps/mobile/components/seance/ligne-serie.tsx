@@ -1,6 +1,7 @@
 import {
   ABREGE_TYPE_SERIE,
   chargeEnTexte,
+  formaterCharge,
   lireCharge,
   type SerieEnCours,
 } from "@better-lift/shared";
@@ -25,11 +26,14 @@ function lireReps(t: string): number | null {
 export function LigneSerie({
   numero,
   serie,
+  precedent,
   onChange,
   onValider,
 }: {
   numero: number;
   serie: SerieEnCours;
+  /** Ce qui a été fait la dernière fois à cette position (D67). */
+  precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
   onChange: (patch: { reps?: number | null; chargeKg?: number | null }) => void;
   onValider: () => void;
 }) {
@@ -40,39 +44,68 @@ export function LigneSerie({
   const repsKo = Number.isNaN(lireReps(reps));
   const chargeKo = Number.isNaN(lireCharge(charge, SYSTEME_UNITES));
 
+  // Recopier la dernière fois : dans les cases ET dans la séance, d'un seul appui.
+  const recopier = () => {
+    if (!precedent?.faite) return;
+    setReps(precedent.reps === null ? "" : String(precedent.reps));
+    setCharge(precedent.chargeKg === null ? "" : chargeEnTexte(precedent.chargeKg, SYSTEME_UNITES));
+    onChange({ reps: precedent.reps, chargeKg: precedent.chargeKg });
+  };
+
   return (
-    <View style={[styles.ligne, serie.faite && styles.faite]}>
-      <Text style={styles.numero}>{numero}</Text>
-      <Text style={styles.type}>{ABREGE_TYPE_SERIE[serie.type]}</Text>
-      <TextInput
-        accessibilityLabel={`Série ${numero}, répétitions`}
-        value={reps}
-        onChangeText={setReps}
-        onEndEditing={() => !repsKo && onChange({ reps: lireReps(reps) })}
-        keyboardType="number-pad"
-        placeholder="reps"
-        placeholderTextColor={couleurs.encreFaible}
-        style={[styles.case, repsKo && styles.caseKo]}
-      />
-      <TextInput
-        accessibilityLabel={`Série ${numero}, charge`}
-        value={charge}
-        onChangeText={setCharge}
-        onEndEditing={() => !chargeKo && onChange({ chargeKg: lireCharge(charge, SYSTEME_UNITES) })}
-        keyboardType="decimal-pad"
-        placeholder="kg"
-        placeholderTextColor={couleurs.encreFaible}
-        style={[styles.case, chargeKo && styles.caseKo]}
-      />
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: serie.faite }}
-        accessibilityLabel={`Série ${numero} faite`}
-        onPress={onValider}
-        style={[styles.valider, serie.faite && styles.validerFait]}
-      >
-        <Text style={[styles.coche, serie.faite && styles.cocheFaite]}>✓</Text>
-      </Pressable>
+    <View>
+      <View style={[styles.ligne, serie.faite && styles.faite]}>
+        <Text style={styles.numero}>{numero}</Text>
+        <Text style={styles.type}>{ABREGE_TYPE_SERIE[serie.type]}</Text>
+        <TextInput
+          accessibilityLabel={`Série ${numero}, répétitions`}
+          value={reps}
+          onChangeText={setReps}
+          onEndEditing={() => !repsKo && onChange({ reps: lireReps(reps) })}
+          keyboardType="number-pad"
+          placeholder="reps"
+          placeholderTextColor={couleurs.encreFaible}
+          style={[styles.case, repsKo && styles.caseKo]}
+        />
+        <TextInput
+          accessibilityLabel={`Série ${numero}, charge`}
+          value={charge}
+          onChangeText={setCharge}
+          onEndEditing={() =>
+            !chargeKo && onChange({ chargeKg: lireCharge(charge, SYSTEME_UNITES) })
+          }
+          keyboardType="decimal-pad"
+          placeholder="kg"
+          placeholderTextColor={couleurs.encreFaible}
+          style={[styles.case, chargeKo && styles.caseKo]}
+        />
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: serie.faite }}
+          accessibilityLabel={`Série ${numero} faite`}
+          onPress={onValider}
+          style={[styles.valider, serie.faite && styles.validerFait]}
+        >
+          <Text style={[styles.coche, serie.faite && styles.cocheFaite]}>✓</Text>
+        </Pressable>
+      </View>
+      {/* Une INDICATION, pas une valeur (D59) : les cases gardent la cible. Un
+          appui la recopie. Cible assez haute pour un pouce entre deux séries. */}
+      {precedent?.faite ? (
+        <Pressable
+          onPress={recopier}
+          accessibilityRole="button"
+          accessibilityLabel={`Recopier la dernière fois pour la série ${numero}`}
+          style={styles.precedent}
+        >
+          <Text style={styles.precedentTexte}>
+            préc.{" "}
+            {precedent.chargeKg === null
+              ? `${precedent.reps ?? "—"} reps`
+              : `${formaterCharge(precedent.chargeKg, SYSTEME_UNITES)} × ${precedent.reps ?? "—"}`}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -96,6 +129,13 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   caseKo: { borderColor: couleurs.danger },
+  // Sous les cases, aligné sur elles : 54 = numéro + type + écarts.
+  precedent: { marginLeft: 54, minHeight: 28, justifyContent: "center" },
+  precedentTexte: {
+    color: couleurs.encrePale,
+    fontSize: taille.petit,
+    fontVariant: ["tabular-nums"],
+  },
   valider: {
     width: CIBLE,
     height: CIBLE,

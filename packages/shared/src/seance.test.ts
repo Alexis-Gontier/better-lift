@@ -4,6 +4,7 @@ import {
   ajouterExercice,
   ajouterSerie,
   arreterRepos,
+  avecPrecedents,
   bilanSeance,
   demarrerDepuisRoutine,
   demarrerVide,
@@ -229,5 +230,35 @@ describe("versEnvoi et seanceSaisie", () => {
     expect(() => seanceSaisie.parse(serie({ reps: -1 }))).toThrow();
     expect(() => seanceSaisie.parse(serie({ chargeKg: 1001 }))).toThrow();
     expect(() => seanceSaisie.parse(serie({ type: "SUPER" }))).toThrow();
+  });
+});
+
+describe("avecPrecedents", () => {
+  const s = demarrerDepuisRoutine(routine, "s1", T0);
+
+  // D67 : copiées DANS le brouillon, elles survivent hors ligne et à un arrêt forcé.
+  it("attache à chaque exercice les séries de la dernière fois", () => {
+    const avec = avecPrecedents(s, {
+      "barbell-bench-press": [{ reps: 6, chargeKg: 80, faite: true }],
+      "pull-up": [],
+    });
+    expect(avec.exercices[0]?.precedent).toEqual([{ reps: 6, chargeKg: 80, faite: true }]);
+    // Aucune séance passée : pas d'indication, plutôt qu'une liste vide.
+    expect(avec.exercices[1]?.precedent).toBeUndefined();
+  });
+
+  it("ne touche ni aux cibles ni à la séance d'origine (D59)", () => {
+    const avec = avecPrecedents(s, {
+      "barbell-bench-press": [{ reps: 6, chargeKg: 80, faite: true }],
+    });
+    expect(avec.exercices[0]?.series).toEqual(s.exercices[0]?.series);
+    expect(s.exercices[0]?.precedent).toBeUndefined();
+  });
+
+  it("n'est jamais envoyé au serveur", () => {
+    const avec = avecPrecedents(s, {
+      "barbell-bench-press": [{ reps: 6, chargeKg: 80, faite: true }],
+    });
+    expect(JSON.stringify(versEnvoi(avec, T0))).not.toContain("precedent");
   });
 });

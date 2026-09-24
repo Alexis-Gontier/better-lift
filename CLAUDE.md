@@ -8,7 +8,7 @@ et la liste des pièges déjà payés.
 
 ## État
 
-Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 6 sont fusionnés** ; les lots 0 à 2
+Le dépôt repart de zéro le 22 septembre 2026. **Les lots 0 à 7 sont fusionnés — le premier jalon est complet** ; les lots 0 à 2
 clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interface.md` :
 
 - **Lot 0** — le monorepo tient debout, les trois applications démarrent, et la chaîne
@@ -32,7 +32,12 @@ clôturent le plan `docs/superpowers/plans/2026-09-22-lots-0-2-socle-et-interfac
   brouillon sur disque qui survit à un arrêt forcé, file d'envoi idempotente. **Un entraînement
   réel se saisit avec.**
 
-**Prochaine étape : le lot 7**, l'historique et les records dérivés. Il n'est pas encore planifié.
+- **Lot 7** — historique des séances et records à la Hevy (charge, 1RM estimé jusqu'à 12 reps,
+  volume ; reps au poids du corps), dérivés à la lecture ; sur mobile, « la dernière fois » en
+  indication sous chaque série.
+
+**Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet sans manque bloquant.
+Ce qui manquera guidera la suite ; rien n'est planifié au-delà.
 
 Distant : `Alexis-Gontier/better-lift` (privé), **réinitialisé** — `main` porte le nouvel
 historique. Le code de la V1 reste consultable sur la branche **`v1`** et le tag **`v1-final`**
@@ -217,6 +222,11 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
   pure et testée ; le mobile ne garde que le disque et les écrans.
 - **Dette connue** : l'avertissement « error during concurrent rendering » au démarrage du mobile,
   présent depuis le lot 3. React s'en remet seul ; les journaux n'en donnent pas la cause.
+- **Records : tout est dérivé à la lecture** (`shared/records.ts`), jamais stocké. Un badge dit ce
+  qu'une série a battu À CE MOMENT-LÀ, contre l'historique antérieur. « La dernière fois » s'aligne
+  position par position sur TOUTES les séries précédentes, comme Hevy ; filtrer les faites
+  décalerait tout.
+- **Fuseau** : `apps/web/src/lib/fuseau.ts` est l'unique endroit où il est fixé (Europe/Paris).
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 

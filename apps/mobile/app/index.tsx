@@ -1,4 +1,9 @@
-import { demarrerDepuisRoutine, demarrerVide, secondesEcoulees } from "@better-lift/shared";
+import {
+  avecPrecedents,
+  demarrerDepuisRoutine,
+  demarrerVide,
+  secondesEcoulees,
+} from "@better-lift/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -13,7 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { authClient } from "../lib/auth-client";
-import { optionsRoutine, optionsRoutines } from "../lib/requetes";
+import { chargerPrecedents, optionsRoutine, optionsRoutines } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, nouvelId, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
@@ -180,7 +185,11 @@ export default function Accueil() {
               setOuverture(r.id);
               try {
                 const detail = await client.fetchQuery(optionsRoutine(r.id));
-                await demarrer(() => demarrerDepuisRoutine(detail, nouvelId(), new Date()));
+                // La dernière fois entre dans le brouillon AVANT son écriture (D67).
+                const precedents = await chargerPrecedents(detail.exercices.map((e) => e.slug));
+                await demarrer(() =>
+                  avecPrecedents(demarrerDepuisRoutine(detail, nouvelId(), new Date()), precedents),
+                );
               } catch {
                 Alert.alert(
                   "Routine indisponible",

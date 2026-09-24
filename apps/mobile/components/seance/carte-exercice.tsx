@@ -38,6 +38,7 @@ export function CarteExercice({
           key={i}
           numero={i + 1}
           serie={s}
+          precedent={exercice.precedent?.[i]}
           onChange={(patch) => onModifierSerie(i, patch)}
           onValider={() => onValiderSerie(i)}
         />
