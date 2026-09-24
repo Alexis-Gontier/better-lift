@@ -49,6 +49,7 @@ model Exercise {
   updatedAt    DateTime  @updatedAt
 
   routineExercices RoutineExercice[]
+  seanceExercices  SeanceExercice[]
 
   @@index([bodyPart])
   @@index([equipment])
@@ -77,6 +78,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   routines      Routine[]
+  seances       Seance[]
 
   @@unique([email])
   @@map("user")
@@ -153,6 +155,7 @@ model Routine {
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   exercices RoutineExercice[]
+  seances   Seance[]
 
   @@index([userId, position])
 }
@@ -187,4 +190,59 @@ model RoutineSerie {
   exercice RoutineExercice @relation(fields: [routineExerciceId], references: [id], onDelete: Cascade)
 
   @@unique([routineExerciceId, position])
+}
+
+// --- Séances (lot 6) ---------------------------------------------------------
+// Un instantané de ce qui a été fait : exercices et séries y sont RECOPIÉS, et
+// la séance ne dépend plus de sa routine. Aucun total stocké (D58) : volume,
+// séries et durée se dérivent à la lecture.
+
+model Seance {
+  // Fourni par le client (D56) : c'est ce qui rend l'envoi rejouable sans
+  // doublon depuis la file du mobile.
+  id        String   @id
+  userId    String
+  // SetNull : supprimer une routine n'efface pas l'historique.
+  routineId String?
+  nom       String   @db.VarChar(120)
+  debut     DateTime
+  fin       DateTime
+  createdAt DateTime @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine   Routine?         @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  exercices SeanceExercice[]
+
+  @@index([userId, debut(sort: Desc)])
+  @@index([routineId])
+}
+
+model SeanceExercice {
+  id         String @id @default(cuid())
+  seanceId   String
+  exerciseId String
+  position   Int
+  reposSec   Int?
+
+  seance   Seance        @relation(fields: [seanceId], references: [id], onDelete: Cascade)
+  exercise Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  series   SeanceSerie[]
+
+  @@unique([seanceId, position])
+  @@index([exerciseId])
+}
+
+model SeanceSerie {
+  id               String    @id @default(cuid())
+  seanceExerciceId String
+  position         Int
+  type             TypeSerie @default(NORMALE)
+  reps             Int?
+  // Toujours en kilos (D52).
+  chargeKg         Decimal?  @db.Decimal(7, 2)
+  faite            Boolean   @default(false)
+
+  exercice SeanceExercice @relation(fields: [seanceExerciceId], references: [id], onDelete: Cascade)
+
+  @@unique([seanceExerciceId, position])
 }
