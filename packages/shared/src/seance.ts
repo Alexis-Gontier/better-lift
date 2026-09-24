@@ -1,4 +1,5 @@
-import type { RoutineDetail, TypeSerie } from "./routines.js";
+import { z } from "zod";
+import { type RoutineDetail, TYPES_SERIE, type TypeSerie } from "./routines.js";
 
 /**
  * La séance en cours — la logique, sans plateforme (D61).
@@ -195,4 +196,52 @@ export function bilanSeance(s: SeanceEnCours): { seriesFaites: number; volumeKg:
     }
   }
   return { seriesFaites, volumeKg: Math.round(volumeKg * 100) / 100 };
+}
+
+// --- L'envoi -----------------------------------------------------------------
+// Ce que le mobile poste une fois la séance terminée. NON STRICT à tous les
+// niveaux (D57) : un champ inconnu est ignoré plutôt que de faire refuser — et
+// donc perdre — un entraînement réel. Une version plus récente du mobile peut
+// ajouter des champs sans que l'API en place ne les rejette.
+
+const serieEnvoyee = z.looseObject({
+  type: z.enum(TYPES_SERIE),
+  reps: z.number().int().min(0).max(999).nullable(),
+  chargeKg: z.number().min(0).max(1000).nullable(),
+  faite: z.boolean(),
+});
+
+const exerciceEnvoye = z.looseObject({
+  slug: z.string().min(1).max(200),
+  reposSec: z.number().int().min(0).max(3600).nullable(),
+  series: z.array(serieEnvoyee).max(50),
+});
+
+export const seanceSaisie = z
+  .looseObject({
+    id: z.string().min(1).max(100),
+    routineId: z.string().min(1).nullable(),
+    nom: z.string().trim().min(1).max(120),
+    debut: z.iso.datetime(),
+    fin: z.iso.datetime(),
+    exercices: z.array(exerciceEnvoye).max(100),
+  })
+  .refine((s) => Date.parse(s.fin) >= Date.parse(s.debut), "La fin précède le début.");
+
+export type SeanceSaisie = z.infer<typeof seanceSaisie>;
+
+/** La séance terminée, prête à poster. `fin` est l'heure où l'on a terminé. */
+export function versEnvoi(s: SeanceEnCours, fin: Date): SeanceSaisie {
+  return {
+    id: s.id,
+    routineId: s.routineId,
+    nom: s.nom,
+    debut: s.debut,
+    fin: fin.toISOString(),
+    exercices: s.exercices.map((e) => ({
+      slug: e.slug,
+      reposSec: e.reposSec,
+      series: e.series.map(({ type, reps, chargeKg, faite }) => ({ type, reps, chargeKg, faite })),
+    })),
+  };
 }
