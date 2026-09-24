@@ -3,13 +3,24 @@
   "ignore": [".claude/**"],
   "ignoreDependencies": ["@prisma/client"],
   "workspaces": {
-    ".": { "entry": [], "project": [] },
-    "packages/*": { "project": "src/**/*.ts" },
-    "packages/config": { "entry": [], "project": [] },
+    ".": {
+      "entry": ["scripts/*.mjs"],
+      "project": ["scripts/*.mjs"]
+    },
+    "packages/*": {
+      "project": "src/**/*.ts"
+    },
+    "packages/config": {
+      "entry": [],
+      "project": []
+    },
     "packages/db": {
       "project": ["src/**/*.ts", "catalogue/**/*.ts", "prisma/**/*.{ts,prisma}"]
     },
-    "apps/api": { "project": "src/**/*.ts" },
+    "apps/api": {
+      "entry": ["src/vercel.ts"],
+      "project": "src/**/*.ts"
+    },
     "apps/web": {
       "entry": ["src/components/ui/**/*.{ts,tsx}", "src/lib/utils.ts"],
       "project": "src/**/*.{ts,tsx,css}"

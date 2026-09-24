@@ -227,6 +227,11 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
   position par position sur TOUTES les séries précédentes, comme Hevy ; filtrer les faites
   décalerait tout.
 - **Fuseau** : `apps/web/src/lib/fuseau.ts` est l'unique endroit où il est fixé (Europe/Paris).
+- **Déploiement** : procédure dans `docs/deploiement.md`. Un projet Vercel à la racine, construit
+  au format Build Output API par `scripts/construire-vercel.mjs` (l'API en UN bundle esbuild, sous
+  `/api` ; Better Auth sous `/api/auth`). Éprouver en local avec `scripts/essayer-vercel.mjs` avant
+  tout envoi. Base de prod : `betterlift` sur la branche Neon `production` — jamais `neondb` (V1).
+  Le web de production appelle `<origine>/api` ; `VITE_API_URL` ne sert qu'en développement.
 - **Correctifs d'audit** : sur une branche dédiée partant de la principale, jamais dans une
   branche de fonctionnalité.
 

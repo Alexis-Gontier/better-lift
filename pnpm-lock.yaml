@@ -41,6 +41,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^21.2.0
         version: 21.2.3
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
       knip:
         specifier: 6.37.0
         version: 6.37.0
