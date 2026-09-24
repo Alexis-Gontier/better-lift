@@ -22,10 +22,10 @@ enum BodyPart {
 }
 
 model Exercise {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   // Dérivé du nom ANGLAIS, qui ne bouge jamais : c'est la clé de l'`upsert` du
   // semis, et l'identifiant de l'URL. Corriger un nom français ne le change pas.
-  slug         String   @unique
+  slug         String    @unique
   // Le nom anglais du dataset, conservé pour la recherche (D44).
   name         String
   // Le nom français, affiché. Vient de `catalogue/noms-fr.json` (D45).
@@ -45,8 +45,10 @@ model Exercise {
   // — voir catalogue/LICENSE-dataset.md.
   gifUrl       String?
   archivedAt   DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  routineExercices RoutineExercice[]
 
   @@index([bodyPart])
   @@index([equipment])
@@ -74,6 +76,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  routines      Routine[]
 
   @@unique([email])
   @@map("user")
@@ -125,4 +128,63 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// --- Routines (lot 5) --------------------------------------------------------
+// Des gabarits de séance, série par série (D47). Une routine est remplacée en
+// entier à chaque enregistrement (D50), et supprimée pour de bon (D51) : une
+// séance est un instantané indépendant, rien ne pointe vers elle.
+
+enum TypeSerie {
+  ECHAUFFEMENT
+  NORMALE
+  ECHEC
+  DEGRESSIVE
+}
+
+model Routine {
+  id        String   @id @default(cuid())
+  userId    String
+  nom       String   @db.VarChar(120)
+  // Ordre dans la liste de l'utilisateur.
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercices RoutineExercice[]
+
+  @@index([userId, position])
+}
+
+model RoutineExercice {
+  id             String @id @default(cuid())
+  routineId      String
+  exerciseId     String
+  position       Int
+  reposSec       Int?
+  // D11 : les supersets sont portés par le modèle, absents de l'interface.
+  supersetGroupe Int?
+
+  routine  Routine        @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  // Restrict : un exercice du catalogue ne se supprime pas, il s'archive.
+  exercise Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  series   RoutineSerie[]
+
+  @@unique([routineId, position])
+  @@index([exerciseId])
+}
+
+model RoutineSerie {
+  id                String    @id @default(cuid())
+  routineExerciceId String
+  position          Int
+  type              TypeSerie @default(NORMALE)
+  repsCible         Int?
+  // Toujours en kilos ; l'affichage passe par `formaterCharge` (D52).
+  chargeCibleKg     Decimal?  @db.Decimal(7, 2)
+
+  exercice RoutineExercice @relation(fields: [routineExerciceId], references: [id], onDelete: Cascade)
+
+  @@unique([routineExerciceId, position])
 }
