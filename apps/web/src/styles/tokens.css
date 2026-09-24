@@ -4,6 +4,7 @@
   --surface-1: #101214;
   --surface-2: #181b1e;
   --surface-3: #1e2226;
+  --nav-active: var(--surface-3);
 
   /* Filets */
   --line: #24272b;
@@ -45,6 +46,9 @@
   --surface-1: #ffffff;
   --surface-2: #f7f7f9;
   --surface-3: #edeef2;
+  /* L'entrée active de la navigation : sur le canevas clair, --surface-3 ne
+     s'en détache qu'à 1,03:1. */
+  --nav-active: #e2e3e8;
 
   --line: #e3e3e7;
   --line-strong: #d6d6dc;

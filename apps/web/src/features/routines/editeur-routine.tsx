@@ -14,7 +14,10 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { Plus } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { BoutonFermer } from "./bouton-fermer";
 import { brouillonValide, nouvelExercice, versBrouillon, versRoutine } from "./brouillon";
 import { CarteExercice } from "./carte-exercice";
@@ -83,49 +86,52 @@ export function EditeurRoutine({
         <BoutonFermer onFermer={onAnnuler} />
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 overflow-auto px-5 py-4">
-        {brouillon.exercices.length === 0 ? (
-          <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
-            Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
-          </p>
-        ) : (
-          <DndContext sensors={capteurs} collisionDetection={closestCenter} onDragEnd={deposer}>
-            <SortableContext
-              items={brouillon.exercices.map((e) => e.cle)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ol className="flex flex-col gap-3">
-                {brouillon.exercices.map((ex) => (
-                  <CarteExercice
-                    key={ex.cle}
-                    exercice={ex}
-                    onChange={(nouveau) =>
-                      setBrouillon((b) => ({
-                        ...b,
-                        exercices: b.exercices.map((e) => (e.cle === ex.cle ? nouveau : e)),
-                      }))
-                    }
-                    onRetirer={() =>
-                      setBrouillon((b) => ({
-                        ...b,
-                        exercices: b.exercices.filter((e) => e.cle !== ex.cle),
-                      }))
-                    }
-                  />
-                ))}
-              </ol>
-            </SortableContext>
-          </DndContext>
-        )}
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="flex flex-col gap-3 px-5 py-4">
+          {brouillon.exercices.length === 0 ? (
+            <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
+              Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
+            </p>
+          ) : (
+            <DndContext sensors={capteurs} collisionDetection={closestCenter} onDragEnd={deposer}>
+              <SortableContext
+                items={brouillon.exercices.map((e) => e.cle)}
+                strategy={verticalListSortingStrategy}
+              >
+                <ol className="flex flex-col gap-3">
+                  {brouillon.exercices.map((ex) => (
+                    <CarteExercice
+                      key={ex.cle}
+                      exercice={ex}
+                      onChange={(nouveau) =>
+                        setBrouillon((b) => ({
+                          ...b,
+                          exercices: b.exercices.map((e) => (e.cle === ex.cle ? nouveau : e)),
+                        }))
+                      }
+                      onRetirer={() =>
+                        setBrouillon((b) => ({
+                          ...b,
+                          exercices: b.exercices.filter((e) => e.cle !== ex.cle),
+                        }))
+                      }
+                    />
+                  ))}
+                </ol>
+              </SortableContext>
+            </DndContext>
+          )}
 
-        <button
-          type="button"
-          onClick={() => setSelecteur(true)}
-          className="rounded-md border border-dashed border-(--line) py-2.5 text-sm text-(--ink-subtle) hover:bg-(--surface-2) hover:text-(--ink) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
-        >
-          + exercice
-        </button>
-      </div>
+          <Button
+            variant="outline"
+            onClick={() => setSelecteur(true)}
+            className="border-dashed text-(--ink-subtle)"
+          >
+            <Plus aria-hidden="true" />
+            Exercice
+          </Button>
+        </div>
+      </ScrollArea>
 
       {erreur ? (
         <p role="alert" className="border-t border-(--line) px-5 pt-3 text-sm text-destructive-ink">
@@ -134,29 +140,24 @@ export function EditeurRoutine({
       ) : null}
       <div className="flex items-center gap-2 border-t border-(--line) px-5 py-3">
         {onSupprimer ? (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() => setConfirmation(true)}
-            className="rounded-md px-3 py-2 text-sm text-destructive-ink hover:bg-(--surface-2) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
+            className="text-destructive-ink"
           >
             Supprimer
-          </button>
+          </Button>
         ) : null}
-        <button
-          type="button"
-          onClick={onAnnuler}
-          className="ml-auto rounded-md border border-(--line) px-3 py-2 text-sm text-(--ink) hover:bg-(--surface-2) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
-        >
+        <Button variant="outline" onClick={onAnnuler} className="ml-auto">
           Annuler
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           disabled={!valide || enregistrement}
           onClick={() => onEnregistrer(versRoutine(brouillon))}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
+          className="font-semibold"
         >
           {enregistrement ? "Enregistrement…" : "Enregistrer"}
-        </button>
+        </Button>
       </div>
 
       <SelecteurExercice

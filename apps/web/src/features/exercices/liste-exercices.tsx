@@ -1,5 +1,20 @@
-import { type ExerciceResume, LIBELLE_GROUPE } from "@better-lift/shared";
+import { type ExerciceResume, GROUPES, type Groupe, LIBELLE_GROUPE } from "@better-lift/shared";
+import { Search } from "lucide-react";
 import { EtatVide } from "@/components/etats/etat-vide";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+/** Radix interdit la valeur vide dans un `Select` : « tous » a sa propre clé. */
+const TOUS = "tous";
 
 type Props = {
   exercices: ExerciceResume[];
@@ -9,8 +24,10 @@ type Props = {
   chargeSuite: boolean;
   onSuite: () => void;
   q: string;
+  groupe?: Groupe;
   slugSelectionne?: string;
   onRecherche: (v: string) => void;
+  onGroupe: (g: Groupe | undefined) => void;
   onSelection: (slug: string) => void;
 };
 
@@ -21,28 +38,48 @@ export function ListeExercices({
   chargeSuite,
   onSuite,
   q,
+  groupe,
   slugSelectionne,
   onRecherche,
+  onGroupe,
   onSelection,
 }: Props) {
   return (
-    <section className="flex h-full flex-col">
-      <header className="border-b border-(--line) px-5 pb-3 pt-4">
-        <div className="mb-3.5 flex items-baseline gap-2.5">
-          <h1 className="text-lg font-semibold tracking-tight">Exercices</h1>
-          <span className="font-mono text-xs text-(--ink-subtle)">{total}</span>
+    <section aria-label="Exercices" className="flex h-full flex-col">
+      <header className="flex items-center gap-2 border-b border-(--line) px-4 py-3">
+        <div className="relative flex-1">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-(--ink-faint)"
+          />
+          <Input
+            type="search"
+            aria-label="Rechercher un exercice"
+            value={q}
+            onChange={(e) => onRecherche(e.target.value)}
+            placeholder="Rechercher un exercice…"
+            className="pl-8"
+          />
         </div>
-        <label htmlFor="recherche-exercice" className="sr-only">
-          Rechercher un exercice
-        </label>
-        <input
-          id="recherche-exercice"
-          type="search"
-          value={q}
-          onChange={(e) => onRecherche(e.target.value)}
-          placeholder="Rechercher un exercice…"
-          className="w-full rounded-md border border-(--line) bg-(--surface-1) px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
-        />
+        <Select
+          value={groupe ?? TOUS}
+          onValueChange={(v) => onGroupe(v === TOUS ? undefined : (v as Groupe))}
+        >
+          <SelectTrigger aria-label="Groupe musculaire" className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TOUS}>Tous les groupes</SelectItem>
+            {GROUPES.map((g) => (
+              <SelectItem key={g} value={g}>
+                {LIBELLE_GROUPE[g]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="w-12 text-right font-mono text-xs text-(--ink-subtle)" title="Résultats">
+          {total}
+        </span>
       </header>
 
       {/* Le cas vide est le plus facile à oublier, et le premier que l'on
@@ -51,45 +88,50 @@ export function ListeExercices({
         <EtatVide
           titre="Aucun exercice trouvé"
           message={
-            q
-              ? `Rien ne correspond à « ${q} ». Essaie un autre terme, ou retire les filtres.`
+            q || groupe
+              ? `Rien ne correspond${q ? ` à « ${q} »` : ""}. Essaie un autre terme, ou retire les filtres.`
               : "Le catalogue est vide pour l'instant."
           }
         />
       ) : (
-        <ul className="flex-1 overflow-auto">
-          {exercices.map((ex) => (
-            <li key={ex.slug}>
-              <button
-                type="button"
-                onClick={() => onSelection(ex.slug)}
-                aria-current={ex.slug === slugSelectionne ? "true" : undefined}
-                className={`flex h-[54px] w-full items-center gap-3 border-b border-(--line) px-5 text-left ${
-                  ex.slug === slugSelectionne ? "bg-(--surface-3)" : "hover:bg-(--surface-2)"
-                }`}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-(--ink)">{ex.nom}</span>
-                  <span className="mt-0.5 block text-[11.5px] text-(--ink-faint)">
-                    {LIBELLE_GROUPE[ex.groupe]} · {ex.equipement}
+        <ScrollArea className="min-h-0 flex-1">
+          <ul>
+            {exercices.map((ex) => (
+              <li key={ex.slug}>
+                <button
+                  type="button"
+                  onClick={() => onSelection(ex.slug)}
+                  aria-current={ex.slug === slugSelectionne ? "true" : undefined}
+                  className={`flex h-[54px] w-full items-center gap-3 border-b border-(--line) px-4 text-left ${
+                    ex.slug === slugSelectionne ? "bg-(--surface-3)" : "hover:bg-(--surface-2)"
+                  }`}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm text-(--ink)">{ex.nom}</span>
+                    <span className="mt-0.5 block truncate text-[11.5px] text-(--ink-faint)">
+                      {ex.equipement}
+                    </span>
                   </span>
-                </span>
-              </button>
-            </li>
-          ))}
-          {aSuite ? (
-            <li className="px-5 py-3">
-              <button
-                type="button"
-                onClick={onSuite}
-                disabled={chargeSuite}
-                className="w-full rounded-md border border-(--line) py-2 text-sm text-(--ink-subtle) hover:bg-(--surface-2) hover:text-(--ink) disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-              >
-                {chargeSuite ? "Chargement…" : `Afficher plus — ${exercices.length} sur ${total}`}
-              </button>
-            </li>
-          ) : null}
-        </ul>
+                  <Badge variant="outline" className="shrink-0 font-normal text-(--ink-subtle)">
+                    {LIBELLE_GROUPE[ex.groupe]}
+                  </Badge>
+                </button>
+              </li>
+            ))}
+            {aSuite ? (
+              <li className="px-4 py-3">
+                <Button
+                  variant="outline"
+                  onClick={onSuite}
+                  disabled={chargeSuite}
+                  className="w-full text-(--ink-subtle)"
+                >
+                  {chargeSuite ? "Chargement…" : `Afficher plus — ${exercices.length} sur ${total}`}
+                </Button>
+              </li>
+            ) : null}
+          </ul>
+        </ScrollArea>
       )}
     </section>
   );

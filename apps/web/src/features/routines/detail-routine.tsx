@@ -4,6 +4,17 @@ import {
   LIBELLE_TYPE_SERIE,
   type RoutineDetail,
 } from "@better-lift/shared";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { SYSTEME_UNITES } from "@/lib/unites";
 import { BoutonFermer } from "./bouton-fermer";
 
@@ -31,60 +42,70 @@ export function DetailRoutine({
         <BoutonFermer onFermer={onFermer} />
       </div>
 
-      <div className="flex flex-col gap-4 overflow-auto px-5 py-4">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="flex-1 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-          >
-            Démarrer cette routine
-          </button>
-          <button
-            type="button"
-            onClick={onModifier}
-            className="rounded-md border border-(--line) px-4 py-3 text-sm text-(--ink) hover:bg-(--surface-2) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-          >
-            Modifier
-          </button>
-        </div>
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="flex flex-col gap-4 px-5 py-4">
+          <div className="flex gap-2">
+            <Button size="lg" className="flex-1 font-semibold">
+              Démarrer cette routine
+            </Button>
+            <Button size="lg" variant="outline" onClick={onModifier}>
+              Modifier
+            </Button>
+          </div>
 
-        <ol className="flex flex-col gap-3">
-          {routine.exercices.map((ex, i) => (
-            // L'index entre dans la clé : le même exercice peut figurer deux fois.
-            <li key={`${ex.slug}-${i}`} className="rounded-md border border-(--line)">
-              <div className="flex items-baseline gap-2 border-b border-(--line) px-3 py-2">
-                <span className="min-w-0 flex-1 truncate text-sm text-(--ink)">{ex.nom}</span>
-                {ex.reposSec ? (
-                  <span className="shrink-0 text-[11px] text-(--ink-faint)">
-                    Repos {formaterRepos(ex.reposSec)}
-                  </span>
-                ) : null}
-              </div>
-              <ol className="px-3 py-1.5">
-                {ex.series.map((serie, j) => (
-                  <li
-                    key={j}
-                    className="flex items-center gap-3 py-1 font-mono text-xs text-(--ink-subtle)"
-                  >
-                    <span className="w-4 text-(--ink-faint)">{j + 1}</span>
-                    <span className="w-6" title={LIBELLE_TYPE_SERIE[serie.type]}>
-                      {ABREGE_TYPE_SERIE[serie.type]}
+          <ol className="flex flex-col gap-3">
+            {routine.exercices.map((ex, i) => (
+              // L'index entre dans la clé : le même exercice peut figurer deux fois.
+              <li key={`${ex.slug}-${i}`}>
+                <Card className="gap-0 overflow-hidden bg-(--surface-2) py-0 shadow-none">
+                  <div className="flex items-baseline gap-2 border-b border-(--line) px-3 py-2">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-(--ink)">
+                      {ex.nom}
                     </span>
-                    <span className="w-14 text-(--ink)">
-                      {serie.repsCible === null ? "—" : `${serie.repsCible} reps`}
-                    </span>
-                    <span className="text-(--ink)">
-                      {serie.chargeCibleKg === null
-                        ? "—"
-                        : formaterCharge(serie.chargeCibleKg, SYSTEME_UNITES)}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </li>
-          ))}
-        </ol>
-      </div>
+                    {ex.reposSec ? (
+                      <span className="shrink-0 text-[11px] text-(--ink-faint)">
+                        Repos {formaterRepos(ex.reposSec)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <Table className="font-mono text-xs">
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="h-7 w-10 text-(--ink-faint)">Série</TableHead>
+                        <TableHead className="h-7 w-12 text-(--ink-faint)">Type</TableHead>
+                        <TableHead className="h-7 text-(--ink-faint)">Reps</TableHead>
+                        <TableHead className="h-7 text-(--ink-faint)">Charge</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {ex.series.map((serie, j) => (
+                        // Les séries n'ont pas d'identité propre : leur rang en tient lieu.
+                        <TableRow key={j} className="border-(--line) hover:bg-transparent">
+                          <TableCell className="py-1.5 text-(--ink-faint)">{j + 1}</TableCell>
+                          <TableCell
+                            className="py-1.5 text-(--ink-subtle)"
+                            title={LIBELLE_TYPE_SERIE[serie.type]}
+                          >
+                            {ABREGE_TYPE_SERIE[serie.type]}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-(--ink)">
+                            {serie.repsCible === null ? "—" : serie.repsCible}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-(--ink)">
+                            {serie.chargeCibleKg === null
+                              ? "—"
+                              : formaterCharge(serie.chargeCibleKg, SYSTEME_UNITES)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Card>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </ScrollArea>
     </div>
   );
 }
