@@ -102,10 +102,29 @@ export function ListeExercices({
                   type="button"
                   onClick={() => onSelection(ex.slug)}
                   aria-current={ex.slug === slugSelectionne ? "true" : undefined}
-                  className={`flex h-[54px] w-full items-center gap-3 border-b border-(--line) px-4 text-left ${
+                  className={`flex h-[60px] w-full items-center gap-3 border-b border-(--line) px-4 text-left ${
                     ex.slug === slugSelectionne ? "bg-(--surface-3)" : "hover:bg-(--surface-2)"
                   }`}
                 >
+                  {/* La vignette du GIF (D46, jamais copié). Fond blanc : les animations
+                      du dataset sont dessinées sur blanc. `lazy` : seules les lignes
+                      visibles la chargent. Sans image, une case vide garde l'alignement. */}
+                  {ex.gif ? (
+                    <img
+                      src={ex.gif}
+                      alt=""
+                      width={40}
+                      height={40}
+                      loading="lazy"
+                      decoding="async"
+                      className="size-10 shrink-0 rounded-md bg-white object-contain"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="size-10 shrink-0 rounded-md bg-(--surface-2)"
+                    />
+                  )}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm text-(--ink)">{ex.nom}</span>
                     <span className="mt-0.5 block truncate text-[11.5px] text-(--ink-faint)">

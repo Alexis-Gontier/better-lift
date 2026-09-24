@@ -31,6 +31,8 @@ export type ExerciceResume = {
   /** La clé de données, pas le libellé : le français vient de `LIBELLE_GROUPE`. */
   groupe: Groupe;
   equipement: string;
+  /** URL de l'animation, ou `null` : l'interface a toujours un repli sans visuel. */
+  gif: string | null;
 };
 
 export type ExerciceDetail = ExerciceResume & {
@@ -40,8 +42,6 @@ export type ExerciceDetail = ExerciceResume & {
    * maladroit (D44).
    */
   nomAnglais: string;
-  /** URL de l'animation, ou `null` : l'interface a toujours un repli sans visuel. */
-  gif: string | null;
   cible: string;
   secondaires: string[];
   instructions: string[];

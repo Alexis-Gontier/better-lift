@@ -65,12 +65,13 @@ describe("filtreCatalogue", () => {
 describe("projections", () => {
   // Le résumé ne doit PAS transporter les instructions : une liste de 50
   // exercices ferait descendre 250 étapes que personne ne lit.
-  it("réduit une ligne à ce qu'une liste affiche, sous son nom français", () => {
+  it("réduit une ligne à ce qu'une liste affiche, sous son nom français et avec sa vignette", () => {
     expect(versResume(ligne)).toEqual({
       slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
       groupe: "CHEST",
       equipement: "Barre",
+      gif: ligne.gifUrl,
     });
   });
 

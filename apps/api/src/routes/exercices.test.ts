@@ -9,6 +9,7 @@ const resume: ExerciceResume = {
   nom: "Squat complet à la barre",
   groupe: "UPPER_LEGS",
   equipement: "Barre",
+  gif: null,
 };
 
 const detail: ExerciceDetail = {

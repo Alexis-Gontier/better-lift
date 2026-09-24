@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { NavLaterale } from "./nav-lateral";
 
 type Props = {
@@ -10,15 +9,6 @@ type Props = {
   liste: ReactNode;
   detail?: ReactNode;
 };
-
-/**
- * La sidebar shadcn écrit son état replié dans un cookie mais ne le relit pas :
- * c'est au rendu serveur de le faire, et ce SPA n'en a pas. Lu ici, de façon
- * synchrone, pour que la coquille naisse déjà dans le bon état.
- */
-function sidebarOuverte() {
-  return !document.cookie.split("; ").includes("sidebar_state=false");
-}
 
 export function AppShell({ titre, liste, detail }: Props) {
   // react-resizable-panels 4 n'a plus de prop `autoSaveId` (API des versions 1/2) : la
@@ -31,17 +21,16 @@ export function AppShell({ titre, liste, detail }: Props) {
   });
 
   return (
-    <SidebarProvider defaultOpen={sidebarOuverte()} className="h-svh">
+    <SidebarProvider className="h-svh">
       <NavLaterale />
 
       {/* La seule surface permanente qui flotte (D71) : liste et détail restent
-          jointifs entre eux, séparés par le filet de 1 px. */}
-      <SidebarInset className="min-h-0 overflow-hidden bg-(--surface-1)">
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-(--line) px-3">
-          <SidebarTrigger className="-ml-1" aria-label="Replier la navigation (Ctrl B)" />
-          <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
-          <h1 className="text-sm font-medium">{titre}</h1>
-        </header>
+          jointifs entre eux, séparés par le filet de 1 px. La barre n'est pas
+          repliable : shadcn n'applique alors plus les marges de l'`inset`, d'où
+          leur recopie ici. Pas d'en-tête visible — le titre reste pour les
+          lecteurs d'écran. */}
+      <SidebarInset className="m-2 ml-0 min-h-0 overflow-hidden rounded-xl bg-(--surface-1) shadow-sm">
+        <h1 className="sr-only">{titre}</h1>
 
         <ResizablePanelGroup
           orientation="horizontal"
