@@ -5,10 +5,28 @@
     "scheme": "better-lift",
     "version": "0.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "plugins": ["expo-router", "expo-secure-store", "expo-image"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-image",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 120,
+          "backgroundColor": "#08090a"
+        }
+      ]
+    ],
     "android": {
-      "package": "com.algont.betterlift"
+      "package": "com.algont.betterlift",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive.png",
+        "monochromeImage": "./assets/monochrome.png",
+        "backgroundColor": "#a8cf45"
+      }
     },
     "ios": {
       "bundleIdentifier": "com.algont.betterlift"

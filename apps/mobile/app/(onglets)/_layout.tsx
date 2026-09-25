@@ -1,8 +1,8 @@
 import { Redirect, Tabs, useRouter } from "expo-router";
 import {
+  ChartColumn,
   Dumbbell,
   House,
-  List,
   ListChecks,
   type LucideIcon,
   Play,
@@ -105,11 +105,13 @@ export default function Onglets() {
           ),
         }}
       />
-      <Tabs.Screen name="exercices" options={{ title: "Exercices", tabBarIcon: icone(List) }} />
+      <Tabs.Screen name="stats" options={{ title: "Stats", tabBarIcon: icone(ChartColumn) }} />
       <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
       {/* L'historique quitte la barre ; ses écrans restent, joignables par lien,
           le temps de décider où il vivra. */}
       <Tabs.Screen name="historique" options={{ href: null }} />
+      {/* Les exercices cèdent leur place aux Stats ; leurs écrans restent. */}
+      <Tabs.Screen name="exercices" options={{ href: null }} />
     </Tabs>
   );
 }

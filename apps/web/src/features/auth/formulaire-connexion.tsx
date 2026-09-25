@@ -1,4 +1,7 @@
+import { Eye, EyeOff } from "lucide-react";
 import { type FormEvent, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 
 // Trois refus, trois gestes différents. Les confondre est le défaut classique :
@@ -12,13 +15,28 @@ const MESSAGES: Record<GenreRefus, string> = {
   reseau: "L'API est injoignable. Ce n'est pas toi — réessaie dans un instant.",
 };
 
-const CHAMP =
-  "rounded-md border border-(--line) bg-(--surface-1) px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) aria-[invalid=true]:border-(--danger)";
+const TEXTES = {
+  connexion: {
+    titre: "Connexion",
+    sousTitre: "Reprends là où tu t'étais arrêté.",
+    action: "Se connecter",
+    bascule: ["Pas encore de compte ?", "Créer un compte"],
+  },
+  creation: {
+    titre: "Créer un compte",
+    sousTitre: "Réservé aux adresses autorisées.",
+    action: "Créer le compte",
+    bascule: ["Déjà un compte ?", "Se connecter"],
+  },
+} as const;
+
+const CHAMP = "h-10 bg-(--surface-1)";
 
 export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
   const [mode, setMode] = useState<"connexion" | "creation">("connexion");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
+  const [visible, setVisible] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [refus, setRefus] = useState<GenreRefus | null>(null);
 
@@ -49,64 +67,79 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
   }
 
   const invalide = refus !== null;
+  const t = TEXTES[mode];
 
   return (
-    <form onSubmit={soumettre} className="flex w-full flex-col gap-3">
-      <label htmlFor="email" className="text-sm text-(--ink-muted)">
+    <form onSubmit={soumettre} className="flex w-full flex-col">
+      <h1 className="text-3xl font-semibold tracking-tight">{t.titre}</h1>
+      <p className="mt-1.5 text-sm text-(--ink-subtle)">{t.sousTitre}</p>
+
+      <label htmlFor="email" className="mt-8 text-sm font-medium">
         Adresse e-mail
       </label>
-      <input
+      <Input
         id="email"
         type="email"
         autoComplete="email"
+        placeholder="toi@exemple.fr"
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         aria-invalid={invalide}
-        className={CHAMP}
+        className={`mt-2 ${CHAMP}`}
       />
 
-      <label htmlFor="mdp" className="text-sm text-(--ink-muted)">
+      <label htmlFor="mdp" className="mt-5 text-sm font-medium">
         Mot de passe
       </label>
-      <input
-        id="mdp"
-        type="password"
-        autoComplete={mode === "connexion" ? "current-password" : "new-password"}
-        required
-        minLength={8}
-        value={motDePasse}
-        onChange={(e) => setMotDePasse(e.target.value)}
-        aria-invalid={invalide}
-        className={CHAMP}
-      />
+      <div className="relative mt-2">
+        <Input
+          id="mdp"
+          type={visible ? "text" : "password"}
+          autoComplete={mode === "connexion" ? "current-password" : "new-password"}
+          required
+          minLength={8}
+          value={motDePasse}
+          onChange={(e) => setMotDePasse(e.target.value)}
+          aria-invalid={invalide}
+          className={`pr-10 ${CHAMP}`}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          aria-pressed={visible}
+          className="absolute inset-y-0 right-0 grid w-10 place-items-center rounded-r-md text-(--ink-subtle) outline-none hover:text-(--ink) focus-visible:text-(--ink) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+        >
+          {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+        </button>
+      </div>
 
       {/* La couleur ne fait que rendre l'erreur trouvable : elle se dit aussi en
           toutes lettres, et `role="alert"` la porte pour les lecteurs d'écran. */}
       {refus ? (
-        <p role="alert" className="text-sm text-(--danger-ink)">
+        <p role="alert" className="mt-4 text-sm text-(--danger-ink)">
           {MESSAGES[refus]}
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={enCours}
-        className="mt-1 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-      >
-        {enCours ? "…" : mode === "connexion" ? "Se connecter" : "Créer le compte"}
-      </button>
+      <Button type="submit" disabled={enCours} className="mt-6 h-10 font-semibold">
+        {enCours ? "…" : t.action}
+      </Button>
 
-      <button
-        type="button"
-        onClick={() => {
-          setMode(mode === "connexion" ? "creation" : "connexion");
-          setRefus(null);
-        }}
-        className="text-sm text-(--ink-subtle) underline-offset-2 hover:underline"
-      >
-        {mode === "connexion" ? "Créer un compte" : "J'ai déjà un compte"}
-      </button>
+      <p className="mt-6 text-center text-sm text-(--ink-subtle)">
+        {t.bascule[0]}{" "}
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "connexion" ? "creation" : "connexion");
+            setRefus(null);
+          }}
+          className="font-medium text-(--ink) underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+        >
+          {t.bascule[1]}
+        </button>
+      </p>
     </form>
   );
 }

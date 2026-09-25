@@ -118,6 +118,13 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   fuseau affichés. La liste des exercices montre l'**image fixe** (JPG ~6 Ko) : `image`
   fait partie du résumé, déduite de `gifUrl` par `imageDe` (le dataset publie `images/<id>.jpg`
   à côté de `videos/<id>.gif`) — aucune colonne ni migration. Le GIF reste réservé aux fiches.
+- **Logo** : l'haltère Lucide (`Dumbbell`) redressée de 45°, en encre sur aplat lime — le même
+  dessin que le bouton central du mobile. Composant `Logo` sur chaque surface
+  (`apps/web/src/components/logo.tsx`, `apps/mobile/components/ui/logo.tsx`). Source vectorielle
+  `apps/mobile/assets/logo.svg` (= `apps/web/public/favicon.svg`) ; les PNG d'icône Android
+  (`icon`, `adaptive`, `monochrome`, `splash`) en sont des rendus, à régénérer si le logo change.
+  Icônes et démarrage ne se voient que dans un build EAS, jamais dans Expo Go. **Piège** : sur une
+  icône `lucide-react-native`, `style` est ignoré — la rotation se pose sur une `View` parente.
 - `Resizable`, `Sidebar` et `Command` de shadcn fournissent panneaux, navigation et `Cmd+K`.
 - **Le permanent est jointif, le passager flotte — une exception bornée** (D71). Seule la zone
   de contenu (`SidebarInset`) flotte, une fois : marge, coins arrondis, ombre légère. Liste et
@@ -149,11 +156,12 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   assez claire pour que l'aplat se détache du fond à 3,24:1. Plus foncé, le bouton disparaît
   dans la page.
 - **Mobile à quatre onglets** (D74–D80, [`2026-09-24-mobile-onglets-design.md`](docs/superpowers/specs/2026-09-24-mobile-onglets-design.md)) :
-  Accueil · Routines | **bouton central** | Exercices · Profil, façon opengym (barre pleine
+  Accueil · Routines | **bouton central** | Stats · Profil, façon opengym (barre pleine
   largeur, onglet actif **en lime** — D76 révisée à la demande de l'utilisateur ; haltère
   Lucide redressée de 45°). L'Accueil est **vide** pour l'instant ; la file d'envoi vit dans
   Profil (`components/file-envoi.tsx`). **L'historique a quitté la barre** (`href: null`, écrans
-  conservés) en attendant d'être replacé. Icônes
+  conservés) en attendant d'être replacé ; **les Exercices aussi**, remplacés par un onglet
+  **Stats** encore vide (`app/(onglets)/stats.tsx`), à dessiner plus tard. Icônes
   **Lucide** (`lucide-react-native` + `react-native-svg`, présent dans Expo Go), comme le web. Le bouton
   central (aplat lime) reprend la séance en cours, sinon ouvre la modale `app/demarrer.tsx`
   (séance vide ou routine, logique partagée dans `lib/demarrer.ts`). **Piège** : une pile qui
