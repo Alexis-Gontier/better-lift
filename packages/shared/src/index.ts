@@ -1,4 +1,17 @@
 export { estAutorisee, normaliserListe } from "./allowlist.js";
+export {
+  type Brouillon,
+  brouillonValide,
+  chargeInvalide,
+  type ExerciceBrouillon,
+  empreinte,
+  nouvelExercice,
+  reposInvalide,
+  repsInvalides,
+  type SerieBrouillon,
+  versBrouillon,
+  versSaisie,
+} from "./brouillon-routine.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 export {

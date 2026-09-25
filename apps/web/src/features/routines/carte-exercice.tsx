@@ -1,4 +1,4 @@
-import { LIBELLE_GROUPE } from "@better-lift/shared";
+import { type ExerciceBrouillon, LIBELLE_GROUPE } from "@better-lift/shared";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formaterSerie } from "@/features/exercices/badge-record";
 import { optionsExercice } from "@/features/exercices/requetes";
-import type { ExerciceBrouillon } from "./brouillon";
 import { TableauSeries } from "./tableau-series";
 
 /** Les repos proposés, en secondes ; « "" » = pas de repos. */
