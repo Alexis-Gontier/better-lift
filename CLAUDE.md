@@ -175,6 +175,21 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   Séance guidée : vignette GIF par exercice (agrandie à l'appui, `expo-image` en cache disque),
   écran maintenu allumé (`useKeepAwake`), repos en grand bandeau avec −15 s / +15 s
   (`ajusterRepos` dans `shared`).
+- **Routines sur mobile, indépendantes du web** (D82–D85, [`2026-09-25-mobile-routines-design.md`](docs/superpowers/specs/2026-09-25-mobile-routines-design.md)) :
+  le mobile crée, modifie et supprime les routines (D49 levée). Page d'une routine façon opengym :
+  résumé (`dureeEstimeeSec`), **carte des muscles** face/dos (`react-native-body-highlighter`,
+  `zonesTravaillees` de `shared/muscles.ts` — chaque nom de muscle du catalogue a une zone ou
+  figure dans `MUSCLES_SANS_ZONE`, test à l'appui), cartes « 3 × 8 · 60 kg » (`resumeSeries`),
+  Démarrer fixé. **Les muscles sont en vert** (D84 révisée à la demande de l'utilisateur) : seul
+  usage du lime hors action et record, borné au dessin du corps ; pastilles à l'encre. Édition
+  plein écran `app/routine-edition.tsx` (`?id=` pour modifier, sans pour créer) :
+  `react-native-draggable-flatlist` (appui long sur la poignée), `GestureHandlerRootView` à la
+  racine, sortie avec changements confirmée (`beforeRemove`). Modale `app/choisir-exercices.tsx`,
+  qui rend sa sélection par `lib/choix-exercices.ts`. La copie de travail de l'éditeur vit dans
+  `shared/brouillon-routine.ts` (D85), commune au web et au mobile. **Pièges** :
+  `crypto.randomUUID` n'existe pas sous Hermes — pas dans `shared` ; supprimer une routine
+  **retire** son détail du cache (`removeQueries`) — l'invalider referait la requête, 404, et
+  les tentatives de TanStack Query bloqueraient l'écran plusieurs secondes.
 - **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et on valide un écran avant de lui brancher
