@@ -156,11 +156,12 @@ Paquets : `apps/{web,mobile,api}` et `packages/{db,shared,api-client}`.
   assez claire pour que l'aplat se détache du fond à 3,24:1. Plus foncé, le bouton disparaît
   dans la page.
 - **Mobile à quatre onglets** (D74–D80, [`2026-09-24-mobile-onglets-design.md`](docs/superpowers/specs/2026-09-24-mobile-onglets-design.md)) :
-  Accueil · Routines | **bouton central** | Exercices · Profil, façon opengym (barre pleine
+  Accueil · Routines | **bouton central** | Stats · Profil, façon opengym (barre pleine
   largeur, onglet actif **en lime** — D76 révisée à la demande de l'utilisateur ; haltère
   Lucide redressée de 45°). L'Accueil est **vide** pour l'instant ; la file d'envoi vit dans
   Profil (`components/file-envoi.tsx`). **L'historique a quitté la barre** (`href: null`, écrans
-  conservés) en attendant d'être replacé. Icônes
+  conservés) en attendant d'être replacé ; **les Exercices aussi**, remplacés par un onglet
+  **Stats** encore vide (`app/(onglets)/stats.tsx`), à dessiner plus tard. Icônes
   **Lucide** (`lucide-react-native` + `react-native-svg`, présent dans Expo Go), comme le web. Le bouton
   central (aplat lime) reprend la séance en cours, sinon ouvre la modale `app/demarrer.tsx`
   (séance vide ou routine, logique partagée dans `lib/demarrer.ts`). **Piège** : une pile qui
