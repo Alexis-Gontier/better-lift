@@ -53,6 +53,7 @@ export {
 } from "./records.js";
 export {
   ABREGE_TYPE_SERIE,
+  dureeEstimeeSec,
   type ExerciceRoutine,
   etiquettesSeries,
   exerciceSaisi,
@@ -62,6 +63,7 @@ export {
   type RoutineDetail,
   type RoutineResume,
   type RoutineSaisie,
+  resumeSeries,
   routineSaisie,
   type SerieRoutine,
   serieSaisie,

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { formaterCharge } from "./charge.js";
+import type { UnitSystem } from "./units.js";
 
 /**
  * Les routines : des gabarits de séance, décrits série par série (D47).
@@ -112,4 +114,50 @@ export function meilleureSerie(
     }
   }
   return meilleure;
+}
+
+// --- Les résumés de la page d'une routine -------------------------------------
+
+/** Le temps d'une série, effort compris : une estimation, pas une mesure. */
+const SECONDES_PAR_SERIE = 40;
+
+/**
+ * La durée estimée d'une routine : chaque série, plus le repos qui la sépare de
+ * la suivante. Un repos non fixé compte pour zéro — l'estimation reste basse
+ * plutôt que d'inventer un chiffre.
+ */
+export function dureeEstimeeSec(
+  exercices: readonly { reposSec: number | null; series: readonly unknown[] }[],
+): number {
+  return exercices.reduce((total, e) => {
+    const n = e.series.length;
+    return total + n * SECONDES_PAR_SERIE + Math.max(0, n - 1) * (e.reposSec ?? 0);
+  }, 0);
+}
+
+const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+
+/**
+ * « 3 × 8 · 60 kg » : ce qu'on lit d'un coup d'œil sur une carte d'exercice.
+ * Les échauffements comptent à part ; la charge affichée est la plus lourde.
+ */
+export function resumeSeries(series: readonly SerieRoutine[], systeme: UnitSystem): string {
+  const travail = series.filter((s) => s.type !== "ECHAUFFEMENT");
+  const echauffements = series.length - travail.length;
+  const parties: string[] = [];
+
+  if (travail.length > 0) {
+    const reps = new Set(travail.map((s) => s.repsCible));
+    const [seules] = reps;
+    parties.push(
+      reps.size === 1 && seules != null
+        ? `${travail.length} × ${seules}`
+        : pluriel(travail.length, "série"),
+    );
+    const charges = travail.flatMap((s) => (s.chargeCibleKg === null ? [] : [s.chargeCibleKg]));
+    if (charges.length > 0) parties.push(formaterCharge(Math.max(...charges), systeme));
+  }
+  if (echauffements > 0) parties.push(pluriel(echauffements, "échauffement"));
+
+  return parties.join(" · ");
 }
