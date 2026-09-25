@@ -83,7 +83,10 @@ export function brouillonValide(b: Brouillon): boolean {
 }
 
 /** À n'appeler que sur un brouillon valide. */
-export function versRoutine(b: Brouillon): { nom: string; exercices: ExerciceRoutine[] } {
+export function versRoutine(b: Brouillon): {
+  nom: string;
+  exercices: Pick<ExerciceRoutine, "slug" | "nom" | "reposSec" | "series">[];
+} {
   return {
     nom: b.nom.trim(),
     exercices: b.exercices.map((e) => ({

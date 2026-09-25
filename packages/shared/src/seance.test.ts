@@ -30,6 +30,9 @@ const routine: RoutineDetail = {
     {
       slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
+      image: null,
+      musclePrincipal: "Pectoraux",
+      musclesSecondaires: ["Triceps"],
       reposSec: 120,
       series: [
         { type: "ECHAUFFEMENT", repsCible: 10, chargeCibleKg: 40 },
@@ -39,6 +42,9 @@ const routine: RoutineDetail = {
     {
       slug: "pull-up",
       nom: "Traction",
+      image: null,
+      musclePrincipal: "Grand dorsal",
+      musclesSecondaires: ["Biceps"],
       reposSec: null,
       series: [{ type: "NORMALE", repsCible: 8, chargeCibleKg: null }],
     },

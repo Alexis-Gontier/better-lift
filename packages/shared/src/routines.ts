@@ -37,6 +37,11 @@ export type ExerciceRoutine = {
   slug: string;
   /** Le nom français du catalogue. */
   nom: string;
+  /** L'image fixe du catalogue (`imageDe`), ou `null`. */
+  image: string | null;
+  /** Les muscles du catalogue, en français : la carte des muscles en dérive (D83). */
+  musclePrincipal: string;
+  musclesSecondaires: string[];
   reposSec: number | null;
   series: SerieRoutine[];
 };

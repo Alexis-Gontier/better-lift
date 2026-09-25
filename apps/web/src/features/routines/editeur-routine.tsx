@@ -1,4 +1,4 @@
-import { type ExerciceRoutine, meilleureSerie, type RoutineDetail } from "@better-lift/shared";
+import { meilleureSerie, type RoutineDetail } from "@better-lift/shared";
 import {
   closestCenter,
   DndContext,
@@ -42,7 +42,7 @@ import { SelecteurExercice } from "./selecteur-exercice";
 const empreinte = (b: Brouillon) =>
   JSON.stringify({ ...b, exercices: b.exercices.map(({ cle: _cle, ...e }) => e) });
 
-export type RoutineEnregistree = { nom: string; exercices: ExerciceRoutine[] };
+export type RoutineEnregistree = ReturnType<typeof versRoutine>;
 
 /**
  * La routine ouverte, TOUJOURS modifiable (plus de mode lecture) : on la lit et

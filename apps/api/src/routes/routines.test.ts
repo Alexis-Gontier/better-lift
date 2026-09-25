@@ -14,7 +14,17 @@ function fauxDepot(): DepotRoutines {
   let suivant = 1;
   const versDetail = (id: string, s: RoutineSaisie): RoutineDetail => {
     if (s.exercices.some((e) => e.slug === "inconnu")) throw new SlugInconnu("inconnu");
-    return { id, nom: s.nom, exercices: s.exercices.map((e) => ({ ...e, nom: e.slug })) };
+    return {
+      id,
+      nom: s.nom,
+      exercices: s.exercices.map((e) => ({
+        ...e,
+        nom: e.slug,
+        image: null,
+        musclePrincipal: "Pectoraux",
+        musclesSecondaires: [],
+      })),
+    };
   };
   return {
     async lister(userId) {
