@@ -84,7 +84,7 @@ Supprimé par le recadrage : internationalisation, export RGPD, vérification d'
 better-lift/
 ├─ apps/
 │  ├─ web/          Vite + React 19 · TanStack Router + Query · shadcn/ui
-│  ├─ mobile/       Expo SDK 57 · Expo Router · TanStack Query · MMKV
+│  ├─ mobile/       Expo SDK 57 · Expo Router · TanStack Query · AsyncStorage (D55)
 │  └─ api/          Hono · Better Auth · Node en développement, fonction Vercel en production
 └─ packages/
    ├─ db/           Prisma 7 · schéma · migrations · seed
@@ -255,7 +255,7 @@ Le dataset fournit une animation 180×180 par exercice, propriété de Gym visua
 
 Le seul point où rien ne change, parce qu'il a été prouvé sur émulateur le 4 août 2026 : **une séance en cours ne se perd jamais.**
 
-- Le brouillon vit en **MMKV sous une clé unique**, et transite **par le disque, jamais par un paramètre de route**. « Démarrer une routine » et « reprendre après un plantage » sont ainsi le même chemin de code, et non deux chemins dont l'un serait rarement exercé.
+- Le brouillon vit en **AsyncStorage sous une clé unique** (D55, qui remplace MMKV pour tourner dans Expo Go), et transite **par le disque, jamais par un paramètre de route**. « Démarrer une routine » et « reprendre après un plantage » sont ainsi le même chemin de code, et non deux chemins dont l'un serait rarement exercé.
 - Une séance en cours n'est **jamais écrasée** : la vérification se refait au moment de l'appui, pas depuis un état d'interface vieilli.
 - **Le chrono se calcule depuis `startedAt`**, jamais par un compteur incrémental. C'est ce qui lui a fait afficher 3:24 au retour d'un `force-stop` de soixante-dix secondes, là où un `setInterval` remis à zéro aurait montré 1:05.
 - **File d'envoi** : une séance en attente quitte l'écran de saisie, une séance **refusée** y reste.
@@ -372,7 +372,7 @@ Tous ont été payés une fois dans l'ancien projet. Aucun ne se déduit de la l
 
 **Clés de cache TanStack Query.** Toute donnée qui entre dans la clé de lecture doit entrer dans la clé d'écriture. L'oubli écrit la réponse à côté de ce que l'écran lit, et l'interface affiche les anciennes valeurs après un enregistrement pourtant réussi.
 
-**MMKV 4.** `createMMKV({ id })` et non `new MMKV()`, `storage.remove()` et non `delete()`, et `react-native-nitro-modules` est une dépendance de pair obligatoire. **Il n'existe pas de plugin de configuration** malgré ce qu'annonce le `package.json` : l'ajouter fait échouer `expo export` sur une erreur qui ne mentionne jamais `app.json`. L'autolinking suffit.
+**MMKV 4** (écarté par D55, gardé pour mémoire si un development build le ramène). `createMMKV({ id })` et non `new MMKV()`, `storage.remove()` et non `delete()`, et `react-native-nitro-modules` est une dépendance de pair obligatoire. **Il n'existe pas de plugin de configuration** malgré ce qu'annonce le `package.json` : l'ajouter fait échouer `expo export` sur une erreur qui ne mentionne jamais `app.json`. L'autolinking suffit.
 
 **Builds natifs.** `expo run:android` est définitivement bloqué sur cette machine : les chemins du magasin pnpm dépassent la limite de CMake et `ninja` tourne en rond. Les builds natifs restent chez EAS ; l'émulateur ne sert qu'à exécuter. L'APK EAS est universel, donc installable tel quel sur un émulateur x86_64. Sur émulateur, l'API se joint en `10.0.2.2`.
 
