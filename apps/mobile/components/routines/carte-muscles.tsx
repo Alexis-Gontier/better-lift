@@ -12,8 +12,9 @@ type Props = {
 };
 
 /**
- * « Muscles travaillés » (D83), face et dos. À l'encre, jamais au lime (D84) :
- * principal en encre, secondaire en encre pâle, le reste du corps en surface.
+ * « Muscles travaillés » (D83), face et dos, en vert comme sur opengym (D84,
+ * révisée à la demande de l'utilisateur) : principal en lime plein, secondaire
+ * en lime atténué, le reste du corps en surface.
  */
 export function CarteMuscles({ exercices }: Props) {
   const [largeur, setLargeur] = useState(0);
@@ -46,7 +47,7 @@ export function CarteMuscles({ exercices }: Props) {
                 side={side}
                 data={donnees}
                 scale={echelle}
-                colors={[couleurs.encrePale, couleurs.encre]}
+                colors={[couleurs.accentAttenue, couleurs.accent]}
                 defaultFill={couleurs.surface3}
                 border="none"
               />

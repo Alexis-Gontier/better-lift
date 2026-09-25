@@ -14,7 +14,7 @@ compte reste sur le web (hors périmètre).
 |---|---|---|
 | **D82** | **Le mobile crée, modifie et supprime les routines** — D49 est levée. Écran d'édition plein écran à la Hevy, séparé de la page de lecture | L'application mobile doit être indépendante du web (demande de l'utilisateur) ; en salle, on ajuste une routine sans ordinateur |
 | **D83** | **Carte des muscles en tête de la page d'une routine** : face et dos, `react-native-body-highlighter` (MIT, pur `react-native-svg`, compatible Expo Go), pastilles en français dessous | La capture d'opengym « What this session hits » ; les données existent déjà (`target`, `secondary`) |
-| **D84** | **Les muscles se peignent à l'encre, jamais au lime** : principal `encre`, secondaire `encrePale`, corps `surface3` | Le lime ne porte que l'action et le record (D28) ; une zone travaillée n'est ni l'une ni l'autre |
+| **D84** | **Les muscles se peignent en vert** (révisée le 25/09 à la demande de l'utilisateur, d'abord prévue à l'encre) : principal `accent` plein, secondaire `accentAttenue` (lime à 45 %), corps `surface3` ; les pastilles restent à l'encre | Comme la capture d'opengym. Troisième usage borné du lime, sur le seul dessin du corps : ni bouton ni texte, il ne se confond ni avec l'aplat d'action ni avec le contour de record |
 | **D85** | **La copie de travail de l'éditeur passe dans `shared`** (`brouillon-routine.ts`), le système d'unités en paramètre | Web et mobile saisissent la même routine avec les mêmes règles (texte tapé, conversion à l'enregistrement) ; une seule version testée |
 
 ## Données
