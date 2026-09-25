@@ -1,8 +1,11 @@
-import { ABREGE_TYPE_SERIE, formaterCharge } from "@better-lift/shared";
+import { dureeEstimeeSec, resumeSeries } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { Image } from "expo-image";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Dumbbell, Pencil } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CarteMuscles } from "../../../components/routines/carte-muscles";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
 import { useDemarrer } from "../../../lib/demarrer";
@@ -18,11 +21,18 @@ function formaterRepos(sec: number): string {
   return reste ? `${min} min ${String(reste).padStart(2, "0")}` : `${min} min`;
 }
 
-/** Le détail d'une routine, en lecture : l'édition reste sur le web (D49). */
+const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+
+/**
+ * Une routine, façon opengym : ce qu'elle travaille d'abord, ses exercices
+ * ensuite, et Démarrer toujours sous le pouce. Le crayon ouvre l'édition (D82).
+ */
 export default function DetailRoutine() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const routine = useQuery(optionsRoutine(id));
   const { routine: demarrer, ouverture } = useDemarrer();
+  const modifier = () => router.push({ pathname: "/routine-edition", params: { id } });
 
   if (routine.isPending || routine.isError) {
     return (
@@ -41,54 +51,123 @@ export default function DetailRoutine() {
   }
 
   const r = routine.data;
+  const nbSeries = r.exercices.reduce((n, e) => n + e.series.length, 0);
+  const minutes = Math.max(1, Math.round(dureeEstimeeSec(r.exercices) / 60));
+
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <EnteteRetour titre={r.nom} />
+      <EnteteRetour
+        titre={r.nom}
+        action={
+          <Pressable
+            onPress={modifier}
+            style={styles.crayon}
+            accessibilityRole="button"
+            accessibilityLabel="Modifier la routine"
+          >
+            <Pencil size={22} color={couleurs.encre} />
+          </Pressable>
+        }
+      />
       <ScrollView contentContainerStyle={styles.contenu}>
-        {/* L'action de l'écran : l'aplat lime (D28). */}
-        <Pressable
-          style={[styles.demarrer, ouverture !== null && { opacity: 0.6 }]}
-          disabled={ouverture !== null}
-          onPress={() => void demarrer(r.id)}
-          accessibilityRole="button"
-        >
-          <Text style={styles.demarrerTexte}>
-            {ouverture !== null ? "Ouverture…" : "Démarrer cette routine"}
-          </Text>
-        </Pressable>
+        <Text style={styles.resume}>
+          {pluriel(r.exercices.length, "exercice")} · {pluriel(nbSeries, "série")} · ~{minutes} min
+        </Text>
+
+        <CarteMuscles exercices={r.exercices} />
+
+        {r.exercices.length === 0 ? (
+          <Pressable onPress={modifier} style={styles.invite} accessibilityRole="button">
+            <Text style={styles.inviteTexte}>Ajoute des exercices à cette routine</Text>
+          </Pressable>
+        ) : null}
 
         {r.exercices.map((ex, i) => (
           // L'index entre dans la clé : le même exercice peut figurer deux fois.
           <View key={`${ex.slug}-${i}`} style={styles.carte}>
-            <View style={styles.entete}>
-              <Text style={styles.exercice}>{ex.nom}</Text>
+            {ex.image ? (
+              <Image
+                source={{ uri: ex.image }}
+                style={styles.vignette}
+                contentFit="cover"
+                cachePolicy="disk"
+              />
+            ) : (
+              <View style={[styles.vignette, styles.sansImage]}>
+                <Dumbbell size={22} color={couleurs.encreFaible} />
+              </View>
+            )}
+            <View style={styles.texte}>
+              <Text style={styles.exercice} numberOfLines={2}>
+                {ex.nom}
+              </Text>
+              <Text style={styles.series}>{resumeSeries(ex.series, SYSTEME_UNITES)}</Text>
               {ex.reposSec ? (
                 <Text style={styles.repos}>Repos {formaterRepos(ex.reposSec)}</Text>
               ) : null}
             </View>
-            {ex.series.map((s, j) => (
-              // Les séries n'ont pas d'identité propre : leur rang en tient lieu.
-              <View key={j} style={styles.serie}>
-                <Text style={styles.numero}>{j + 1}</Text>
-                <Text style={styles.type}>{ABREGE_TYPE_SERIE[s.type]}</Text>
-                <Text style={styles.valeur}>
-                  {s.repsCible === null ? "—" : `${s.repsCible} reps`}
-                </Text>
-                <Text style={styles.valeur}>
-                  {s.chargeCibleKg === null ? "—" : formaterCharge(s.chargeCibleKg, SYSTEME_UNITES)}
-                </Text>
-              </View>
-            ))}
           </View>
         ))}
       </ScrollView>
+
+      {/* L'action de l'écran, fixée sous le pouce : l'aplat lime (D28). */}
+      <View style={styles.pied}>
+        <Pressable
+          style={[styles.demarrer, ouverture !== null && { opacity: 0.6 }]}
+          disabled={ouverture !== null || r.exercices.length === 0}
+          onPress={() => void demarrer(r.id)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.demarrerTexte}>
+            {ouverture !== null ? "Ouverture…" : "Démarrer la routine"}
+          </Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   ecran: { flex: 1, backgroundColor: couleurs.canvas },
-  contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl * 2 },
+  crayon: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
+  contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl },
+  resume: { color: couleurs.encrePale, fontSize: taille.petit + 1 },
+  invite: {
+    minHeight: CIBLE,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: couleurs.ligneForte,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inviteTexte: { color: couleurs.encreDouce, fontSize: taille.courant },
+  carte: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.m,
+    padding: espace.m,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: couleurs.ligne,
+    backgroundColor: couleurs.surface1,
+  },
+  vignette: { width: 56, height: 56, borderRadius: 8, backgroundColor: couleurs.surface3 },
+  sansImage: { alignItems: "center", justifyContent: "center" },
+  texte: { flex: 1, gap: 2 },
+  exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
+  series: { color: couleurs.encreDouce, fontSize: taille.petit + 1, fontVariant: ["tabular-nums"] },
+  repos: { color: couleurs.encreFaible, fontSize: taille.petit },
+  pied: {
+    padding: espace.l,
+    paddingTop: espace.m,
+    // Le bouton central de la barre d'onglets déborde de 30 px au-dessus d'elle :
+    // sans cette marge, il mordrait sur Démarrer.
+    paddingBottom: espace.l + 30,
+    borderTopWidth: 1,
+    borderTopColor: couleurs.ligne,
+    backgroundColor: couleurs.canvas,
+  },
   demarrer: {
     minHeight: CIBLE + 8,
     borderRadius: 12,
@@ -97,36 +176,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   demarrerTexte: { color: couleurs.surAccent, fontSize: taille.courant + 1, fontWeight: "700" },
-  carte: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface1,
-    overflow: "hidden",
-  },
-  entete: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: espace.s,
-    padding: espace.m,
-    borderBottomWidth: 1,
-    borderBottomColor: couleurs.ligne,
-  },
-  exercice: { flex: 1, color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  repos: { color: couleurs.encreFaible, fontSize: taille.petit },
-  serie: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    paddingHorizontal: espace.m,
-    paddingVertical: 10,
-  },
-  numero: { width: 18, color: couleurs.encreFaible, fontSize: taille.petit },
-  type: { width: 22, color: couleurs.encrePale, fontSize: taille.petit },
-  valeur: {
-    flex: 1,
-    color: couleurs.encreDouce,
-    fontSize: taille.courant,
-    fontVariant: ["tabular-nums"],
-  },
 });

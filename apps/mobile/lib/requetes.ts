@@ -1,4 +1,11 @@
-import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
+import type { RoutineSaisie } from "@better-lift/shared";
+import {
+  infiniteQueryOptions,
+  keepPreviousData,
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { api } from "./api";
 
 /**
@@ -112,4 +119,70 @@ export async function chargerPrecedents(slugs: string[]): Promise<Precedents> {
   } catch {
     return {};
   }
+}
+
+// --- Les écritures des routines (D82) -------------------------------------------
+// LE PIÈGE DES CLÉS DE CACHE : chaque écriture invalide `["routines"]` EN ENTIER —
+// liste et détails —, jamais une clé plus étroite que celle qu'on lit.
+
+/** Le message que l'API a donné, ou un message générique. */
+// Un simple « a un `json()` » : le `Response` de React Native n'est pas celui
+// que les réponses typées du client RPC déclarent.
+async function echec(res: { json(): Promise<unknown> }, parDefaut: string): Promise<never> {
+  const corps = (await res.json().catch(() => null)) as { erreur?: string } | null;
+  throw new Error(corps?.erreur ?? parDefaut);
+}
+
+/** Un appel qui n'atteint pas le serveur : on le dit en français. */
+async function joindre<T>(appel: () => Promise<T>): Promise<T> {
+  try {
+    return await appel();
+  } catch {
+    throw new Error("Le serveur est injoignable. Vérifie ta connexion, puis réessaie.");
+  }
+}
+
+function useInvalider() {
+  const client = useQueryClient();
+  return () => client.invalidateQueries({ queryKey: ["routines"] });
+}
+
+export function useCreerRoutine() {
+  const invalider = useInvalider();
+  return useMutation({
+    mutationFn: async (r: RoutineSaisie) => {
+      const res = await joindre(() => api.routines.$post({ json: r }));
+      if (!res.ok) return echec(res, "La routine n'a pas pu être créée.");
+      return (await res.json()).id;
+    },
+    onSuccess: invalider,
+  });
+}
+
+export function useRemplacerRoutine(id: string) {
+  const invalider = useInvalider();
+  return useMutation({
+    mutationFn: async (r: RoutineSaisie) => {
+      const res = await joindre(() => api.routines[":id"].$put({ param: { id }, json: r }));
+      if (!res.ok) return echec(res, "La routine n'a pas pu être enregistrée.");
+    },
+    onSuccess: invalider,
+  });
+}
+
+export function useSupprimerRoutine() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await joindre(() => api.routines[":id"].$delete({ param: { id } }));
+      if (!res.ok) return echec(res, "La routine n'a pas pu être supprimée.");
+    },
+    // Le détail d'une routine supprimée se RETIRE du cache : l'invalider le
+    // referait, la page encore montée dessous recevrait un 404, et les
+    // tentatives de TanStack Query tiendraient la suppression en attente.
+    onSuccess: (_, id) => {
+      client.removeQueries({ queryKey: ["routines", "detail", id] });
+      return client.invalidateQueries({ queryKey: ["routines", "liste"] });
+    },
+  });
 }

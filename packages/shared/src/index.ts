@@ -1,4 +1,17 @@
 export { estAutorisee, normaliserListe } from "./allowlist.js";
+export {
+  type Brouillon,
+  brouillonValide,
+  chargeInvalide,
+  type ExerciceBrouillon,
+  empreinte,
+  nouvelExercice,
+  reposInvalide,
+  repsInvalides,
+  type SerieBrouillon,
+  versBrouillon,
+  versSaisie,
+} from "./brouillon-routine.js";
 export { cleJour, formatJour, memeJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 export {
@@ -15,6 +28,16 @@ export {
   type ElementFile,
   mettreEnFile,
 } from "./file-envoi.js";
+export {
+  LIBELLE_ZONE,
+  MUSCLES_SANS_ZONE,
+  type NiveauZone,
+  ZONES,
+  type Zone,
+  type ZoneTravaillee,
+  zoneDuMuscle,
+  zonesTravaillees,
+} from "./muscles.js";
 export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
   LIBELLE_RECORD,
@@ -30,6 +53,7 @@ export {
 } from "./records.js";
 export {
   ABREGE_TYPE_SERIE,
+  dureeEstimeeSec,
   type ExerciceRoutine,
   etiquettesSeries,
   exerciceSaisi,
@@ -39,6 +63,7 @@ export {
   type RoutineDetail,
   type RoutineResume,
   type RoutineSaisie,
+  resumeSeries,
   routineSaisie,
   type SerieRoutine,
   serieSaisie,

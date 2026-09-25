@@ -1,5 +1,6 @@
 import { prisma } from "@better-lift/db";
 import type { RoutineDetail, RoutineResume, RoutineSaisie, TypeSerie } from "@better-lift/shared";
+import { imageDe } from "./exercices.js";
 
 /**
  * Les routines, côté métier. Ce module ne connaît pas Hono.
@@ -58,7 +59,13 @@ export type LigneRoutine = {
   nom: string;
   exercices: {
     reposSec: number | null;
-    exercise: { slug: string; nomFr: string };
+    exercise: {
+      slug: string;
+      nomFr: string;
+      gifUrl: string | null;
+      target: string;
+      secondary: string[];
+    };
     series: {
       type: TypeSerie;
       repsCible: number | null;
@@ -74,6 +81,9 @@ export function versDetail(l: LigneRoutine): RoutineDetail {
     exercices: l.exercices.map((e) => ({
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
+      image: imageDe(e.exercise.gifUrl),
+      musclePrincipal: e.exercise.target,
+      musclesSecondaires: e.exercise.secondary,
       reposSec: e.reposSec,
       series: e.series.map((s) => ({
         type: s.type,
@@ -112,7 +122,9 @@ const LECTURE = {
     orderBy: { position: "asc" },
     select: {
       reposSec: true,
-      exercise: { select: { slug: true, nomFr: true } },
+      exercise: {
+        select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
+      },
       series: {
         orderBy: { position: "asc" },
         select: { type: true, repsCible: true, chargeCibleKg: true },

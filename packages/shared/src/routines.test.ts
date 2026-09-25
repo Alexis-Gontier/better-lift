@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { etiquettesSeries, meilleureSerie, ordreRoutines, routineSaisie } from "./routines.js";
+import {
+  dureeEstimeeSec,
+  etiquettesSeries,
+  meilleureSerie,
+  ordreRoutines,
+  resumeSeries,
+  routineSaisie,
+  type SerieRoutine,
+} from "./routines.js";
 
 const serie = { type: "NORMALE", repsCible: 8, chargeCibleKg: 82.5 };
 const exercice = { slug: "barbell-bench-press", reposSec: 120, series: [serie] };
@@ -110,5 +118,44 @@ describe("meilleureSerie", () => {
   it("sans série faite, ne rend rien", () => {
     expect(meilleureSerie([{ reps: 8, chargeKg: 60, faite: false }])).toBeNull();
     expect(meilleureSerie([])).toBeNull();
+  });
+});
+
+describe("résumés d'une routine", () => {
+  const S = (type: SerieRoutine["type"], reps: number | null, kg: number | null): SerieRoutine => ({
+    type,
+    repsCible: reps,
+    chargeCibleKg: kg,
+  });
+
+  it("résume des séries identiques en « séries × reps · charge »", () => {
+    expect(
+      resumeSeries([S("NORMALE", 8, 60), S("NORMALE", 8, 60), S("NORMALE", 8, 60)], "metric"),
+    ).toBe("3 × 8 · 60 kg");
+  });
+
+  it("compte les échauffements à part et garde la charge la plus lourde", () => {
+    expect(
+      resumeSeries([S("ECHAUFFEMENT", 10, 40), S("NORMALE", 8, 80), S("ECHEC", 6, 82.5)], "metric"),
+    ).toBe("2 séries · 82,5 kg · 1 échauffement");
+  });
+
+  it("se contente du nombre quand rien n'est fixé", () => {
+    expect(resumeSeries([S("NORMALE", null, null), S("NORMALE", null, null)], "metric")).toBe(
+      "2 séries",
+    );
+    expect(resumeSeries([S("ECHAUFFEMENT", 10, null), S("ECHAUFFEMENT", 10, null)], "metric")).toBe(
+      "2 échauffements",
+    );
+  });
+
+  it("estime 40 s par série plus les repos entre les séries", () => {
+    const ex = (n: number, reposSec: number | null) => ({
+      reposSec,
+      series: Array.from({ length: n }, () => S("NORMALE", 8, 60)),
+    });
+    // 3 séries : 3 × 40 + 2 × 90 = 300 ; 2 séries sans repos : 80.
+    expect(dureeEstimeeSec([ex(3, 90), ex(2, null)])).toBe(380);
+    expect(dureeEstimeeSec([])).toBe(0);
   });
 });

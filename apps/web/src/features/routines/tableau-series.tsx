@@ -1,6 +1,9 @@
 import {
+  chargeInvalide,
   etiquettesSeries,
   LIBELLE_TYPE_SERIE,
+  repsInvalides,
+  type SerieBrouillon,
   TYPES_SERIE,
   type TypeSerie,
 } from "@better-lift/shared";
@@ -15,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SYSTEME_UNITES } from "@/lib/unites";
-import { chargeInvalide, repsInvalides, type SerieBrouillon } from "./brouillon";
 
 const UNITE = SYSTEME_UNITES === "imperial" ? "lb" : "kg";
 
@@ -97,7 +99,7 @@ export function TableauSeries({
                 placeholder="—"
                 value={s.charge}
                 onChange={(e) => modifier(i, { charge: e.target.value })}
-                aria-invalid={chargeInvalide(s.charge) || undefined}
+                aria-invalid={chargeInvalide(s.charge, SYSTEME_UNITES) || undefined}
                 className={CASE}
               />
               <Input

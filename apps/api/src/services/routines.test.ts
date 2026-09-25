@@ -77,7 +77,13 @@ const ligne: LigneRoutine = {
   exercices: [
     {
       reposSec: 180,
-      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre" },
+      exercise: {
+        slug: "barbell-bench-press",
+        nomFr: "Développé couché à la barre",
+        gifUrl: "https://cdn.example/videos/0025.gif",
+        target: "Pectoraux",
+        secondary: ["Triceps", "Épaules"],
+      },
       series: [
         { type: "NORMALE", repsCible: 6, chargeCibleKg: decimal(82.5) },
         { type: "ECHEC", repsCible: null, chargeCibleKg: null },
@@ -87,7 +93,7 @@ const ligne: LigneRoutine = {
 };
 
 describe("projections", () => {
-  it("rend le détail avec le nom français et des charges en nombres", () => {
+  it("rend le détail avec le nom français, l'image, les muscles et des charges en nombres", () => {
     expect(versDetail(ligne)).toEqual({
       id: "r1",
       nom: "Push",
@@ -95,6 +101,9 @@ describe("projections", () => {
         {
           slug: "barbell-bench-press",
           nom: "Développé couché à la barre",
+          image: "https://cdn.example/images/0025.jpg",
+          musclePrincipal: "Pectoraux",
+          musclesSecondaires: ["Triceps", "Épaules"],
           reposSec: 180,
           series: [
             { type: "NORMALE", repsCible: 6, chargeCibleKg: 82.5 },

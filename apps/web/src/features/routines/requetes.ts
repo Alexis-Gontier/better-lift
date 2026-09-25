@@ -1,7 +1,6 @@
 import type { RoutineSaisie } from "@better-lift/shared";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { RoutineEnregistree } from "./editeur-routine";
 
 /**
  * LE PIÈGE DES CLÉS DE CACHE : lectures et écritures partagent le préfixe
@@ -33,14 +32,6 @@ export function optionsRoutine(id: string) {
   });
 }
 
-/** Le nom français de chaque exercice sert à l'affichage ; l'API n'attend que le slug. */
-function versSaisie(r: RoutineEnregistree): RoutineSaisie {
-  return {
-    nom: r.nom,
-    exercices: r.exercices.map(({ slug, reposSec, series }) => ({ slug, reposSec, series })),
-  };
-}
-
 /** Le message que l'API a donné, ou un message générique. */
 async function echec(res: Response, parDefaut: string): Promise<never> {
   const corps = (await res.json().catch(() => null)) as { erreur?: string } | null;
@@ -69,8 +60,8 @@ function useInvalider() {
 export function useCreerRoutine() {
   const invalider = useInvalider();
   return useMutation({
-    mutationFn: async (r: RoutineEnregistree) => {
-      const res = await joindre(() => api.routines.$post({ json: versSaisie(r) }));
+    mutationFn: async (r: RoutineSaisie) => {
+      const res = await joindre(() => api.routines.$post({ json: r }));
       if (!res.ok) return echec(res, "La routine n'a pas pu être créée.");
       return (await res.json()).id;
     },
@@ -81,10 +72,8 @@ export function useCreerRoutine() {
 export function useRemplacerRoutine(id: string) {
   const invalider = useInvalider();
   return useMutation({
-    mutationFn: async (r: RoutineEnregistree) => {
-      const res = await joindre(() =>
-        api.routines[":id"].$put({ param: { id }, json: versSaisie(r) }),
-      );
+    mutationFn: async (r: RoutineSaisie) => {
+      const res = await joindre(() => api.routines[":id"].$put({ param: { id }, json: r }));
       if (!res.ok) return echec(res, "La routine n'a pas pu être enregistrée.");
     },
     onSuccess: invalider,

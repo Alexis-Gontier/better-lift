@@ -1,4 +1,13 @@
-import { type ExerciceRoutine, meilleureSerie, type RoutineDetail } from "@better-lift/shared";
+import {
+  brouillonValide,
+  empreinte,
+  meilleureSerie,
+  nouvelExercice,
+  type RoutineDetail,
+  type RoutineSaisie,
+  versBrouillon,
+  versSaisie,
+} from "@better-lift/shared";
 import {
   closestCenter,
   DndContext,
@@ -25,24 +34,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SYSTEME_UNITES } from "@/lib/unites";
 import { BoutonFermer } from "./bouton-fermer";
-import {
-  type Brouillon,
-  brouillonValide,
-  nouvelExercice,
-  versBrouillon,
-  versRoutine,
-} from "./brouillon";
 import { CarteExercice } from "./carte-exercice";
 import { ConfirmerSuppression } from "./confirmer-suppression";
 import { optionsPrecedentes } from "./requetes";
 import { SelecteurExercice } from "./selecteur-exercice";
-
-/** Le brouillon sans ses clés locales : ce qu'on compare pour savoir s'il a changé. */
-const empreinte = (b: Brouillon) =>
-  JSON.stringify({ ...b, exercices: b.exercices.map(({ cle: _cle, ...e }) => e) });
-
-export type RoutineEnregistree = { nom: string; exercices: ExerciceRoutine[] };
 
 /**
  * La routine ouverte, TOUJOURS modifiable (plus de mode lecture) : on la lit et
@@ -66,15 +63,15 @@ export function EditeurRoutine({
   enregistrement: boolean;
   /** L'échec du dernier enregistrement : il doit se voir, sinon on croit avoir enregistré. */
   erreur?: string;
-  onEnregistrer: (r: RoutineEnregistree) => void;
+  onEnregistrer: (r: RoutineSaisie) => void;
   /** Ferme la routine (et abandonne une routine neuve). */
   onFermer: () => void;
   onSupprimer?: () => void;
 }) {
-  const [brouillon, setBrouillon] = useState(() => versBrouillon(initiale));
+  const [brouillon, setBrouillon] = useState(() => versBrouillon(initiale, SYSTEME_UNITES));
   // La référence suit la version ENREGISTRÉE : après un enregistrement réussi,
   // `initiale` devient la copie, et la barre disparaît d'elle-même.
-  const reference = useMemo(() => empreinte(versBrouillon(initiale)), [initiale]);
+  const reference = useMemo(() => empreinte(versBrouillon(initiale, SYSTEME_UNITES)), [initiale]);
   const modifiee = initiale === null || empreinte(brouillon) !== reference;
   const precedentes = useQuery(optionsPrecedentes(brouillon.exercices.map((e) => e.slug)));
   const [selecteur, setSelecteur] = useState(false);
@@ -96,7 +93,7 @@ export function EditeurRoutine({
     });
   };
 
-  const valide = brouillonValide(brouillon);
+  const valide = brouillonValide(brouillon, SYSTEME_UNITES);
 
   return (
     <div className="flex h-full flex-col">
@@ -198,14 +195,16 @@ export function EditeurRoutine({
             variant="outline"
             // Annuler une routine neuve la ferme ; une existante revient à sa
             // version enregistrée.
-            onClick={() => (initiale ? setBrouillon(versBrouillon(initiale)) : onFermer())}
+            onClick={() =>
+              initiale ? setBrouillon(versBrouillon(initiale, SYSTEME_UNITES)) : onFermer()
+            }
             className="ml-auto"
           >
             Annuler
           </Button>
           <Button
             disabled={!valide || enregistrement}
-            onClick={() => onEnregistrer(versRoutine(brouillon))}
+            onClick={() => onEnregistrer(versSaisie(brouillon, SYSTEME_UNITES))}
             className="font-semibold"
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer"}

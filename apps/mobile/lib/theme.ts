@@ -20,6 +20,8 @@ export const couleurs = {
   accent: "#a8cf45",
   surAccent: "#0b0f04",
   accentLavis: "rgba(168, 207, 69, 0.14)",
+  // Les muscles secondaires de la carte (D84) : le lime, estompé sur le corps.
+  accentAttenue: "rgba(168, 207, 69, 0.45)",
   danger: "#a83e39",
   surDanger: "#fdf3f2",
   dangerEncre: "#e98b85",

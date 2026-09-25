@@ -1,19 +1,14 @@
-import {
-  chargeEnTexte,
-  type ExerciceRoutine,
-  lireCharge,
-  type RoutineDetail,
-  type TypeSerie,
-} from "@better-lift/shared";
-import { SYSTEME_UNITES } from "@/lib/unites";
+import { chargeEnTexte, lireCharge } from "./charge.js";
+import type { RoutineDetail, RoutineSaisie, TypeSerie } from "./routines.js";
+import type { UnitSystem } from "./units.js";
 
 /**
- * La copie de travail de l'éditeur.
+ * La copie de travail de l'éditeur de routine, commune au web et au mobile (D85).
  *
  * Reps et charge y restent en TEXTE, tels que tapés : les convertir à la frappe
  * ferait disparaître « 82, » avant qu'on ait tapé le 5, et une saisie illisible
  * serait perdue au lieu d'être signalée. La conversion n'a lieu qu'à
- * l'enregistrement, par `versRoutine`.
+ * l'enregistrement, par `versSaisie`.
  */
 export type SerieBrouillon = { type: TypeSerie; reps: string; charge: string };
 
@@ -22,18 +17,19 @@ export type ExerciceBrouillon = {
   cle: string;
   slug: string;
   nom: string;
+  image: string | null;
   repos: string;
   series: SerieBrouillon[];
 };
 
 export type Brouillon = { nom: string; exercices: ExerciceBrouillon[] };
 
-const cle = () => crypto.randomUUID();
+// Pas de `crypto.randomUUID` : Hermes ne l'a pas. La clé n'a qu'à être unique
+// dans l'écran ouvert — un compteur suffit, l'horodatage sépare deux ouvertures.
+let compteur = 0;
+const cle = () => `${Date.now().toString(36)}-${(compteur++).toString(36)}`;
 
-/** Le nombre affiché dans le champ charge ; l'unité est dans l'en-tête du tableau. */
-const texteCharge = (kg: number | null) => (kg === null ? "" : chargeEnTexte(kg, SYSTEME_UNITES));
-
-export function versBrouillon(r: RoutineDetail | null): Brouillon {
+export function versBrouillon(r: RoutineDetail | null, systeme: UnitSystem): Brouillon {
   if (!r) return { nom: "", exercices: [] };
   return {
     nom: r.nom,
@@ -41,19 +37,25 @@ export function versBrouillon(r: RoutineDetail | null): Brouillon {
       cle: cle(),
       slug: e.slug,
       nom: e.nom,
+      image: e.image,
       repos: e.reposSec === null ? "" : String(e.reposSec),
       series: e.series.map((s) => ({
         type: s.type,
         reps: s.repsCible === null ? "" : String(s.repsCible),
-        charge: texteCharge(s.chargeCibleKg),
+        // Le nombre seul : l'unité est affichée à côté du champ.
+        charge: s.chargeCibleKg === null ? "" : chargeEnTexte(s.chargeCibleKg, systeme),
       })),
     })),
   };
 }
 
-export function nouvelExercice(slug: string, nom: string): ExerciceBrouillon {
+export function nouvelExercice(
+  slug: string,
+  nom: string,
+  image: string | null = null,
+): ExerciceBrouillon {
   const vide: SerieBrouillon = { type: "NORMALE", reps: "", charge: "" };
-  return { cle: cle(), slug, nom, repos: "", series: [vide, { ...vide }, { ...vide }] };
+  return { cle: cle(), slug, nom, image, repos: "", series: [vide, { ...vide }, { ...vide }] };
 }
 
 /** Un entier de 0 à `max`, ou vide. `NaN` signale une saisie à corriger. */
@@ -66,10 +68,11 @@ function lireEntier(texte: string, max: number): number | null {
 }
 
 export const repsInvalides = (t: string) => Number.isNaN(lireEntier(t, 999));
-const reposInvalide = (t: string) => Number.isNaN(lireEntier(t, 3600));
-export const chargeInvalide = (t: string) => Number.isNaN(lireCharge(t, SYSTEME_UNITES));
+export const reposInvalide = (t: string) => Number.isNaN(lireEntier(t, 3600));
+export const chargeInvalide = (t: string, systeme: UnitSystem) =>
+  Number.isNaN(lireCharge(t, systeme));
 
-export function brouillonValide(b: Brouillon): boolean {
+export function brouillonValide(b: Brouillon, systeme: UnitSystem): boolean {
   return (
     b.nom.trim() !== "" &&
     b.exercices.length > 0 &&
@@ -77,24 +80,27 @@ export function brouillonValide(b: Brouillon): boolean {
       (e) =>
         e.series.length > 0 &&
         !reposInvalide(e.repos) &&
-        e.series.every((s) => !repsInvalides(s.reps) && !chargeInvalide(s.charge)),
+        e.series.every((s) => !repsInvalides(s.reps) && !chargeInvalide(s.charge, systeme)),
     )
   );
 }
 
-/** À n'appeler que sur un brouillon valide. */
-export function versRoutine(b: Brouillon): { nom: string; exercices: ExerciceRoutine[] } {
+/** Ce que l'API attend. À n'appeler que sur un brouillon valide. */
+export function versSaisie(b: Brouillon, systeme: UnitSystem): RoutineSaisie {
   return {
     nom: b.nom.trim(),
     exercices: b.exercices.map((e) => ({
       slug: e.slug,
-      nom: e.nom,
       reposSec: lireEntier(e.repos, 3600),
       series: e.series.map((s) => ({
         type: s.type,
         repsCible: lireEntier(s.reps, 999),
-        chargeCibleKg: lireCharge(s.charge, SYSTEME_UNITES),
+        chargeCibleKg: lireCharge(s.charge, systeme),
       })),
     })),
   };
 }
+
+/** Le brouillon sans ses clés locales : ce qu'on compare pour savoir s'il a changé. */
+export const empreinte = (b: Brouillon) =>
+  JSON.stringify({ ...b, exercices: b.exercices.map(({ cle: _cle, ...e }) => e) });

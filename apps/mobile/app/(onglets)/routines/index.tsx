@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, Plus } from "lucide-react-native";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
@@ -15,7 +15,18 @@ export default function Routines() {
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <Text style={styles.titre}>Routines</Text>
+      <View style={styles.entete}>
+        <Text style={styles.titre}>Routines</Text>
+        {/* Le mobile crée ses routines sans le web (D82). */}
+        <Pressable
+          onPress={() => router.push("/routine-edition")}
+          style={styles.nouvelle}
+          accessibilityRole="button"
+        >
+          <Plus size={18} color={couleurs.surAccent} strokeWidth={2.5} />
+          <Text style={styles.nouvelleTexte}>Nouvelle</Text>
+        </Pressable>
+      </View>
       {routines.isPending ? (
         <Chargement />
       ) : routines.isError ? (
@@ -24,7 +35,7 @@ export default function Routines() {
           onReessayer={() => routines.refetch()}
         />
       ) : routines.data.length === 0 ? (
-        <Vide titre="Aucune routine" message="Prépare-en une sur le web, elle apparaîtra ici." />
+        <Vide titre="Aucune routine" message="Crée ta première avec « Nouvelle »." />
       ) : (
         <FlatList
           data={routines.data}
@@ -55,7 +66,24 @@ export default function Routines() {
 
 const styles = StyleSheet.create({
   ecran: { flex: 1, backgroundColor: couleurs.canvas },
-  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700", padding: espace.l },
+  entete: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: espace.l,
+  },
+  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700" },
+  // L'action de l'écran : l'aplat lime (D28).
+  nouvelle: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.xs,
+    paddingHorizontal: espace.m,
+    borderRadius: 999,
+    backgroundColor: couleurs.accent,
+  },
+  nouvelleTexte: { color: couleurs.surAccent, fontSize: taille.courant, fontWeight: "700" },
   liste: { paddingHorizontal: espace.l, gap: espace.m, paddingBottom: espace.xl },
   carte: {
     minHeight: CIBLE + 24,
