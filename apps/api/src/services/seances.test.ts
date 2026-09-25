@@ -13,6 +13,7 @@ const ligne: LigneSeance = {
     {
       exerciseId: "bench",
       exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre" },
+      note: "siège cran 4",
       series: [
         { type: "ECHAUFFEMENT", reps: 10, chargeKg: d(40), faite: true },
         { type: "NORMALE", reps: 5, chargeKg: d(100), faite: true },
@@ -21,12 +22,14 @@ const ligne: LigneSeance = {
     {
       exerciseId: "traction",
       exercise: { slug: "pull-up", nomFr: "Traction" },
+      note: null,
       series: [{ type: "NORMALE", reps: 10, chargeKg: null, faite: true }],
     },
     // Le même exercice une seconde fois : il se mesure à la première occurrence.
     {
       exerciseId: "bench",
       exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre" },
+      note: null,
       series: [{ type: "NORMALE", reps: 6, chargeKg: d(100), faite: true }],
     },
   ],
@@ -89,7 +92,9 @@ describe("versDetail", () => {
     expect(detail.exercices[0]).toMatchObject({
       slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
+      note: "siège cran 4",
     });
+    expect(detail.exercices[1]?.note).toBeNull();
     expect(detail.exercices[0]?.series[1]?.chargeKg).toBe(100);
   });
 

@@ -1,7 +1,7 @@
 import { LIBELLE_GROUPE } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, Dumbbell, X } from "lucide-react-native";
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -12,19 +12,28 @@ import { optionsCatalogue } from "../lib/requetes";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 
 /**
- * Ajouter des exercices à une routine : le catalogue, une recherche, et une
+ * Choisir des exercices dans le catalogue (D93) : une recherche, et une
  * sélection multiple — on coche tout ce qu'on veut, puis on ajoute d'un coup.
+ * En `?mode=remplacer`, un seul choix, rendu dès l'appui.
  */
 export default function ChoisirExercices() {
   const router = useRouter();
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const unique = mode === "remplacer";
   const [filtre, setFiltre] = useState("");
   const [choix, setChoix] = useState<ExerciceChoisi[]>([]);
   const catalogue = useQuery(optionsCatalogue(filtre.trim()));
 
-  const basculer = (e: ExerciceChoisi) =>
+  const basculer = (e: ExerciceChoisi) => {
+    if (unique) {
+      rendreChoix([e]);
+      router.back();
+      return;
+    }
     setChoix((c) =>
       c.some((x) => x.slug === e.slug) ? c.filter((x) => x.slug !== e.slug) : [...c, e],
     );
+  };
 
   const ajouter = () => {
     rendreChoix(choix);
@@ -42,7 +51,9 @@ export default function ChoisirExercices() {
         >
           <X size={24} color={couleurs.encre} />
         </Pressable>
-        <Text style={styles.titre}>Ajouter des exercices</Text>
+        <Text style={styles.titre}>
+          {unique ? "Remplacer l'exercice" : "Ajouter des exercices"}
+        </Text>
       </View>
 
       <TextInput
@@ -76,8 +87,8 @@ export default function ChoisirExercices() {
               <Pressable
                 style={[styles.ligne, coche && styles.ligneCochee]}
                 onPress={() => basculer({ slug: item.slug, nom: item.nom, image: item.image })}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: coche }}
+                accessibilityRole={unique ? "button" : "checkbox"}
+                accessibilityState={unique ? undefined : { checked: coche }}
               >
                 {item.image ? (
                   <Image
@@ -99,27 +110,31 @@ export default function ChoisirExercices() {
                     {LIBELLE_GROUPE[item.groupe]} · {item.equipement}
                   </Text>
                 </View>
-                <View style={[styles.case, coche && styles.caseCochee]}>
-                  {coche ? <Check size={16} color={couleurs.canvas} strokeWidth={3} /> : null}
-                </View>
+                {unique ? null : (
+                  <View style={[styles.case, coche && styles.caseCochee]}>
+                    {coche ? <Check size={16} color={couleurs.canvas} strokeWidth={3} /> : null}
+                  </View>
+                )}
               </Pressable>
             );
           }}
         />
       )}
 
-      <View style={styles.pied}>
-        <Pressable
-          style={[styles.ajouter, choix.length === 0 && styles.inactif]}
-          disabled={choix.length === 0}
-          onPress={ajouter}
-          accessibilityRole="button"
-        >
-          <Text style={styles.ajouterTexte}>
-            {choix.length === 0 ? "Coche des exercices" : `Ajouter (${choix.length})`}
-          </Text>
-        </Pressable>
-      </View>
+      {unique ? null : (
+        <View style={styles.pied}>
+          <Pressable
+            style={[styles.ajouter, choix.length === 0 && styles.inactif]}
+            disabled={choix.length === 0}
+            onPress={ajouter}
+            accessibilityRole="button"
+          >
+            <Text style={styles.ajouterTexte}>
+              {choix.length === 0 ? "Coche des exercices" : `Ajouter (${choix.length})`}
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

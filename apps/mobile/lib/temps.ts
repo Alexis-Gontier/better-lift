@@ -22,6 +22,18 @@ export function formaterDuree(sec: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
+/** Les repos proposés en séance (D91), en secondes ; `null` le désactive. */
+export const CHOIX_REPOS = [null, 30, 45, 60, 90, 120, 150, 180, 240, 300] as const;
+
+/** « désactivé », « 45 s », « 1 min », « 1 min 30 ». */
+export function libelleRepos(sec: number | null): string {
+  if (!sec) return "désactivé";
+  if (sec < 60) return `${sec} s`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s === 0 ? `${m} min` : `${m} min ${String(s).padStart(2, "0")}`;
+}
+
 /** Un identifiant de séance, généré ici (D56) : il rend l'envoi rejouable. */
 export function nouvelId(): string {
   return `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;

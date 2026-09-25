@@ -24,6 +24,8 @@ export type ExerciceEnCours = {
   slug: string;
   nom: string;
   reposSec: number | null;
+  /** La note libre de l'exercice (D90). Absente d'un brouillon antérieur : lue comme `null`. */
+  note?: string | null;
   series: SerieEnCours[];
   /**
    * Ce qui a été fait la dernière fois sur cet exercice (D67) — une INDICATION
@@ -161,6 +163,50 @@ export function retirerExercice(s: SeanceEnCours, iE: number): SeanceEnCours {
   return { ...s, exercices: s.exercices.filter((_, i) => i !== iE) };
 }
 
+/** D90 : une note faite d'espaces n'est pas une note. */
+export function modifierNote(s: SeanceEnCours, iE: number, note: string): SeanceEnCours {
+  const propre = note.trim();
+  return avecExercice(s, iE, (e) => ({ ...e, note: propre === "" ? null : note }));
+}
+
+/** D91 : le repos se règle par exercice ; `null` le désactive. */
+export function modifierReposExercice(
+  s: SeanceEnCours,
+  iE: number,
+  reposSec: number | null,
+): SeanceEnCours {
+  return avecExercice(s, iE, (e) => ({ ...e, reposSec }));
+}
+
+export function deplacerExercice(s: SeanceEnCours, de: number, vers: number): SeanceEnCours {
+  const n = s.exercices.length;
+  if (de < 0 || de >= n || vers < 0 || vers >= n || de === vers) return s;
+  const exercices = [...s.exercices];
+  const [bouge] = exercices.splice(de, 1);
+  if (bouge) exercices.splice(vers, 0, bouge);
+  return { ...s, exercices };
+}
+
+/**
+ * Un autre exercice à la même place (D89) : la forme des séries et le repos
+ * restent, les valeurs partent — elles ne valaient que pour l'ancien mouvement.
+ * La note et « la dernière fois » aussi : elles décrivaient l'exercice remplacé.
+ */
+export function remplacerExercice(
+  s: SeanceEnCours,
+  iE: number,
+  slug: string,
+  nom: string,
+): SeanceEnCours {
+  return avecExercice(s, iE, (e) => ({
+    slug,
+    nom,
+    reposSec: e.reposSec,
+    note: null,
+    series: e.series.map((x) => ({ type: x.type, reps: null, chargeKg: null, faite: false })),
+  }));
+}
+
 export function arreterRepos(s: SeanceEnCours): SeanceEnCours {
   return { ...s, repos: null };
 }
@@ -237,6 +283,8 @@ const serieEnvoyee = z.looseObject({
 const exerciceEnvoye = z.looseObject({
   slug: z.string().min(1).max(200),
   reposSec: z.number().int().min(0).max(3600).nullable(),
+  // Optionnelle : un mobile d'avant D90 ne l'envoie pas (D57).
+  note: z.string().max(500).nullable().optional(),
   series: z.array(serieEnvoyee).max(50),
 });
 
@@ -264,6 +312,7 @@ export function versEnvoi(s: SeanceEnCours, fin: Date): SeanceSaisie {
     exercices: s.exercices.map((e) => ({
       slug: e.slug,
       reposSec: e.reposSec,
+      note: e.note ?? null,
       series: e.series.map(({ type, reps, chargeKg, faite }) => ({ type, reps, chargeKg, faite })),
     })),
   };

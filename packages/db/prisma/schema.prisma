@@ -223,6 +223,8 @@ model SeanceExercice {
   exerciseId String
   position   Int
   reposSec   Int?
+  // D90 : la note libre de l'exercice pendant la séance (« siège cran 4 »).
+  note       String?       @db.VarChar(500)
 
   seance   Seance        @relation(fields: [seanceId], references: [id], onDelete: Cascade)
   exercise Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Restrict)

@@ -65,7 +65,15 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   La logique vit dans `shared` (`seance.ts`, `file-envoi.ts`) ; le mobile garde le disque et les
   écrans.
 - Vignette GIF par exercice (`expo-image`, cache disque), écran maintenu allumé (`useKeepAwake`),
-  repos en grand bandeau avec −15 s / +15 s (`ajusterRepos`).
+  repos en bandeau d'une ligne avec −15 s / +15 s (`ajusterRepos`).
+- **Écran façon Hevy (D86–D94)** — conception :
+  [`2026-09-26-mobile-seance-hevy-design.md`](../../docs/superpowers/specs/2026-09-26-mobile-seance-hevy-design.md).
+  Un bloc par exercice (note, repos réglable, tableau `Série · Précédent · KG · Reps · ✓`), actions
+  rares dans une feuille basse (`components/ui/feuille.tsx`), réorganisation `app/reorganiser.tsx`,
+  ajout et remplacement par `choisir-exercices` (`?mode=remplacer`). Échelle compacte : cases de
+  36 px, cible tenue par `hitSlop`. Supersets : lot B, l'entrée du menu est inerte.
+- Un rappel de modale qui attend (les précédents) applique son choix à la séance **du moment**
+  (`useRef`), pas à celle capturée à l'ouverture.
 - Une séance envoyée invalide `["seances"]` et `["records"]`.
 
 ## Pièges

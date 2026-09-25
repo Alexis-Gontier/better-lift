@@ -128,5 +128,6 @@ export type SerieLue = {
 };
 
 export type SeanceDetail = SeanceResume & {
-  exercices: { slug: string; nom: string; series: SerieLue[] }[];
+  /** `note` : la note libre de l'exercice (D90), `null` sans note. */
+  exercices: { slug: string; nom: string; note: string | null; series: SerieLue[] }[];
 };
