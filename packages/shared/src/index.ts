@@ -15,6 +15,16 @@ export {
   type ElementFile,
   mettreEnFile,
 } from "./file-envoi.js";
+export {
+  LIBELLE_ZONE,
+  MUSCLES_SANS_ZONE,
+  type NiveauZone,
+  ZONES,
+  type Zone,
+  type ZoneTravaillee,
+  zoneDuMuscle,
+  zonesTravaillees,
+} from "./muscles.js";
 export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
   LIBELLE_RECORD,
