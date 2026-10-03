@@ -8,8 +8,8 @@ import { useSeance } from "./seance";
 import { nouvelId } from "./temps";
 
 /**
- * Démarrer une séance, vide ou depuis une routine : partagé par l'Accueil et
- * l'écran « Démarrer » du bouton central.
+ * Démarrer une séance, vide ou depuis une routine : partagé par la page d'une routine et
+ * l'écran « Démarrer » ouvert depuis l'Accueil.
  *
  * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
  * relit le DISQUE au moment de l'appui, pas l'état d'un écran.

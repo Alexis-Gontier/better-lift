@@ -41,20 +41,25 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 - **Carte du corps** : la bibliothèque peint chaque partie d'une couleur codée en dur qui
   l'emporte sur `defaultFill` — chaque partie non travaillée reçoit `styles.fill` du thème.
 
-## Navigation (D74–D80)
+## Navigation (D106–D107, remplace D74–D80)
 
-Conception : [`2026-09-24-mobile-onglets-design.md`](../../docs/superpowers/specs/2026-09-24-mobile-onglets-design.md).
+Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
 
-- Quatre onglets : Accueil · Routines | **bouton central** | Stats · Profil. Barre pleine
-  largeur, **onglet actif en lime** (D76 révisée à la demande de l'utilisateur). Icônes Lucide.
+- Quatre onglets : **Accueil · Routines · Stats · Profil**, sans lime. **Onglet actif en encre**
+  et en gras (D106 remplace D76 révisée). Icônes Lucide.
+- **Un seul aplat lime par écran** (D105) : la barre n'en porte jamais. « Démarrer » vit sur
+  l'Accueil (ouvre la modale `app/demarrer.tsx`, logique dans `lib/demarrer.ts`) et sur la page
+  d'une routine ; il disparaît de l'Accueil pendant une séance.
+- **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
+  de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
+  onglets et leurs écrans empilés. Repos restant s'il tourne, chrono sinon ; tout le bandeau
+  ramène à la séance.
 - Stats est vide pour l'instant ; **l'Accueil est le fil des séances** (D95,
   `components/historique/liste-seances.tsx`). La file d'envoi vit dans Profil
-  (`components/file-envoi.tsx`). Historique et Exercices ont quitté la barre (`href: null`) mais
-  restent joignables : détail d'une séance depuis l'Accueil, fiche d'exercice depuis le détail.
+  (`components/file-envoi.tsx`). Historique et Exercices sont hors de la barre (`href: null`) mais
+  joignables : détail d'une séance depuis l'Accueil, fiche d'exercice depuis le détail.
 - Les onglets reviennent en arrière **par l'historique** (`backBehavior="history"`) : sans lui, le
   retour depuis un écran d'un onglet masqué ramène à l'Accueil.
-- Le bouton central (aplat lime) reprend la séance en cours, sinon ouvre la modale
-  `app/demarrer.tsx` (logique dans `lib/demarrer.ts`).
 - **Piège** : une pile qui déclare ses écrans prend le premier pour route initiale —
   `(onglets)` est déclaré avant `demarrer` dans `app/_layout.tsx`, sinon l'app s'ouvre sur la
   modale.
