@@ -10,7 +10,8 @@ import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
 import { useDemarrer } from "../../../lib/demarrer";
 import { optionsRoutine } from "../../../lib/requetes";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
+import { useSeance } from "../../../lib/seance";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 /** « 90 s », « 2 min », « 2 min 30 » : ce qu'on lit d'un coup d'œil. */
@@ -24,8 +25,9 @@ function formaterRepos(sec: number): string {
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /**
- * Une routine, façon opengym : ce qu'elle travaille d'abord, ses exercices
- * ensuite, et Démarrer toujours sous le pouce. Le crayon ouvre l'édition (D82).
+ * Une routine : son titre, ce qu'elle travaille, ses exercices, et Démarrer
+ * sous le pouce — l'aplat de l'écran (D105), absent pendant une séance, que le
+ * bandeau reprend (D107). « Modifier » ouvre l'édition (D82).
  */
 export default function DetailRoutine() {
   const styles = useStyles();
@@ -34,6 +36,7 @@ export default function DetailRoutine() {
   const router = useRouter();
   const routine = useQuery(optionsRoutine(id));
   const { routine: demarrer, ouverture } = useDemarrer();
+  const { seance } = useSeance();
   const modifier = () => router.push({ pathname: "/routine-edition", params: { id } });
 
   if (routine.isPending || (routine.isError && !routine.data)) {
@@ -59,21 +62,23 @@ export default function DetailRoutine() {
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <EnteteRetour
-        titre={r.nom}
+        titre=""
         action={
           <Pressable
             onPress={modifier}
-            style={styles.crayon}
+            style={styles.modifier}
             accessibilityRole="button"
             accessibilityLabel="Modifier la routine"
           >
-            <Pencil size={22} color={couleurs.encre} />
+            <Pencil size={18} color={couleurs.encreSecondaire} />
+            <Text style={styles.modifierTexte}>Modifier</Text>
           </Pressable>
         }
       />
       <ScrollView contentContainerStyle={styles.contenu}>
+        <Text style={styles.nomRoutine}>{r.nom}</Text>
         <Text style={styles.resume}>
-          {pluriel(r.exercices.length, "exercice")} · {pluriel(nbSeries, "série")} · ~{minutes} min
+          {pluriel(r.exercices.length, "exercice")} · {pluriel(nbSeries, "série")} · ≈ {minutes} min
         </Text>
 
         <CarteMuscles exercices={r.exercices} />
@@ -84,6 +89,7 @@ export default function DetailRoutine() {
           </Pressable>
         ) : null}
 
+        {r.exercices.length > 0 ? <Text style={styles.section}>Exercices</Text> : null}
         {r.exercices.map((ex, i) => (
           // L'index entre dans la clé : le même exercice peut figurer deux fois.
           <View key={`${ex.slug}-${i}`} style={styles.carte}>
@@ -112,31 +118,49 @@ export default function DetailRoutine() {
         ))}
       </ScrollView>
 
-      {/* L'action de l'écran, fixée sous le pouce : l'aplat lime (D28). */}
-      <View style={styles.pied}>
-        <Pressable
-          style={[styles.demarrer, ouverture !== null && { opacity: 0.6 }]}
-          disabled={ouverture !== null || r.exercices.length === 0}
-          onPress={() => void demarrer(r.id)}
-          accessibilityRole="button"
-        >
-          <Text style={styles.demarrerTexte}>
-            {ouverture !== null ? "Ouverture…" : "Démarrer la routine"}
-          </Text>
-        </Pressable>
-      </View>
+      {/* L'action de l'écran, fixée sous le pouce : l'aplat lime (D105). */}
+      {seance ? null : (
+        <View style={styles.pied}>
+          <Pressable
+            style={[styles.demarrer, ouverture !== null && { opacity: 0.6 }]}
+            disabled={ouverture !== null || r.exercices.length === 0}
+            onPress={() => void demarrer(r.id)}
+            accessibilityRole="button"
+          >
+            <Text style={styles.demarrerTexte}>
+              {ouverture !== null ? "Ouverture…" : "Démarrer la routine"}
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
-  crayon: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
+  modifier: {
+    minHeight: CIBLE,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: espace.s,
+  },
+  modifierTexte: { color: couleurs.encreSecondaire, fontSize: 15, fontWeight: "600" },
   contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl },
-  resume: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
+  nomRoutine: { color: couleurs.encre, fontSize: 30, lineHeight: 34, fontWeight: "700" },
+  resume: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1, marginTop: -espace.s },
+  section: {
+    color: couleurs.encreAttenuee,
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginTop: espace.s,
+  },
   invite: {
     minHeight: CIBLE,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: couleurs.ligneForte,
@@ -144,18 +168,18 @@ const useStyles = creerStyles((couleurs) => ({
     justifyContent: "center",
   },
   inviteTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
+  // Une ligne à filet, pas une carte : la page se lit comme le carnet de séance.
   carte: {
     flexDirection: "row",
     alignItems: "center",
     gap: espace.m,
-    padding: espace.m,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface1,
+    paddingVertical: espace.s,
+    borderBottomWidth: 1,
+    borderBottomColor: couleurs.ligne,
   },
-  vignette: { width: 56, height: 56, borderRadius: 8, backgroundColor: couleurs.surface3 },
-  sansImage: { alignItems: "center", justifyContent: "center" },
+  // Fond blanc : les images du dataset sont dessinées sur blanc.
+  vignette: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#ffffff" },
+  sansImage: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface3 },
   texte: { flex: 1, gap: 2 },
   exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   series: {
@@ -174,7 +198,7 @@ const useStyles = creerStyles((couleurs) => ({
   },
   demarrer: {
     minHeight: CIBLE + 8,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
