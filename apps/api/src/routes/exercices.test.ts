@@ -10,6 +10,7 @@ const resume: ExerciceResume = {
   groupe: "UPPER_LEGS",
   equipement: "Barre",
   image: null,
+  recherche: "squat complet a la barre barbell full squat",
 };
 
 const detail: ExerciceDetail = {

@@ -38,7 +38,12 @@ export {
   zoneDuMuscle,
   zonesTravaillees,
 } from "./muscles.js";
-export { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
+export {
+  filtrerCatalogue,
+  normaliserRecherche,
+  slugifier,
+  texteRecherche,
+} from "./recherche.js";
 export {
   LIBELLE_RECORD,
   marquerRecords,
