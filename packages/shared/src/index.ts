@@ -29,6 +29,7 @@ export {
   type ElementFile,
   mettreEnFile,
 } from "./file-envoi.js";
+export { type RecordBattu, recordsBattus } from "./fin-seance.js";
 export {
   LIBELLE_ZONE,
   MUSCLES_SANS_ZONE,

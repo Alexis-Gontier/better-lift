@@ -27,8 +27,9 @@ export const persister = createAsyncStoragePersister({
 
 /**
  * Ce qui entre dans le cache persistant (D96) : les routines, le catalogue
- * complet, les précédents. Pas l'historique : il grossit sans fin, et une
- * ligne AsyncStorage Android plafonne vers 2 Mo.
+ * complet, les précédents, les records des exercices des routines. Pas
+ * l'historique : il grossit sans fin, et une ligne AsyncStorage Android plafonne
+ * vers 2 Mo.
  */
 export function gardeHorsLigne(query: Query): boolean {
   // Sur la DONNÉE, pas sur le statut : un rafraîchissement raté hors ligne
@@ -38,6 +39,8 @@ export function gardeHorsLigne(query: Query): boolean {
   const [domaine, sorte] = query.queryKey as unknown[];
   return (
     domaine === "routines" ||
+    // Les records d'avant la séance, pour annoncer à la fin ceux qu'elle bat (D111).
+    domaine === "records" ||
     (domaine === "exercices" && sorte === "complet") ||
     (domaine === "seances" && sorte === "precedents")
   );
