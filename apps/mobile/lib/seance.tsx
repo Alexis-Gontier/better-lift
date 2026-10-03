@@ -7,7 +7,7 @@ import {
   type SeanceEnCours,
   versEnvoi,
 } from "@better-lift/shared";
-import { useQueryClient } from "@tanstack/react-query";
+import { onlineManager, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   type ReactNode,
@@ -17,6 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { AppState } from "react-native";
 import { api } from "./api";
 import { brouillon, fileEnvoi } from "./stockage";
 
@@ -113,6 +114,23 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
       setPret(true);
       void synchroniser();
     })();
+  }, [synchroniser]);
+
+  // D99 : retenter dès que le réseau revient, et à chaque retour au premier plan
+  // — jusqu'ici, une séance terminée en salle attendait le prochain lancement.
+  // `synchroniser` est verrouillée : deux déclencheurs simultanés n'envoient
+  // qu'une fois.
+  useEffect(() => {
+    const finReseau = onlineManager.subscribe((enLigne) => {
+      if (enLigne) void synchroniser();
+    });
+    const finPremierPlan = AppState.addEventListener("change", (etat) => {
+      if (etat === "active") void synchroniser();
+    });
+    return () => {
+      finReseau();
+      finPremierPlan.remove();
+    };
   }, [synchroniser]);
 
   const modifier = useCallback((s: SeanceEnCours) => {

@@ -22,7 +22,12 @@ export function ListeSeances({ titre }: { titre: string }) {
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <Text style={styles.titre}>{titre}</Text>
-      {seances.isPending ? (
+      {/* Hors ligne, la requête se met en pause au lieu d'échouer : sans ce cas,
+          le chargement tournerait pour toujours. L'historique n'est pas gardé
+          sur le téléphone (D96). */}
+      {seances.isPending && seances.fetchStatus === "paused" ? (
+        <Vide titre="Hors ligne" message="Tes séances s'afficheront au retour du réseau." />
+      ) : seances.isPending ? (
         <Chargement />
       ) : seances.isError ? (
         <Erreur
