@@ -1,6 +1,7 @@
 import {
   ABREGE_TYPE_SERIE,
   ATTRIBUTION_MEDIAS,
+  type ChampPave,
   type ExerciceEnCours,
   LIBELLE_TYPE_SERIE,
   type SerieEnCours,
@@ -34,7 +35,7 @@ import { COLONNES, type EtatSerie, LigneSerie } from "./ligne-serie";
  * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
  * autres portent leur lettre — l'échauffement ne décale pas « série 1 ».
  */
-function etiquettes(series: SerieEnCours[]): string[] {
+export function etiquettes(series: SerieEnCours[]): string[] {
   let n = 0;
   return series.map((s) => (s.type === "NORMALE" ? String(++n) : ABREGE_TYPE_SERIE[s.type]));
 }
@@ -52,6 +53,9 @@ type Feuilles = { quoi: "menu" } | { quoi: "repos" } | { quoi: "serie"; iS: numb
 export function CarteExercice({
   exercice,
   prochaine,
+  edition,
+  onEditer,
+  onPositionLigne,
   onModifierSerie,
   onValiderSerie,
   onAjouterSerie,
@@ -65,6 +69,11 @@ export function CarteExercice({
   exercice: ExerciceEnCours;
   /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D105). */
   prochaine: number | null;
+  /** La case en cours de saisie au pavé, si elle est dans cet exercice (D109). */
+  edition: { iS: number; champ: ChampPave; texte: string; invalide: boolean } | null;
+  onEditer: (iS: number, champ: ChampPave) => void;
+  /** La position d'une ligne dans le bloc : l'écran la fait défiler au-dessus du pavé. */
+  onPositionLigne: (iS: number, y: number) => void;
   onModifierSerie: (
     iS: number,
     patch: { reps?: number | null; chargeKg?: number | null; type?: TypeSerie },
@@ -241,20 +250,24 @@ export function CarteExercice({
       </View>
 
       {exercice.series.map((s, i) => (
-        <LigneSerie
-          // Les cases gardent leur texte : une suppression doit les remonter,
-          // sans quoi la ligne suivante hériterait du texte de la supprimée.
+        <View
           key={`${i}-${exercice.series.length}`}
-          numero={i + 1}
-          etiquette={libelles[i] ?? String(i + 1)}
-          couleurEtiquette={s.type === "NORMALE" ? couleurs.encre : couleurs.encreTertiaire}
-          serie={s}
-          etat={etatDe(s.faite, i === prochaine)}
-          precedent={exercice.precedent?.[i]}
-          onChange={(patch) => onModifierSerie(i, patch)}
-          onValider={() => onValiderSerie(i)}
-          onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
-        />
+          onLayout={(e) => onPositionLigne(i, e.nativeEvent.layout.y)}
+        >
+          <LigneSerie
+            numero={i + 1}
+            etiquette={libelles[i] ?? String(i + 1)}
+            couleurEtiquette={s.type === "NORMALE" ? couleurs.encre : couleurs.encreTertiaire}
+            serie={s}
+            etat={etatDe(s.faite, i === prochaine)}
+            precedent={exercice.precedent?.[i]}
+            onChange={(patch) => onModifierSerie(i, patch)}
+            onValider={() => onValiderSerie(i)}
+            onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
+            edition={edition?.iS === i ? edition : null}
+            onEditer={(champ) => onEditer(i, champ)}
+          />
+        </View>
       ))}
 
       <Pressable

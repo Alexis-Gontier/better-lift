@@ -1,18 +1,9 @@
-import { chargeEnTexte, lireCharge, type SerieEnCours } from "@better-lift/shared";
+import { type ChampPave, chargeEnTexte, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 import { vibrer } from "../../lib/vibrations";
-
-/** Un entier de 0 à 999, ou vide ; `NaN` signale une saisie à corriger. */
-function lireReps(t: string): number | null {
-  const p = t.trim();
-  if (p === "") return null;
-  if (!/^\d+$/.test(p) || Number(p) > 999) return Number.NaN;
-  return Number(p);
-}
 
 /** Les largeurs des colonnes, partagées avec l'en-tête du tableau. */
 // 40 : « SÉRIE » en Archivo ne tient pas sur 34 (D103).
@@ -34,8 +25,8 @@ function textePrecedent(p?: { reps: number | null; chargeKg: number | null; fait
 
 /**
  * Une série sur UNE ligne (D87) : étiquette · précédent · charge · reps · ✓.
- * Les cases gardent le TEXTE tapé et ne le valident qu'à la sortie du champ :
- * « 82, » ne doit pas disparaître avant qu'on ait tapé le 5.
+ * Les cases ne sont pas des champs : un appui ouvre le pavé de la séance (D109),
+ * qui écrit dans la case cerclée d'encre. L'écran tient le texte en cours.
  */
 export function LigneSerie({
   numero,
@@ -44,6 +35,8 @@ export function LigneSerie({
   serie,
   etat,
   precedent,
+  edition,
+  onEditer,
   onChange,
   onValider,
   onEtiquette,
@@ -56,6 +49,9 @@ export function LigneSerie({
   etat: EtatSerie;
   /** Ce qui a été fait la dernière fois à cette position (D67). */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
+  /** La case en cours de saisie au pavé, et son texte. */
+  edition: { champ: ChampPave; texte: string; invalide: boolean } | null;
+  onEditer: (champ: ChampPave) => void;
   onChange: (patch: { reps?: number | null; chargeKg?: number | null }) => void;
   onValider: () => void;
   /** L'appui sur l'étiquette : type de série, suppression (D92). */
@@ -63,18 +59,10 @@ export function LigneSerie({
 }) {
   const styles = useStyles();
   const couleurs = useCouleurs();
-  const [reps, setReps] = useState(serie.reps === null ? "" : String(serie.reps));
-  const [charge, setCharge] = useState(
-    serie.chargeKg === null ? "" : chargeEnTexte(serie.chargeKg, SYSTEME_UNITES),
-  );
-  const repsKo = Number.isNaN(lireReps(reps));
-  const chargeKo = Number.isNaN(lireCharge(charge, SYSTEME_UNITES));
 
-  // Recopier la dernière fois : dans les cases ET dans la séance, d'un seul appui.
+  // Recopier la dernière fois dans la séance, d'un seul appui.
   const recopier = () => {
     if (!precedent?.faite) return;
-    setReps(precedent.reps === null ? "" : String(precedent.reps));
-    setCharge(precedent.chargeKg === null ? "" : chargeEnTexte(precedent.chargeKg, SYSTEME_UNITES));
     onChange({ reps: precedent.reps, chargeKg: precedent.chargeKg });
     vibrer.selection();
   };
@@ -111,37 +99,31 @@ export function LigneSerie({
           {textePrecedent(precedent)}
         </Text>
       </Pressable>
-      <TextInput
-        accessibilityLabel={`Série ${numero}, charge`}
-        value={charge}
-        onChangeText={setCharge}
-        onEndEditing={() => !chargeKo && onChange({ chargeKg: lireCharge(charge, SYSTEME_UNITES) })}
-        keyboardType="decimal-pad"
-        placeholder="—"
-        placeholderTextColor={couleurs.encreAttenuee}
-        selectTextOnFocus
-        style={[
-          styles.case,
-          fantome && styles.caseFantome,
-          faite && styles.caseFaite,
-          chargeKo && styles.caseKo,
-        ]}
+      <Case
+        libelle={`Série ${numero}, charge`}
+        texte={
+          edition?.champ === "charge"
+            ? edition.texte
+            : serie.chargeKg === null
+              ? ""
+              : chargeEnTexte(serie.chargeKg, SYSTEME_UNITES)
+        }
+        editee={edition?.champ === "charge"}
+        invalide={edition?.champ === "charge" && edition.invalide}
+        fantome={fantome}
+        faite={faite}
+        onPress={() => onEditer("charge")}
       />
-      <TextInput
-        accessibilityLabel={`Série ${numero}, répétitions`}
-        value={reps}
-        onChangeText={setReps}
-        onEndEditing={() => !repsKo && onChange({ reps: lireReps(reps) })}
-        keyboardType="number-pad"
-        placeholder="—"
-        placeholderTextColor={couleurs.encreAttenuee}
-        selectTextOnFocus
-        style={[
-          styles.case,
-          fantome && styles.caseFantome,
-          faite && styles.caseFaite,
-          repsKo && styles.caseKo,
-        ]}
+      <Case
+        libelle={`Série ${numero}, répétitions`}
+        texte={
+          edition?.champ === "reps" ? edition.texte : serie.reps === null ? "" : String(serie.reps)
+        }
+        editee={edition?.champ === "reps"}
+        invalide={edition?.champ === "reps" && edition.invalide}
+        fantome={fantome}
+        faite={faite}
+        onPress={() => onEditer("reps")}
       />
       <Pressable
         accessibilityRole="checkbox"
@@ -168,6 +150,45 @@ export function LigneSerie({
         />
       </Pressable>
     </View>
+  );
+}
+
+/** Une case kg ou reps : un appui ouvre le pavé ; en saisie, elle est cerclée d'encre. */
+function Case({
+  libelle,
+  texte,
+  editee,
+  invalide,
+  fantome,
+  faite,
+  onPress,
+}: {
+  libelle: string;
+  texte: string;
+  editee: boolean;
+  invalide: boolean;
+  fantome: boolean;
+  faite: boolean;
+  onPress: () => void;
+}) {
+  const styles = useStyles();
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={4}
+      style={[
+        styles.case,
+        faite && styles.caseFaite,
+        editee && styles.caseEditee,
+        invalide && styles.caseKo,
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={`${libelle} : ${texte || "vide"}`}
+    >
+      <Text style={[styles.caseTexte, fantome && !editee && styles.caseFantome]} numberOfLines={1}>
+        {texte || "—"}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -199,20 +220,24 @@ const useStyles = creerStyles((couleurs) => ({
   case: {
     flex: 1,
     height: 40,
-    padding: 0,
     borderRadius: rayon.cellule,
     backgroundColor: couleurs.surface2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  caseTexte: {
     color: couleurs.encre,
     fontSize: taille.valeur,
     fontWeight: "600",
-    textAlign: "center",
     fontVariant: ["tabular-nums"],
   },
+  // En saisie au pavé : cerclée d'encre (D108).
+  caseEditee: { borderWidth: 2, borderColor: couleurs.encre },
   // À venir : les cibles se lisent, en retrait, jusqu'à ce qu'on y arrive.
   caseFantome: { color: couleurs.encreTertiaire },
   // Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ.
   caseFaite: { backgroundColor: "transparent" },
-  caseKo: { borderWidth: 1, borderColor: couleurs.dangerEncre },
+  caseKo: { borderWidth: 2, borderColor: couleurs.dangerEncre },
   // À venir : ✓ en contour.
   valider: {
     width: COLONNES.valider,
