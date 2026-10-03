@@ -50,6 +50,9 @@ export default function Onglets() {
 
   return (
     <Tabs
+      // Le retour suit le chemin parcouru : la fiche d'un exercice ouverte depuis
+      // le détail d'une séance y ramène, et non à l'Accueil (D95).
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: couleurs.canvas },

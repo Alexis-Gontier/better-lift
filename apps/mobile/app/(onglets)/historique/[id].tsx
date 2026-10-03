@@ -1,7 +1,7 @@
 import { formaterCharge, formatJour, LIBELLE_RECORD } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
@@ -14,6 +14,7 @@ import { SYSTEME_UNITES } from "../../../lib/unites";
 
 export default function DetailSeance() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const seance = useQuery(optionsSeance(id));
 
   if (seance.isPending || seance.isError) {
@@ -44,7 +45,14 @@ export default function DetailSeance() {
         {s.exercices.map((ex, iE) => (
           <View key={`${ex.slug}-${iE}`} style={styles.carte}>
             <View style={styles.titre}>
-              <Text style={styles.exercice}>{ex.nom}</Text>
+              {/* La fiche porte les records de l'exercice (D95). */}
+              <Pressable
+                onPress={() => router.push(`/exercices/${ex.slug}`)}
+                accessibilityRole="link"
+                hitSlop={6}
+              >
+                <Text style={styles.exercice}>{ex.nom}</Text>
+              </Pressable>
               {/* La note prise en séance (D90). */}
               {ex.note ? <Text style={styles.note}>{ex.note}</Text> : null}
             </View>
