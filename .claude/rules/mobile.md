@@ -100,7 +100,9 @@ Conception : [`2026-10-03-mobile-epreuve-design.md`](../../docs/superpowers/spec
   (`isError && !data`).
 - Le catalogue se filtre sur le téléphone (`filtrerCatalogue` de `shared`).
 - L'envoi se relance au retour du réseau et du premier plan (`lib/seance.tsx`).
-- La garde de session ne redirige que sur une absence confirmée, jamais sur une erreur.
+- La garde de session ne redirige que sur une absence confirmée : une erreur de lecture laisse
+  passer seulement si un cookie de session est gardé sur le téléphone (installation neuve hors
+  ligne → connexion).
 - **Éprouver** : Expo Go ne démarre pas à froid en mode avion. Couper le réseau app ouverte
   (`adb shell cmd connectivity airplane-mode enable`), puis menu de dev → Reload. Le démarrage à
   froid hors ligne ne se vérifie que sur l'APK. `uiautomator dump` échoue sur l'écran de séance

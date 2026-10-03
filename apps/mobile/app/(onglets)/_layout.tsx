@@ -8,6 +8,7 @@ import {
   Play,
   User,
 } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
   type ColorValue,
   Pressable,
@@ -39,16 +40,23 @@ const icone =
  */
 export default function Onglets() {
   const { data: session, isPending, error } = authClient.useSession();
+  // Un cookie de session est-il gardé sur le téléphone ? `null` tant que le
+  // stockage sécurisé n'a pas répondu.
+  const [cookieGarde, setCookieGarde] = useState<boolean | null>(null);
+  useEffect(() => {
+    void authClient.getCookie().then((c) => setCookieGarde(Boolean(c)));
+  }, []);
   const router = useRouter();
   const { seance } = useSeance();
   // Le bouton central : reprendre la séance en cours, sinon choisir comment démarrer.
   const lancer = () => router.push(seance ? "/seance" : "/demarrer");
 
-  if (isPending) return <Chargement />;
-  // D100 : la connexion seulement quand le serveur a DIT « pas de session ».
-  // Une erreur de lecture (hors ligne) laisse passer : le cookie est toujours
-  // sur le téléphone, et la séance en cours doit rester joignable en salle.
-  if (!session && !error) return <Redirect href="/connexion" />;
+  if (isPending || (error && cookieGarde === null)) return <Chargement />;
+  // D100 : une erreur de lecture (hors ligne) ne renvoie pas à la connexion
+  // QUAND un cookie de session est gardé sur le téléphone : la séance en cours
+  // doit rester joignable en salle. Sans cookie, il n'y a jamais eu de compte
+  // ici — une installation neuve ouverte hors ligne va à la connexion.
+  if (!session && !(error && cookieGarde)) return <Redirect href="/connexion" />;
 
   const Centrale = seance ? Play : Dumbbell;
 
