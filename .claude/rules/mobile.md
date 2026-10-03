@@ -118,6 +118,13 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Une relecture du brouillon n'écrase jamais un changement survenu pendant qu'elle lisait**
   (`recharger` et le compteur d'écritures de `lib/seance.tsx`) : l'écran relit le disque à chaque
   retour, y compris au retour de la modale qui vient d'ajouter des exercices.
+- **Fin de séance (D111)** : records battus calculés sur le téléphone (`recordsBattus` de
+  `shared`) contre les records en cache (`["records", slug]`, persistés et préchargés pour les
+  exercices des routines) ; un exercice aux records inconnus est écarté, sans record déclaré.
+  Sans série validée, la séance ne s'enregistre pas. Hors ligne : un encart pointillé, pas une
+  alerte.
+- **Démarrer** est une feuille basse (`presentation: "transparentModal"`) : l'écran dessine le
+  voile et la feuille ; « À suivre » marque la routine de `routineASuivre`.
 - Une séance envoyée invalide `["seances"]` et `["records"]`.
 
 ## Hors ligne (D96–D100)

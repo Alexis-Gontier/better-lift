@@ -1,53 +1,161 @@
-import { bilanSeance, formaterCharge, secondesEcoulees } from "@better-lift/shared";
+import {
+  bilanSeance,
+  formaterCharge,
+  formatJour,
+  LIBELLE_RECORD,
+  recordsBattus,
+  resumeSemaine,
+  secondesEcoulees,
+} from "@better-lift/shared";
+import { onlineManager, useInfiniteQuery, useQueries } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { CloudOff } from "lucide-react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BadgeRecord, formaterSerie } from "../components/ui/badge-record";
+import { FUSEAU } from "../lib/fuseau";
+import { optionsRecords, optionsSeances } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree } from "../lib/temps";
-import { CIBLE, creerStyles, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
+import { vibrer } from "../lib/vibrations";
 
+/**
+ * La fin de séance (D111) : le bilan, les records battus, puis l'enregistrement.
+ * Une séance sans série validée ne s'enregistre pas — elle se reprend.
+ */
 export default function Fin() {
   const styles = useStyles();
   const router = useRouter();
   const { seance, terminer } = useSeance();
+  // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
+  const [fin] = useState(() => new Date());
+  const slugs = seance ? [...new Set(seance.exercices.map((e) => e.slug))] : [];
+  // Les records d'avant : en cache hors ligne pour les exercices des routines (D96).
+  const records = useQueries({ queries: slugs.map((slug) => optionsRecords(slug)) });
+  const historique = useInfiniteQuery(optionsSeances());
   if (!seance) return null;
 
-  // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
-  const duree = secondesEcoulees(seance.debut, new Date());
   const { seriesFaites, volumeKg } = bilanSeance(seance);
+  const reprendre = () => router.back();
+
+  if (seriesFaites === 0) {
+    return (
+      <SafeAreaView style={styles.ecran}>
+        <View style={styles.contenu}>
+          <Text style={styles.titre}>Pas encore de série.</Text>
+          <Text style={styles.texte}>Valide au moins une série pour enregistrer.</Text>
+        </View>
+        <View style={styles.pied}>
+          <Pressable
+            style={({ pressed }) => [styles.secondaire, pressed && styles.appuye]}
+            onPress={reprendre}
+            accessibilityRole="button"
+          >
+            <Text style={styles.secondaireTexte}>Reprendre la séance</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const avant = Object.fromEntries(slugs.map((slug, i) => [slug, records[i]?.data]));
+  const { battus, incomplet } = recordsBattus(seance, avant);
+  const chargement = records.some((r) => r.isPending && r.fetchStatus === "fetching");
+  // La régularité, faute de record : cette séance comprise.
+  const deLaSemaine = historique.data
+    ? resumeSemaine(
+        [...historique.data.pages.flatMap((p) => p.seances), { debut: seance.debut, volumeKg }],
+        fin,
+        FUSEAU,
+      ).seances
+    : null;
+  const horsLigne = !onlineManager.isOnline();
+
+  const enregistrer = async () => {
+    vibrer.valider();
+    // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
+    // ensuite, et se retentera tant qu'il n'aura pas abouti.
+    await terminer();
+    router.replace("/");
+  };
 
   return (
     <SafeAreaView style={styles.ecran}>
-      <View style={styles.contenu}>
+      <ScrollView contentContainerStyle={styles.contenu}>
         <Text style={styles.titre}>Bien joué.</Text>
-        <Text style={styles.nom}>{seance.nom}</Text>
+        <Text style={styles.sous}>
+          {seance.nom} · {formatJour(seance.debut, FUSEAU)}
+        </Text>
 
         <View style={styles.chiffres}>
-          <Chiffre valeur={formaterDuree(duree)} libelle="Durée" />
+          <Chiffre valeur={formaterDuree(secondesEcoulees(seance.debut, fin))} libelle="Durée" />
           <Chiffre valeur={String(seriesFaites)} libelle="Séries" />
           <Chiffre valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} libelle="Volume" />
         </View>
-      </View>
+
+        {chargement ? null : battus.length > 0 ? (
+          <View>
+            <Text style={styles.section}>
+              {battus.length === 1 ? "1 record battu" : `${battus.length} records battus`}
+            </Text>
+            {battus.map((b, i) => (
+              <View key={`${b.slug}-${i}`} style={styles.record}>
+                <View style={styles.recordGauche}>
+                  <Text style={styles.recordNom} numberOfLines={2}>
+                    {b.nom}
+                  </Text>
+                  <BadgeRecord libelle={b.types.map((t) => LIBELLE_RECORD[t]).join(" · ")} />
+                </View>
+                <Text style={styles.recordValeur}>{formaterSerie(b.chargeKg, b.reps)}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.texte}>
+            Pas de record aujourd'hui. La régularité compte plus
+            {deLaSemaine
+              ? ` : c'est ta ${deLaSemaine}${deLaSemaine === 1 ? "ʳᵉ" : "ᵉ"} séance de la semaine.`
+              : "."}
+          </Text>
+        )}
+        {incomplet && !chargement ? (
+          <Text style={styles.note}>
+            Les records des autres exercices se calculeront à l'envoi, dans l'historique.
+          </Text>
+        ) : null}
+      </ScrollView>
 
       <View style={styles.pied}>
+        {horsLigne ? <HorsLigne /> : null}
         <Pressable
-          style={styles.enregistrer}
+          style={({ pressed }) => [styles.aplat, pressed && styles.aplatAppuye]}
           accessibilityRole="button"
-          onPress={async () => {
-            // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
-            // ensuite, et se retentera tant qu'il n'aura pas abouti.
-            await terminer();
-            router.replace("/");
-          }}
+          onPress={() => void enregistrer()}
         >
-          <Text style={styles.enregistrerTexte}>Enregistrer la séance</Text>
+          <Text style={styles.aplatTexte}>Enregistrer la séance</Text>
         </Pressable>
-        <Pressable style={styles.retour} onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.retourTexte}>Reprendre la séance</Text>
+        <Pressable style={styles.tertiaire} onPress={reprendre} accessibilityRole="button">
+          <Text style={styles.tertiaireTexte}>Reprendre la séance</Text>
         </Pressable>
       </View>
     </SafeAreaView>
+  );
+}
+
+/** Hors ligne, un fait et pas une alerte : la séance part seule au retour du réseau (D99). */
+function HorsLigne() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
+  return (
+    <View style={styles.horsLigne}>
+      <CloudOff size={18} color={couleurs.encreSecondaire} />
+      <Text style={styles.horsLigneTexte}>
+        Pas de réseau. La séance reste sur ton téléphone et partira seule au retour du réseau.
+      </Text>
+    </View>
   );
 }
 
@@ -63,34 +171,92 @@ function Chiffre({ valeur, libelle }: { valeur: string; libelle: string }) {
 
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas, justifyContent: "space-between" },
-  contenu: { padding: espace.xl, gap: espace.s },
-  titre: { color: couleurs.encre, fontSize: taille.titre + 4, fontWeight: "700" },
-  nom: { color: couleurs.encreSecondaire, fontSize: taille.courant },
-  chiffres: { flexDirection: "row", gap: espace.m, marginTop: espace.xl },
-  chiffre: {
-    flex: 1,
-    padding: espace.m,
-    borderRadius: 12,
-    backgroundColor: couleurs.surface1,
-    borderWidth: 1,
+  contenu: { padding: espace.xl, paddingTop: espace.xxl * 2, gap: espace.s },
+  // Un seul usage de cette taille : la fin de séance (D103).
+  titre: { color: couleurs.encre, fontSize: 52, lineHeight: 56, fontWeight: "800" },
+  sous: { color: couleurs.encreSecondaire, fontSize: taille.courant },
+  texte: { color: couleurs.encreSecondaire, fontSize: taille.courant, marginTop: espace.l },
+  note: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: espace.s },
+  chiffres: {
+    flexDirection: "row",
+    gap: espace.xl,
+    marginTop: espace.xl,
+    paddingVertical: espace.l,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
     borderColor: couleurs.ligne,
   },
+  chiffre: { gap: 2 },
   valeur: {
     color: couleurs.encre,
-    fontSize: taille.grand,
-    fontWeight: "700",
+    fontSize: 34,
+    lineHeight: 38,
+    fontFamily: polices.condense,
     fontVariant: ["tabular-nums"],
   },
-  libelle: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: 2 },
-  pied: { padding: espace.l, gap: espace.s },
-  enregistrer: {
+  libelle: {
+    color: couleurs.encreAttenuee,
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  section: {
+    color: couleurs.encreAttenuee,
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginTop: espace.xl,
+    marginBottom: espace.s,
+  },
+  record: {
     minHeight: CIBLE + 8,
-    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.m,
+    borderBottomWidth: 1,
+    borderBottomColor: couleurs.ligne,
+  },
+  recordGauche: { flex: 1, gap: espace.xs, paddingVertical: espace.s },
+  recordNom: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
+  recordValeur: {
+    color: couleurs.encre,
+    fontSize: 15,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
+  pied: { padding: espace.xl, gap: espace.s },
+  horsLigne: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.m,
+    padding: espace.m,
+    borderRadius: rayon.bouton,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: couleurs.ligneForte,
+  },
+  horsLigneTexte: { flex: 1, color: couleurs.encreSecondaire, fontSize: 14 },
+  aplat: {
+    minHeight: CIBLE + 8,
+    borderRadius: rayon.bouton,
     backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
-  enregistrerTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
-  retour: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
-  retourTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
+  aplatAppuye: { opacity: 0.85 },
+  aplatTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
+  tertiaire: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
+  tertiaireTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
+  secondaire: {
+    minHeight: CIBLE + 8,
+    borderRadius: rayon.bouton,
+    borderWidth: 1,
+    borderColor: couleurs.ligneForte,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  appuye: { backgroundColor: couleurs.surface2 },
+  secondaireTexte: { color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "700" },
 }));
