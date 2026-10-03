@@ -1,7 +1,7 @@
 import { formaterCharge, formatJour, LIBELLE_RECORD } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
@@ -9,10 +9,11 @@ import { Chargement, Erreur } from "../../../components/ui/etats";
 import { FUSEAU } from "../../../lib/fuseau";
 import { optionsSeance } from "../../../lib/requetes";
 import { dureeMin } from "../../../lib/temps";
-import { couleurs, espace, taille } from "../../../lib/theme";
+import { creerStyles, espace, taille } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 export default function DetailSeance() {
+  const styles = useStyles();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const seance = useQuery(optionsSeance(id));
@@ -82,10 +83,10 @@ export default function DetailSeance() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl * 2 },
-  sous: { color: couleurs.encrePale, fontSize: taille.petit },
+  sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   carte: {
     borderRadius: 12,
     borderWidth: 1,
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     borderBottomColor: couleurs.ligne,
   },
   exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  note: { color: couleurs.encrePale, fontSize: taille.petit },
+  note: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   serie: {
     flexDirection: "row",
     alignItems: "center",
@@ -110,12 +111,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   nonFaite: { opacity: 0.45 },
-  numero: { width: 18, color: couleurs.encreFaible, fontSize: taille.petit },
+  numero: { width: 18, color: couleurs.encreAttenuee, fontSize: taille.petit },
   valeur: {
     flex: 1,
-    color: couleurs.encreDouce,
+    color: couleurs.encreSecondaire,
     fontSize: taille.courant,
     fontVariant: ["tabular-nums"],
   },
-  echauffement: { color: couleurs.encreFaible, fontSize: taille.petit },
-});
+  echauffement: { color: couleurs.encreAttenuee, fontSize: taille.petit },
+}));

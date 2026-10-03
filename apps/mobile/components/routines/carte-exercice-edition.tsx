@@ -10,8 +10,8 @@ import {
 } from "@better-lift/shared";
 import { Image } from "expo-image";
 import { Dumbbell, Ellipsis, GripVertical, Plus, X } from "lucide-react-native";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES, UNITE } from "../../lib/unites";
 
 type Props = {
@@ -35,6 +35,8 @@ export function CarteExerciceEdition({
   onGlisser,
   enGlissement,
 }: Props) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const etiquettes = etiquettesSeries(e.series.map((s) => s.type));
   const changerSerie = (i: number, s: Partial<SerieBrouillon>) =>
     onChange({ ...e, series: e.series.map((x, j) => (j === i ? { ...x, ...s } : x)) });
@@ -69,7 +71,7 @@ export function CarteExerciceEdition({
           accessibilityRole="button"
           accessibilityLabel="Déplacer l'exercice (appui long)"
         >
-          <GripVertical size={20} color={couleurs.encreFaible} />
+          <GripVertical size={20} color={couleurs.encreAttenuee} />
         </Pressable>
         {e.image ? (
           <Image
@@ -80,7 +82,7 @@ export function CarteExerciceEdition({
           />
         ) : (
           <View style={[styles.vignette, styles.sansImage]}>
-            <Dumbbell size={18} color={couleurs.encreFaible} />
+            <Dumbbell size={18} color={couleurs.encreAttenuee} />
           </View>
         )}
         <Text style={styles.nom} numberOfLines={2}>
@@ -92,7 +94,7 @@ export function CarteExerciceEdition({
           accessibilityRole="button"
           accessibilityLabel={`Options de ${e.nom}`}
         >
-          <Ellipsis size={20} color={couleurs.encreDouce} />
+          <Ellipsis size={20} color={couleurs.encreSecondaire} />
         </Pressable>
       </View>
 
@@ -103,7 +105,7 @@ export function CarteExerciceEdition({
           onChangeText={(repos) => onChange({ ...e, repos })}
           keyboardType="number-pad"
           placeholder="—"
-          placeholderTextColor={couleurs.encreFaible}
+          placeholderTextColor={couleurs.encreAttenuee}
           style={[styles.champ, styles.champRepos, reposInvalide(e.repos) && styles.invalide]}
           accessibilityLabel="Repos en secondes"
         />
@@ -128,7 +130,7 @@ export function CarteExerciceEdition({
             <Text
               style={[
                 styles.etiquetteTexte,
-                s.type === "ECHAUFFEMENT" && { color: couleurs.encrePale },
+                s.type === "ECHAUFFEMENT" && { color: couleurs.encreTertiaire },
                 s.type === "ECHEC" && { color: couleurs.dangerEncre },
               ]}
             >
@@ -140,7 +142,7 @@ export function CarteExerciceEdition({
             onChangeText={(charge) => changerSerie(i, { charge })}
             keyboardType="decimal-pad"
             placeholder="—"
-            placeholderTextColor={couleurs.encreFaible}
+            placeholderTextColor={couleurs.encreAttenuee}
             style={[
               styles.champ,
               styles.colValeur,
@@ -153,7 +155,7 @@ export function CarteExerciceEdition({
             onChangeText={(reps) => changerSerie(i, { reps })}
             keyboardType="number-pad"
             placeholder="—"
-            placeholderTextColor={couleurs.encreFaible}
+            placeholderTextColor={couleurs.encreAttenuee}
             style={[styles.champ, styles.colValeur, repsInvalides(s.reps) && styles.invalide]}
             accessibilityLabel={`Répétitions de la série ${etiquettes[i]}`}
           />
@@ -163,7 +165,7 @@ export function CarteExerciceEdition({
             accessibilityRole="button"
             accessibilityLabel={`Retirer la série ${etiquettes[i]}`}
           >
-            <X size={18} color={couleurs.encreFaible} />
+            <X size={18} color={couleurs.encreAttenuee} />
           </Pressable>
         </View>
       ))}
@@ -177,14 +179,14 @@ export function CarteExerciceEdition({
         style={styles.ajouterSerie}
         accessibilityRole="button"
       >
-        <Plus size={18} color={couleurs.encreDouce} />
+        <Plus size={18} color={couleurs.encreSecondaire} />
         <Text style={styles.ajouterSerieTexte}>Ajouter une série</Text>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   carte: {
     borderRadius: 12,
     borderWidth: 1,
@@ -193,7 +195,7 @@ const styles = StyleSheet.create({
     paddingBottom: espace.xs,
     marginBottom: espace.m,
   },
-  glisse: { borderColor: couleurs.encreDouce, backgroundColor: couleurs.surface2 },
+  glisse: { borderColor: couleurs.encreSecondaire, backgroundColor: couleurs.surface2 },
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -213,8 +215,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: espace.m,
     paddingBottom: espace.s,
   },
-  libelle: { color: couleurs.encrePale, fontSize: taille.petit + 1 },
-  unite: { color: couleurs.encrePale, fontSize: taille.petit + 1 },
+  libelle: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
+  unite: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
   enteteSeries: {
     flexDirection: "row",
     alignItems: "center",
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: couleurs.ligne,
   },
-  colonne: { color: couleurs.encreFaible, fontSize: taille.petit, textAlign: "center" },
+  colonne: { color: couleurs.encreAttenuee, fontSize: taille.petit, textAlign: "center" },
   colSerie: { width: 44 },
   colValeur: { flex: 1 },
   colRetirer: { width: CIBLE },
@@ -256,7 +258,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   champRepos: { width: 72 },
-  invalide: { borderColor: couleurs.danger },
+  invalide: { borderColor: couleurs.dangerEncre },
   ajouterSerie: {
     minHeight: CIBLE,
     flexDirection: "row",
@@ -264,5 +266,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: espace.s,
   },
-  ajouterSerieTexte: { color: couleurs.encreDouce, fontSize: taille.courant, fontWeight: "600" },
-});
+  ajouterSerieTexte: {
+    color: couleurs.encreSecondaire,
+    fontSize: taille.courant,
+    fontWeight: "600",
+  },
+}));

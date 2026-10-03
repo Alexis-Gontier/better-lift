@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { X } from "lucide-react-native";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDemarrer } from "../lib/demarrer";
 import { optionsRoutines } from "../lib/requetes";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
@@ -14,6 +14,8 @@ const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
  * donc il se ferme — croix en haut, ou geste de retour.
  */
 export default function Demarrer() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const routines = useQuery(optionsRoutines());
   const { vide, routine, ouverture } = useDemarrer({ depuisModale: true });
@@ -47,7 +49,10 @@ export default function Demarrer() {
             Hors ligne : les routines apparaîtront au retour du réseau.
           </Text>
         ) : routines.isPending ? (
-          <ActivityIndicator color={couleurs.encrePale} style={{ marginVertical: espace.xl }} />
+          <ActivityIndicator
+            color={couleurs.encreTertiaire}
+            style={{ marginVertical: espace.xl }}
+          />
         ) : routines.isError && !routines.data ? (
           <Pressable onPress={() => routines.refetch()} style={styles.routine}>
             <Text style={styles.pale}>Les routines n'ont pas pu être chargées. Réessayer</Text>
@@ -75,8 +80,8 @@ export default function Demarrer() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -90,13 +95,13 @@ const styles = StyleSheet.create({
   vide: {
     minHeight: CIBLE + 12,
     borderRadius: 12,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
-  videTexte: { color: couleurs.surAccent, fontSize: taille.courant + 1, fontWeight: "700" },
+  videTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
   section: {
-    color: couleurs.encrePale,
+    color: couleurs.encreTertiaire,
     fontSize: taille.petit,
     textTransform: "uppercase",
     marginTop: espace.m,
@@ -110,5 +115,5 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   routineNom: { color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "600" },
-  pale: { color: couleurs.encrePale, fontSize: taille.petit },
-});
+  pale: { color: couleurs.encreTertiaire, fontSize: taille.petit },
+}));

@@ -1,15 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FileEnvoi } from "../../components/file-envoi";
 import { authClient } from "../../lib/auth-client";
 import { persister } from "../../lib/hors-ligne";
 import { useSeance } from "../../lib/seance";
-import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, taille } from "../../lib/theme";
 
 export default function Profil() {
+  const styles = useStyles();
   const router = useRouter();
   const client = useQueryClient();
   const { data: session } = authClient.useSession();
@@ -71,6 +72,7 @@ function Ligne({
   valeur: string;
   dernier?: boolean;
 }) {
+  const styles = useStyles();
   return (
     <View style={[styles.ligne, !dernier && styles.separe]}>
       <Text style={styles.libelle}>{libelle}</Text>
@@ -81,8 +83,8 @@ function Ligne({
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas, padding: espace.l, gap: espace.l },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas, padding: espace.l, gap: espace.l },
   titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700" },
   carte: {
     borderRadius: 12,
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: espace.l,
   },
   separe: { borderBottomWidth: 1, borderBottomColor: couleurs.ligne },
-  libelle: { color: couleurs.encrePale, fontSize: taille.petit + 1 },
+  libelle: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
   valeur: { flex: 1, textAlign: "right", color: couleurs.encre, fontSize: taille.courant },
   deconnexion: {
     minHeight: CIBLE,
@@ -109,4 +111,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dangerTexte: { color: couleurs.dangerEncre, fontSize: taille.courant },
-});
+}));

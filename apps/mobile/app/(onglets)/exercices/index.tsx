@@ -2,13 +2,15 @@ import { LIBELLE_GROUPE } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
 import { optionsCatalogue } from "../../../lib/requetes";
-import { CIBLE, couleurs, espace, taille } from "../../../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
 
 export default function Exercices() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const [filtre, setFiltre] = useState("");
   // Recherche bilingue et sans accents (lot 4) : « developpe » trouve « Développé ».
@@ -21,7 +23,7 @@ export default function Exercices() {
         value={filtre}
         onChangeText={setFiltre}
         placeholder="Chercher un exercice"
-        placeholderTextColor={couleurs.encreFaible}
+        placeholderTextColor={couleurs.encreAttenuee}
         style={styles.recherche}
         autoCorrect={false}
         returnKeyType="search"
@@ -62,8 +64,8 @@ export default function Exercices() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   titre: {
     color: couleurs.encre,
     fontSize: taille.titre,
@@ -91,5 +93,5 @@ const styles = StyleSheet.create({
   },
   appuye: { backgroundColor: couleurs.surface2 },
   nom: { color: couleurs.encre, fontSize: taille.courant },
-  sous: { color: couleurs.encreFaible, fontSize: taille.petit, marginTop: 2 },
-});
+  sous: { color: couleurs.encreAttenuee, fontSize: taille.petit, marginTop: 2 },
+}));

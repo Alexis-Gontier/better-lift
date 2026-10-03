@@ -8,17 +8,18 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
 import { FUSEAU } from "../../../lib/fuseau";
 import { optionsExercice, optionsRecords } from "../../../lib/requetes";
-import { couleurs, espace, taille } from "../../../lib/theme";
+import { creerStyles, espace, taille } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 export default function FicheExercice() {
+  const styles = useStyles();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const exercice = useQuery(optionsExercice(slug));
   const records = useQuery(optionsRecords(slug));
@@ -118,22 +119,22 @@ export default function FicheExercice() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl * 2 },
-  sous: { color: couleurs.encrePale, fontSize: taille.petit },
+  sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   // Fond blanc : les GIF du dataset sont dessinés sur blanc.
   media: { alignItems: "center", gap: espace.xs },
   gif: { width: 240, height: 240, borderRadius: 12, backgroundColor: "#ffffff" },
-  attribution: { color: couleurs.encreFaible, fontSize: 11 },
+  attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
   section: {
-    color: couleurs.encrePale,
+    color: couleurs.encreTertiaire,
     fontSize: taille.petit,
     textTransform: "uppercase",
     marginTop: espace.s,
   },
   texte: { color: couleurs.encre, fontSize: taille.courant, lineHeight: 22 },
-  pale: { color: couleurs.encrePale, fontSize: taille.petit },
+  pale: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   carte: {
     borderRadius: 12,
     borderWidth: 1,
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
   },
   record: { flexDirection: "row", alignItems: "center", gap: espace.m, padding: espace.m },
   separe: { borderTopWidth: 1, borderTopColor: couleurs.ligne },
-  recordType: { width: 88, color: couleurs.encreDouce, fontSize: taille.petit + 1 },
+  recordType: { width: 88, color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
   etape: { flexDirection: "row", gap: espace.s },
-  numero: { width: 18, color: couleurs.encreFaible, fontSize: taille.petit, paddingTop: 3 },
-});
+  numero: { width: 18, color: couleurs.encreAttenuee, fontSize: taille.petit, paddingTop: 3 },
+}));

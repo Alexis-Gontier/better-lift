@@ -1,14 +1,16 @@
 import { useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
+import { Pressable, Text, View } from "react-native";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 
 /**
  * L'en-tête d'un écran empilé : retour à gauche, titre sur toute la largeur,
  * et au besoin une action à droite.
  */
 export function EnteteRetour({ titre, action }: { titre: string; action?: ReactNode }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   return (
     <View style={styles.entete}>
@@ -28,7 +30,7 @@ export function EnteteRetour({ titre, action }: { titre: string; action?: ReactN
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -40,4 +42,4 @@ const styles = StyleSheet.create({
   },
   retour: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   titre: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
-});
+}));

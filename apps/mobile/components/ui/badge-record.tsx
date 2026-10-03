@@ -1,7 +1,7 @@
 import { formaterCharge } from "@better-lift/shared";
 import { ArrowUp } from "lucide-react-native";
-import { StyleSheet, Text, View } from "react-native";
-import { couleurs, taille } from "../../lib/theme";
+import { Text, View } from "react-native";
+import { creerStyles, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
 /**
@@ -9,9 +9,11 @@ import { SYSTEME_UNITES } from "../../lib/unites";
  * montante. L'aplat reste réservé à l'action.
  */
 export function BadgeRecord({ libelle }: { libelle: string }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   return (
     <View style={styles.badge}>
-      <ArrowUp size={12} strokeWidth={2.6} color={couleurs.accent} />
+      <ArrowUp size={12} strokeWidth={2.6} color={couleurs.recordEncre} />
       <Text style={styles.texte}>{libelle}</Text>
     </View>
   );
@@ -23,7 +25,7 @@ export function formaterSerie(chargeKg: number | null, reps: number | null): str
   return `${formaterCharge(chargeKg, SYSTEME_UNITES)} × ${reps ?? "—"}`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   badge: {
     flexDirection: "row",
     alignItems: "center",
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    backgroundColor: couleurs.accentLavis,
+    backgroundColor: couleurs.recordFond,
   },
-  texte: { color: couleurs.accent, fontSize: taille.petit, fontVariant: ["tabular-nums"] },
-});
+  texte: { color: couleurs.recordEncre, fontSize: taille.petit, fontVariant: ["tabular-nums"] },
+}));

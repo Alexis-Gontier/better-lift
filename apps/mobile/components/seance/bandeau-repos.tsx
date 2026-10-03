@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formaterDuree } from "../../lib/temps";
-import { couleurs, espace } from "../../lib/theme";
+import { creerStyles, espace } from "../../lib/theme";
 
 /**
  * Le repos restant, sur une ligne en bas de l'écran — là où le pouce et l'œil
@@ -17,6 +17,7 @@ export function BandeauRepos({
   /** −15 s / +15 s (D79). */
   onAjuster: (deltaSec: number) => void;
 }) {
+  const styles = useStyles();
   const fini = restant === 0;
   // Au-dessus de la barre de gestes du système, jamais dessous.
   const { bottom } = useSafeAreaInsets();
@@ -57,7 +58,7 @@ export function BandeauRepos({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   // Une seule ligne (D88), façon Hevy : le repos ne doit plus masquer la séance.
   bandeau: {
     position: "absolute",
@@ -73,16 +74,16 @@ const styles = StyleSheet.create({
     borderColor: couleurs.ligneForte,
     elevation: 12,
   },
-  fini: { borderColor: couleurs.accent },
+  fini: { borderColor: couleurs.encre },
   centre: { flex: 1, alignItems: "center" },
-  libelle: { color: couleurs.encrePale, fontSize: 11, textTransform: "uppercase" },
+  libelle: { color: couleurs.encreTertiaire, fontSize: 11, textTransform: "uppercase" },
   temps: {
     color: couleurs.encre,
     fontSize: 30,
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
-  tempsFini: { color: couleurs.accent },
+  tempsFini: { color: couleurs.encre },
   bouton: {
     width: 52,
     height: 44,
@@ -98,4 +99,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
   },
-});
+}));

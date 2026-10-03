@@ -1,11 +1,11 @@
 import { deplacerExercice, type ExerciceEnCours } from "@better-lift/shared";
 import { useRouter } from "expo-router";
 import { GripVertical } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSeance } from "../lib/seance";
-import { couleurs, espace, taille } from "../lib/theme";
+import { creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 
 /** Une clé stable par exercice, même quand le même mouvement revient deux fois. */
 function avecCles(exercices: ExerciceEnCours[]) {
@@ -23,6 +23,8 @@ function avecCles(exercices: ExerciceEnCours[]) {
  * Chaque dépôt s'écrit aussitôt dans le brouillon.
  */
 export default function Reorganiser() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const { seance, modifier } = useSeance();
   if (!seance) return <SafeAreaView style={styles.ecran} />;
@@ -66,7 +68,7 @@ export default function Reorganiser() {
                 style={styles.poignee}
                 accessibilityLabel={`Déplacer ${item.e.nom}`}
               >
-                <GripVertical size={20} color={couleurs.encrePale} />
+                <GripVertical size={20} color={couleurs.encreTertiaire} />
               </Pressable>
             </Pressable>
           </ScaleDecorator>
@@ -76,8 +78,8 @@ export default function Reorganiser() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -90,12 +92,12 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: espace.l,
     borderRadius: 8,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     justifyContent: "center",
   },
-  okTexte: { color: couleurs.surAccent, fontSize: 15, fontWeight: "700" },
+  okTexte: { color: couleurs.surAction, fontSize: 15, fontWeight: "700" },
   aide: {
-    color: couleurs.encrePale,
+    color: couleurs.encreTertiaire,
     fontSize: taille.petit,
     paddingHorizontal: espace.l,
     marginBottom: espace.s,
@@ -115,6 +117,6 @@ const styles = StyleSheet.create({
   },
   active: { backgroundColor: couleurs.surface3, borderColor: couleurs.ligneForte },
   nom: { flex: 1, color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  series: { color: couleurs.encrePale, fontSize: taille.petit },
+  series: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   poignee: { width: 44, height: 52, alignItems: "center", justifyContent: "center" },
-});
+}));

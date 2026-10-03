@@ -1,11 +1,38 @@
 import { LIBELLE_ZONE, zonesTravaillees } from "@better-lift/shared";
 import { useState } from "react";
-import { type LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
-import Body, { type ExtendedBodyPart } from "react-native-body-highlighter";
-import { couleurs, espace, taille } from "../../lib/theme";
+import { type LayoutChangeEvent, Text, View } from "react-native";
+import Body, { type ExtendedBodyPart, type Slug } from "react-native-body-highlighter";
+import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 
 // Le dessin de la bibliothèque mesure 200 × 400 à l'échelle 1.
 const LARGEUR_DESSIN = 200;
+
+// Toutes les parties du dessin. La bibliothèque peint chacune d'une couleur
+// codée en dur (#3f3f3f), qui l'emporte sur `defaultFill` : sans les repeindre
+// une à une, le corps resterait sombre sur le thème clair.
+const PARTIES: readonly Slug[] = [
+  "abs",
+  "adductors",
+  "ankles",
+  "biceps",
+  "calves",
+  "chest",
+  "deltoids",
+  "feet",
+  "forearm",
+  "gluteal",
+  "hamstring",
+  "hands",
+  "knees",
+  "lower-back",
+  "neck",
+  "obliques",
+  "quadriceps",
+  "tibialis",
+  "trapezius",
+  "triceps",
+  "upper-back",
+];
 
 type Props = {
   exercices: readonly { musclePrincipal: string; musclesSecondaires: readonly string[] }[];
@@ -17,6 +44,8 @@ type Props = {
  * en lime atténué, le reste du corps en surface.
  */
 export function CarteMuscles({ exercices }: Props) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const [largeur, setLargeur] = useState(0);
   const zones = zonesTravaillees(exercices);
   // `intensity` indexe `colors` : 1 → secondaire, 2 → principal.
@@ -25,7 +54,14 @@ export function CarteMuscles({ exercices }: Props) {
     // l'œil avant les muscles. On la rend au ton du corps.
     { slug: "head", styles: { fill: couleurs.ligneForte } },
     { slug: "hair", styles: { fill: couleurs.surface3 } },
-    ...zones.map((z) => ({ slug: z.zone, intensity: z.niveau === "principal" ? 2 : 1 })),
+    // Une partie travaillée prend sa couleur par `intensity` ; un `styles.fill`
+    // passerait devant, d'où les deux cas.
+    ...PARTIES.map((slug): ExtendedBodyPart => {
+      const z = zones.find((x) => x.zone === slug);
+      return z
+        ? { slug, intensity: z.niveau === "principal" ? 2 : 1 }
+        : { slug, styles: { fill: couleurs.surface3 } };
+    }),
   ];
   // Deux silhouettes côte à côte dans la largeur disponible, sans dépasser
   // l'échelle où la carte mangerait tout l'écran.
@@ -47,7 +83,7 @@ export function CarteMuscles({ exercices }: Props) {
                 side={side}
                 data={donnees}
                 scale={echelle}
-                colors={[couleurs.accentAttenue, couleurs.accent]}
+                colors={[couleurs.corpsSecondaire, couleurs.corps]}
                 defaultFill={couleurs.surface3}
                 border="none"
               />
@@ -61,7 +97,7 @@ export function CarteMuscles({ exercices }: Props) {
               <Text
                 style={[
                   styles.pastilleTexte,
-                  z.niveau === "secondaire" && { color: couleurs.encrePale },
+                  z.niveau === "secondaire" && { color: couleurs.encreTertiaire },
                 ]}
               >
                 {LIBELLE_ZONE[z.zone]}
@@ -76,7 +112,7 @@ export function CarteMuscles({ exercices }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   carte: {
     borderRadius: 12,
     borderWidth: 1,
@@ -85,7 +121,7 @@ const styles = StyleSheet.create({
     padding: espace.l,
     gap: espace.m,
   },
-  titre: { color: couleurs.encreDouce, fontSize: taille.petit + 1, fontWeight: "600" },
+  titre: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1, fontWeight: "600" },
   corps: { flexDirection: "row", justifyContent: "space-evenly" },
   pastilles: { flexDirection: "row", flexWrap: "wrap", gap: espace.s },
   pastille: {
@@ -95,5 +131,5 @@ const styles = StyleSheet.create({
     backgroundColor: couleurs.surface3,
   },
   pastilleTexte: { color: couleurs.encre, fontSize: taille.petit, fontWeight: "600" },
-  vide: { color: couleurs.encreFaible, fontSize: taille.petit },
-});
+  vide: { color: couleurs.encreAttenuee, fontSize: taille.petit },
+}));

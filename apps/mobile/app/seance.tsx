@@ -24,7 +24,7 @@ import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice } from "../components/seance/carte-exercice";
@@ -32,10 +32,11 @@ import { attendreChoix } from "../lib/choix-exercices";
 import { chargerPrecedents } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 
 function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.chiffre}>
       <Text style={styles.chiffreLibelle}>{libelle}</Text>
@@ -45,6 +46,8 @@ function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
 }
 
 export default function Seance() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const client = useQueryClient();
   const { pret, seance, modifier, abandonner: effacerSeance, recharger } = useSeance();
@@ -201,10 +204,10 @@ export default function Seance() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   centre: { alignItems: "center", justifyContent: "center", gap: espace.l },
-  pale: { color: couleurs.encrePale, fontSize: taille.courant },
+  pale: { color: couleurs.encreTertiaire, fontSize: taille.courant },
   entete: {
     paddingHorizontal: espace.l,
     paddingTop: espace.s,
@@ -220,13 +223,13 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: espace.l,
     borderRadius: 8,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     justifyContent: "center",
   },
-  terminerTexte: { color: couleurs.surAccent, fontSize: 15, fontWeight: "700" },
+  terminerTexte: { color: couleurs.surAction, fontSize: 15, fontWeight: "700" },
   chiffres: { flexDirection: "row", gap: espace.xl },
   chiffre: { gap: 1 },
-  chiffreLibelle: { color: couleurs.encreFaible, fontSize: 12 },
+  chiffreLibelle: { color: couleurs.encreAttenuee, fontSize: 12 },
   chiffreValeur: {
     color: couleurs.encre,
     fontSize: taille.courant,
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   vide: {
-    color: couleurs.encrePale,
+    color: couleurs.encreTertiaire,
     fontSize: taille.courant,
     textAlign: "center",
     paddingVertical: espace.xl,
@@ -259,7 +262,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: espace.l,
   },
-  secondaireTexte: { color: couleurs.encreDouce, fontSize: taille.courant },
+  secondaireTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   abandon: { height: 44, alignItems: "center", justifyContent: "center" },
   abandonTexte: { color: couleurs.dangerEncre, fontSize: 15 },
-});
+}));

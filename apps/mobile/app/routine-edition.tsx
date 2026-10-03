@@ -16,7 +16,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -32,7 +31,7 @@ import {
   useRemplacerRoutine,
   useSupprimerRoutine,
 } from "../lib/requetes";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 
 /**
@@ -46,6 +45,7 @@ export default function RoutineEdition() {
 }
 
 function EditeurExistant({ id }: { id: string }) {
+  const styles = useStyles();
   const routine = useQuery(optionsRoutine(id));
   if (routine.isPending) {
     return (
@@ -68,6 +68,8 @@ function EditeurExistant({ id }: { id: string }) {
 }
 
 function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail | null }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const navigation = useNavigation();
   const creer = useCreerRoutine();
@@ -179,7 +181,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
             accessibilityRole="button"
             accessibilityLabel="Options de la routine"
           >
-            <Ellipsis size={22} color={couleurs.encreDouce} />
+            <Ellipsis size={22} color={couleurs.encreSecondaire} />
           </Pressable>
         ) : null}
         <Pressable
@@ -189,7 +191,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
           accessibilityRole="button"
         >
           {enCours ? (
-            <ActivityIndicator color={couleurs.surAccent} />
+            <ActivityIndicator color={couleurs.surAction} />
           ) : (
             <Text style={styles.enregistrerTexte}>Enregistrer</Text>
           )}
@@ -210,7 +212,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
                 value={brouillon.nom}
                 onChangeText={(nom) => setBrouillon((b) => ({ ...b, nom }))}
                 placeholder="Nom de la routine"
-                placeholderTextColor={couleurs.encreFaible}
+                placeholderTextColor={couleurs.encreAttenuee}
                 style={styles.nom}
                 accessibilityLabel="Nom de la routine"
                 maxLength={120}
@@ -260,8 +262,8 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -272,7 +274,7 @@ const styles = StyleSheet.create({
     borderBottomColor: couleurs.ligne,
   },
   texteBouton: { minHeight: CIBLE, justifyContent: "center", paddingHorizontal: espace.s },
-  annuler: { color: couleurs.encreDouce, fontSize: taille.courant },
+  annuler: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   titre: {
     flex: 1,
     color: couleurs.encre,
@@ -287,11 +289,11 @@ const styles = StyleSheet.create({
     minWidth: 112,
     paddingHorizontal: espace.m,
     borderRadius: 10,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
-  enregistrerTexte: { color: couleurs.surAccent, fontSize: taille.courant, fontWeight: "700" },
+  enregistrerTexte: { color: couleurs.surAction, fontSize: taille.courant, fontWeight: "700" },
   inactif: { opacity: 0.4 },
   contenu: { padding: espace.l, paddingBottom: espace.xl * 2 },
   enTete: { gap: espace.s, marginBottom: espace.m },
@@ -307,7 +309,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: espace.m,
   },
   erreur: { color: couleurs.dangerEncre, fontSize: taille.petit + 1 },
-  aide: { color: couleurs.encreFaible, fontSize: taille.petit },
+  aide: { color: couleurs.encreAttenuee, fontSize: taille.petit },
   ajouter: {
     minHeight: CIBLE + 8,
     flexDirection: "row",
@@ -320,4 +322,4 @@ const styles = StyleSheet.create({
     borderColor: couleurs.ligneForte,
   },
   ajouterTexte: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-});
+}));
