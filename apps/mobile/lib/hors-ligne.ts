@@ -31,7 +31,10 @@ export const persister = createAsyncStoragePersister({
  * ligne AsyncStorage Android plafonne vers 2 Mo.
  */
 export function gardeHorsLigne(query: Query): boolean {
-  if (query.state.status !== "success") return false;
+  // Sur la DONNÉE, pas sur le statut : un rafraîchissement raté hors ligne
+  // passe la requête en erreur en gardant sa donnée, et un filtre sur
+  // `success` l'effacerait alors du disque à la première écriture.
+  if (query.state.data === undefined) return false;
   const [domaine, sorte] = query.queryKey as unknown[];
   return (
     domaine === "routines" ||
@@ -49,6 +52,10 @@ export function gardeHorsLigne(query: Query): boolean {
  */
 export function brancherReseauEtPremierPlan(): void {
   onlineManager.setEventListener((setOnline) => {
+    // L'état de DÉPART aussi : l'écouteur ne parle qu'au premier changement, et
+    // d'ici là TanStack Query se croirait en ligne — il tenterait le réseau et
+    // passerait des lectures en cache à l'état d'erreur.
+    void Network.getNetworkStateAsync().then((etat) => setOnline(Boolean(etat.isConnected)));
     const abonnement = Network.addNetworkStateListener((etat) => {
       setOnline(Boolean(etat.isConnected));
     });

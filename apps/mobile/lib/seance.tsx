@@ -76,8 +76,22 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   const verrou = useRef(false);
   const client = useQueryClient();
 
+  // Chaque changement d'état numérote une écriture. Une relecture du disque
+  // partie AVANT un changement ne doit pas l'écraser en arrivant après : au
+  // retour de la modale du catalogue, l'ajout d'exercices (instantané hors
+  // ligne) précédait la relecture lancée par le retour à l'écran, qui
+  // réaffichait l'ancienne séance — et la modification suivante l'aurait
+  // réécrite sur le disque, ajout perdu.
+  const ecritures = useRef(0);
+  const poser = useCallback((s: SeanceEnCours | null) => {
+    ecritures.current += 1;
+    setSeance(s);
+  }, []);
+
   const recharger = useCallback(async () => {
-    setSeance(await brouillon.lire());
+    const avant = ecritures.current;
+    const lue = await brouillon.lire();
+    if (ecritures.current === avant) setSeance(lue);
   }, []);
 
   const synchroniser = useCallback(async () => {
@@ -109,7 +123,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   // Au démarrage : relire le disque, puis retenter ce qui attend.
   useEffect(() => {
     (async () => {
-      setSeance(await brouillon.lire());
+      await recharger();
       setFile(await fileEnvoi.lire());
       setPret(true);
       void synchroniser();
@@ -134,7 +148,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   }, [synchroniser]);
 
   const modifier = useCallback((s: SeanceEnCours) => {
-    setSeance(s);
+    poser(s);
     void brouillon.ecrire(s);
   }, []);
 
@@ -143,17 +157,17 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     // d'écran qui pourrait avoir vieilli.
     const existant = await brouillon.lire();
     if (existant) {
-      setSeance(existant);
+      poser(existant);
       return false;
     }
     await brouillon.ecrire(s);
-    setSeance(s);
+    poser(s);
     return true;
   }, []);
 
   const abandonner = useCallback(async () => {
     await brouillon.effacer();
-    setSeance(null);
+    poser(null);
   }, []);
 
   const terminer = useCallback(async () => {
@@ -166,7 +180,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     await fileEnvoi.ecrire(f);
     await brouillon.effacer();
     setFile(f);
-    setSeance(null);
+    poser(null);
     void synchroniser();
   }, [synchroniser]);
 
@@ -178,7 +192,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     await brouillon.ecrire(e.seance);
     const reste = f.filter((x) => x.seance.id !== id);
     await fileEnvoi.ecrire(reste);
-    setSeance(e.seance);
+    poser(e.seance);
     setFile(reste);
     return true;
   }, []);

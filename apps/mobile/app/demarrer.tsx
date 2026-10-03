@@ -40,9 +40,15 @@ export default function Demarrer() {
         </Pressable>
 
         <Text style={styles.section}>Depuis une routine</Text>
-        {routines.isPending ? (
+        {/* Hors ligne et sans cache, la requête se met en pause : sans ce cas,
+            l'indicateur tournerait pour toujours. */}
+        {routines.isPending && routines.fetchStatus === "paused" ? (
+          <Text style={styles.pale}>
+            Hors ligne : les routines apparaîtront au retour du réseau.
+          </Text>
+        ) : routines.isPending ? (
           <ActivityIndicator color={couleurs.encrePale} style={{ marginVertical: espace.xl }} />
-        ) : routines.isError ? (
+        ) : routines.isError && !routines.data ? (
           <Pressable onPress={() => routines.refetch()} style={styles.routine}>
             <Text style={styles.pale}>Les routines n'ont pas pu être chargées. Réessayer</Text>
           </Pressable>

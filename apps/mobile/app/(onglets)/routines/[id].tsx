@@ -34,7 +34,7 @@ export default function DetailRoutine() {
   const { routine: demarrer, ouverture } = useDemarrer();
   const modifier = () => router.push({ pathname: "/routine-edition", params: { id } });
 
-  if (routine.isPending || routine.isError) {
+  if (routine.isPending || (routine.isError && !routine.data)) {
     return (
       <SafeAreaView style={styles.ecran} edges={["top"]}>
         <EnteteRetour titre="" />

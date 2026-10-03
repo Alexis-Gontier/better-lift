@@ -1,14 +1,14 @@
-import { LIBELLE_GROUPE } from "@better-lift/shared";
+import { filtrerCatalogue, LIBELLE_GROUPE } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, Dumbbell, X } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Chargement, Erreur, Vide } from "../components/ui/etats";
 import { type ExerciceChoisi, rendreChoix } from "../lib/choix-exercices";
-import { optionsCatalogue } from "../lib/requetes";
+import { optionsCatalogueComplet } from "../lib/requetes";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
 
 /**
@@ -22,7 +22,13 @@ export default function ChoisirExercices() {
   const unique = mode === "remplacer";
   const [filtre, setFiltre] = useState("");
   const [choix, setChoix] = useState<ExerciceChoisi[]>([]);
-  const catalogue = useQuery(optionsCatalogue(filtre.trim()));
+  // Le catalogue entier, filtré ici (D97) : la recherche marche hors ligne et
+  // répond à chaque lettre sans aller-retour.
+  const catalogue = useQuery(optionsCatalogueComplet());
+  const resultats = useMemo(
+    () => (catalogue.data ? filtrerCatalogue(catalogue.data, filtre) : []),
+    [catalogue.data, filtre],
+  );
 
   const basculer = (e: ExerciceChoisi) => {
     if (unique) {
@@ -66,18 +72,24 @@ export default function ChoisirExercices() {
         returnKeyType="search"
       />
 
-      {catalogue.isPending ? (
+      {/* Jamais chargé et hors ligne : la requête attend le réseau (D97). */}
+      {catalogue.isPending && catalogue.fetchStatus === "paused" ? (
+        <Vide
+          titre="Hors ligne"
+          message="Le catalogue se charge à la première connexion, puis reste sur le téléphone."
+        />
+      ) : catalogue.isPending ? (
         <Chargement />
-      ) : catalogue.isError ? (
+      ) : catalogue.isError && !catalogue.data ? (
         <Erreur
-          message="Le catalogue n'a pas pu être chargé."
+          message="Le catalogue n'a pas pu être chargé. Il faut du réseau la première fois."
           onReessayer={() => catalogue.refetch()}
         />
-      ) : catalogue.data.length === 0 ? (
+      ) : resultats.length === 0 ? (
         <Vide titre="Aucun exercice trouvé" message={`Rien ne correspond à « ${filtre} ».`} />
       ) : (
         <FlatList
-          data={catalogue.data}
+          data={resultats}
           keyExtractor={(x) => x.slug}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.liste}

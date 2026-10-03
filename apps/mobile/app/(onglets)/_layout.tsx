@@ -16,6 +16,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
@@ -49,73 +50,80 @@ export default function Onglets() {
   const Centrale = seance ? Play : Dumbbell;
 
   return (
-    <Tabs
-      // Le retour suit le chemin parcouru : la fiche d'un exercice ouverte depuis
-      // le détail d'une séance y ramène, et non à l'Accueil (D95).
-      backBehavior="history"
-      screenOptions={{
-        headerShown: false,
-        sceneStyle: { backgroundColor: couleurs.canvas },
-        // L'onglet actif prend la couleur de l'application (choix de
-        // l'utilisateur, D76 révisée) ; les autres restent en encre faible.
-        tabBarActiveTintColor: couleurs.accent,
-        tabBarInactiveTintColor: couleurs.encreFaible,
-        // Toute la largeur du bas, jusque sous la zone de geste : une marche
-        // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
-        // Router y ajoute la marge de la zone de geste d'Android, qu'une hauteur
-        // imposée recouvrirait.
-        tabBarStyle: {
-          backgroundColor: couleurs.surface1,
-          borderTopWidth: 1,
-          borderTopColor: couleurs.ligne,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
-        // Aucun retour visuel à l'appui (ni ondulation Android, ni opacité) :
-        // l'onglet actif se signale déjà par sa couleur.
-        tabBarButton: ({ ref: _ref, ...props }) => (
-          <Pressable {...(props as PressableProps)} android_ripple={null} />
-        ),
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: icone(House) }} />
-      <Tabs.Screen name="routines" options={{ title: "Routines", tabBarIcon: icone(ListChecks) }} />
-      {/* Au centre, l'action du moment : un aplat lime (D28), plus grand que les
-          onglets et qui déborde au-dessus de la barre. */}
-      <Tabs.Screen
-        name="lancer"
-        options={{
-          tabBarButton: () => (
-            <Pressable
-              onPress={lancer}
-              style={styles.place}
-              accessibilityRole="button"
-              accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
-            >
-              {() => (
-                <>
-                  <View style={styles.central}>
-                    {/* L'haltère de Lucide est dessinée en diagonale : redressée de
-                        45° pour se lire à l'horizontale, comme une barre posée. */}
-                    <View style={seance ? undefined : styles.redresse}>
-                      <Centrale color={couleurs.surAccent} size={26} strokeWidth={2.4} />
-                    </View>
-                  </View>
-                  <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
-                </>
-              )}
-            </Pressable>
+    <>
+      {/* Hors ligne (D96) : remplir le cache tant qu'il y a du réseau. */}
+      <PreparerHorsLigne />
+      <Tabs
+        // Le retour suit le chemin parcouru : la fiche d'un exercice ouverte depuis
+        // le détail d'une séance y ramène, et non à l'Accueil (D95).
+        backBehavior="history"
+        screenOptions={{
+          headerShown: false,
+          sceneStyle: { backgroundColor: couleurs.canvas },
+          // L'onglet actif prend la couleur de l'application (choix de
+          // l'utilisateur, D76 révisée) ; les autres restent en encre faible.
+          tabBarActiveTintColor: couleurs.accent,
+          tabBarInactiveTintColor: couleurs.encreFaible,
+          // Toute la largeur du bas, jusque sous la zone de geste : une marche
+          // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
+          // Router y ajoute la marge de la zone de geste d'Android, qu'une hauteur
+          // imposée recouvrirait.
+          tabBarStyle: {
+            backgroundColor: couleurs.surface1,
+            borderTopWidth: 1,
+            borderTopColor: couleurs.ligne,
+            paddingTop: 8,
+          },
+          tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
+          // Aucun retour visuel à l'appui (ni ondulation Android, ni opacité) :
+          // l'onglet actif se signale déjà par sa couleur.
+          tabBarButton: ({ ref: _ref, ...props }) => (
+            <Pressable {...(props as PressableProps)} android_ripple={null} />
           ),
         }}
-      />
-      <Tabs.Screen name="stats" options={{ title: "Stats", tabBarIcon: icone(ChartColumn) }} />
-      <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
-      {/* L'historique quitte la barre ; ses écrans restent, joignables par lien,
+      >
+        <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: icone(House) }} />
+        <Tabs.Screen
+          name="routines"
+          options={{ title: "Routines", tabBarIcon: icone(ListChecks) }}
+        />
+        {/* Au centre, l'action du moment : un aplat lime (D28), plus grand que les
+          onglets et qui déborde au-dessus de la barre. */}
+        <Tabs.Screen
+          name="lancer"
+          options={{
+            tabBarButton: () => (
+              <Pressable
+                onPress={lancer}
+                style={styles.place}
+                accessibilityRole="button"
+                accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
+              >
+                {() => (
+                  <>
+                    <View style={styles.central}>
+                      {/* L'haltère de Lucide est dessinée en diagonale : redressée de
+                        45° pour se lire à l'horizontale, comme une barre posée. */}
+                      <View style={seance ? undefined : styles.redresse}>
+                        <Centrale color={couleurs.surAccent} size={26} strokeWidth={2.4} />
+                      </View>
+                    </View>
+                    <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
+                  </>
+                )}
+              </Pressable>
+            ),
+          }}
+        />
+        <Tabs.Screen name="stats" options={{ title: "Stats", tabBarIcon: icone(ChartColumn) }} />
+        <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
+        {/* L'historique quitte la barre ; ses écrans restent, joignables par lien,
           le temps de décider où il vivra. */}
-      <Tabs.Screen name="historique" options={{ href: null }} />
-      {/* Les exercices cèdent leur place aux Stats ; leurs écrans restent. */}
-      <Tabs.Screen name="exercices" options={{ href: null }} />
-    </Tabs>
+        <Tabs.Screen name="historique" options={{ href: null }} />
+        {/* Les exercices cèdent leur place aux Stats ; leurs écrans restent. */}
+        <Tabs.Screen name="exercices" options={{ href: null }} />
+      </Tabs>
+    </>
   );
 }
 
