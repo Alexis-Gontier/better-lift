@@ -98,6 +98,14 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   rares dans une feuille basse (`components/ui/feuille.tsx`), réorganisation `app/reorganiser.tsx`,
   ajout et remplacement par `choisir-exercices` (`?mode=remplacer`). Échelle compacte : cases de
   36 px, cible tenue par `hitSlop`. Supersets : lot B, l'entrée du menu est inerte.
+- **Direction « Carnet » (D108)** : en-tête compact (chevron qui replie vers les onglets, nom,
+  « Démarrée à », chrono en `polices.condense`, volume, séries), « Terminer » en **secondaire**
+  (D105). Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
+  en trois états (`EtatSerie`) : faite (teintée, ✓ neutre) · **prochaine** (seule ✓ lime de
+  l'écran, `prochaineSerie` de `shared`) · à venir (cibles en valeurs fantômes, ✓ en contour).
+  Cases de 40, ligne de 52.
+- **Vibrations** : toujours par `lib/vibrations.ts` (`vibrer.valider`, `selection`, `finRepos`),
+  jamais `expo-haptics` en direct — le réglage du Profil s'y branchera (D113).
 - Un rappel de modale qui attend (les précédents) applique son choix à la séance **du moment**
   (`useRef`), pas à celle capturée à l'ouverture.
 - **Une relecture du brouillon n'écrase jamais un changement survenu pendant qu'elle lisait**

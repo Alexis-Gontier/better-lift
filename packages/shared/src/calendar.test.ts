@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatJour, memeJour } from "./calendar.js";
+import { formatHeure, formatJour, memeJour } from "./calendar.js";
 
 describe("arithmétique civile", () => {
   it("rend le jour du fuseau demandé, pas celui d'UTC", () => {
@@ -27,5 +27,14 @@ describe("arithmétique civile", () => {
     const samedi = "2026-09-20T23:30:00+02:00";
     const dimanche = "2026-09-21T00:30:00+02:00";
     expect(memeJour(samedi, dimanche, "Europe/Paris")).toBe(false);
+  });
+});
+
+describe("formatHeure", () => {
+  it("rend l'heure du fuseau demandé, sur 24 heures", () => {
+    // 16 h 12 UTC le 3 octobre : 18 h 12 à Paris (heure d'été).
+    expect(formatHeure("2026-10-03T16:12:00.000Z", "Europe/Paris")).toBe("18:12");
+    // 7 h 05 UTC en hiver : 8 h 05 à Paris, avec le zéro.
+    expect(formatHeure("2026-12-01T07:05:00.000Z", "Europe/Paris")).toBe("08:05");
   });
 });

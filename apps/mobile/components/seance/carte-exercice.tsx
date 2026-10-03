@@ -15,6 +15,7 @@ import {
   Dumbbell,
   Ellipsis,
   Link2,
+  Pencil,
   Plus,
   Repeat,
   Timer,
@@ -24,10 +25,10 @@ import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
-import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { UNITE } from "../../lib/unites";
 import { Feuille, type OptionFeuille } from "../ui/feuille";
-import { COLONNES, LigneSerie } from "./ligne-serie";
+import { COLONNES, type EtatSerie, LigneSerie } from "./ligne-serie";
 
 /**
  * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
@@ -38,14 +39,19 @@ function etiquettes(series: SerieEnCours[]): string[] {
   return series.map((s) => (s.type === "NORMALE" ? String(++n) : ABREGE_TYPE_SERIE[s.type]));
 }
 
+const etatDe = (faite: boolean, prochaine: boolean): EtatSerie =>
+  faite ? "faite" : prochaine ? "prochaine" : "a-venir";
+
 type Feuilles = { quoi: "menu" } | { quoi: "repos" } | { quoi: "serie"; iS: number } | null;
 
 /**
- * Un exercice de la séance, à la Hevy (D86) : un bloc pleine largeur — en-tête,
- * note, repos, tableau des séries — et les actions rares dans le menu ⋯.
+ * Un exercice de la séance, direction « Carnet » (D108) : un bloc pleine
+ * largeur — en-tête, deux puces (repos, note), tableau des séries — et les
+ * actions rares dans le menu ⋯.
  */
 export function CarteExercice({
   exercice,
+  prochaine,
   onModifierSerie,
   onValiderSerie,
   onAjouterSerie,
@@ -57,6 +63,8 @@ export function CarteExercice({
   onRetirer,
 }: {
   exercice: ExerciceEnCours;
+  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D105). */
+  prochaine: number | null;
   onModifierSerie: (
     iS: number,
     patch: { reps?: number | null; chargeKg?: number | null; type?: TypeSerie },
@@ -78,6 +86,7 @@ export function CarteExercice({
   const gif = fiche.data?.gif ?? null;
   const [grand, setGrand] = useState(false);
   const [note, setNote] = useState(exercice.note ?? "");
+  const [editionNote, setEditionNote] = useState(false);
   const [feuille, setFeuille] = useState<Feuilles>(null);
   const libelles = etiquettes(exercice.series);
 
@@ -169,36 +178,57 @@ export function CarteExercice({
         </Pressable>
       ) : null}
 
+      {/* Le repos et la note en deux puces (D108) : 44 dp gagnés par exercice.
+          La note saisie remplace le mot « Note ». */}
+      <View style={styles.puces}>
+        <Pressable
+          onPress={() => setFeuille({ quoi: "repos" })}
+          hitSlop={4}
+          style={styles.puce}
+          accessibilityRole="button"
+          accessibilityLabel={`Repos : ${libelleRepos(exercice.reposSec)}`}
+        >
+          <Timer
+            size={14}
+            color={exercice.reposSec ? couleurs.encreSecondaire : couleurs.encreAttenuee}
+          />
+          <Text style={[styles.puceTexte, !exercice.reposSec && styles.puceEteinte]}>
+            {exercice.reposSec ? libelleRepos(exercice.reposSec) : "Sans repos"}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setEditionNote(true)}
+          hitSlop={4}
+          style={[styles.puce, styles.puceNote]}
+          accessibilityRole="button"
+          accessibilityLabel={note ? `Note : ${note}` : "Ajouter une note"}
+        >
+          <Pencil size={14} color={couleurs.encreSecondaire} />
+          <Text style={[styles.puceTexte, !note && styles.puceEteinte]} numberOfLines={1}>
+            {note || "Note"}
+          </Text>
+        </Pressable>
+      </View>
+
       {/* D90 : la note s'écrit à chaque frappe. Pas à la sortie du champ : un
           appui sur ✓ garde le clavier ouvert, et la note ne sortirait jamais. */}
-      <TextInput
-        value={note}
-        onChangeText={(t) => {
-          setNote(t);
-          onNote(t);
-        }}
-        placeholder="Ajouter une note…"
-        placeholderTextColor={couleurs.encreAttenuee}
-        multiline
-        maxLength={500}
-        style={styles.note}
-        accessibilityLabel={`Note pour ${exercice.nom}`}
-      />
-
-      <Pressable
-        onPress={() => setFeuille({ quoi: "repos" })}
-        style={styles.repos}
-        hitSlop={4}
-        accessibilityRole="button"
-      >
-        <Timer
-          size={16}
-          color={exercice.reposSec ? couleurs.encreSecondaire : couleurs.encreAttenuee}
+      {editionNote ? (
+        <TextInput
+          value={note}
+          onChangeText={(t) => {
+            setNote(t);
+            onNote(t);
+          }}
+          onBlur={() => setEditionNote(false)}
+          autoFocus
+          placeholder="Siège cran 4, prise serrée…"
+          placeholderTextColor={couleurs.encreAttenuee}
+          multiline
+          maxLength={500}
+          style={styles.note}
+          accessibilityLabel={`Note pour ${exercice.nom}`}
         />
-        <Text style={[styles.reposTexte, !exercice.reposSec && styles.reposEteint]}>
-          Repos : {libelleRepos(exercice.reposSec)}
-        </Text>
-      </Pressable>
+      ) : null}
 
       <View style={styles.colonnes}>
         <Text style={[styles.colonne, { width: COLONNES.serie }]}>Série</Text>
@@ -219,6 +249,7 @@ export function CarteExercice({
           etiquette={libelles[i] ?? String(i + 1)}
           couleurEtiquette={s.type === "NORMALE" ? couleurs.encre : couleurs.encreTertiaire}
           serie={s}
+          etat={etatDe(s.faite, i === prochaine)}
           precedent={exercice.precedent?.[i]}
           onChange={(patch) => onModifierSerie(i, patch)}
           onValider={() => onValiderSerie(i)}
@@ -226,9 +257,15 @@ export function CarteExercice({
         />
       ))}
 
-      <Pressable onPress={onAjouterSerie} style={styles.ajouter} accessibilityRole="button">
+      <Pressable
+        onPress={onAjouterSerie}
+        style={styles.ajouter}
+        hitSlop={4}
+        accessibilityRole="button"
+        accessibilityLabel="Ajouter une série"
+      >
         <Plus size={16} color={couleurs.encreSecondaire} strokeWidth={2.4} />
-        <Text style={styles.ajouterTexte}>Ajouter une série</Text>
+        <Text style={styles.ajouterTexte}>Série</Text>
       </Pressable>
 
       <Feuille
@@ -264,15 +301,28 @@ const useStyles = creerStyles((couleurs) => ({
   media: { alignItems: "center", gap: espace.xs },
   gif: { width: 220, height: 220, borderRadius: 12, backgroundColor: "#ffffff" },
   attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
-  note: {
-    color: couleurs.encreSecondaire,
-    fontSize: 14,
-    padding: 0,
-    paddingVertical: 2,
+  puces: { flexDirection: "row", gap: espace.s, flexWrap: "wrap" },
+  puce: {
+    minHeight: 32,
+    paddingHorizontal: espace.m,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 999,
+    backgroundColor: couleurs.surface2,
   },
-  repos: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start" },
-  reposTexte: { color: couleurs.encreSecondaire, fontSize: 14, fontWeight: "600" },
-  reposEteint: { color: couleurs.encreAttenuee, fontWeight: "400" },
+  puceNote: { flexShrink: 1, maxWidth: "70%" },
+  puceTexte: { color: couleurs.encreSecondaire, fontSize: 14, fontWeight: "600" },
+  puceEteinte: { color: couleurs.encreAttenuee, fontWeight: "500" },
+  note: {
+    color: couleurs.encre,
+    fontSize: 15,
+    minHeight: CIBLE,
+    paddingHorizontal: espace.m,
+    paddingVertical: espace.s,
+    borderRadius: rayon.cellule,
+    backgroundColor: couleurs.surface2,
+  },
   colonnes: {
     flexDirection: "row",
     alignItems: "center",
@@ -289,15 +339,14 @@ const useStyles = creerStyles((couleurs) => ({
     textAlign: "center",
   },
   gauche: { textAlign: "left" },
+  // Bouton tertiaire : du texte, une cible pleine.
   ajouter: {
-    height: 36,
-    marginTop: espace.xs,
-    borderRadius: 8,
-    backgroundColor: couleurs.surface2,
+    minHeight: 40,
+    alignSelf: "flex-start",
+    paddingHorizontal: espace.s,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     gap: 6,
   },
-  ajouterTexte: { color: couleurs.encreSecondaire, fontSize: 14, fontWeight: "600" },
+  ajouterTexte: { color: couleurs.encreSecondaire, fontSize: 15, fontWeight: "600" },
 }));

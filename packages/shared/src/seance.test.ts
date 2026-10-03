@@ -14,6 +14,7 @@ import {
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  prochaineSerie,
   remplacerExercice,
   reposRestant,
   retirerExercice,
@@ -358,5 +359,31 @@ describe("la carte d'exercice (D89–D92)", () => {
     expect(() => seanceSaisie.parse(longue)).toThrow();
     const sansNote = { ...e, exercices: e.exercices.map(({ note: _, ...x }) => x) };
     expect(() => seanceSaisie.parse(sansNote)).not.toThrow();
+  });
+});
+
+describe("prochaineSerie (D105)", () => {
+  // La seule ✓ en aplat lime de l'écran : la première série pas encore faite,
+  // dans l'ordre des exercices puis des séries.
+  it("désigne la première série non faite, dans l'ordre", () => {
+    let s = demarrerDepuisRoutine(routine, "s1", T0);
+    expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 0 });
+    s = validerSerie(s, 0, 0, T0);
+    expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 1 });
+    s = validerSerie(s, 0, 1, T0);
+    expect(prochaineSerie(s)).toEqual({ iE: 1, iS: 0 });
+  });
+
+  it("revient sur une série sautée plutôt que d'avancer", () => {
+    let s = demarrerDepuisRoutine(routine, "s1", T0);
+    s = validerSerie(s, 0, 1, T0);
+    expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 0 });
+  });
+
+  it("ne désigne rien quand tout est fait, ou qu'il n'y a pas de série", () => {
+    let s = demarrerDepuisRoutine(routine, "s1", T0);
+    s = validerSerie(validerSerie(validerSerie(s, 0, 0, T0), 0, 1, T0), 1, 0, T0);
+    expect(prochaineSerie(s)).toBeNull();
+    expect(prochaineSerie(demarrerVide("s2", T0))).toBeNull();
   });
 });

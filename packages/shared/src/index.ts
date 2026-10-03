@@ -12,7 +12,7 @@ export {
   versBrouillon,
   versSaisie,
 } from "./brouillon-routine.js";
-export { cleJour, formatJour, memeJour } from "./calendar.js";
+export { cleJour, formatHeure, formatJour, memeJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 export {
   ATTRIBUTION_MEDIAS,
@@ -90,6 +90,7 @@ export {
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  prochaineSerie,
   remplacerExercice,
   reposRestant,
   retirerExercice,

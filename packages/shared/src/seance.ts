@@ -249,6 +249,19 @@ export function reposRestant(s: SeanceEnCours, maintenant: Date): number | null 
 }
 
 /**
+ * La prochaine série à faire (D105) : la première pas encore faite, dans
+ * l'ordre des exercices puis des séries. C'est la seule ✓ de l'écran en aplat
+ * lime ; une série sautée reste la prochaine tant qu'elle n'est pas faite.
+ */
+export function prochaineSerie(s: SeanceEnCours): { iE: number; iS: number } | null {
+  for (let iE = 0; iE < s.exercices.length; iE++) {
+    const iS = s.exercices[iE]?.series.findIndex((x) => !x.faite) ?? -1;
+    if (iS !== -1) return { iE, iS };
+  }
+  return null;
+}
+
+/**
  * Le bilan d'une séance : séries faites et volume. Dérivé, jamais stocké (D58).
  * D5 : l'échauffement et les séries sans charge (poids du corps) ne comptent
  * pas dans le volume.

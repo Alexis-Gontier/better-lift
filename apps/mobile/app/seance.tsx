@@ -6,10 +6,12 @@ import {
   avecPrecedents,
   bilanSeance,
   formaterCharge,
+  formatHeure,
   marquerReposSignale,
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  prochaineSerie,
   remplacerExercice,
   reposRestant,
   retirerExercice,
@@ -19,21 +21,22 @@ import {
   validerSerie,
 } from "@better-lift/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import * as Haptics from "expo-haptics";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Plus } from "lucide-react-native";
+import { ChevronDown, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice } from "../components/seance/carte-exercice";
 import { attendreChoix } from "../lib/choix-exercices";
+import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
+import { vibrer } from "../lib/vibrations";
 
 function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   const styles = useStyles();
@@ -75,7 +78,7 @@ export default function Seance() {
   // un redémarrage ne refait pas vibrer un repos déjà annoncé.
   useEffect(() => {
     if (seance?.repos && !seance.repos.signale && repos === 0) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrer.finRepos();
       modifier(marquerReposSignale(seance));
     }
   }, [repos, seance, modifier]);
@@ -133,27 +136,43 @@ export default function Seance() {
   };
 
   const bilan = bilanSeance(seance);
+  const prochaine = prochaineSerie(seance);
+  // Replier la séance (D108) : retour aux onglets, où le bandeau la garde à un
+  // geste (D107). Ouverte sans historique (reprise de l'app), on y va directement.
+  const replier = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   return (
     <SafeAreaView style={styles.ecran}>
       <View style={styles.entete}>
         <View style={styles.titreLigne}>
-          <Text style={styles.nom} numberOfLines={1}>
-            {seance.nom}
-          </Text>
+          <Pressable
+            onPress={replier}
+            hitSlop={8}
+            style={styles.replier}
+            accessibilityRole="button"
+            accessibilityLabel="Replier la séance"
+          >
+            <ChevronDown size={24} color={couleurs.encreSecondaire} />
+          </Pressable>
+          <View style={styles.titre}>
+            <Text style={styles.nom} numberOfLines={1}>
+              {seance.nom}
+            </Text>
+            <Text style={styles.sous}>Démarrée à {formatHeure(seance.debut, FUSEAU)}</Text>
+          </View>
+          {/* Secondaire (D105) : l'aplat de l'écran est la ✓ de la prochaine série. */}
           <Pressable
             onPress={() => router.push("/fin")}
-            style={styles.terminer}
+            style={({ pressed }) => [styles.terminer, pressed && styles.appuye]}
             accessibilityRole="button"
           >
             <Text style={styles.terminerTexte}>Terminer</Text>
           </Pressable>
         </View>
         <View style={styles.chiffres}>
-          <Chiffre
-            libelle="Durée"
-            valeur={formaterDuree(secondesEcoulees(seance.debut, maintenant))}
-          />
+          <Text style={styles.chrono} accessibilityLabel="Durée">
+            {formaterDuree(secondesEcoulees(seance.debut, maintenant))}
+          </Text>
           <Chiffre libelle="Volume" valeur={formaterCharge(bilan.volumeKg, SYSTEME_UNITES)} />
           <Chiffre libelle="Séries" valeur={String(bilan.seriesFaites)} />
         </View>
@@ -171,6 +190,7 @@ export default function Seance() {
           <CarteExercice
             key={`${e.slug}-${iE}`}
             exercice={e}
+            prochaine={prochaine?.iE === iE ? prochaine.iS : null}
             onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
             onValiderSerie={(iS) => modifier(validerSerie(seance, iE, iS, new Date()))}
             onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
@@ -197,7 +217,10 @@ export default function Seance() {
         <BandeauRepos
           restant={repos}
           onPasser={() => modifier(arreterRepos(seance))}
-          onAjuster={(delta) => modifier(ajusterRepos(seance, delta, new Date()))}
+          onAjuster={(delta) => {
+            vibrer.selection();
+            modifier(ajusterRepos(seance, delta, new Date()));
+          }}
         />
       ) : null}
     </SafeAreaView>
@@ -216,23 +239,47 @@ const useStyles = creerStyles((couleurs) => ({
     borderBottomWidth: 1,
     borderBottomColor: couleurs.ligne,
   },
-  titreLigne: { flexDirection: "row", alignItems: "center", gap: espace.m },
-  nom: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
-  // L'action principale de l'écran : l'aplat lime (D28), compact (D94).
-  terminer: {
-    height: 36,
-    paddingHorizontal: espace.l,
-    borderRadius: 8,
-    backgroundColor: couleurs.action,
+  titreLigne: { flexDirection: "row", alignItems: "center", gap: espace.s },
+  replier: {
+    width: 40,
+    height: 40,
+    marginLeft: -espace.s,
+    alignItems: "center",
     justifyContent: "center",
   },
-  terminerTexte: { color: couleurs.surAction, fontSize: 15, fontWeight: "700" },
-  chiffres: { flexDirection: "row", gap: espace.xl },
-  chiffre: { gap: 1 },
-  chiffreLibelle: { color: couleurs.encreAttenuee, fontSize: 12 },
+  titre: { flex: 1 },
+  nom: { color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
+  sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
+  terminer: {
+    minHeight: 40,
+    paddingHorizontal: espace.l,
+    borderRadius: rayon.bouton,
+    borderWidth: 1,
+    borderColor: couleurs.ligneForte,
+    justifyContent: "center",
+  },
+  appuye: { backgroundColor: couleurs.surface2 },
+  terminerTexte: { color: couleurs.encre, fontSize: 15, fontWeight: "700" },
+  chiffres: { flexDirection: "row", alignItems: "flex-end", gap: espace.xl },
+  // Le chiffre héros de l'écran (D103) : lisible téléphone posé sur le banc.
+  chrono: {
+    color: couleurs.encre,
+    fontSize: taille.chrono,
+    lineHeight: taille.chrono,
+    fontFamily: polices.condense,
+    fontVariant: ["tabular-nums"],
+  },
+  chiffre: { gap: 1, paddingBottom: 4 },
+  chiffreLibelle: {
+    color: couleurs.encreAttenuee,
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
   chiffreValeur: {
     color: couleurs.encre,
-    fontSize: taille.courant,
+    fontSize: taille.valeur,
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
   },
@@ -244,9 +291,9 @@ const useStyles = creerStyles((couleurs) => ({
   },
   pied: { padding: espace.m, gap: espace.s },
   ajouter: {
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: couleurs.surface2,
+    minHeight: CIBLE,
+    borderRadius: rayon.bouton,
+    backgroundColor: couleurs.surface3,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

@@ -29,3 +29,12 @@ export function cleJour(iso: string, fuseau: string): string {
 export function memeJour(a: string, b: string, fuseau: string): boolean {
   return cleJour(a, fuseau) === cleJour(b, fuseau);
 }
+
+/** « 18:12 » : l'heure du fuseau donné, sur 24 heures. */
+export function formatHeure(iso: string, fuseau: string): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: fuseau,
+  }).format(new Date(iso));
+}
