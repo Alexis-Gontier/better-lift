@@ -4,12 +4,12 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, Dumbbell, X } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Chargement, Erreur, Vide } from "../components/ui/etats";
 import { type ExerciceChoisi, rendreChoix } from "../lib/choix-exercices";
 import { optionsCatalogueComplet } from "../lib/requetes";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 
 /**
  * Choisir des exercices dans le catalogue (D93) : une recherche, et une
@@ -17,6 +17,8 @@ import { CIBLE, couleurs, espace, taille } from "../lib/theme";
  * En `?mode=remplacer`, un seul choix, rendu dès l'appui.
  */
 export default function ChoisirExercices() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const unique = mode === "remplacer";
@@ -66,7 +68,7 @@ export default function ChoisirExercices() {
         value={filtre}
         onChangeText={setFiltre}
         placeholder="Chercher un exercice"
-        placeholderTextColor={couleurs.encreFaible}
+        placeholderTextColor={couleurs.encreAttenuee}
         style={styles.recherche}
         autoCorrect={false}
         returnKeyType="search"
@@ -111,7 +113,7 @@ export default function ChoisirExercices() {
                   />
                 ) : (
                   <View style={[styles.vignette, styles.sansImage]}>
-                    <Dumbbell size={20} color={couleurs.encreFaible} />
+                    <Dumbbell size={20} color={couleurs.encreAttenuee} />
                   </View>
                 )}
                 <View style={{ flex: 1 }}>
@@ -124,7 +126,7 @@ export default function ChoisirExercices() {
                 </View>
                 {unique ? null : (
                   <View style={[styles.case, coche && styles.caseCochee]}>
-                    {coche ? <Check size={16} color={couleurs.canvas} strokeWidth={3} /> : null}
+                    {coche ? <Check size={16} color={couleurs.canevas} strokeWidth={3} /> : null}
                   </View>
                 )}
               </Pressable>
@@ -151,8 +153,8 @@ export default function ChoisirExercices() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -188,11 +190,11 @@ const styles = StyleSheet.create({
   },
   // La sélection se dit par le contour d'encre et la case, pas par le lime :
   // cocher n'est ni l'action ni un record.
-  ligneCochee: { borderColor: couleurs.encreDouce },
+  ligneCochee: { borderColor: couleurs.encreSecondaire },
   vignette: { width: 52, height: 52, borderRadius: 8, backgroundColor: couleurs.surface3 },
   sansImage: { alignItems: "center", justifyContent: "center" },
   nom: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  sous: { color: couleurs.encrePale, fontSize: taille.petit },
+  sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   case: {
     width: 26,
     height: 26,
@@ -211,10 +213,10 @@ const styles = StyleSheet.create({
   ajouter: {
     minHeight: CIBLE + 8,
     borderRadius: 12,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
   inactif: { opacity: 0.4 },
-  ajouterTexte: { color: couleurs.surAccent, fontSize: taille.courant + 1, fontWeight: "700" },
-});
+  ajouterTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
+}));

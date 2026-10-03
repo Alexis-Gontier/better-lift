@@ -21,10 +21,10 @@ import {
   Trash2,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
-import { couleurs, espace, taille } from "../../lib/theme";
+import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { UNITE } from "../../lib/unites";
 import { Feuille, type OptionFeuille } from "../ui/feuille";
 import { COLONNES, LigneSerie } from "./ligne-serie";
@@ -70,6 +70,8 @@ export function CarteExercice({
   onRemplacer: () => void;
   onRetirer: () => void;
 }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   // La fiche est en cache à vie (le catalogue ne change qu'au semis) : le GIF
   // d'un exercice déjà vu s'affiche même hors ligne, depuis le cache disque.
   const fiche = useQuery(optionsExercice(exercice.slug));
@@ -142,7 +144,7 @@ export function CarteExercice({
             />
           ) : (
             <View style={[styles.vignette, styles.sansImage]}>
-              <Dumbbell size={18} color={couleurs.encreFaible} />
+              <Dumbbell size={18} color={couleurs.encreAttenuee} />
             </View>
           )}
         </Pressable>
@@ -156,7 +158,7 @@ export function CarteExercice({
           accessibilityRole="button"
           accessibilityLabel={`Actions pour ${exercice.nom}`}
         >
-          <Ellipsis size={20} color={couleurs.encreDouce} />
+          <Ellipsis size={20} color={couleurs.encreSecondaire} />
         </Pressable>
       </View>
 
@@ -176,7 +178,7 @@ export function CarteExercice({
           onNote(t);
         }}
         placeholder="Ajouter une note…"
-        placeholderTextColor={couleurs.encreFaible}
+        placeholderTextColor={couleurs.encreAttenuee}
         multiline
         maxLength={500}
         style={styles.note}
@@ -189,7 +191,10 @@ export function CarteExercice({
         hitSlop={4}
         accessibilityRole="button"
       >
-        <Timer size={16} color={exercice.reposSec ? couleurs.encreDouce : couleurs.encreFaible} />
+        <Timer
+          size={16}
+          color={exercice.reposSec ? couleurs.encreSecondaire : couleurs.encreAttenuee}
+        />
         <Text style={[styles.reposTexte, !exercice.reposSec && styles.reposEteint]}>
           Repos : {libelleRepos(exercice.reposSec)}
         </Text>
@@ -201,7 +206,7 @@ export function CarteExercice({
         <Text style={[styles.colonne, { flex: 1 }]}>{UNITE}</Text>
         <Text style={[styles.colonne, { flex: 1 }]}>Reps</Text>
         <View style={{ width: COLONNES.valider, alignItems: "center" }}>
-          <Check size={14} color={couleurs.encreFaible} strokeWidth={3} />
+          <Check size={14} color={couleurs.encreAttenuee} strokeWidth={3} />
         </View>
       </View>
 
@@ -212,7 +217,7 @@ export function CarteExercice({
           key={`${i}-${exercice.series.length}`}
           numero={i + 1}
           etiquette={libelles[i] ?? String(i + 1)}
-          couleurEtiquette={s.type === "NORMALE" ? couleurs.encre : couleurs.encrePale}
+          couleurEtiquette={s.type === "NORMALE" ? couleurs.encre : couleurs.encreTertiaire}
           serie={s}
           precedent={exercice.precedent?.[i]}
           onChange={(patch) => onModifierSerie(i, patch)}
@@ -222,7 +227,7 @@ export function CarteExercice({
       ))}
 
       <Pressable onPress={onAjouterSerie} style={styles.ajouter} accessibilityRole="button">
-        <Plus size={16} color={couleurs.encreDouce} strokeWidth={2.4} />
+        <Plus size={16} color={couleurs.encreSecondaire} strokeWidth={2.4} />
         <Text style={styles.ajouterTexte}>Ajouter une série</Text>
       </Pressable>
 
@@ -236,7 +241,7 @@ export function CarteExercice({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   bloc: {
     paddingHorizontal: espace.m,
     paddingVertical: espace.l,
@@ -258,16 +263,16 @@ const styles = StyleSheet.create({
   },
   media: { alignItems: "center", gap: espace.xs },
   gif: { width: 220, height: 220, borderRadius: 12, backgroundColor: "#ffffff" },
-  attribution: { color: couleurs.encreFaible, fontSize: 11 },
+  attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
   note: {
-    color: couleurs.encreDouce,
+    color: couleurs.encreSecondaire,
     fontSize: 14,
     padding: 0,
     paddingVertical: 2,
   },
   repos: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start" },
-  reposTexte: { color: couleurs.encreDouce, fontSize: 14, fontWeight: "600" },
-  reposEteint: { color: couleurs.encreFaible, fontWeight: "400" },
+  reposTexte: { color: couleurs.encreSecondaire, fontSize: 14, fontWeight: "600" },
+  reposEteint: { color: couleurs.encreAttenuee, fontWeight: "400" },
   colonnes: {
     flexDirection: "row",
     alignItems: "center",
@@ -276,7 +281,7 @@ const styles = StyleSheet.create({
     marginTop: espace.xs,
   },
   colonne: {
-    color: couleurs.encreFaible,
+    color: couleurs.encreAttenuee,
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 0.4,
@@ -294,5 +299,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
   },
-  ajouterTexte: { color: couleurs.encreDouce, fontSize: 14, fontWeight: "600" },
-});
+  ajouterTexte: { color: couleurs.encreSecondaire, fontSize: 14, fontWeight: "600" },
+}));

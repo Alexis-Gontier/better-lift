@@ -23,6 +23,24 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   écran de démarrage ne se voient que dans un build EAS.
 - Dépendance Expo ou React Native : `npx expo install <paquet>`, jamais une version de mémoire.
 
+## Système (D101–D103)
+
+Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
+
+- **Couleurs par rôle, deux valeurs** (`lib/theme.ts`, type `Couleurs`). Le thème suit celui du
+  téléphone (`useColorScheme`, `userInterfaceStyle: "automatic"`). Jamais de couleur en dur dans
+  un écran : un rôle manque, il s'ajoute au type, dans les deux registres.
+- **Styles** : `const useStyles = creerStyles((couleurs) => ({ … }))` au niveau du module, puis
+  `const styles = useStyles()` dans le composant ; `useCouleurs()` pour une couleur passée en
+  prop (icône, `placeholderTextColor`). **Jamais de `StyleSheet.create` au niveau du module** : il
+  figerait les couleurs au chargement.
+- **Archivo** (`expo-font`, chargée à la racine, écran de démarrage tenu jusque-là).
+  `creerStyles` traduit `fontWeight` en famille Archivo de la bonne graisse : un style hors de la
+  fabrique (options d'Expo Router, `tabBarLabelStyle`) pose `fontFamily: polices.…` lui-même.
+  Chiffres héros : `polices.condense`, coupe générée par `scripts/polices/condenser-archivo.py`.
+- **Carte du corps** : la bibliothèque peint chaque partie d'une couleur codée en dur qui
+  l'emporte sur `defaultFill` — chaque partie non travaillée reçoit `styles.fill` du thème.
+
 ## Navigation (D74–D80)
 
 Conception : [`2026-09-24-mobile-onglets-design.md`](../../docs/superpowers/specs/2026-09-24-mobile-onglets-design.md).

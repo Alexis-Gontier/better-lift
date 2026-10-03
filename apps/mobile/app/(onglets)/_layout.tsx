@@ -9,19 +9,12 @@ import {
   User,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import {
-  type ColorValue,
-  Pressable,
-  type PressableProps,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { type ColorValue, Pressable, type PressableProps, Text, View } from "react-native";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
-import { couleurs } from "../../lib/theme";
+import { creerStyles, polices, useCouleurs } from "../../lib/theme";
 
 /**
  * Icônes Lucide, comme le web. L'onglet actif s'épaissit : avec la couleur,
@@ -39,6 +32,8 @@ const icone =
  * un compte, et un seul endroit le vérifie.
  */
 export default function Onglets() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const { data: session, isPending, error } = authClient.useSession();
   // Un cookie de session est-il gardé sur le téléphone ? `null` tant que le
   // stockage sécurisé n'a pas répondu.
@@ -70,11 +65,11 @@ export default function Onglets() {
         backBehavior="history"
         screenOptions={{
           headerShown: false,
-          sceneStyle: { backgroundColor: couleurs.canvas },
+          sceneStyle: { backgroundColor: couleurs.canevas },
           // L'onglet actif prend la couleur de l'application (choix de
           // l'utilisateur, D76 révisée) ; les autres restent en encre faible.
-          tabBarActiveTintColor: couleurs.accent,
-          tabBarInactiveTintColor: couleurs.encreFaible,
+          tabBarActiveTintColor: couleurs.action,
+          tabBarInactiveTintColor: couleurs.encreAttenuee,
           // Toute la largeur du bas, jusque sous la zone de geste : une marche
           // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
           // Router y ajoute la marge de la zone de geste d'Android, qu'une hauteur
@@ -85,7 +80,7 @@ export default function Onglets() {
             borderTopColor: couleurs.ligne,
             paddingTop: 8,
           },
-          tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
+          tabBarLabelStyle: { fontSize: 11, fontFamily: polices.demiGras, marginTop: 2 },
           // Aucun retour visuel à l'appui (ni ondulation Android, ni opacité) :
           // l'onglet actif se signale déjà par sa couleur.
           tabBarButton: ({ ref: _ref, ...props }) => (
@@ -116,7 +111,7 @@ export default function Onglets() {
                       {/* L'haltère de Lucide est dessinée en diagonale : redressée de
                         45° pour se lire à l'horizontale, comme une barre posée. */}
                       <View style={seance ? undefined : styles.redresse}>
-                        <Centrale color={couleurs.surAccent} size={26} strokeWidth={2.4} />
+                        <Centrale color={couleurs.surAction} size={26} strokeWidth={2.4} />
                       </View>
                     </View>
                     <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
@@ -138,7 +133,7 @@ export default function Onglets() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   // Le libellé central s'aligne sur ceux des onglets : la barre réserve sous
   // chaque libellé une marge que ce bouton personnalisé ne reçoit pas.
   place: { flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: -8 },
@@ -147,11 +142,11 @@ const styles = StyleSheet.create({
     height: 60,
     marginTop: -30,
     borderRadius: 30,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
   redresse: { transform: [{ rotate: "45deg" }] },
   // En encre, pas en lime : le lime en texte est le registre du record (D28).
   libelle: { color: couleurs.encre, fontSize: 11, fontWeight: "600", marginTop: 4 },
-});
+}));

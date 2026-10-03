@@ -1,13 +1,14 @@
 import { bilanSeance, formaterCharge, secondesEcoulees } from "@better-lift/shared";
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSeance } from "../lib/seance";
 import { formaterDuree } from "../lib/temps";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 
 export default function Fin() {
+  const styles = useStyles();
   const router = useRouter();
   const { seance, terminer } = useSeance();
   if (!seance) return null;
@@ -51,6 +52,7 @@ export default function Fin() {
 }
 
 function Chiffre({ valeur, libelle }: { valeur: string; libelle: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.chiffre}>
       <Text style={styles.valeur}>{valeur}</Text>
@@ -59,11 +61,11 @@ function Chiffre({ valeur, libelle }: { valeur: string; libelle: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas, justifyContent: "space-between" },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas, justifyContent: "space-between" },
   contenu: { padding: espace.xl, gap: espace.s },
   titre: { color: couleurs.encre, fontSize: taille.titre + 4, fontWeight: "700" },
-  nom: { color: couleurs.encreDouce, fontSize: taille.courant },
+  nom: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   chiffres: { flexDirection: "row", gap: espace.m, marginTop: espace.xl },
   chiffre: {
     flex: 1,
@@ -79,16 +81,16 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
-  libelle: { color: couleurs.encrePale, fontSize: taille.petit, marginTop: 2 },
+  libelle: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: 2 },
   pied: { padding: espace.l, gap: espace.s },
   enregistrer: {
     minHeight: CIBLE + 8,
     borderRadius: 12,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
-  enregistrerTexte: { color: couleurs.surAccent, fontSize: taille.courant + 1, fontWeight: "700" },
+  enregistrerTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
   retour: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
-  retourTexte: { color: couleurs.encreDouce, fontSize: taille.courant },
-});
+  retourTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
+}));

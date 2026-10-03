@@ -1,19 +1,11 @@
 import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Logo } from "../components/ui/logo";
 import { authClient } from "../lib/auth-client";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 
 // La création de compte reste sur le web : ici, on ne fait qu'entrer.
 type GenreRefus = "identifiants" | "reseau";
@@ -28,6 +20,8 @@ const MESSAGES: Record<GenreRefus, string> = {
  * le clavier remonte le tout plutôt que de le recouvrir.
  */
 export default function Connexion() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
@@ -78,7 +72,7 @@ export default function Connexion() {
               style={[styles.champ, champInvalide]}
               aria-labelledby="libelle-email"
               placeholder="toi@exemple.fr"
-              placeholderTextColor={couleurs.encreFaible}
+              placeholderTextColor={couleurs.encreAttenuee}
               autoCapitalize="none"
               autoComplete="email"
               keyboardType="email-address"
@@ -93,7 +87,7 @@ export default function Connexion() {
               <TextInput
                 style={[styles.champ, styles.champMdp, champInvalide]}
                 aria-labelledby="libelle-mdp"
-                placeholderTextColor={couleurs.encreFaible}
+                placeholderTextColor={couleurs.encreAttenuee}
                 autoCapitalize="none"
                 autoComplete="current-password"
                 secureTextEntry={!visible}
@@ -112,9 +106,9 @@ export default function Connexion() {
                 hitSlop={4}
               >
                 {visible ? (
-                  <EyeOff size={20} color={couleurs.encrePale} />
+                  <EyeOff size={20} color={couleurs.encreTertiaire} />
                 ) : (
-                  <Eye size={20} color={couleurs.encrePale} />
+                  <Eye size={20} color={couleurs.encreTertiaire} />
                 )}
               </Pressable>
             </View>
@@ -142,8 +136,8 @@ export default function Connexion() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   contenu: { flexGrow: 1, padding: espace.xl },
   marque: { flexDirection: "row", alignItems: "center", gap: espace.s },
   nom: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
@@ -158,7 +152,7 @@ const styles = StyleSheet.create({
   },
   formulaire: { gap: espace.s },
   titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "600" },
-  sousTitre: { color: couleurs.encrePale, fontSize: taille.courant, marginBottom: espace.m },
+  sousTitre: { color: couleurs.encreTertiaire, fontSize: taille.courant, marginBottom: espace.m },
   libelle: { color: couleurs.encre, fontSize: 14, fontWeight: "500", marginTop: espace.s },
   champ: {
     minHeight: CIBLE + 4,
@@ -171,7 +165,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   champMdp: { paddingRight: CIBLE + 4 },
-  champInvalide: { borderColor: couleurs.danger },
+  champInvalide: { borderColor: couleurs.dangerEncre },
   oeil: {
     position: "absolute",
     right: 0,
@@ -186,16 +180,16 @@ const styles = StyleSheet.create({
     minHeight: CIBLE + 8,
     marginTop: espace.l,
     borderRadius: 10,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
   boutonAttente: { opacity: 0.6 },
-  boutonTexte: { color: couleurs.surAccent, fontSize: taille.courant, fontWeight: "700" },
+  boutonTexte: { color: couleurs.surAction, fontSize: taille.courant, fontWeight: "700" },
   note: {
-    color: couleurs.encreFaible,
+    color: couleurs.encreAttenuee,
     fontSize: taille.petit,
     textAlign: "center",
     marginTop: espace.m,
   },
-});
+}));

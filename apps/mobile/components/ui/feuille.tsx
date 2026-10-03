@@ -1,8 +1,8 @@
 import type { LucideIcon } from "lucide-react-native";
 import { Check } from "lucide-react-native";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { couleurs, espace, taille } from "../../lib/theme";
+import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 
 export type OptionFeuille = {
   libelle: string;
@@ -32,6 +32,8 @@ export function Feuille({
   options: OptionFeuille[];
   onFermer: () => void;
 }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const { bottom } = useSafeAreaInsets();
   return (
     <Modal
@@ -53,7 +55,7 @@ export function Feuille({
         {options.map((o) => {
           const Icone = o.icone;
           const couleur = o.inactive
-            ? couleurs.encreFaible
+            ? couleurs.encreAttenuee
             : o.danger
               ? couleurs.dangerEncre
               : couleurs.encre;
@@ -81,8 +83,8 @@ export function Feuille({
   );
 }
 
-const styles = StyleSheet.create({
-  voile: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.55)" },
+const useStyles = creerStyles((couleurs) => ({
+  voile: { flex: 1, backgroundColor: couleurs.voile },
   feuille: {
     backgroundColor: couleurs.surface2,
     borderTopLeftRadius: 16,
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: espace.s,
   },
   titre: {
-    color: couleurs.encrePale,
+    color: couleurs.encreTertiaire,
     fontSize: taille.petit,
     paddingHorizontal: espace.m,
     paddingVertical: espace.s,
@@ -114,5 +116,5 @@ const styles = StyleSheet.create({
   },
   appuyee: { backgroundColor: couleurs.surface3 },
   libelle: { flex: 1, fontSize: taille.courant },
-  indication: { color: couleurs.encreFaible, fontSize: taille.petit },
-});
+  indication: { color: couleurs.encreAttenuee, fontSize: taille.petit },
+}));

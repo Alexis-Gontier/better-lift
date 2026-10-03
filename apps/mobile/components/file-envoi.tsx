@@ -1,13 +1,14 @@
 import { useRouter } from "expo-router";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
-import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, taille } from "../lib/theme";
 
 /**
  * Les séances terminées qui n'ont pas encore atteint le serveur : en attente
  * (réseau) ou refusées (données). Rien ne s'affiche quand la file est vide.
  */
 export function FileEnvoi() {
+  const styles = useStyles();
   const router = useRouter();
   const { file, envoiEnCours, synchroniser, reprendreRefusee, supprimerRefusee } = useSeance();
   const enAttente = file.filter((e) => e.erreur === null);
@@ -73,7 +74,7 @@ export function FileEnvoi() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   bloc: {
     padding: espace.m,
     borderRadius: 12,
@@ -82,8 +83,8 @@ const styles = StyleSheet.create({
     backgroundColor: couleurs.surface1,
     gap: espace.s,
   },
-  refusee: { borderColor: couleurs.danger },
-  texte: { color: couleurs.encreDouce, fontSize: taille.petit + 1 },
+  refusee: { borderColor: couleurs.dangerEncre },
+  texte: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
   bouton: {
     minHeight: CIBLE - 4,
     paddingHorizontal: espace.l,
@@ -96,4 +97,4 @@ const styles = StyleSheet.create({
   },
   boutonTexte: { color: couleurs.encre, fontSize: taille.courant },
   danger: { color: couleurs.dangerEncre, fontSize: taille.courant },
-});
+}));

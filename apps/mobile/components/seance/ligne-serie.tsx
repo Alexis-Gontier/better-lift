@@ -1,8 +1,8 @@
 import { chargeEnTexte, lireCharge, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { couleurs, espace } from "../../lib/theme";
+import { Pressable, Text, TextInput, View } from "react-native";
+import { creerStyles, espace, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
 /** Un entier de 0 à 999, ou vide ; `NaN` signale une saisie à corriger. */
@@ -14,7 +14,8 @@ function lireReps(t: string): number | null {
 }
 
 /** Les largeurs des colonnes, partagées avec l'en-tête du tableau. */
-export const COLONNES = { serie: 34, valider: 36 } as const;
+// 40 : « SÉRIE » en Archivo ne tient pas sur 34 (D103).
+export const COLONNES = { serie: 40, valider: 36 } as const;
 
 /** La ligne « dernière fois » : « 82,5 × 6 », « 10 reps », ou un tiret. */
 function textePrecedent(p?: { reps: number | null; chargeKg: number | null; faite: boolean }) {
@@ -50,6 +51,8 @@ export function LigneSerie({
   /** L'appui sur l'étiquette : type de série, suppression (D92). */
   onEtiquette: () => void;
 }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const [reps, setReps] = useState(serie.reps === null ? "" : String(serie.reps));
   const [charge, setCharge] = useState(
     serie.chargeKg === null ? "" : chargeEnTexte(serie.chargeKg, SYSTEME_UNITES),
@@ -97,7 +100,7 @@ export function LigneSerie({
         onEndEditing={() => !chargeKo && onChange({ chargeKg: lireCharge(charge, SYSTEME_UNITES) })}
         keyboardType="decimal-pad"
         placeholder="—"
-        placeholderTextColor={couleurs.encreFaible}
+        placeholderTextColor={couleurs.encreAttenuee}
         selectTextOnFocus
         style={[styles.case, faite && styles.caseFaite, chargeKo && styles.caseKo]}
       />
@@ -108,7 +111,7 @@ export function LigneSerie({
         onEndEditing={() => !repsKo && onChange({ reps: lireReps(reps) })}
         keyboardType="number-pad"
         placeholder="—"
-        placeholderTextColor={couleurs.encreFaible}
+        placeholderTextColor={couleurs.encreAttenuee}
         selectTextOnFocus
         style={[styles.case, faite && styles.caseFaite, repsKo && styles.caseKo]}
       />
@@ -123,14 +126,14 @@ export function LigneSerie({
         <Check
           size={18}
           strokeWidth={3}
-          color={faite ? couleurs.surAccent : couleurs.encreFaible}
+          color={faite ? couleurs.surAction : couleurs.encreAttenuee}
         />
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   ligne: {
     flexDirection: "row",
     alignItems: "center",
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   // Faite : la ligne se teinte, sans aplat — l'aplat reste réservé à l'action.
-  faite: { backgroundColor: couleurs.accentLavis },
+  faite: { backgroundColor: couleurs.surface1 },
   etiquette: {
     width: COLONNES.serie,
     height: 36,
@@ -149,7 +152,7 @@ const styles = StyleSheet.create({
   },
   etiquetteTexte: { fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
   precedent: { flex: 1.25, height: 36, justifyContent: "center" },
-  precedentTexte: { color: couleurs.encreFaible, fontSize: 14, fontVariant: ["tabular-nums"] },
+  precedentTexte: { color: couleurs.encreAttenuee, fontSize: 14, fontVariant: ["tabular-nums"] },
   case: {
     flex: 1,
     height: 36,
@@ -164,7 +167,7 @@ const styles = StyleSheet.create({
   },
   // Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ.
   caseFaite: { backgroundColor: "transparent" },
-  caseKo: { borderWidth: 1, borderColor: couleurs.danger },
+  caseKo: { borderWidth: 1, borderColor: couleurs.dangerEncre },
   valider: {
     width: COLONNES.valider,
     height: 36,
@@ -173,5 +176,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  validerFait: { backgroundColor: couleurs.accent },
-});
+  validerFait: { backgroundColor: couleurs.action },
+}));

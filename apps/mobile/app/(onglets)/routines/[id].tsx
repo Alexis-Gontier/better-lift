@@ -3,14 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Dumbbell, Pencil } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
 import { useDemarrer } from "../../../lib/demarrer";
 import { optionsRoutine } from "../../../lib/requetes";
-import { CIBLE, couleurs, espace, taille } from "../../../lib/theme";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 /** « 90 s », « 2 min », « 2 min 30 » : ce qu'on lit d'un coup d'œil. */
@@ -28,6 +28,8 @@ const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
  * ensuite, et Démarrer toujours sous le pouce. Le crayon ouvre l'édition (D82).
  */
 export default function DetailRoutine() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const routine = useQuery(optionsRoutine(id));
@@ -94,7 +96,7 @@ export default function DetailRoutine() {
               />
             ) : (
               <View style={[styles.vignette, styles.sansImage]}>
-                <Dumbbell size={22} color={couleurs.encreFaible} />
+                <Dumbbell size={22} color={couleurs.encreAttenuee} />
               </View>
             )}
             <View style={styles.texte}>
@@ -127,11 +129,11 @@ export default function DetailRoutine() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.canvas },
+const useStyles = creerStyles((couleurs) => ({
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
   crayon: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl },
-  resume: { color: couleurs.encrePale, fontSize: taille.petit + 1 },
+  resume: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
   invite: {
     minHeight: CIBLE,
     borderRadius: 12,
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  inviteTexte: { color: couleurs.encreDouce, fontSize: taille.courant },
+  inviteTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   carte: {
     flexDirection: "row",
     alignItems: "center",
@@ -156,8 +158,12 @@ const styles = StyleSheet.create({
   sansImage: { alignItems: "center", justifyContent: "center" },
   texte: { flex: 1, gap: 2 },
   exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  series: { color: couleurs.encreDouce, fontSize: taille.petit + 1, fontVariant: ["tabular-nums"] },
-  repos: { color: couleurs.encreFaible, fontSize: taille.petit },
+  series: {
+    color: couleurs.encreSecondaire,
+    fontSize: taille.petit + 1,
+    fontVariant: ["tabular-nums"],
+  },
+  repos: { color: couleurs.encreAttenuee, fontSize: taille.petit },
   pied: {
     padding: espace.l,
     paddingTop: espace.m,
@@ -166,14 +172,14 @@ const styles = StyleSheet.create({
     paddingBottom: espace.l + 30,
     borderTopWidth: 1,
     borderTopColor: couleurs.ligne,
-    backgroundColor: couleurs.canvas,
+    backgroundColor: couleurs.canevas,
   },
   demarrer: {
     minHeight: CIBLE + 8,
     borderRadius: 12,
-    backgroundColor: couleurs.accent,
+    backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
   },
-  demarrerTexte: { color: couleurs.surAccent, fontSize: taille.courant + 1, fontWeight: "700" },
-});
+  demarrerTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
+}));

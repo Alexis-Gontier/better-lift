@@ -1,5 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
-import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 
 /**
  * Les quatre états de chaque écran (chargement, erreur, vide — le nominal est
@@ -7,14 +7,17 @@ import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
  * sa façon finirait par en oublier un.
  */
 export function Chargement() {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
   return (
     <View style={styles.centre} accessibilityLabel="Chargement">
-      <ActivityIndicator color={couleurs.encrePale} />
+      <ActivityIndicator color={couleurs.encreTertiaire} />
     </View>
   );
 }
 
 export function Erreur({ message, onReessayer }: { message: string; onReessayer: () => void }) {
+  const styles = useStyles();
   return (
     <View style={styles.centre}>
       <Text style={styles.texte}>{message}</Text>
@@ -26,6 +29,7 @@ export function Erreur({ message, onReessayer }: { message: string; onReessayer:
 }
 
 export function Vide({ titre, message }: { titre: string; message: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.centre}>
       <Text style={styles.titre}>{titre}</Text>
@@ -34,7 +38,7 @@ export function Vide({ titre, message }: { titre: string; message: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((couleurs) => ({
   centre: {
     flex: 1,
     alignItems: "center",
@@ -43,7 +47,7 @@ const styles = StyleSheet.create({
     padding: espace.xl,
   },
   titre: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  texte: { color: couleurs.encrePale, fontSize: taille.petit + 1, textAlign: "center" },
+  texte: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1, textAlign: "center" },
   bouton: {
     minHeight: CIBLE,
     paddingHorizontal: espace.xl,
@@ -53,4 +57,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   boutonTexte: { color: couleurs.encre, fontSize: taille.courant },
-});
+}));
