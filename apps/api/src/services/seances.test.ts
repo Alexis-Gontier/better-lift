@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type LigneSeance, versDetail, versResume } from "./seances.js";
+import { anterieurA, type LigneSeance, versDetail, versResume } from "./seances.js";
 
 // Prisma rend les charges en `Decimal` : un objet, pas un nombre.
 const d = (n: number) => ({ toString: () => String(n) });
@@ -7,6 +7,7 @@ const d = (n: number) => ({ toString: () => String(n) });
 const ligne: LigneSeance = {
   id: "s2",
   nom: "Push",
+  routineId: "r-push",
   debut: new Date("2026-09-24T18:00:00.000Z"),
   fin: new Date("2026-09-24T19:00:00.000Z"),
   exercices: [
@@ -41,6 +42,7 @@ describe("versResume", () => {
     expect(versResume(ligne)).toEqual({
       id: "s2",
       nom: "Push",
+      routineId: "r-push",
       debut: "2026-09-24T18:00:00.000Z",
       fin: "2026-09-24T19:00:00.000Z",
       seriesFaites: 4,
@@ -85,6 +87,8 @@ describe("versDetail", () => {
     expect(detail.exercices[1]?.series[0]?.records).toEqual([]);
     // 100 × 6, dans la seconde occurrence : bat charge (plus de reps), 1RM et volume.
     expect(detail.exercices[2]?.series[0]?.records).toEqual(["CHARGE", "UN_RM", "VOLUME"]);
+    // D110 : le résumé compte les séries qui ont battu au moins un record.
+    expect(detail.nbRecords).toBe(1);
   });
 
   it("rend des charges en nombres, et le nom français", () => {
@@ -102,5 +106,24 @@ describe("versDetail", () => {
     const detail = versDetail(ligne, new Map());
     expect(detail.exercices[0]?.series[1]?.records).toEqual(["CHARGE", "UN_RM", "VOLUME"]);
     expect(detail.exercices[1]?.series[0]?.records).toEqual(["REPS"]);
+    expect(detail.nbRecords).toBe(3);
+  });
+});
+
+describe("anterieurA", () => {
+  // La liste juge chaque séance contre ce qui la PRÉCÈDE, comme le détail (D64).
+  it("ne garde que l'historique strictement antérieur à une date", () => {
+    const serie = (date: string) => ({
+      type: "NORMALE" as const,
+      reps: 5,
+      chargeKg: 100,
+      faite: true,
+      date,
+    });
+    const h = new Map([
+      ["bench", [serie("2026-09-20T18:00:00.000Z"), serie("2026-09-24T18:00:00.000Z")]],
+    ]);
+    const avant = anterieurA(h, new Date("2026-09-24T18:00:00.000Z"));
+    expect(avant.get("bench")?.map((x) => x.date)).toEqual(["2026-09-20T18:00:00.000Z"]);
   });
 });

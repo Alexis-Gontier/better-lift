@@ -148,6 +148,7 @@ const enNombre = (d: { toString(): string } | null) => (d === null ? null : Numb
 export type LigneSeance = {
   id: string;
   nom: string;
+  routineId: string | null;
   debut: Date;
   fin: Date;
   exercices: {
@@ -158,8 +159,11 @@ export type LigneSeance = {
   }[];
 };
 
-/** Volume : séries faites, hors échauffement et hors poids du corps (D5). */
-export function versResume(l: LigneSeance): SeanceResume {
+/**
+ * Volume : séries faites, hors échauffement et hors poids du corps (D5). Les
+ * records se comptent avec l'historique : c'est `versDetail` qui les ajoute.
+ */
+export function versResume(l: LigneSeance): Omit<SeanceResume, "nbRecords"> {
   let seriesFaites = 0;
   let volumeKg = 0;
   for (const e of l.exercices) {
@@ -174,6 +178,7 @@ export function versResume(l: LigneSeance): SeanceResume {
   return {
     id: l.id,
     nom: l.nom,
+    routineId: l.routineId,
     debut: l.debut.toISOString(),
     fin: l.fin.toISOString(),
     seriesFaites,
@@ -199,8 +204,10 @@ export function versDetail(
     marques.set(exerciseId, marquerRecords(recordsDe(anterieur.get(exerciseId) ?? []), series));
   }
   const curseur = new Map<string, number>();
+  const nbRecords = [...marques.values()].flat().filter((r) => r.length > 0).length;
   return {
     ...versResume(l),
+    nbRecords,
     exercices: l.exercices.map((e) => ({
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
@@ -218,6 +225,16 @@ export function versDetail(
       }),
     })),
   };
+}
+
+type Historique = Map<string, (SerieHisto & { date: string })[]>;
+
+/** L'historique d'AVANT une séance : chacune se juge contre ce qui la précède (D64). */
+export function anterieurA(h: Historique, debut: Date): Historique {
+  const limite = debut.getTime();
+  return new Map(
+    [...h].map(([id, liste]) => [id, liste.filter((x) => Date.parse(x.date) < limite)]),
+  );
 }
 
 export type DepotLectureSeances = {
@@ -244,6 +261,7 @@ export type DepotLectureSeances = {
 const LECTURE_SEANCE = {
   id: true,
   nom: true,
+  routineId: true,
   debut: true,
   fin: true,
   exercices: {
@@ -310,7 +328,15 @@ export const depotLecture: DepotLectureSeances = {
       }),
       prisma.seance.count({ where: { userId } }),
     ]);
-    return { seances: lignes.map((l) => versResume(l as LigneSeance)), total };
+    // Un seul historique pour la page entière, découpé ensuite séance par séance :
+    // le nombre de records d'une ligne est celui que montrerait son détail.
+    const ids = [...new Set(lignes.flatMap((l) => l.exercices.map((e) => e.exerciseId)))];
+    const h = await historique(userId, ids);
+    const seances = lignes.map((l) => {
+      const { exercices: _, ...resume } = versDetail(l as LigneSeance, anterieurA(h, l.debut));
+      return resume;
+    });
+    return { seances, total };
   },
 
   async lire(userId, id) {

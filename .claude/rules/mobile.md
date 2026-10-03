@@ -54,8 +54,10 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Repos restant s'il tourne, chrono sinon ; tout le bandeau
   ramène à la séance.
-- Stats est vide pour l'instant ; **l'Accueil est le fil des séances** (D95,
-  `components/historique/liste-seances.tsx`). La file d'envoi vit dans Profil
+- Stats est vide pour l'instant. **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
+  le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, aplat
+  « Démarrer … » masqué pendant une séance), puis le fil des séances (`LigneSeance`, avec le
+  nombre de records que l'API compte dans `nbRecords`). L'écran Historique garde la liste seule. La file d'envoi vit dans Profil
   (`components/file-envoi.tsx`). Historique et Exercices sont hors de la barre (`href: null`) mais
   joignables : détail d'une séance depuis l'Accueil, fiche d'exercice depuis le détail.
 - Les onglets reviennent en arrière **par l'historique** (`backBehavior="history"`) : sans lui, le

@@ -111,11 +111,15 @@ export function marquerRecords(avant: RecordExercice[], series: SerieHisto[]): T
 export type SeanceResume = {
   id: string;
   nom: string;
+  /** La routine d'origine, `null` pour une séance vide : l'Accueil en déduit « À suivre » (D110). */
+  routineId: string | null;
   /** ISO 8601 ; le jour s'en déduit dans le fuseau de l'utilisateur, jamais en UTC. */
   debut: string;
   fin: string;
   seriesFaites: number;
   volumeKg: number;
+  /** Les séries qui ont battu au moins un record, à ce moment-là (D64, D110). */
+  nbRecords: number;
 };
 
 export type SerieLue = {

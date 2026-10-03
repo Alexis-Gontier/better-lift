@@ -88,6 +88,8 @@ const fauxLecture: DepotLectureSeances = {
               fin: saisie.fin,
               seriesFaites: 1,
               volumeKg: 495,
+              routineId: null,
+              nbRecords: 0,
             },
           ],
           total: 1,
@@ -103,6 +105,8 @@ const fauxLecture: DepotLectureSeances = {
           fin: saisie.fin,
           seriesFaites: 1,
           volumeKg: 495,
+          routineId: null,
+          nbRecords: 0,
           exercices: [],
         }
       : null;
