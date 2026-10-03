@@ -29,9 +29,12 @@ Conception : [`2026-09-24-mobile-onglets-design.md`](../../docs/superpowers/spec
 
 - Quatre onglets : Accueil · Routines | **bouton central** | Stats · Profil. Barre pleine
   largeur, **onglet actif en lime** (D76 révisée à la demande de l'utilisateur). Icônes Lucide.
-- Accueil et Stats sont vides pour l'instant. La file d'envoi vit dans Profil
-  (`components/file-envoi.tsx`). Historique et Exercices ont quitté la barre (`href: null`,
-  écrans conservés).
+- Stats est vide pour l'instant ; **l'Accueil est le fil des séances** (D95,
+  `components/historique/liste-seances.tsx`). La file d'envoi vit dans Profil
+  (`components/file-envoi.tsx`). Historique et Exercices ont quitté la barre (`href: null`) mais
+  restent joignables : détail d'une séance depuis l'Accueil, fiche d'exercice depuis le détail.
+- Les onglets reviennent en arrière **par l'historique** (`backBehavior="history"`) : sans lui, le
+  retour depuis un écran d'un onglet masqué ramène à l'Accueil.
 - Le bouton central (aplat lime) reprend la séance en cours, sinon ouvre la modale
   `app/demarrer.tsx` (logique dans `lib/demarrer.ts`).
 - **Piège** : une pile qui déclare ses écrans prend le premier pour route initiale —
@@ -74,7 +77,34 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   36 px, cible tenue par `hitSlop`. Supersets : lot B, l'entrée du menu est inerte.
 - Un rappel de modale qui attend (les précédents) applique son choix à la séance **du moment**
   (`useRef`), pas à celle capturée à l'ouverture.
+- **Une relecture du brouillon n'écrase jamais un changement survenu pendant qu'elle lisait**
+  (`recharger` et le compteur d'écritures de `lib/seance.tsx`) : l'écran relit le disque à chaque
+  retour, y compris au retour de la modale qui vient d'ajouter des exercices.
 - Une séance envoyée invalide `["seances"]` et `["records"]`.
+
+## Hors ligne (D96–D100)
+
+Conception : [`2026-10-03-mobile-epreuve-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-epreuve-design.md).
+
+- Cache TanStack Query persistant (`lib/hors-ligne.ts`, clé `better-lift:cache-requetes`),
+  **filtré** par `gardeHorsLigne` sur la présence d'une donnée : routines, catalogue complet,
+  précédents. Une nouvelle lecture utile hors ligne s'y ajoute explicitement. Forme d'une réponse
+  persistée changée : monter `buster` dans `app/_layout.tsx`.
+- `<PreparerHorsLigne />` (`components/preparer-hors-ligne.tsx`, sous la garde de session)
+  remplit ce cache en ligne.
+- Démarrer lit réseau d'abord sous délai, cache en repli, cache direct hors ligne
+  (`chargerRoutine`, `chargerPrecedents`). **Jamais `fetchQuery` nu dans un chemin de salle** :
+  hors ligne, il se met en pause et l'appui ne rend jamais la main.
+- **Une lecture sans réseau se met en pause** : tout écran de données traite
+  `isPending && fetchStatus === "paused"` (« Hors ligne ») et montre sa donnée avant l'erreur
+  (`isError && !data`).
+- Le catalogue se filtre sur le téléphone (`filtrerCatalogue` de `shared`).
+- L'envoi se relance au retour du réseau et du premier plan (`lib/seance.tsx`).
+- La garde de session ne redirige que sur une absence confirmée, jamais sur une erreur.
+- **Éprouver** : Expo Go ne démarre pas à froid en mode avion. Couper le réseau app ouverte
+  (`adb shell cmd connectivity airplane-mode enable`), puis menu de dev → Reload. Le démarrage à
+  froid hors ligne ne se vérifie que sur l'APK. `uiautomator dump` échoue sur l'écran de séance
+  (le chrono l'empêche d'être « au repos ») : passer par des captures.
 
 ## Pièges
 
