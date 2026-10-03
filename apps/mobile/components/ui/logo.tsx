@@ -4,7 +4,7 @@ import { creerStyles, useCouleurs } from "../../lib/theme";
 
 /**
  * Le logo : l'haltère Lucide redressée de 45°, en encre sur un aplat lime — le
- * même dessin que le bouton central et que l'icône de l'application.
+ * même dessin que l'icône de l'application.
  */
 export function Logo({ taille = 24 }: { taille?: number }) {
   const styles = useStyles();

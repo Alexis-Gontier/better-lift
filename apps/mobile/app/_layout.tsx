@@ -71,7 +71,7 @@ export default function RootLayout() {
               premier pour route initiale — déclarée seule, la modale ouvrait
               l'application. */}
             <Stack.Screen name="(onglets)" />
-            {/* Le choix du bouton central flotte : il s'ouvre par-dessus les onglets. */}
+            {/* Le choix « Démarrer » flotte : il s'ouvre par-dessus les onglets. */}
             <Stack.Screen name="demarrer" options={{ presentation: "modal" }} />
             {/* Le catalogue s'ouvre par-dessus l'édition d'une routine, et y revient. */}
             <Stack.Screen name="choisir-exercices" options={{ presentation: "modal" }} />

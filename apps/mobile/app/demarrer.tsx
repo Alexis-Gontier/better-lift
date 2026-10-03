@@ -10,7 +10,7 @@ import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /**
- * L'écran du bouton central : choisir comment démarrer. Il FLOTTE (modale),
+ * Choisir comment démarrer, depuis l'Accueil. Il FLOTTE (modale),
  * donc il se ferme — croix en haut, ou geste de retour.
  */
 export default function Demarrer() {

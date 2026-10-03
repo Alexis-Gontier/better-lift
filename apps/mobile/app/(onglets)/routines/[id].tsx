@@ -167,9 +167,7 @@ const useStyles = creerStyles((couleurs) => ({
   pied: {
     padding: espace.l,
     paddingTop: espace.m,
-    // Le bouton central de la barre d'onglets déborde de 30 px au-dessus d'elle :
-    // sans cette marge, il mordrait sur Démarrer.
-    paddingBottom: espace.l + 30,
+    paddingBottom: espace.l,
     borderTopWidth: 1,
     borderTopColor: couleurs.ligne,
     backgroundColor: couleurs.canevas,
