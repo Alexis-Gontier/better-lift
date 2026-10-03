@@ -12,6 +12,7 @@ const ligne: LigneExercice = {
   slug: "barbell-bench-press",
   name: "barbell bench press",
   nomFr: "Développé couché à la barre",
+  nomRecherche: "developpe couche a la barre barbell bench press",
   bodyPart: "CHEST",
   equipment: "Barre",
   target: "Pectoraux",
@@ -77,6 +78,7 @@ describe("projections", () => {
       nom: "Développé couché à la barre",
       groupe: "CHEST",
       equipement: "Barre",
+      recherche: "developpe couche a la barre barbell bench press",
       image:
         "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efa/images/0025.jpg",
     });
@@ -97,6 +99,7 @@ describe("projections", () => {
       nomAnglais: "barbell bench press",
       gif: ligne.gifUrl,
       image: imageDe(ligne.gifUrl),
+      recherche: "developpe couche a la barre barbell bench press",
       groupe: "CHEST",
       equipement: "Barre",
       cible: "Pectoraux",

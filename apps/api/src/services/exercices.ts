@@ -18,6 +18,8 @@ export type LigneExercice = {
   /** Le nom anglais du dataset (D44). */
   name: string;
   nomFr: string;
+  /** Les deux noms normalisés (`texteRecherche`), écrits par le semis. */
+  nomRecherche: string;
   bodyPart: Groupe;
   equipment: string;
   target: string;
@@ -30,6 +32,7 @@ export type LigneExercice = {
 const CHAMPS_RESUME = {
   slug: true,
   nomFr: true,
+  nomRecherche: true,
   bodyPart: true,
   equipment: true,
   gifUrl: true,
@@ -70,7 +73,10 @@ export function imageDe(gifUrl: string | null): string | null {
 
 // Ne reçoit que les champs du résumé : c'est tout ce que `CHAMPS_RESUME` lit.
 export function versResume(
-  ligne: Pick<LigneExercice, "slug" | "nomFr" | "bodyPart" | "equipment" | "gifUrl">,
+  ligne: Pick<
+    LigneExercice,
+    "slug" | "nomFr" | "nomRecherche" | "bodyPart" | "equipment" | "gifUrl"
+  >,
 ): ExerciceResume {
   return {
     slug: ligne.slug,
@@ -78,6 +84,7 @@ export function versResume(
     groupe: ligne.bodyPart,
     equipement: ligne.equipment,
     image: imageDe(ligne.gifUrl),
+    recherche: ligne.nomRecherche,
   };
 }
 

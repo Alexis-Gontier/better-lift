@@ -16,7 +16,8 @@ Les consignes propres à une zone sont dans `.claude/rules/` et se chargent avec
 ## État
 
 Premier jalon complet (lots 0 à 7 : socle, coquille web, auth, catalogue français, routines,
-séance mobile, historique et records), plus les routines sur mobile (D82–D85). **Prochaine
+séance mobile, historique et records), plus, sur mobile, les routines (D82–D85), la séance façon
+Hevy (D86–D94) et le hors ligne avec l'Accueil en fil des séances (D95–D100). **Prochaine
 étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
 

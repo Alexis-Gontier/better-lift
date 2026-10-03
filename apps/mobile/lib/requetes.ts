@@ -1,12 +1,15 @@
-import type { RoutineSaisie } from "@better-lift/shared";
+import type { ExerciceResume, RoutineSaisie } from "@better-lift/shared";
 import {
   infiniteQueryOptions,
   keepPreviousData,
+  onlineManager,
+  type QueryClient,
   queryOptions,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { api } from "./api";
+import { avantDelai, UNE_SEMAINE } from "./hors-ligne";
 
 /**
  * Les lectures du mobile. Mêmes routes que le web, même client typé : seules
@@ -45,6 +48,29 @@ export function optionsCatalogue(q: string) {
     },
     // Garde la liste pendant la frappe : sans lui, chaque lettre clignote.
     placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * Le catalogue ENTIER, pour le filtrer sur le téléphone, hors ligne compris
+ * (D97). Pages de 100 : l'API plafonne la taille, et c'est voulu. ~1 300
+ * exercices, ~400 Ko, une fois par semaine au plus.
+ */
+export function optionsCatalogueComplet() {
+  return queryOptions({
+    queryKey: ["exercices", "complet"],
+    queryFn: async () => {
+      const tous: ExerciceResume[] = [];
+      for (let page = 1; ; page++) {
+        const res = await api.exercices.$get({ query: { page: String(page), taille: "100" } });
+        if (!res.ok) throw new Error("Le catalogue n'a pas pu être chargé.");
+        const d = await res.json();
+        tous.push(...d.exercices);
+        if (d.exercices.length === 0 || tous.length >= d.total) return tous;
+      }
+    },
+    // Le catalogue ne change qu'au semis.
+    staleTime: UNE_SEMAINE,
   });
 }
 
@@ -103,22 +129,77 @@ type Precedents = Record<
 >;
 
 /**
- * Ce qui a été fait la dernière fois sur ces exercices (D67).
- *
- * Ne BLOQUE jamais : en salle, sans réseau, on démarre sans indication plutôt
- * que d'attendre. D'où un délai court, et `{}` sur tout échec.
+ * Ce qui a été fait la dernière fois sur ces exercices (D67). Rangé sous
+ * `["seances", …]` : l'envoi d'une séance invalide `["seances"]`, donc aussi
+ * ceci. La clé trie les slugs : le même ensemble donne la même entrée.
  */
-export async function chargerPrecedents(slugs: string[]): Promise<Precedents> {
-  if (slugs.length === 0) return {};
-  try {
-    const res = await api.seances.precedentes.$get(
-      { query: { slugs: [...new Set(slugs)].join(",") } },
-      { init: { signal: AbortSignal.timeout(3000) } },
-    );
-    return res.ok ? ((await res.json()) as Precedents) : {};
-  } catch {
-    return {};
+function optionsPrecedents(slugs: string[]) {
+  const cle = [...new Set(slugs)].sort().join(",");
+  return queryOptions({
+    queryKey: ["seances", "precedents", cle],
+    queryFn: async (): Promise<Precedents> => {
+      const res = await api.seances.precedentes.$get({ query: { slugs: cle } });
+      if (!res.ok) throw new Error("La dernière fois n'a pas pu être chargée.");
+      return (await res.json()) as Precedents;
+    },
+  });
+}
+
+// Réseau d'abord, sans tentative ni pause hors ligne : la décision de se
+// rabattre sur le cache est prise ici, pas par TanStack Query (D98).
+const SANS_ATTENTE = { retry: false, networkMode: "always", staleTime: 0 } as const;
+
+/**
+ * Le réseau sous délai, sinon le cache. Hors ligne déclaré, on ne tente même
+ * pas : sur Android en mode avion, une requête attend son délai entier avant
+ * d'échouer, et l'appui sur Démarrer en paierait chaque seconde.
+ */
+async function reseauSinonCache<T>(
+  client: QueryClient,
+  options: { queryKey: readonly unknown[] },
+  lire: () => Promise<T>,
+  ms: number,
+): Promise<T | undefined> {
+  if (onlineManager.isOnline()) {
+    try {
+      return await avantDelai(lire(), ms);
+    } catch {
+      // Le repli ci-dessous.
+    }
   }
+  return client.getQueryData<T>(options.queryKey);
+}
+
+/**
+ * Ne BLOQUE jamais : réseau sous 3 s, sinon la dernière réponse en cache,
+ * sinon rien. En salle, on démarre sans indication plutôt que d'attendre.
+ */
+export async function chargerPrecedents(client: QueryClient, slugs: string[]): Promise<Precedents> {
+  if (slugs.length === 0) return {};
+  const options = optionsPrecedents(slugs);
+  const lus = await reseauSinonCache(
+    client,
+    options,
+    () => client.fetchQuery({ ...options, ...SANS_ATTENTE }),
+    3000,
+  );
+  return lus ?? {};
+}
+
+/**
+ * Le détail d'une routine pour la démarrer : réseau sous 4 s, sinon le cache
+ * (D98). Sans l'un ni l'autre, l'erreur remonte : l'appelant le dit.
+ */
+export async function chargerRoutine(client: QueryClient, id: string) {
+  const options = optionsRoutine(id);
+  const lue = await reseauSinonCache(
+    client,
+    options,
+    () => client.fetchQuery({ ...options, ...SANS_ATTENTE }),
+    4000,
+  );
+  if (!lue) throw new Error("Routine indisponible hors ligne.");
+  return lue;
 }
 
 // --- Les écritures des routines (D82) -------------------------------------------

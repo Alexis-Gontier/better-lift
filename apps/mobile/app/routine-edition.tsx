@@ -54,7 +54,7 @@ function EditeurExistant({ id }: { id: string }) {
       </SafeAreaView>
     );
   }
-  if (routine.isError) {
+  if (routine.isError && !routine.data) {
     return (
       <SafeAreaView style={styles.ecran}>
         <Erreur

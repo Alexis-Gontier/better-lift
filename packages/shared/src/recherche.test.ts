@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
+import { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 
 describe("normaliserRecherche", () => {
   it("dépouille les accents, cédille comprise", () => {
@@ -86,5 +86,41 @@ describe("slugifier", () => {
 
   it("ne produit jamais de tiret en tête, en queue ni en double", () => {
     expect(slugifier("  Squat   avant  ")).toBe("squat-avant");
+  });
+});
+
+describe("filtrerCatalogue", () => {
+  const liste = [
+    { slug: "barbell-bench-press", recherche: "developpe couche a la barre barbell bench press" },
+    { slug: "3-4-sit-up", recherche: "releve de buste 3 4 3 4 sit up" },
+    { slug: "barbell-curl", recherche: "curl a la barre barbell curl" },
+  ];
+
+  it("rend tout, dans l'ordre reçu, quand la saisie est vide", () => {
+    expect(filtrerCatalogue(liste, "   ").map((e) => e.slug)).toEqual([
+      "barbell-bench-press",
+      "3-4-sit-up",
+      "barbell-curl",
+    ]);
+  });
+
+  it("trouve en français malgré les accents et la casse", () => {
+    expect(filtrerCatalogue(liste, "Développé COUCHÉ").map((e) => e.slug)).toEqual([
+      "barbell-bench-press",
+    ]);
+  });
+
+  it("trouve en anglais (D44)", () => {
+    expect(filtrerCatalogue(liste, "bench press").map((e) => e.slug)).toEqual([
+      "barbell-bench-press",
+    ]);
+  });
+
+  it("traite les symboles comme des espaces, comme l'API", () => {
+    expect(filtrerCatalogue(liste, "sit-up").map((e) => e.slug)).toEqual(["3-4-sit-up"]);
+  });
+
+  it("rend une liste vide quand rien ne correspond", () => {
+    expect(filtrerCatalogue(liste, "squat")).toEqual([]);
   });
 });

@@ -36,6 +36,11 @@ export type ExerciceResume = {
    * listes — des centaines de GIF animés à la fois pèseraient trop.
    */
   image: string | null;
+  /**
+   * Les noms français et anglais normalisés (`nomRecherche`) : de quoi filtrer
+   * le catalogue sur le téléphone, hors ligne, sans refaire la normalisation (D97).
+   */
+  recherche: string;
 };
 
 export type ExerciceDetail = ExerciceResume & {

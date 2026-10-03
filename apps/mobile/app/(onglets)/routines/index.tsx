@@ -29,7 +29,7 @@ export default function Routines() {
       </View>
       {routines.isPending ? (
         <Chargement />
-      ) : routines.isError ? (
+      ) : routines.isError && !routines.data ? (
         <Erreur
           message="Les routines n'ont pas pu être chargées."
           onReessayer={() => routines.refetch()}

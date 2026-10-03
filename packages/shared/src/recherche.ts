@@ -44,3 +44,17 @@ export function texteRecherche(nomFr: string, nomAnglais: string): string {
 export function slugifier(nom: string): string {
   return normaliserRecherche(nom).replace(/ /g, "-");
 }
+
+/**
+ * Le catalogue filtré SUR LE TÉLÉPHONE (D97), hors ligne compris. Même
+ * normalisation que l'API, même sémantique (« contient ») : une saisie trouve
+ * en ligne et hors ligne exactement les mêmes exercices. L'ordre reçu est gardé
+ * — l'API trie déjà sur `nomRecherche`, donc sur le nom français.
+ */
+export function filtrerCatalogue<T extends { recherche: string }>(
+  liste: readonly T[],
+  saisie: string,
+): T[] {
+  const q = normaliserRecherche(saisie);
+  return q === "" ? [...liste] : liste.filter((e) => e.recherche.includes(q));
+}

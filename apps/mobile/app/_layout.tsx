@@ -1,17 +1,35 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  brancherReseauEtPremierPlan,
+  gardeHorsLigne,
+  persister,
+  queryClient,
+  UNE_SEMAINE,
+} from "../lib/hors-ligne";
 import { SeanceProvider } from "../lib/seance";
 
-const queryClient = new QueryClient();
+brancherReseauEtPremierPlan();
 
 export default function RootLayout() {
   return (
     // Le glisser-déposer des exercices (édition d'une routine) exige la racine
     // de gestes au sommet de l'arbre.
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
+      {/* Le cache des lectures survit à l'arrêt de l'app (D96) : routines,
+          catalogue et précédents restent lisibles sans réseau. `buster` se monte
+          quand la forme d'une réponse change, pour jeter un cache incompatible. */}
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: UNE_SEMAINE,
+          buster: "1",
+          dehydrateOptions: { shouldDehydrateQuery: gardeHorsLigne },
+        }}
+      >
         <SeanceProvider>
           <StatusBar style="light" />
           <Stack
@@ -29,7 +47,7 @@ export default function RootLayout() {
             <Stack.Screen name="reorganiser" options={{ presentation: "modal" }} />
           </Stack>
         </SeanceProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </GestureHandlerRootView>
   );
 }

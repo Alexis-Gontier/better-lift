@@ -18,6 +18,7 @@ import {
   secondesEcoulees,
   validerSerie,
 } from "@better-lift/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -45,6 +46,7 @@ function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
 
 export default function Seance() {
   const router = useRouter();
+  const client = useQueryClient();
   const { pret, seance, modifier, abandonner: effacerSeance, recharger } = useSeance();
   const maintenant = useMaintenant();
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
@@ -104,7 +106,10 @@ export default function Seance() {
   // D93 : ajouter et remplacer passent par la modale du catalogue.
   const ajouter = () => {
     attendreChoix(async (choix) => {
-      const precedents = await chargerPrecedents(choix.map((c) => c.slug));
+      const precedents = await chargerPrecedents(
+        client,
+        choix.map((c) => c.slug),
+      );
       const s = courante.current;
       if (!s) return;
       const avec = choix.reduce((acc, c) => ajouterExercice(acc, c.slug, c.nom), s);
@@ -116,7 +121,7 @@ export default function Seance() {
   const remplacer = (iE: number) => {
     attendreChoix(async ([c]) => {
       if (!c) return;
-      const precedents = await chargerPrecedents([c.slug]);
+      const precedents = await chargerPrecedents(client, [c.slug]);
       const s = courante.current;
       if (!s) return;
       modifier(avecPrecedents(remplacerExercice(s, iE, c.slug, c.nom), precedents));

@@ -5,6 +5,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FileEnvoi } from "../../components/file-envoi";
 import { authClient } from "../../lib/auth-client";
+import { persister } from "../../lib/hors-ligne";
 import { useSeance } from "../../lib/seance";
 import { CIBLE, couleurs, espace, taille } from "../../lib/theme";
 
@@ -20,6 +21,9 @@ export default function Profil() {
     // Les clés de cache ne portent pas l'utilisateur : sans ce vidage, le
     // compte suivant verrait un instant les données du précédent.
     client.clear();
+    // Le cache gardé sur le disque (D96) part aussi : le compte suivant ne doit
+    // jamais voir les routines du précédent, même hors ligne.
+    await persister.removeClient();
     router.replace("/connexion");
   };
 
