@@ -38,14 +38,17 @@ const icone =
  * un compte, et un seul endroit le vérifie.
  */
 export default function Onglets() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending, error } = authClient.useSession();
   const router = useRouter();
   const { seance } = useSeance();
   // Le bouton central : reprendre la séance en cours, sinon choisir comment démarrer.
   const lancer = () => router.push(seance ? "/seance" : "/demarrer");
 
   if (isPending) return <Chargement />;
-  if (!session) return <Redirect href="/connexion" />;
+  // D100 : la connexion seulement quand le serveur a DIT « pas de session ».
+  // Une erreur de lecture (hors ligne) laisse passer : le cookie est toujours
+  // sur le téléphone, et la séance en cours doit rester joignable en salle.
+  if (!session && !error) return <Redirect href="/connexion" />;
 
   const Centrale = seance ? Play : Dumbbell;
 
