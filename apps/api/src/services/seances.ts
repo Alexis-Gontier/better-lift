@@ -31,6 +31,7 @@ type ExerciceEcrit = {
   position: number;
   exerciseId: string;
   reposSec: number | null;
+  note: string | null;
   series: SerieEcrite[];
 };
 
@@ -46,6 +47,7 @@ export function versEcriture(
       position,
       exerciseId,
       reposSec: e.reposSec,
+      note: e.note ?? null,
       // Seuls les champs connus sont retenus : la saisie est non stricte (D57),
       // elle peut en porter d'autres, qui n'ont rien à faire en base.
       series: e.series.map((s, i) => ({
@@ -111,6 +113,7 @@ export const depotPrisma: DepotSeances = {
               position: e.position,
               exerciseId: e.exerciseId,
               reposSec: e.reposSec,
+              note: e.note,
               series: { create: e.series },
             })),
           },
@@ -150,6 +153,7 @@ export type LigneSeance = {
   exercices: {
     exerciseId: string;
     exercise: { slug: string; nomFr: string };
+    note: string | null;
     series: LigneSerie[];
   }[];
 };
@@ -200,6 +204,7 @@ export function versDetail(
     exercices: l.exercices.map((e) => ({
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
+      note: e.note,
       series: e.series.map((s) => {
         const i = curseur.get(e.exerciseId) ?? 0;
         curseur.set(e.exerciseId, i + 1);
@@ -246,6 +251,7 @@ const LECTURE_SEANCE = {
     select: {
       exerciseId: true,
       exercise: { select: { slug: true, nomFr: true } },
+      note: true,
       series: {
         orderBy: { position: "asc" },
         select: { type: true, reps: true, chargeKg: true, faite: true },

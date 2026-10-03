@@ -43,7 +43,11 @@ export default function DetailSeance() {
         </Text>
         {s.exercices.map((ex, iE) => (
           <View key={`${ex.slug}-${iE}`} style={styles.carte}>
-            <Text style={styles.exercice}>{ex.nom}</Text>
+            <View style={styles.titre}>
+              <Text style={styles.exercice}>{ex.nom}</Text>
+              {/* La note prise en séance (D90). */}
+              {ex.note ? <Text style={styles.note}>{ex.note}</Text> : null}
+            </View>
             {ex.series.map((serie, i) => (
               <View
                 key={`${ex.slug}-${iE}-${i}`}
@@ -81,14 +85,14 @@ const styles = StyleSheet.create({
     backgroundColor: couleurs.surface1,
     overflow: "hidden",
   },
-  exercice: {
-    color: couleurs.encre,
-    fontSize: taille.courant,
-    fontWeight: "600",
+  titre: {
     padding: espace.m,
+    gap: espace.xs,
     borderBottomWidth: 1,
     borderBottomColor: couleurs.ligne,
   },
+  exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
+  note: { color: couleurs.encrePale, fontSize: taille.petit },
   serie: {
     flexDirection: "row",
     alignItems: "center",

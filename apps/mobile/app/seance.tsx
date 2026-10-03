@@ -4,36 +4,44 @@ import {
   ajusterRepos,
   arreterRepos,
   avecPrecedents,
+  bilanSeance,
+  formaterCharge,
   marquerReposSignale,
+  modifierNote,
+  modifierReposExercice,
   modifierSerie,
+  remplacerExercice,
   reposRestant,
   retirerExercice,
+  retirerSerie,
+  type SeanceEnCours,
   secondesEcoulees,
   validerSerie,
 } from "@better-lift/shared";
-import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Plus } from "lucide-react-native";
+import { useCallback, useEffect, useRef } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice } from "../components/seance/carte-exercice";
-import { chargerPrecedents, optionsCatalogue } from "../lib/requetes";
+import { attendreChoix } from "../lib/choix-exercices";
+import { chargerPrecedents } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, couleurs, espace, taille } from "../lib/theme";
+import { SYSTEME_UNITES } from "../lib/unites";
+
+function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
+  return (
+    <View style={styles.chiffre}>
+      <Text style={styles.chiffreLibelle}>{libelle}</Text>
+      <Text style={styles.chiffreValeur}>{valeur}</Text>
+    </View>
+  );
+}
 
 export default function Seance() {
   const router = useRouter();
@@ -42,10 +50,11 @@ export default function Seance() {
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
   // posé sur le banc ne doit pas se verrouiller entre deux séries.
   useKeepAwake();
-  const [ajout, setAjout] = useState(false);
-  const [filtre, setFiltre] = useState("");
-  // La recherche du catalogue réel : bilingue, sans accents (lot 4).
-  const catalogue = useQuery({ ...optionsCatalogue(filtre.trim()), enabled: ajout });
+
+  // Les choix de la modale reviennent APRÈS une attente (les précédents) : ils
+  // s'appliquent à la séance du moment, pas à celle de l'ouverture.
+  const courante = useRef<SeanceEnCours | null>(seance);
+  courante.current = seance;
 
   // L'écran RELIT le disque à chaque affichage (§ 8) : c'est le même chemin
   // après un démarrage, une reprise, ou un arrêt forcé de l'application.
@@ -92,31 +101,64 @@ export default function Seance() {
       },
     ]);
 
+  // D93 : ajouter et remplacer passent par la modale du catalogue.
+  const ajouter = () => {
+    attendreChoix(async (choix) => {
+      const precedents = await chargerPrecedents(choix.map((c) => c.slug));
+      const s = courante.current;
+      if (!s) return;
+      const avec = choix.reduce((acc, c) => ajouterExercice(acc, c.slug, c.nom), s);
+      modifier(avecPrecedents(avec, precedents));
+    });
+    router.push("/choisir-exercices");
+  };
+
+  const remplacer = (iE: number) => {
+    attendreChoix(async ([c]) => {
+      if (!c) return;
+      const precedents = await chargerPrecedents([c.slug]);
+      const s = courante.current;
+      if (!s) return;
+      modifier(avecPrecedents(remplacerExercice(s, iE, c.slug, c.nom), precedents));
+    });
+    router.push("/choisir-exercices?mode=remplacer");
+  };
+
+  const bilan = bilanSeance(seance);
+
   return (
     <SafeAreaView style={styles.ecran}>
       <View style={styles.entete}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.titreLigne}>
           <Text style={styles.nom} numberOfLines={1}>
             {seance.nom}
           </Text>
-          <Text style={styles.chrono}>
-            {formaterDuree(secondesEcoulees(seance.debut, maintenant))}
-          </Text>
+          <Pressable
+            onPress={() => router.push("/fin")}
+            style={styles.terminer}
+            accessibilityRole="button"
+          >
+            <Text style={styles.terminerTexte}>Terminer</Text>
+          </Pressable>
         </View>
-        <Pressable
-          onPress={() => router.push("/fin")}
-          style={styles.terminer}
-          accessibilityRole="button"
-        >
-          <Text style={styles.terminerTexte}>Terminer</Text>
-        </Pressable>
+        <View style={styles.chiffres}>
+          <Chiffre
+            libelle="Durée"
+            valeur={formaterDuree(secondesEcoulees(seance.debut, maintenant))}
+          />
+          <Chiffre libelle="Volume" valeur={formaterCharge(bilan.volumeKg, SYSTEME_UNITES)} />
+          <Chiffre libelle="Séries" valeur={String(bilan.seriesFaites)} />
+        </View>
       </View>
 
       {/* De la marge en bas : le bandeau de repos ne doit jamais cacher la dernière série. */}
       <ScrollView
-        contentContainerStyle={[styles.contenu, { paddingBottom: 240 }]}
+        contentContainerStyle={{ paddingBottom: 200 }}
         keyboardShouldPersistTaps="handled"
       >
+        {seance.exercices.length === 0 ? (
+          <Text style={styles.vide}>Ajoute un premier exercice pour commencer.</Text>
+        ) : null}
         {seance.exercices.map((e, iE) => (
           <CarteExercice
             key={`${e.slug}-${iE}`}
@@ -124,19 +166,23 @@ export default function Seance() {
             onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
             onValiderSerie={(iS) => modifier(validerSerie(seance, iE, iS, new Date()))}
             onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
+            onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
+            onNote={(note) => modifier(modifierNote(seance, iE, note))}
+            onRepos={(sec) => modifier(modifierReposExercice(seance, iE, sec))}
+            onReorganiser={() => router.push("/reorganiser")}
+            onRemplacer={() => remplacer(iE)}
             onRetirer={() => modifier(retirerExercice(seance, iE))}
           />
         ))}
-        <Pressable
-          onPress={() => setAjout(true)}
-          style={styles.secondaire}
-          accessibilityRole="button"
-        >
-          <Text style={styles.secondaireTexte}>+ exercice</Text>
-        </Pressable>
-        <Pressable onPress={abandonner} style={styles.abandon} accessibilityRole="button">
-          <Text style={styles.abandonTexte}>Abandonner la séance</Text>
-        </Pressable>
+        <View style={styles.pied}>
+          <Pressable onPress={ajouter} style={styles.ajouter} accessibilityRole="button">
+            <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
+            <Text style={styles.ajouterTexte}>Ajouter un exercice</Text>
+          </Pressable>
+          <Pressable onPress={abandonner} style={styles.abandon} accessibilityRole="button">
+            <Text style={styles.abandonTexte}>Abandonner la séance</Text>
+          </Pressable>
+        </View>
       </ScrollView>
 
       {repos !== null ? (
@@ -146,53 +192,6 @@ export default function Seance() {
           onAjuster={(delta) => modifier(ajusterRepos(seance, delta, new Date()))}
         />
       ) : null}
-
-      <Modal visible={ajout} animationType="slide" onRequestClose={() => setAjout(false)}>
-        <SafeAreaView style={styles.ecran}>
-          <View style={styles.entete}>
-            <TextInput
-              autoFocus
-              value={filtre}
-              onChangeText={setFiltre}
-              placeholder="Chercher un exercice"
-              placeholderTextColor={couleurs.encreFaible}
-              style={styles.recherche}
-            />
-            <Pressable onPress={() => setAjout(false)} style={styles.fermer}>
-              <Text style={styles.secondaireTexte}>Fermer</Text>
-            </Pressable>
-          </View>
-          <FlatList
-            data={catalogue.data ?? []}
-            ListEmptyComponent={
-              <Text style={[styles.pale, { padding: espace.l }]}>
-                {catalogue.isPending
-                  ? "Chargement…"
-                  : catalogue.isError
-                    ? "Le catalogue n'a pas pu être chargé."
-                    : "Aucun exercice trouvé."}
-              </Text>
-            }
-            keyExtractor={(x) => x.slug}
-            contentContainerStyle={styles.contenu}
-            renderItem={({ item }) => (
-              <Pressable
-                style={styles.choix}
-                onPress={async () => {
-                  const precedents = await chargerPrecedents([item.slug]);
-                  modifier(
-                    avecPrecedents(ajouterExercice(seance, item.slug, item.nom), precedents),
-                  );
-                  setAjout(false);
-                  setFiltre("");
-                }}
-              >
-                <Text style={styles.choixTexte}>{item.nom}</Text>
-              </Pressable>
-            )}
-          />
-        </SafeAreaView>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -202,61 +201,60 @@ const styles = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", gap: espace.l },
   pale: { color: couleurs.encrePale, fontSize: taille.courant },
   entete: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
     paddingHorizontal: espace.l,
-    paddingVertical: espace.m,
+    paddingTop: espace.s,
+    paddingBottom: espace.m,
+    gap: espace.s,
     borderBottomWidth: 1,
     borderBottomColor: couleurs.ligne,
   },
-  nom: { color: couleurs.encreDouce, fontSize: taille.courant },
-  chrono: {
-    color: couleurs.encre,
-    fontSize: taille.chrono,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  // L'action principale de l'écran : l'aplat lime (D28).
+  titreLigne: { flexDirection: "row", alignItems: "center", gap: espace.m },
+  nom: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
+  // L'action principale de l'écran : l'aplat lime (D28), compact (D94).
   terminer: {
-    minHeight: CIBLE,
-    paddingHorizontal: espace.xl,
-    borderRadius: 10,
+    height: 36,
+    paddingHorizontal: espace.l,
+    borderRadius: 8,
     backgroundColor: couleurs.accent,
     justifyContent: "center",
   },
-  terminerTexte: { color: couleurs.surAccent, fontSize: taille.courant, fontWeight: "700" },
-  contenu: { padding: espace.m, gap: espace.m },
+  terminerTexte: { color: couleurs.surAccent, fontSize: 15, fontWeight: "700" },
+  chiffres: { flexDirection: "row", gap: espace.xl },
+  chiffre: { gap: 1 },
+  chiffreLibelle: { color: couleurs.encreFaible, fontSize: 12 },
+  chiffreValeur: {
+    color: couleurs.encre,
+    fontSize: taille.courant,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
+  vide: {
+    color: couleurs.encrePale,
+    fontSize: taille.courant,
+    textAlign: "center",
+    paddingVertical: espace.xl,
+  },
+  pied: { padding: espace.m, gap: espace.s },
+  ajouter: {
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: couleurs.surface2,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: espace.s,
+  },
+  ajouterTexte: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
   secondaire: {
     minHeight: CIBLE,
     borderRadius: 12,
     borderWidth: 1,
-    borderStyle: "dashed",
     borderColor: couleurs.ligneForte,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: espace.l,
   },
   secondaireTexte: { color: couleurs.encreDouce, fontSize: taille.courant },
-  abandon: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
-  abandonTexte: { color: couleurs.dangerEncre, fontSize: taille.courant },
-  recherche: {
-    flex: 1,
-    height: CIBLE,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface2,
-    color: couleurs.encre,
-    fontSize: taille.courant,
-    paddingHorizontal: espace.m,
-  },
-  fermer: { minHeight: CIBLE, justifyContent: "center" },
-  choix: {
-    minHeight: CIBLE + 8,
-    justifyContent: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: couleurs.ligne,
-  },
-  choixTexte: { color: couleurs.encre, fontSize: taille.courant },
+  abandon: { height: 44, alignItems: "center", justifyContent: "center" },
+  abandonTexte: { color: couleurs.dangerEncre, fontSize: 15 },
 });

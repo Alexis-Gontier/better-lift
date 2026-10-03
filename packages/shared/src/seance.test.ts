@@ -9,8 +9,12 @@ import {
   bilanSeance,
   demarrerDepuisRoutine,
   demarrerVide,
+  deplacerExercice,
   marquerReposSignale,
+  modifierNote,
+  modifierReposExercice,
   modifierSerie,
+  remplacerExercice,
   reposRestant,
   retirerExercice,
   retirerSerie,
@@ -294,5 +298,65 @@ describe("ajusterRepos", () => {
   it("sans repos en cours, ne fait rien", () => {
     const s = demarrerVide("s", T0);
     expect(ajusterRepos(s, 15, maintenant)).toBe(s);
+  });
+});
+
+describe("la carte d'exercice (D89–D92)", () => {
+  const depart = () => demarrerDepuisRoutine(routine, "s", T0);
+
+  it("écrit une note, et une note vide redevient null", () => {
+    const s = modifierNote(depart(), 0, "Siège cran 4");
+    expect(s.exercices[0]?.note).toBe("Siège cran 4");
+    expect(modifierNote(s, 0, "   ").exercices[0]?.note).toBeNull();
+  });
+
+  it("règle le repos d'un exercice, ou le désactive", () => {
+    expect(modifierReposExercice(depart(), 1, 90).exercices[1]?.reposSec).toBe(90);
+    expect(modifierReposExercice(depart(), 0, null).exercices[0]?.reposSec).toBeNull();
+  });
+
+  it("déplace un exercice, sans toucher à l'original", () => {
+    const s = depart();
+    const apres = deplacerExercice(s, 0, 1);
+    expect(apres.exercices.map((e) => e.slug)).toEqual(["pull-up", "barbell-bench-press"]);
+    expect(s.exercices.map((e) => e.slug)).toEqual(["barbell-bench-press", "pull-up"]);
+    expect(deplacerExercice(s, 0, 5)).toBe(s);
+  });
+
+  it("remplace un exercice : mêmes séries et même repos, valeurs, note et précédent vidés", () => {
+    const s = modifierNote(
+      avecPrecedents(validerSerie(depart(), 0, 1, T0), {
+        "barbell-bench-press": [{ reps: 5, chargeKg: 80, faite: true }],
+      }),
+      0,
+      "prise serrée",
+    );
+    const e = remplacerExercice(s, 0, "dumbbell-bench-press", "Développé couché haltères")
+      .exercices[0];
+    expect(e).toEqual({
+      slug: "dumbbell-bench-press",
+      nom: "Développé couché haltères",
+      reposSec: 120,
+      note: null,
+      series: [
+        { type: "ECHAUFFEMENT", reps: null, chargeKg: null, faite: false },
+        { type: "NORMALE", reps: null, chargeKg: null, faite: false },
+      ],
+    });
+  });
+
+  it("envoie la note, null quand il n'y en a pas — un vieux brouillon n'en a pas", () => {
+    const s = modifierNote(depart(), 0, "prise serrée");
+    const e = versEnvoi(s, plus(60));
+    expect(e.exercices.map((x) => x.note)).toEqual(["prise serrée", null]);
+    expect(seanceSaisie.parse(e)).toEqual(e);
+  });
+
+  it("refuse une note trop longue, accepte un envoi sans note (vieux mobile, D57)", () => {
+    const e = versEnvoi(depart(), plus(60));
+    const longue = { ...e, exercices: [{ ...e.exercices[0], note: "x".repeat(501) }] };
+    expect(() => seanceSaisie.parse(longue)).toThrow();
+    const sansNote = { ...e, exercices: e.exercices.map(({ note: _, ...x }) => x) };
+    expect(() => seanceSaisie.parse(sansNote)).not.toThrow();
   });
 });

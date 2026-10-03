@@ -30,9 +30,13 @@ export function DetailSeance({ seance, onFermer }: { seance: SeanceDetail; onFer
               key={`${ex.slug}-${iE}`}
               className="gap-0 overflow-hidden bg-(--surface-2) py-0 shadow-none"
             >
-              <p className="border-b border-(--line) px-3 py-2 text-sm font-medium text-(--ink)">
-                {ex.nom}
-              </p>
+              <div className="border-b border-(--line) px-3 py-2">
+                <p className="text-sm font-medium text-(--ink)">{ex.nom}</p>
+                {/* La note prise en séance (D90). */}
+                {ex.note ? (
+                  <p className="mt-0.5 text-xs whitespace-pre-line text-(--ink-muted)">{ex.note}</p>
+                ) : null}
+              </div>
               <Table>
                 <TableBody>
                   {ex.series.map((serie, i) => (

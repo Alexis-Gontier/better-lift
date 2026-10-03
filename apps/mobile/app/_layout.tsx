@@ -25,6 +25,8 @@ export default function RootLayout() {
             <Stack.Screen name="demarrer" options={{ presentation: "modal" }} />
             {/* Le catalogue s'ouvre par-dessus l'édition d'une routine, et y revient. */}
             <Stack.Screen name="choisir-exercices" options={{ presentation: "modal" }} />
+            {/* L'ordre des exercices de la séance en cours (D89). */}
+            <Stack.Screen name="reorganiser" options={{ presentation: "modal" }} />
           </Stack>
         </SeanceProvider>
       </QueryClientProvider>

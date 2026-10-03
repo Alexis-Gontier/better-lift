@@ -37,9 +37,20 @@ describe("versEcriture", () => {
         position: 0,
         exerciseId: "ex-1",
         reposSec: 120,
+        note: null,
         series: [{ position: 0, type: "NORMALE", reps: 6, chargeKg: 82.5, faite: true }],
       },
     ]);
+  });
+
+  it("écrit la note de l'exercice (D90), vide quand un vieux mobile ne l'envoie pas", () => {
+    const ids = new Map([["barbell-bench-press", "ex-1"]]);
+    const avecNote = {
+      ...saisie,
+      exercices: [{ ...saisie.exercices[0], note: "siège cran 4" }],
+    } as SeanceSaisie;
+    expect(versEcriture(avecNote, ids)[0]?.note).toBe("siège cran 4");
+    expect(versEcriture(saisie, ids)[0]?.note).toBeNull();
   });
 
   it("refuse un slug inconnu, en le nommant", () => {
