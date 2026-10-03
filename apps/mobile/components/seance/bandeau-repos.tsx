@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formaterDuree } from "../../lib/temps";
-import { creerStyles, espace } from "../../lib/theme";
+import { creerStyles, espace, polices, rayon } from "../../lib/theme";
 
 /**
  * Le repos restant, sur une ligne en bas de l'écran — là où le pouce et l'œil
@@ -36,7 +36,7 @@ export function BandeauRepos({
       </Pressable>
       {/* Lisible à bout de bras, téléphone posé sur le banc (D79). */}
       <View style={styles.centre}>
-        <Text style={styles.libelle}>{fini ? "C'est reparti" : "Repos"}</Text>
+        <Text style={styles.libelle}>{fini ? "Repos terminé" : "Repos"}</Text>
         <Text style={[styles.temps, fini && styles.tempsFini]}>{formaterDuree(restant)}</Text>
       </View>
       <Pressable
@@ -68,7 +68,7 @@ const useStyles = creerStyles((couleurs) => ({
     alignItems: "center",
     gap: espace.s,
     padding: espace.s,
-    borderRadius: 14,
+    borderRadius: rayon.bandeau,
     backgroundColor: couleurs.surface3,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
@@ -79,15 +79,16 @@ const useStyles = creerStyles((couleurs) => ({
   libelle: { color: couleurs.encreTertiaire, fontSize: 11, textTransform: "uppercase" },
   temps: {
     color: couleurs.encre,
-    fontSize: 30,
-    fontWeight: "700",
+    fontSize: 34,
+    lineHeight: 36,
+    fontFamily: polices.condense,
     fontVariant: ["tabular-nums"],
   },
   tempsFini: { color: couleurs.encre },
   bouton: {
     width: 52,
     height: 44,
-    borderRadius: 8,
+    borderRadius: rayon.cellule,
     backgroundColor: couleurs.surface2,
     alignItems: "center",
     justifyContent: "center",

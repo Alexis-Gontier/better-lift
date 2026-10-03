@@ -187,6 +187,21 @@ export function creerStyles<T extends StyleSheet.NamedStyles<T>>(
 /** La plus petite cible tactile : 48 px, recommandation Android. */
 export const CIBLE = 48;
 
-export const taille = { petit: 13, courant: 16, grand: 20, titre: 26, chrono: 34 } as const;
+/**
+ * L'échelle (D104). `chrono` : la durée de séance, en coupe condensée ;
+ * `valeur` : les cases kg / reps.
+ */
+export const taille = {
+  petit: 13,
+  courant: 16,
+  valeur: 18,
+  grand: 20,
+  titre: 26,
+  chrono: 48,
+} as const;
 
-export const espace = { xs: 4, s: 8, m: 12, l: 16, xl: 24 } as const;
+/** Espacements en base 4 (D104). */
+export const espace = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 } as const;
+
+/** Les rayons par rôle (D104). */
+export const rayon = { cellule: 10, bouton: 14, bandeau: 18, carte: 20, feuille: 24 } as const;

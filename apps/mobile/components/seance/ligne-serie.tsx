@@ -2,8 +2,9 @@ import { chargeEnTexte, lireCharge, type SerieEnCours } from "@better-lift/share
 import { Check } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { creerStyles, espace, useCouleurs } from "../../lib/theme";
+import { creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
+import { vibrer } from "../../lib/vibrations";
 
 /** Un entier de 0 à 999, ou vide ; `NaN` signale une saisie à corriger. */
 function lireReps(t: string): number | null {
@@ -15,7 +16,14 @@ function lireReps(t: string): number | null {
 
 /** Les largeurs des colonnes, partagées avec l'en-tête du tableau. */
 // 40 : « SÉRIE » en Archivo ne tient pas sur 34 (D103).
-export const COLONNES = { serie: 40, valider: 36 } as const;
+export const COLONNES = { serie: 40, valider: 40 } as const;
+
+/**
+ * Les états d'une ligne (D108). La prochaine série porte la SEULE ✓ en aplat
+ * lime de l'écran (D105) ; les suivantes montrent leurs cibles en valeurs
+ * fantômes ; une série faite se fond dans une ligne teintée, ✓ neutre.
+ */
+export type EtatSerie = "faite" | "prochaine" | "a-venir";
 
 /** La ligne « dernière fois » : « 82,5 × 6 », « 10 reps », ou un tiret. */
 function textePrecedent(p?: { reps: number | null; chargeKg: number | null; faite: boolean }) {
@@ -34,6 +42,7 @@ export function LigneSerie({
   etiquette,
   couleurEtiquette,
   serie,
+  etat,
   precedent,
   onChange,
   onValider,
@@ -44,6 +53,7 @@ export function LigneSerie({
   etiquette: string;
   couleurEtiquette: string;
   serie: SerieEnCours;
+  etat: EtatSerie;
   /** Ce qui a été fait la dernière fois à cette position (D67). */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
   onChange: (patch: { reps?: number | null; chargeKg?: number | null }) => void;
@@ -66,9 +76,17 @@ export function LigneSerie({
     setReps(precedent.reps === null ? "" : String(precedent.reps));
     setCharge(precedent.chargeKg === null ? "" : chargeEnTexte(precedent.chargeKg, SYSTEME_UNITES));
     onChange({ reps: precedent.reps, chargeKg: precedent.chargeKg });
+    vibrer.selection();
   };
 
-  const faite = serie.faite;
+  const valider = () => {
+    // On ne vibre qu'à la validation : décocher une erreur de doigt se fait en silence.
+    if (!serie.faite) vibrer.valider();
+    onValider();
+  };
+
+  const faite = etat === "faite";
+  const fantome = etat === "a-venir";
   return (
     <View style={[styles.ligne, faite && styles.faite]}>
       <Pressable
@@ -102,7 +120,12 @@ export function LigneSerie({
         placeholder="—"
         placeholderTextColor={couleurs.encreAttenuee}
         selectTextOnFocus
-        style={[styles.case, faite && styles.caseFaite, chargeKo && styles.caseKo]}
+        style={[
+          styles.case,
+          fantome && styles.caseFantome,
+          faite && styles.caseFaite,
+          chargeKo && styles.caseKo,
+        ]}
       />
       <TextInput
         accessibilityLabel={`Série ${numero}, répétitions`}
@@ -113,68 +136,93 @@ export function LigneSerie({
         placeholder="—"
         placeholderTextColor={couleurs.encreAttenuee}
         selectTextOnFocus
-        style={[styles.case, faite && styles.caseFaite, repsKo && styles.caseKo]}
+        style={[
+          styles.case,
+          fantome && styles.caseFantome,
+          faite && styles.caseFaite,
+          repsKo && styles.caseKo,
+        ]}
       />
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: faite }}
         accessibilityLabel={`Série ${numero} faite`}
-        onPress={onValider}
-        hitSlop={6}
-        style={[styles.valider, faite && styles.validerFait]}
+        onPress={valider}
+        hitSlop={4}
+        style={[
+          styles.valider,
+          etat === "prochaine" && styles.validerProchaine,
+          faite && styles.validerFait,
+        ]}
       >
         <Check
           size={18}
           strokeWidth={3}
-          color={faite ? couleurs.surAction : couleurs.encreAttenuee}
+          color={
+            etat === "prochaine"
+              ? couleurs.surAction
+              : faite
+                ? couleurs.encre
+                : couleurs.encreAttenuee
+          }
         />
       </Pressable>
     </View>
   );
 }
 
+// Ligne de 52 : cases visibles de 40, `hitSlop` de 4 pour une cible de 48 (D104).
 const useStyles = creerStyles((couleurs) => ({
   ligne: {
+    minHeight: 52,
     flexDirection: "row",
     alignItems: "center",
     gap: espace.s,
-    paddingVertical: 3,
     paddingHorizontal: espace.xs,
-    borderRadius: 8,
+    borderRadius: rayon.cellule,
   },
   // Faite : la ligne se teinte, sans aplat — l'aplat reste réservé à l'action.
   faite: { backgroundColor: couleurs.surface1 },
   etiquette: {
     width: COLONNES.serie,
-    height: 36,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
   },
   etiquetteTexte: { fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
-  precedent: { flex: 1.25, height: 36, justifyContent: "center" },
-  precedentTexte: { color: couleurs.encreAttenuee, fontSize: 14, fontVariant: ["tabular-nums"] },
+  precedent: { flex: 1.25, height: 40, justifyContent: "center" },
+  precedentTexte: {
+    color: couleurs.encreTertiaire,
+    fontSize: 14,
+    fontVariant: ["tabular-nums"],
+  },
   case: {
     flex: 1,
-    height: 36,
+    height: 40,
     padding: 0,
-    borderRadius: 8,
+    borderRadius: rayon.cellule,
     backgroundColor: couleurs.surface2,
     color: couleurs.encre,
-    fontSize: 17,
+    fontSize: taille.valeur,
     fontWeight: "600",
     textAlign: "center",
     fontVariant: ["tabular-nums"],
   },
+  // À venir : les cibles se lisent, en retrait, jusqu'à ce qu'on y arrive.
+  caseFantome: { color: couleurs.encreTertiaire },
   // Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ.
   caseFaite: { backgroundColor: "transparent" },
   caseKo: { borderWidth: 1, borderColor: couleurs.dangerEncre },
+  // À venir : ✓ en contour.
   valider: {
     width: COLONNES.valider,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: couleurs.surface3,
+    height: 40,
+    borderRadius: rayon.cellule,
+    borderWidth: 1,
+    borderColor: couleurs.ligneForte,
     alignItems: "center",
     justifyContent: "center",
   },
-  validerFait: { backgroundColor: couleurs.action },
+  validerProchaine: { backgroundColor: couleurs.action, borderColor: couleurs.action },
+  validerFait: { backgroundColor: couleurs.surface3, borderColor: couleurs.surface3 },
 }));
