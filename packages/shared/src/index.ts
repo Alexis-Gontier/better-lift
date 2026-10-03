@@ -1,3 +1,4 @@
+export { resumeSemaine, routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export {
   type Brouillon,
