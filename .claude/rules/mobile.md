@@ -104,6 +104,11 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   en trois états (`EtatSerie`) : faite (teintée, ✓ neutre) · **prochaine** (seule ✓ lime de
   l'écran, `prochaineSerie` de `shared`) · à venir (cibles en valeurs fantômes, ✓ en contour).
   Cases de 40, ligne de 52.
+- **Pavé intégré (D109)** : les cases kg / reps ne sont pas des `TextInput` ; un appui ouvre
+  `components/seance/pave-numerique.tsx`, et l'écran de séance tient la saisie (`Edition` dans
+  `app/seance.tsx`). La logique des touches (`toucherPave`, `ajusterSurPave`, `lireReps`) vit
+  dans `shared/pave.ts`. Une saisie invalide n'est jamais écrite ; la ligne saisie défile au
+  quart haut de l'écran (positions des blocs et des lignes par `onLayout`).
 - **Vibrations** : toujours par `lib/vibrations.ts` (`vibrer.valider`, `selection`, `finRepos`),
   jamais `expo-haptics` en direct — le réglage du Profil s'y branchera (D113).
 - Un rappel de modale qui attend (les précédents) applique son choix à la séance **du moment**

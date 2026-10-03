@@ -39,6 +39,14 @@ export {
   zonesTravaillees,
 } from "./muscles.js";
 export {
+  ajusterSurPave,
+  type ChampPave,
+  effacerSurPave,
+  lireReps,
+  type TouchePave,
+  toucherPave,
+} from "./pave.js";
+export {
   filtrerCatalogue,
   normaliserRecherche,
   slugifier,

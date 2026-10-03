@@ -2,11 +2,17 @@ import {
   ajouterExercice,
   ajouterSerie,
   ajusterRepos,
+  ajusterSurPave,
   arreterRepos,
   avecPrecedents,
   bilanSeance,
+  type ChampPave,
+  chargeEnTexte,
+  effacerSurPave,
   formaterCharge,
   formatHeure,
+  lireCharge,
+  lireReps,
   marquerReposSignale,
   modifierNote,
   modifierReposExercice,
@@ -18,17 +24,19 @@ import {
   retirerSerie,
   type SeanceEnCours,
   secondesEcoulees,
+  toucherPave,
   validerSerie,
 } from "@better-lift/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
 import { ChevronDown, Plus } from "lucide-react-native";
-import { useCallback, useEffect, useRef } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
-import { CarteExercice } from "../components/seance/carte-exercice";
+import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
+import { PaveNumerique } from "../components/seance/pave-numerique";
 import { attendreChoix } from "../lib/choix-exercices";
 import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents } from "../lib/requetes";
@@ -37,6 +45,21 @@ import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 import { vibrer } from "../lib/vibrations";
+
+/** La case en cours de saisie au pavé (D109) : l'écran tient le texte tapé. */
+type Edition = { iE: number; iS: number; champ: ChampPave; texte: string; neuf: boolean };
+
+/** Le texte tapé, lu en valeur ; `NaN` signale une saisie à corriger. */
+function valeurDe(e: Edition): number | null {
+  return e.champ === "charge" ? lireCharge(e.texte, SYSTEME_UNITES) : lireReps(e.texte);
+}
+
+/** La saisie écrite dans la séance — inchangée si elle est invalide. */
+function appliquer(s: SeanceEnCours, e: Edition): SeanceEnCours {
+  const v = valeurDe(e);
+  if (Number.isNaN(v)) return s;
+  return modifierSerie(s, e.iE, e.iS, e.champ === "charge" ? { chargeKg: v } : { reps: v });
+}
 
 function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   const styles = useStyles();
@@ -55,6 +78,15 @@ export default function Seance() {
   const client = useQueryClient();
   const { pret, seance, modifier, abandonner: effacerSeance, recharger } = useSeance();
   const maintenant = useMaintenant();
+  const [edition, setEdition] = useState<Edition | null>(null);
+  const defilement = useRef<ScrollView>(null);
+  // Les positions des blocs et de leurs lignes, pour amener la ligne saisie
+  // au-dessus du pavé.
+  const positions = useRef<{ blocs: number[]; lignes: Record<string, number> }>({
+    blocs: [],
+    lignes: {},
+  });
+  const { height: hauteurEcran } = useWindowDimensions();
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
   // posé sur le banc ne doit pas se verrouiller entre deux séries.
   useKeepAwake();
@@ -135,6 +167,54 @@ export default function Seance() {
     router.push("/choisir-exercices?mode=remplacer");
   };
 
+  // --- Le pavé (D109) ----------------------------------------------------------
+  const ouvrir = (iE: number, iS: number, champ: ChampPave) => {
+    const s = edition ? appliquer(seance, edition) : seance;
+    if (edition) modifier(s);
+    const serie = s.exercices[iE]?.series[iS];
+    if (!serie) return;
+    const valeur = champ === "charge" ? serie.chargeKg : serie.reps;
+    setEdition({
+      iE,
+      iS,
+      champ,
+      texte:
+        valeur === null
+          ? ""
+          : champ === "charge"
+            ? chargeEnTexte(valeur, SYSTEME_UNITES)
+            : String(valeur),
+      // La première touche remplace la valeur affichée.
+      neuf: true,
+    });
+    // La ligne passe dans le quart haut de l'écran : le pavé occupe le bas.
+    const y = (positions.current.blocs[iE] ?? 0) + (positions.current.lignes[`${iE}-${iS}`] ?? 0);
+    defilement.current?.scrollTo({ y: Math.max(0, y - hauteurEcran * 0.25), animated: true });
+  };
+  const fermer = () => {
+    if (edition) modifier(appliquer(seance, edition));
+    setEdition(null);
+  };
+  const suivant = () => {
+    if (!edition) return;
+    modifier(appliquer(seance, edition));
+    const serie = seance.exercices[edition.iE]?.series[edition.iS];
+    setEdition({
+      ...edition,
+      champ: "reps",
+      texte: serie?.reps == null ? "" : String(serie.reps),
+      neuf: true,
+    });
+  };
+  const validerDepuisPave = () => {
+    if (!edition) return;
+    const s = appliquer(seance, edition);
+    const deja = s.exercices[edition.iE]?.series[edition.iS]?.faite;
+    if (!deja) vibrer.valider();
+    modifier(deja ? s : validerSerie(s, edition.iE, edition.iS, new Date()));
+    setEdition(null);
+  };
+
   const bilan = bilanSeance(seance);
   const prochaine = prochaineSerie(seance);
   // Replier la séance (D108) : retour aux onglets, où le bandeau la garde à un
@@ -180,27 +260,49 @@ export default function Seance() {
 
       {/* De la marge en bas : le bandeau de repos ne doit jamais cacher la dernière série. */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 200 }}
+        ref={defilement}
+        // Assez de place sous la dernière série pour la remonter au-dessus du pavé.
+        contentContainerStyle={{ paddingBottom: edition ? hauteurEcran * 0.6 : 200 }}
         keyboardShouldPersistTaps="handled"
       >
         {seance.exercices.length === 0 ? (
           <Text style={styles.vide}>Ajoute un premier exercice pour commencer.</Text>
         ) : null}
         {seance.exercices.map((e, iE) => (
-          <CarteExercice
+          <View
             key={`${e.slug}-${iE}`}
-            exercice={e}
-            prochaine={prochaine?.iE === iE ? prochaine.iS : null}
-            onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
-            onValiderSerie={(iS) => modifier(validerSerie(seance, iE, iS, new Date()))}
-            onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
-            onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
-            onNote={(note) => modifier(modifierNote(seance, iE, note))}
-            onRepos={(sec) => modifier(modifierReposExercice(seance, iE, sec))}
-            onReorganiser={() => router.push("/reorganiser")}
-            onRemplacer={() => remplacer(iE)}
-            onRetirer={() => modifier(retirerExercice(seance, iE))}
-          />
+            onLayout={(ev) => {
+              positions.current.blocs[iE] = ev.nativeEvent.layout.y;
+            }}
+          >
+            <CarteExercice
+              exercice={e}
+              edition={
+                edition?.iE === iE
+                  ? {
+                      iS: edition.iS,
+                      champ: edition.champ,
+                      texte: edition.texte,
+                      invalide: Number.isNaN(valeurDe(edition)),
+                    }
+                  : null
+              }
+              onEditer={(iS, champ) => ouvrir(iE, iS, champ)}
+              onPositionLigne={(iS, y) => {
+                positions.current.lignes[`${iE}-${iS}`] = y;
+              }}
+              prochaine={prochaine?.iE === iE ? prochaine.iS : null}
+              onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
+              onValiderSerie={(iS) => modifier(validerSerie(seance, iE, iS, new Date()))}
+              onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
+              onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
+              onNote={(note) => modifier(modifierNote(seance, iE, note))}
+              onRepos={(sec) => modifier(modifierReposExercice(seance, iE, sec))}
+              onReorganiser={() => router.push("/reorganiser")}
+              onRemplacer={() => remplacer(iE)}
+              onRetirer={() => modifier(retirerExercice(seance, iE))}
+            />
+          </View>
         ))}
         <View style={styles.pied}>
           <Pressable onPress={ajouter} style={styles.ajouter} accessibilityRole="button">
@@ -213,7 +315,33 @@ export default function Seance() {
         </View>
       </ScrollView>
 
-      {repos !== null ? (
+      {edition ? (
+        <PaveNumerique
+          champ={edition.champ}
+          serie={
+            etiquettes(seance.exercices[edition.iE]?.series ?? [])[edition.iS] ??
+            String(edition.iS + 1)
+          }
+          texte={edition.texte}
+          invalide={Number.isNaN(valeurDe(edition))}
+          onTouche={(t) =>
+            setEdition({ ...edition, texte: toucherPave(edition.texte, t, edition), neuf: false })
+          }
+          onEffacer={() =>
+            setEdition({
+              ...edition,
+              texte: effacerSurPave(edition.neuf ? "" : edition.texte),
+              neuf: false,
+            })
+          }
+          onAjuster={(pas) =>
+            setEdition({ ...edition, texte: ajusterSurPave(edition.texte, pas), neuf: false })
+          }
+          onSuivant={suivant}
+          onValider={validerDepuisPave}
+          onFermer={fermer}
+        />
+      ) : repos !== null ? (
         <BandeauRepos
           restant={repos}
           onPasser={() => modifier(arreterRepos(seance))}
