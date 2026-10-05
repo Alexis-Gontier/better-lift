@@ -67,13 +67,15 @@ Le cache hors ligne (D96) persiste les nouvelles lectures comme les anciennes, a
 Un lot = une PR depuis `main`, squash, check requis. **Préalable** : fusionner #82 puis #83
 (reciblée sur `main`), pour partir d'une base qui porte D116.
 
-1. **Fondations** — composants `Carte`, `Section`, `Vignette`, `Segments`, `Tuile` ; feuille basse
-   qui se ferme en glissant ; tokens `calendrier0..4` ; migration `Seance.note` et `Preferences`,
-   routes `/preferences`.
-2. **Accueil et Démarrer** — D119, D120 ; suppression de `demarrer.tsx`.
-3. **Routines** — D121, D122 ; la vue Exercices reprend `exercices/index.tsx`.
+1. **Fondations** — migration `Seance.note` et `Preferences`, routes `/preferences`, note de séance
+   écrite et relue par l'API ; la feuille basse se ferme en glissant.
+2. **Accueil et Démarrer** — D119, D120 ; composants `Carte`, `Section`, `Vignette`, `Tuile` ;
+   suppression de `demarrer.tsx`.
+3. **Routines** — D121, D122 ; composant `Segments` ; la vue Exercices reprend `exercices/index.tsx`.
 4. **Détail et fiche** — D123, D124 ; `avant=`, `DELETE`, `/historique`.
-5. **Stats** — D125 à D127.
+5. **Stats** — D125 à D127 ; tokens `calendrier0..4`.
+
+Un composant naît dans le lot qui s'en sert le premier : Knip refuse un export sans usage.
 6. **Profil et connexion** — D128, D129, D131 ; export CSV.
 7. **Fin de séance** — D130.
 
