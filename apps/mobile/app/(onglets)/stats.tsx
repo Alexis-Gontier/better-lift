@@ -1,21 +1,28 @@
 import {
   formaterCharge,
   LIBELLE_RECORD,
+  LIBELLE_ZONE,
+  type Periode,
   type RecordRecent,
-  type Semaine,
+  type StatsPeriode,
+  type Totaux,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../components/routines/carte-muscles";
+import { Calendrier } from "../../components/stats/calendrier";
 import { BadgeRecord, formaterSerie } from "../../components/ui/badge-record";
 import { Chargement, Erreur, Vide } from "../../components/ui/etats";
+import { Section } from "../../components/ui/section";
+import { Segments } from "../../components/ui/segments";
+import { Tuile } from "../../components/ui/tuile";
 import { FUSEAU } from "../../lib/fuseau";
-import { optionsStats } from "../../lib/requetes";
-import { CIBLE, creerStyles, espace, polices, taille, useCouleurs } from "../../lib/theme";
+import { optionsStatsPeriode } from "../../lib/requetes";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
-const MOYENNE = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
 const CALCUL = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
   month: "long",
@@ -24,18 +31,33 @@ const CALCUL = new Intl.DateTimeFormat("fr-FR", {
   timeZone: FUSEAU,
 });
 
+const PERIODES = [
+  { valeur: "semaine", libelle: "Semaine" },
+  { valeur: "mois", libelle: "Mois" },
+  { valeur: "trimestre", libelle: "3 mois" },
+  { valeur: "annee", libelle: "Année" },
+] as const;
+
+/** Ce que couvre la période, dit tel quel : des semaines glissantes, pas des mois civils. */
+const ETENDUE: Record<Periode, string> = {
+  semaine: "Cette semaine, comparée à la précédente",
+  mois: "4 dernières semaines, comparées aux 4 d'avant",
+  trimestre: "13 dernières semaines, comparées aux 13 d'avant",
+  annee: "52 dernières semaines, comparées aux 52 d'avant",
+};
+
 /**
- * Les statistiques (D112), calculées par l'API : le volume des 8 dernières
- * semaines, la régularité sur 12, les records récents, les muscles travaillés.
- * Aucune couleur hors du système : les barres et la grille sont en encre, le
- * lime reste aux records et à la carte du corps.
+ * Les stats (D125) : une période choisie pilote toute la page — séances, séries
+ * et durée comparées à la période d'avant, le calendrier (D126), les muscles
+ * travaillés, le volume, les records. Calculées par l'API, dans le fuseau.
  */
 export default function Stats() {
   const styles = useStyles();
   const couleurs = useCouleurs();
-  const stats = useQuery(optionsStats());
+  const [periode, setPeriode] = useState<Periode>("mois");
+  const stats = useQuery(optionsStatsPeriode(periode));
 
-  const contenu =
+  const etat =
     stats.isPending && stats.fetchStatus === "paused" ? (
       <Vide titre="Hors ligne" message="Les stats se calculeront au retour du réseau." />
     ) : stats.isPending ? (
@@ -55,125 +77,162 @@ export default function Stats() {
         <Text style={styles.titre} accessibilityRole="header">
           Stats
         </Text>
-        <Text style={styles.periode}>12 dernières semaines</Text>
+        <Segments options={PERIODES} valeur={periode} onChange={setPeriode} />
+        <Text style={styles.etendue}>{ETENDUE[periode]}</Text>
       </View>
-      {contenu ?? (
-        <ScrollView
-          contentContainerStyle={styles.contenu}
-          refreshControl={
-            <RefreshControl
-              refreshing={stats.isRefetching}
-              onRefresh={() => stats.refetch()}
-              tintColor={couleurs.encreTertiaire}
-            />
-          }
-        >
-          {stats.data ? (
-            <>
-              <Volume semaines={stats.data.semaines.slice(-8)} />
-              <Regularite semaines={stats.data.semaines} />
-              <RecordsRecents records={stats.data.recordsRecents} />
-              {stats.data.muscles.length > 0 ? (
-                <CarteMuscles
-                  exercices={stats.data.muscles}
-                  titre="Muscles travaillés · 4 dernières semaines"
-                />
-              ) : null}
-              {/* Hors ligne, l'écran montre la dernière lecture : sa date le dit (D112). */}
-              <Text style={styles.legende}>Calculées le {CALCUL.format(stats.dataUpdatedAt)}</Text>
-            </>
-          ) : null}
-        </ScrollView>
-      )}
+      {etat ??
+        (stats.data ? (
+          <ScrollView
+            contentContainerStyle={styles.contenu}
+            refreshControl={
+              <RefreshControl
+                refreshing={stats.isRefetching}
+                onRefresh={() => stats.refetch()}
+                tintColor={couleurs.encreTertiaire}
+              />
+            }
+          >
+            <Chiffres totaux={stats.data.totaux} precedents={stats.data.precedents} />
+            <View style={styles.carte}>
+              <Calendrier stats={stats.data} />
+            </View>
+            <Muscles stats={stats.data} />
+            <Volume stats={stats.data} />
+            <Records records={stats.data.records} />
+            {/* Hors ligne, l'écran montre la dernière lecture : sa date le dit (D112). */}
+            <Text style={styles.legende}>Calculées le {CALCUL.format(stats.dataUpdatedAt)}</Text>
+          </ScrollView>
+        ) : null)}
     </SafeAreaView>
   );
 }
 
-/** Le volume de la semaine en chiffre héros, puis 8 barres : la semaine en cours en encre. */
-function Volume({ semaines }: { semaines: Semaine[] }) {
+/** « ↗ +4 », « ↘ −12 % », « = » : l'écart avec la période d'avant. */
+function ecart(valeur: number, avant: number, enPourcent: boolean): string {
+  if (valeur === avant) return "= période d'avant";
+  if (avant === 0) return "rien avant";
+  const d = valeur - avant;
+  const texte = enPourcent ? `${Math.round((Math.abs(d) / avant) * 100)} %` : String(Math.abs(d));
+  return `${d > 0 ? "↗ +" : "↘ −"}${texte}`;
+}
+
+function Chiffres({ totaux, precedents }: { totaux: Totaux; precedents: Totaux }) {
   const styles = useStyles();
-  const max = Math.max(1, ...semaines.map((s) => s.volumeKg));
-  const enCours = semaines.at(-1);
+  const heures = Math.floor(totaux.dureeMin / 60);
+  const duree =
+    heures > 0
+      ? `${heures} h ${String(totaux.dureeMin % 60).padStart(2, "0")}`
+      : `${totaux.dureeMin} min`;
   return (
-    <View>
-      <Text style={styles.section} accessibilityRole="header">
-        Volume par semaine
-      </Text>
-      <View style={styles.chiffreLigne}>
-        <Text style={styles.chiffre}>
-          {formaterCharge(enCours?.volumeKg ?? 0, SYSTEME_UNITES).replace(/\s?kg$/, "")}
-        </Text>
-        <Text style={styles.chiffreSous}>kg cette semaine</Text>
-      </View>
-      <View
-        style={styles.barres}
-        accessible
-        accessibilityLabel={`Volume des 8 dernières semaines : ${semaines
-          .map((s) => formaterCharge(s.volumeKg, SYSTEME_UNITES))
-          .join(", ")}`}
-      >
-        {semaines.map((s, i) => (
-          <View key={s.lundi} style={styles.colonne}>
-            <View
-              style={[
-                styles.barre,
-                i === semaines.length - 1 && styles.barreEnCours,
-                // Une semaine vide garde un trait : l'absence se voit.
-                { height: `${Math.max(3, (s.volumeKg / max) * 100)}%` },
-              ]}
-            />
-          </View>
-        ))}
-      </View>
+    <View style={[styles.carte, styles.chiffres]}>
+      <Tuile
+        libelle="Séances"
+        valeur={String(totaux.seances)}
+        detail={ecart(totaux.seances, precedents.seances, false)}
+      />
+      <Tuile
+        libelle="Séries"
+        valeur={String(totaux.series)}
+        detail={ecart(totaux.series, precedents.series, true)}
+      />
+      <Tuile
+        libelle="Durée"
+        valeur={duree}
+        detail={ecart(totaux.dureeMin, precedents.dureeMin, true)}
+      />
     </View>
   );
 }
 
-/** Douze colonnes de sept jours : un carré rempli par jour entraîné. */
-function Regularite({ semaines }: { semaines: Semaine[] }) {
+/** La carte du corps, puis les séries par zone en barres : comparer se lit mieux en longueur. */
+function Muscles({ stats }: { stats: StatsPeriode }) {
   const styles = useStyles();
-  const total = semaines.reduce((n, s) => n + s.seances, 0);
+  if (stats.muscles.length === 0) return null;
+  const max = Math.max(1, ...stats.zones.map((z) => z.series));
   return (
-    <View>
-      <Text style={styles.section} accessibilityRole="header">
-        Régularité · 12 semaines
-      </Text>
-      <View style={styles.grille}>
-        {semaines.map((s) => (
-          <View key={s.lundi} style={styles.grilleColonne}>
-            {s.jours.map((fait, j) => (
-              <View key={`${s.lundi}-${j}`} style={[styles.carre, fait && styles.carreFait]} />
-            ))}
-          </View>
-        ))}
-      </View>
-      <Text style={styles.legende}>
-        {MOYENNE.format(total / Math.max(1, semaines.length))} séance
-        {total / semaines.length >= 2 ? "s" : ""} par semaine en moyenne
-      </Text>
-    </View>
-  );
-}
-
-function RecordsRecents({ records }: { records: RecordRecent[] }) {
-  const styles = useStyles();
-  if (records.length === 0) return null;
-  return (
-    <View>
-      <Text style={styles.section} accessibilityRole="header">
-        Records récents
-      </Text>
-      {records.map((r) => (
-        <View key={`${r.slug}-${r.date}`} style={styles.record}>
-          <View style={styles.recordGauche}>
-            <Text style={styles.recordNom} numberOfLines={2}>
-              {r.nom}
+    <>
+      {/* La carte du corps a son propre cadre : elle ne s'emboîte pas dans une autre. */}
+      <CarteMuscles exercices={stats.muscles} titre="Muscles travaillés" />
+      <View style={[styles.carte, styles.zones]}>
+        <Section titre="Séries par muscle" />
+        {stats.zones.slice(0, 6).map((z) => (
+          <View
+            key={z.zone}
+            style={styles.zone}
+            accessible
+            accessibilityLabel={`${LIBELLE_ZONE[z.zone]} : ${z.series} séries`}
+          >
+            <Text style={styles.zoneNom} numberOfLines={1}>
+              {LIBELLE_ZONE[z.zone]}
             </Text>
-            <BadgeRecord libelle={r.types.map((t) => LIBELLE_RECORD[t]).join(" · ")} />
+            <View style={styles.piste}>
+              <View style={[styles.remplie, { width: `${(z.series / max) * 100}%` }]} />
+            </View>
+            <Text style={styles.zoneValeur}>{z.series}</Text>
           </View>
-          <Text style={styles.recordValeur}>{formaterSerie(r.chargeKg, r.reps)}</Text>
+        ))}
+        <Text style={styles.legende}>Séries faites, échauffement exclu</Text>
+      </View>
+    </>
+  );
+}
+
+/** Le volume de la période, puis une barre par semaine : la semaine en cours en encre. */
+function Volume({ stats }: { stats: StatsPeriode }) {
+  const styles = useStyles();
+  const total = stats.volumes.reduce((n, v) => n + v.volumeKg, 0);
+  const max = Math.max(1, ...stats.volumes.map((v) => v.volumeKg));
+  return (
+    <View style={styles.carte}>
+      <Section titre="Volume" />
+      <Text style={styles.volume}>{formaterCharge(total, SYSTEME_UNITES)}</Text>
+      {/* Une seule semaine : son total suffit, une barre seule ne compare rien. */}
+      {stats.volumes.length > 1 ? (
+        <View
+          style={[styles.barres, { gap: stats.volumes.length > 13 ? 1 : espace.xs }]}
+          accessible
+          accessibilityLabel={`Volume par semaine : ${stats.volumes
+            .map((v) => formaterCharge(v.volumeKg, SYSTEME_UNITES))
+            .join(", ")}`}
+        >
+          {stats.volumes.map((v, i) => (
+            <View key={v.lundi} style={styles.colonne}>
+              <View
+                style={[
+                  styles.barre,
+                  i === stats.volumes.length - 1 && styles.barreEnCours,
+                  // Une semaine vide garde un trait : l'absence se voit.
+                  { height: `${Math.max(3, (v.volumeKg / max) * 100)}%` },
+                ]}
+              />
+            </View>
+          ))}
         </View>
-      ))}
+      ) : null}
+    </View>
+  );
+}
+
+function Records({ records }: { records: RecordRecent[] }) {
+  const styles = useStyles();
+  return (
+    <View style={styles.carte}>
+      <Section titre={`Records · ${records.length}`} />
+      {records.length === 0 ? (
+        <Text style={styles.legende}>Aucun record sur la période.</Text>
+      ) : (
+        records.map((r) => (
+          <View key={`${r.slug}-${r.date}`} style={styles.record}>
+            <View style={styles.recordGauche}>
+              <Text style={styles.recordNom} numberOfLines={2}>
+                {r.nom}
+              </Text>
+              <BadgeRecord libelle={r.types.map((t) => LIBELLE_RECORD[t]).join(" · ")} />
+            </View>
+            <Text style={styles.recordValeur}>{formaterSerie(r.chargeKg, r.reps)}</Text>
+          </View>
+        ))
+      )}
     </View>
   );
 }
@@ -181,46 +240,46 @@ function RecordsRecents({ records }: { records: RecordRecent[] }) {
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
   entete: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    padding: espace.l,
+    paddingHorizontal: espace.l,
+    paddingTop: espace.l,
+    paddingBottom: espace.m,
+    gap: espace.m,
   },
   titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700" },
-  periode: { color: couleurs.encreTertiaire, fontSize: taille.petit },
-  contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xxl, gap: espace.l },
-  section: {
-    color: couleurs.encreAttenuee,
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: espace.s,
+  etendue: { color: couleurs.encreTertiaire, fontSize: taille.petit },
+  contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xxl, gap: espace.m },
+  carte: {
+    gap: espace.s,
+    padding: espace.l,
+    borderRadius: rayon.carte,
+    borderWidth: 1,
+    borderColor: couleurs.ligne,
+    backgroundColor: couleurs.surface1,
   },
-  chiffreLigne: { flexDirection: "row", alignItems: "baseline", gap: espace.s },
-  chiffre: {
-    color: couleurs.encre,
-    fontSize: 64,
-    lineHeight: 64,
-    fontFamily: polices.condense,
+  chiffres: { flexDirection: "row", gap: espace.m },
+  zones: { gap: espace.s },
+  zone: { flexDirection: "row", alignItems: "center", gap: espace.s },
+  zoneNom: { width: 96, color: couleurs.encreSecondaire, fontSize: taille.petit },
+  piste: { flex: 1, height: 8, borderRadius: 4, backgroundColor: couleurs.surface2 },
+  remplie: { height: 8, borderRadius: 4, backgroundColor: couleurs.encreSecondaire },
+  zoneValeur: {
+    width: 28,
+    textAlign: "right",
+    color: couleurs.encreTertiaire,
+    fontSize: taille.petit,
     fontVariant: ["tabular-nums"],
   },
-  chiffreSous: { color: couleurs.encreSecondaire, fontSize: taille.courant },
-  barres: {
-    height: 120,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: espace.s,
-    marginTop: espace.m,
+  volume: {
+    color: couleurs.encre,
+    fontSize: 28,
+    fontWeight: "800",
+    fontVariant: ["tabular-nums"],
   },
+  barres: { height: 96, flexDirection: "row", alignItems: "flex-end" },
   colonne: { flex: 1, height: "100%", justifyContent: "flex-end" },
-  barre: { borderRadius: 6, backgroundColor: couleurs.surface3 },
+  barre: { borderRadius: 3, backgroundColor: couleurs.surface3 },
   barreEnCours: { backgroundColor: couleurs.encre },
-  grille: { flexDirection: "row", gap: 4 },
-  grilleColonne: { flex: 1, gap: 4 },
-  carre: { aspectRatio: 1.6, borderRadius: 3, backgroundColor: couleurs.surface2 },
-  carreFait: { backgroundColor: couleurs.encreSecondaire },
-  legende: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: espace.s },
+  legende: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   record: {
     minHeight: CIBLE + 8,
     flexDirection: "row",

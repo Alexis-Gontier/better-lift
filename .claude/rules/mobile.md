@@ -212,13 +212,19 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   « ⋯ » : refaire la routine d'origine, supprimer (`DELETE`, confirmé ; retire le détail du cache
   et invalide fil, stats, records). Non gardé hors ligne (D96), il dit « Hors ligne ».
 
-## Stats (D112)
+## Stats (D125–D127)
 
-- `GET /stats?fuseau=` (`apps/api/src/services/stats.ts`) : 12 semaines (`semainesRecentes` de
-  `shared`, que `resumeSemaine` de l'Accueil réutilise), records des 4 dernières semaines jugés
-  contre tout l'historique, exercices de la même fenêtre pour la carte du corps.
-- Persistées hors ligne (`gardeHorsLigne`) ; l'écran dit leur date de calcul (`dataUpdatedAt`).
-  Sous deux séances, un état vide plutôt que des courbes muettes.
+- `GET /stats/periode?periode=&fuseau=` (`depotStats.lirePeriode`) ; `GET /stats` garde la forme
+  D112 pour le web. Une période = 1, 4, 13 ou 52 **semaines glissantes** alignées sur le lundi
+  dans le fuseau, comparées aux mêmes semaines juste avant (`calculerPeriode` de `shared`) —
+  pas des mois civils. L'écran le dit sous le sélecteur.
+- Page : `Segments` (Semaine · Mois · 3 mois · Année), tuiles comparées, **calendrier**
+  (`components/stats/calendrier.tsx` : niveaux par quartile de volume, `niveauxCalendrier` ;
+  token `calendrier[0..4]`, D127 ; cases taillées sur la largeur, l'année défile en cases de 14
+  ouverte sur la semaine en cours ; jour à venir en contour ; toucher un jour ouvre sa séance),
+  carte du corps puis séries par zone, volume, records de la période.
+- Persistées hors ligne (`gardeHorsLigne`, clé `["stats", "periode", …]`) ; l'écran dit leur
+  date de calcul (`dataUpdatedAt`). Sous deux séances, un état vide.
 
 ## Hors ligne (D96–D100)
 

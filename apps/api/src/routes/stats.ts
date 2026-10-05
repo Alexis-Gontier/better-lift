@@ -1,3 +1,4 @@
+import { PERIODES } from "@better-lift/shared";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -18,14 +19,23 @@ const requete = z.object({
   fuseau: z.string().max(64).refine(fuseauValide, "Fuseau inconnu.").default("Europe/Paris"),
 });
 
+const requetePeriode = requete.extend({ periode: z.enum(PERIODES) });
+
 /**
  * Les statistiques (D112), derrière une session. Le découpage en semaines se fait
  * dans le fuseau du client : le samedi 21 h à Paris est déjà dimanche en UTC.
  */
 export function routesStats(depot: DepotStats, lireSession: LireSession) {
-  return new Hono()
-    .use(exigerSession(lireSession))
-    .get("/", zValidator("query", requete), async (c) =>
-      c.json(await depot.lire(c.get("userId"), new Date(), c.req.valid("query").fuseau)),
-    );
+  return (
+    new Hono()
+      .use(exigerSession(lireSession))
+      .get("/", zValidator("query", requete), async (c) =>
+        c.json(await depot.lire(c.get("userId"), new Date(), c.req.valid("query").fuseau)),
+      )
+      // Par période (D125) : une route à part, `GET /stats` garde sa forme pour le web.
+      .get("/periode", zValidator("query", requetePeriode), async (c) => {
+        const { fuseau, periode } = c.req.valid("query");
+        return c.json(await depot.lirePeriode(c.get("userId"), new Date(), fuseau, periode));
+      })
+  );
 }
