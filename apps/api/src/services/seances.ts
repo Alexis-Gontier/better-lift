@@ -1,15 +1,18 @@
 import { prisma } from "@better-lift/db";
 import {
+  apercuExercices,
   marquerRecords,
   type RecordExercice,
   recordsDe,
   type SeanceDetail,
+  type SeanceFil,
   type SeanceResume,
   type SeanceSaisie,
   type SerieHisto,
   type TypeRecord,
   type TypeSerie,
 } from "@better-lift/shared";
+import { imageDe } from "./exercices.js";
 import { SlugInconnu } from "./routines.js";
 
 /**
@@ -157,7 +160,7 @@ export type LigneSeance = {
   note: string | null;
   exercices: {
     exerciseId: string;
-    exercise: { slug: string; nomFr: string };
+    exercise: { slug: string; nomFr: string; gifUrl: string | null };
     note: string | null;
     series: LigneSerie[];
   }[];
@@ -232,6 +235,21 @@ export function versDetail(
   };
 }
 
+/** Ce que le fil de l'Accueil montre d'une séance, au-delà de son résumé (D119). */
+export function versFil(l: LigneSeance): Pick<SeanceFil, "nbExercices" | "apercu"> {
+  return {
+    nbExercices: l.exercices.length,
+    apercu: apercuExercices(
+      l.exercices.map((e) => ({
+        slug: e.exercise.slug,
+        nom: e.exercise.nomFr,
+        image: imageDe(e.exercise.gifUrl),
+        series: e.series.map((s) => ({ ...s, chargeKg: enNombre(s.chargeKg) })),
+      })),
+    ),
+  };
+}
+
 type Historique = Map<string, (SerieHisto & { date: string })[]>;
 
 /** L'historique d'AVANT une séance : chacune se juge contre ce qui la précède (D64). */
@@ -247,7 +265,7 @@ export type DepotLectureSeances = {
     userId: string,
     page: number,
     taille: number,
-  ): Promise<{ seances: SeanceResume[]; total: number }>;
+  ): Promise<{ seances: SeanceFil[]; total: number }>;
   lire(userId: string, id: string): Promise<SeanceDetail | null>;
   /**
    * Par slug, TOUTES les séries de la dernière séance qui contenait l'exercice,
@@ -274,7 +292,7 @@ const LECTURE_SEANCE = {
     orderBy: { position: "asc" },
     select: {
       exerciseId: true,
-      exercise: { select: { slug: true, nomFr: true } },
+      exercise: { select: { slug: true, nomFr: true, gifUrl: true } },
       note: true,
       series: {
         orderBy: { position: "asc" },
@@ -340,7 +358,7 @@ export const depotLecture: DepotLectureSeances = {
     const h = await historique(userId, ids);
     const seances = lignes.map((l) => {
       const { exercices: _, ...resume } = versDetail(l as LigneSeance, anterieurA(h, l.debut));
-      return resume;
+      return { ...resume, ...versFil(l as LigneSeance) };
     });
     return { seances, total };
   },

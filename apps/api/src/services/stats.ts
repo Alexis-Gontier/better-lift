@@ -82,7 +82,9 @@ export const depotStats: DepotStats = {
           exercices: {
             select: {
               exerciseId: true,
-              exercise: { select: { slug: true, nomFr: true, target: true, secondary: true } },
+              exercise: {
+                select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
+              },
               note: true,
               series: { select: { type: true, reps: true, chargeKg: true, faite: true } },
             },
