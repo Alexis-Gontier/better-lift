@@ -2,14 +2,14 @@ import { filtrerCatalogue, LIBELLE_GROUPE } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, Dumbbell, X } from "lucide-react-native";
+import { Check, Dumbbell, Search, X } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Chargement, Erreur, Vide } from "../components/ui/etats";
 import { type ExerciceChoisi, rendreChoix } from "../lib/choix-exercices";
 import { optionsCatalogueComplet } from "../lib/requetes";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 
 /**
  * Choisir des exercices dans le catalogue (D93) : une recherche, et une
@@ -64,15 +64,19 @@ export default function ChoisirExercices() {
         </Text>
       </View>
 
-      <TextInput
-        value={filtre}
-        onChangeText={setFiltre}
-        placeholder="Chercher un exercice"
-        placeholderTextColor={couleurs.encreAttenuee}
-        style={styles.recherche}
-        autoCorrect={false}
-        returnKeyType="search"
-      />
+      <View style={styles.recherche}>
+        <Search size={18} color={couleurs.encreTertiaire} />
+        <TextInput
+          value={filtre}
+          onChangeText={setFiltre}
+          placeholder="Chercher un exercice"
+          placeholderTextColor={couleurs.encreAttenuee}
+          style={styles.champ}
+          autoCorrect={false}
+          returnKeyType="search"
+          accessibilityLabel="Chercher un exercice"
+        />
+      </View>
 
       {/* Jamais chargé et hors ligne : la requête attend le réseau (D97). */}
       {catalogue.isPending && catalogue.fetchStatus === "paused" ? (
@@ -168,14 +172,16 @@ const useStyles = creerStyles((couleurs) => ({
     height: CIBLE,
     marginHorizontal: espace.l,
     marginBottom: espace.m,
-    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.s,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface2,
-    color: couleurs.encre,
-    fontSize: taille.courant,
     paddingHorizontal: espace.m,
   },
+  champ: { flex: 1, height: "100%", color: couleurs.encre, fontSize: taille.courant },
   liste: { paddingHorizontal: espace.l, gap: espace.s, paddingBottom: espace.l },
   ligne: {
     minHeight: CIBLE + 20,
@@ -183,7 +189,7 @@ const useStyles = creerStyles((couleurs) => ({
     alignItems: "center",
     gap: espace.m,
     padding: espace.s,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface1,
@@ -191,8 +197,9 @@ const useStyles = creerStyles((couleurs) => ({
   // La sélection se dit par le contour d'encre et la case, pas par le lime :
   // cocher n'est ni l'action ni un record.
   ligneCochee: { borderColor: couleurs.encreSecondaire },
-  vignette: { width: 52, height: 52, borderRadius: 8, backgroundColor: couleurs.surface3 },
-  sansImage: { alignItems: "center", justifyContent: "center" },
+  // Fond blanc : les images du dataset sont dessinées sur blanc.
+  vignette: { width: 52, height: 52, borderRadius: rayon.cellule, backgroundColor: "#ffffff" },
+  sansImage: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface3 },
   nom: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   case: {
@@ -212,7 +219,7 @@ const useStyles = creerStyles((couleurs) => ({
   },
   ajouter: {
     minHeight: CIBLE + 8,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",

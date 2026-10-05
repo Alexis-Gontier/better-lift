@@ -5,14 +5,14 @@ import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } fr
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Logo } from "../components/ui/logo";
 import { authClient } from "../lib/auth-client";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 
 // La création de compte reste sur le web : ici, on ne fait qu'entrer.
 type GenreRefus = "identifiants" | "reseau";
 
 const MESSAGES: Record<GenreRefus, string> = {
   identifiants: "Adresse ou mot de passe incorrect.",
-  reseau: "L'API est injoignable. Ce n'est pas toi — réessaie dans un instant.",
+  reseau: "Le serveur ne répond pas. Vérifie ta connexion, puis réessaie.",
 };
 
 /**
@@ -125,7 +125,7 @@ export default function Connexion() {
               disabled={enCours}
               accessibilityRole="button"
             >
-              <Text style={styles.boutonTexte}>{enCours ? "…" : "Se connecter"}</Text>
+              <Text style={styles.boutonTexte}>{enCours ? "Connexion…" : "Se connecter"}</Text>
             </Pressable>
 
             <Text style={styles.note}>Pas de compte ? Il se crée depuis le web.</Text>
@@ -158,7 +158,7 @@ const useStyles = creerStyles((couleurs) => ({
     minHeight: CIBLE + 4,
     borderWidth: 1,
     borderColor: couleurs.ligne,
-    borderRadius: 10,
+    borderRadius: rayon.cellule,
     backgroundColor: couleurs.surface1,
     color: couleurs.encre,
     fontSize: taille.courant,
@@ -179,7 +179,7 @@ const useStyles = creerStyles((couleurs) => ({
   bouton: {
     minHeight: CIBLE + 8,
     marginTop: espace.l,
-    borderRadius: 10,
+    borderRadius: rayon.bouton,
     backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",

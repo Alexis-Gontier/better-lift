@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { Alert, Pressable, Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
-import { CIBLE, creerStyles, espace, taille } from "../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille } from "../lib/theme";
 
 /**
  * Les séances terminées qui n'ont pas encore atteint le serveur : en attente
@@ -77,7 +77,7 @@ export function FileEnvoi() {
 const useStyles = creerStyles((couleurs) => ({
   bloc: {
     padding: espace.m,
-    borderRadius: 12,
+    borderRadius: rayon.carte,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     backgroundColor: couleurs.surface1,
@@ -88,7 +88,7 @@ const useStyles = creerStyles((couleurs) => ({
   bouton: {
     minHeight: CIBLE - 4,
     paddingHorizontal: espace.l,
-    borderRadius: 10,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     alignItems: "center",
