@@ -142,7 +142,7 @@ export default function Onglets() {
         <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
         {/* La pile du détail d'une séance, ouvert depuis le fil de l'Accueil (D117). */}
         <Tabs.Screen name="historique" options={{ href: null }} />
-        {/* Les exercices cèdent leur place aux Stats ; leurs écrans restent. */}
+        {/* La pile de la fiche d'un exercice ; la bibliothèque est une vue de Routines (D121). */}
         <Tabs.Screen name="exercices" options={{ href: null }} />
       </Tabs>
     </>

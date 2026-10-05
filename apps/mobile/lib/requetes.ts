@@ -39,19 +39,6 @@ export function optionsRoutine(id: string) {
   });
 }
 
-export function optionsCatalogue(q: string) {
-  return queryOptions({
-    queryKey: ["exercices", "liste", { q }],
-    queryFn: async () => {
-      const res = await api.exercices.$get({ query: q ? { q, taille: "30" } : { taille: "30" } });
-      if (!res.ok) throw new Error("Le catalogue n'a pas pu être chargé.");
-      return (await res.json()).exercices;
-    },
-    // Garde la liste pendant la frappe : sans lui, chaque lettre clignote.
-    placeholderData: keepPreviousData,
-  });
-}
-
 /**
  * Le catalogue ENTIER, pour le filtrer sur le téléphone, hors ligne compris
  * (D97). Pages de 100 : l'API plafonne la taille, et c'est voulu. ~1 300
@@ -149,7 +136,7 @@ type Precedents = Record<
  * `["seances", …]` : l'envoi d'une séance invalide `["seances"]`, donc aussi
  * ceci. La clé trie les slugs : le même ensemble donne la même entrée.
  */
-function optionsPrecedents(slugs: string[]) {
+export function optionsPrecedents(slugs: string[]) {
   const cle = [...new Set(slugs)].sort().join(",");
   return queryOptions({
     queryKey: ["seances", "precedents", cle],

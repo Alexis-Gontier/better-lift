@@ -85,8 +85,7 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   en lime** (D115, remplace D106 à la demande de l'utilisateur) — token `ongletActif` : lime en
   sombre, olive en clair, où le lime ne tient que 1,8:1 sur la barre. Icônes Lucide.
 - La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine et porte « Lancer »
-  en contour (`BoutonContour`, D118). La page d'une routine garde « Démarrer la routine », dégagé
-  du débord du rond (30).
+  en contour (`BoutonContour`, D118). La page d'une routine aussi (D122).
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Il se pose au-dessus du débord du rond (30), sinon le rond le
@@ -114,11 +113,19 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/specs/2026-09-25-mobile-routines-design.md).
 
 - Le mobile crée, modifie et supprime les routines, indépendamment du web.
-- Page d'une routine : résumé (`dureeEstimeeSec`), cartes « 3 × 8 · 60 kg » (`resumeSeries`,
-  chacune ouvre la fiche de l'exercice), puis la **carte des muscles** face/dos
+- **L'onglet (D121)** : `Segments` « Mes routines » | « Exercices ». Les cartes
+  (`components/routines/carte-routine.tsx`) tirent noms et durée des détails en cache
+  (`useQueries`) ; « Lancer » en contour. La vue Exercices (`components/exercices/catalogue.tsx`)
+  filtre le catalogue COMPLET sur le téléphone, puces de groupe comprises ; la pile `exercices`
+  ne garde que la fiche. Une rangée horizontale au-dessus d'une liste porte `flexShrink: 0`,
+  sinon la liste la rogne.
+- Page d'une routine (D122), qu'on lit avant de la modifier : résumé (`dureeEstimeeSec`), zones
+  principales, « Lancer » en contour (plus d'aplat fixe : l'aplat de l'écran est le rond),
+  exercices « 3 × 8 · 60 kg » (`resumeSeries`) avec « Dernière fois » (`meilleureSerie` sur
+  `optionsPrecedents`), chacun ouvrant sa fiche, puis la **carte des muscles** face/dos
   (`react-native-body-highlighter`, `zonesTravaillees` de `shared/muscles.ts` — chaque muscle du
   catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`) — après la liste : en tête, elle
-  prenait tout le premier écran. Démarrer fixé. **Les muscles sont en vert** (D84 révisée) : seul usage du
+  prenait tout le premier écran. **Les muscles sont en vert** (D84 révisée) : seul usage du
   lime hors action et record, borné au dessin du corps.
 - Édition plein écran `app/routine-edition.tsx` (`?id=` pour modifier) :
   `react-native-draggable-flatlist`, `GestureHandlerRootView` à la racine, sortie avec

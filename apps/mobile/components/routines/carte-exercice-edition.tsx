@@ -8,13 +8,13 @@ import {
   type SerieBrouillon,
   TYPES_SERIE,
 } from "@better-lift/shared";
-import { Image } from "expo-image";
-import { Dumbbell, Ellipsis, GripVertical, Plus, Trash2, X } from "lucide-react-native";
+import { Ellipsis, GripVertical, Plus, Trash2, X } from "lucide-react-native";
 import { Text, TextInput, View } from "react-native";
 import { useConfirmer, useFeuille } from "../../lib/confirmation";
 import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES, UNITE } from "../../lib/unites";
 import { Appuyable } from "../ui/appuyable";
+import { Vignette } from "../ui/vignette";
 
 type Props = {
   exercice: ExerciceBrouillon;
@@ -89,18 +89,7 @@ export function CarteExerciceEdition({
         >
           <GripVertical size={20} color={couleurs.encreAttenuee} />
         </Appuyable>
-        {e.image ? (
-          <Image
-            source={{ uri: e.image }}
-            style={styles.vignette}
-            contentFit="cover"
-            cachePolicy="disk"
-          />
-        ) : (
-          <View style={[styles.vignette, styles.sansImage]}>
-            <Dumbbell size={18} color={couleurs.encreAttenuee} />
-          </View>
-        )}
+        <Vignette image={e.image} taille={44} />
         <Text style={styles.nom} numberOfLines={2}>
           {e.nom}
         </Text>
@@ -220,8 +209,6 @@ const useStyles = creerStyles((couleurs) => ({
     paddingVertical: espace.s,
   },
   poignee: { width: 36, height: CIBLE, alignItems: "center", justifyContent: "center" },
-  vignette: { width: 44, height: 44, borderRadius: 8, backgroundColor: couleurs.surface3 },
-  sansImage: { alignItems: "center", justifyContent: "center" },
   nom: { flex: 1, color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   icone: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   repos: {

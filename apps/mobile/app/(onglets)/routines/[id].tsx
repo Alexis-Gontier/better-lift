@@ -1,16 +1,24 @@
-import { dureeEstimeeSec, resumeSeries } from "@better-lift/shared";
+import {
+  dureeEstimeeSec,
+  LIBELLE_ZONE,
+  meilleureSerie,
+  resumeSeries,
+  zonesTravaillees,
+} from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight, Dumbbell, Pencil } from "lucide-react-native";
+import { ChevronRight, Pencil, Play } from "lucide-react-native";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
 import { Appuyable } from "../../../components/ui/appuyable";
+import { formaterSerie } from "../../../components/ui/badge-record";
+import { BoutonContour } from "../../../components/ui/bouton-contour";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
+import { Vignette } from "../../../components/ui/vignette";
 import { useDemarrer } from "../../../lib/demarrer";
-import { optionsRoutine } from "../../../lib/requetes";
+import { optionsPrecedents, optionsRoutine } from "../../../lib/requetes";
 import { useSeance } from "../../../lib/seance";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
@@ -26,9 +34,10 @@ function formaterRepos(sec: number): string {
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /**
- * Une routine : son titre, ce qu'elle travaille, ses exercices, et Démarrer
- * sous le pouce — l'aplat de l'écran (D105), absent pendant une séance, que le
- * bandeau reprend (D107). « Modifier » ouvre l'édition (D82).
+ * Une routine, qu'on LIT avant de la modifier (D122) : son titre, ce qu'elle
+ * travaille, « Lancer » en contour — l'aplat de l'écran est le rond central
+ * (D105) —, puis chaque exercice avec ce qui a été fait la dernière fois.
+ * « Modifier » ouvre l'édition (D82).
  */
 export default function DetailRoutine() {
   const styles = useStyles();
@@ -36,6 +45,9 @@ export default function DetailRoutine() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const routine = useQuery(optionsRoutine(id));
+  const slugs = routine.data?.exercices.map((e) => e.slug) ?? [];
+  // La dernière fois de chaque exercice : en cache dès qu'une séance l'a lue.
+  const precedents = useQuery({ ...optionsPrecedents(slugs), enabled: slugs.length > 0 });
   const { routine: demarrer, ouverture } = useDemarrer();
   const { seance } = useSeance();
   const modifier = () => router.push({ pathname: "/routine-edition", params: { id } });
@@ -59,6 +71,9 @@ export default function DetailRoutine() {
   const r = routine.data;
   const nbSeries = r.exercices.reduce((n, e) => n + e.series.length, 0);
   const minutes = Math.max(1, Math.round(dureeEstimeeSec(r.exercices) / 60));
+  const zones = zonesTravaillees(r.exercices)
+    .filter((z) => z.niveau === "principal")
+    .map((z) => LIBELLE_ZONE[z.zone]);
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
@@ -81,6 +96,18 @@ export default function DetailRoutine() {
         <Text style={styles.resume}>
           {pluriel(r.exercices.length, "exercice")} · {pluriel(nbSeries, "série")} · ≈ {minutes} min
         </Text>
+        {zones.length > 0 ? <Text style={styles.zones}>{zones.join(" · ")}</Text> : null}
+        {/* Pendant une séance, le bandeau la reprend (D107) : rien à lancer. */}
+        {seance || r.exercices.length === 0 ? null : (
+          <View style={styles.lancer}>
+            <BoutonContour
+              libelle="Lancer"
+              icone={Play}
+              occupe={ouverture !== null}
+              onPress={() => void demarrer(r.id)}
+            />
+          </View>
+        )}
 
         {r.exercices.length === 0 ? (
           <Appuyable onPress={modifier} style={styles.invite} accessibilityRole="button">
@@ -103,18 +130,7 @@ export default function DetailRoutine() {
             accessibilityRole="link"
             accessibilityHint="Ouvre la fiche de l'exercice"
           >
-            {ex.image ? (
-              <Image
-                source={{ uri: ex.image }}
-                style={styles.vignette}
-                contentFit="cover"
-                cachePolicy="disk"
-              />
-            ) : (
-              <View style={[styles.vignette, styles.sansImage]}>
-                <Dumbbell size={22} color={couleurs.encreAttenuee} />
-              </View>
-            )}
+            <Vignette image={ex.image} taille={48} />
             <View style={styles.texte}>
               <Text style={styles.exercice} numberOfLines={2}>
                 {ex.nom}
@@ -123,6 +139,7 @@ export default function DetailRoutine() {
               {ex.reposSec ? (
                 <Text style={styles.repos}>Repos {formaterRepos(ex.reposSec)}</Text>
               ) : null}
+              {derniereFois(precedents.data?.[ex.slug])}
             </View>
             <ChevronRight size={20} color={couleurs.encreTertiaire} />
           </Appuyable>
@@ -132,30 +149,26 @@ export default function DetailRoutine() {
             corps les résume. En tête, elle prenait tout le premier écran. */}
         {r.exercices.length > 0 ? <CarteMuscles exercices={r.exercices} /> : null}
       </ScrollView>
-
-      {/* L'action de l'écran, fixée sous le pouce : l'aplat lime (D105). */}
-      {seance ? null : (
-        <View style={styles.pied}>
-          <Appuyable
-            // Inactif, il le montre : sans exercice, il n'y a rien à démarrer.
-            style={[
-              styles.demarrer,
-              (ouverture !== null || r.exercices.length === 0) && { opacity: 0.6 },
-            ]}
-            disabled={ouverture !== null || r.exercices.length === 0}
-            accessibilityState={{ disabled: ouverture !== null || r.exercices.length === 0 }}
-            onPress={() => void demarrer(r.id)}
-            accessibilityRole="button"
-          >
-            <Text style={styles.demarrerTexte}>
-              {ouverture !== null ? "Ouverture…" : "Démarrer la routine"}
-            </Text>
-          </Appuyable>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
+
+/** « Dernière fois : 85 kg × 5 » : la meilleure série faite de la dernière séance. */
+function DerniereFois({
+  series,
+}: {
+  series: { reps: number | null; chargeKg: number | null; faite: boolean }[];
+}) {
+  const styles = useStyles();
+  const m = meilleureSerie(series);
+  return m ? (
+    <Text style={styles.derniere}>Dernière fois : {formaterSerie(m.chargeKg, m.reps)}</Text>
+  ) : null;
+}
+
+const derniereFois = (
+  series: { reps: number | null; chargeKg: number | null; faite: boolean }[] | undefined,
+) => (series && series.length > 0 ? <DerniereFois series={series} /> : null);
 
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
@@ -197,9 +210,6 @@ const useStyles = creerStyles((couleurs) => ({
     borderBottomWidth: 1,
     borderBottomColor: couleurs.ligne,
   },
-  // Fond blanc : les images du dataset sont dessinées sur blanc.
-  vignette: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.fondImage },
-  sansImage: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface3 },
   texte: { flex: 1, gap: 2 },
   exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   series: {
@@ -208,22 +218,7 @@ const useStyles = creerStyles((couleurs) => ({
     fontVariant: ["tabular-nums"],
   },
   repos: { color: couleurs.encreAttenuee, fontSize: taille.petit },
-  pied: {
-    padding: espace.l,
-    paddingTop: espace.m,
-    // Le rond central de la barre déborde de 30 au-dessus d'elle : le bouton
-    // reste dégagé.
-    paddingBottom: espace.l + 30,
-    borderTopWidth: 1,
-    borderTopColor: couleurs.ligne,
-    backgroundColor: couleurs.canevas,
-  },
-  demarrer: {
-    minHeight: CIBLE + 8,
-    borderRadius: rayon.bouton,
-    backgroundColor: couleurs.action,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  demarrerTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
+  zones: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: -espace.s },
+  lancer: { flexDirection: "row" },
+  derniere: { color: couleurs.encreTertiaire, fontSize: taille.petit },
 }));
