@@ -121,12 +121,14 @@ export function validerSerie(
   iE: number,
   iS: number,
   maintenant: Date,
+  /** Le repos par défaut du compte (D128), pour l'exercice qui n'a pas le sien. */
+  reposDefautSec: number | null = null,
 ): SeanceEnCours {
   const etaitFaite = s.exercices[iE]?.series[iS]?.faite ?? false;
   const apres = avecSerie(s, iE, iS, (x) => ({ ...x, faite: !x.faite }));
   if (etaitFaite) return apres;
 
-  const reposSec = s.exercices[iE]?.reposSec;
+  const reposSec = s.exercices[iE]?.reposSec ?? reposDefautSec;
   if (!reposSec) return apres;
   return {
     ...apres,

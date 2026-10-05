@@ -2,6 +2,7 @@ import { prisma } from "@better-lift/db";
 import {
   apercuExercices,
   type HistoriqueExercice,
+  type LigneExport,
   marquerRecords,
   type RecordExercice,
   recordsDe,
@@ -290,6 +291,8 @@ export type DepotLectureSeances = {
     taille: number,
   ): Promise<{ seances: SeanceFil[]; total: number }>;
   lire(userId: string, id: string): Promise<SeanceDetail | null>;
+  /** Toutes les séries du compte, pour l'export (D128), dans l'ordre des séances. */
+  exporter(userId: string): Promise<LigneExport[]>;
   /** Les séances où figure l'exercice, la plus récente d'abord ; `null` s'il n'existe pas (D124). */
   historiqueExercice(userId: string, slug: string): Promise<HistoriqueExercice | null>;
   /**
@@ -419,6 +422,40 @@ export const depotLecture: DepotLectureSeances = {
       }),
     );
     return Object.fromEntries(paires);
+  },
+
+  async exporter(userId) {
+    const series = await prisma.seanceSerie.findMany({
+      where: { exercice: { seance: { userId } } },
+      orderBy: [
+        { exercice: { seance: { debut: "asc" } } },
+        { exercice: { position: "asc" } },
+        { position: "asc" },
+      ],
+      select: {
+        position: true,
+        type: true,
+        reps: true,
+        chargeKg: true,
+        faite: true,
+        exercice: {
+          select: {
+            exercise: { select: { nomFr: true } },
+            seance: { select: { nom: true, debut: true } },
+          },
+        },
+      },
+    });
+    return series.map((s) => ({
+      date: s.exercice.seance.debut.toISOString(),
+      seance: s.exercice.seance.nom,
+      exercice: s.exercice.exercise.nomFr,
+      serie: s.position + 1,
+      type: s.type,
+      chargeKg: enNombre(s.chargeKg),
+      reps: s.reps,
+      faite: s.faite,
+    }));
   },
 
   async historiqueExercice(userId, slug) {

@@ -96,8 +96,18 @@ describe("valider une série", () => {
     expect(apres.repos).toEqual({ fin: plus(150).toISOString(), signale: false });
   });
 
-  it("ne lance aucun repos quand l'exercice n'en a pas", () => {
+  it("ne lance aucun repos quand l'exercice n'en a pas, ni le compte", () => {
     expect(validerSerie(s, 1, 0, plus(30)).repos).toBeNull();
+    expect(validerSerie(s, 1, 0, plus(30), null).repos).toBeNull();
+  });
+
+  it("prend le repos par défaut du compte quand l'exercice n'en a pas (D128)", () => {
+    expect(validerSerie(s, 1, 0, plus(30), 90).repos).toEqual({
+      fin: plus(120).toISOString(),
+      signale: false,
+    });
+    // Le repos propre de l'exercice l'emporte.
+    expect(validerSerie(s, 0, 0, plus(30), 90).repos?.fin).toBe(plus(150).toISOString());
   });
 
   it("décocher une série faite n'arme pas de repos", () => {

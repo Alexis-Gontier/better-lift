@@ -27,6 +27,15 @@ export type RecordRecent = {
   date: string;
 };
 
+/** Le bilan de toujours (D128) : l'en-tête du Profil. */
+export type Bilan = {
+  nbSeances: number;
+  /** Le volume de toutes les séances, en kilos, arrondi. */
+  volumeKg: number;
+  /** La première séance, ISO 8601 ; `null` sans séance. */
+  depuis: string | null;
+};
+
 export type Stats = {
   /** Toutes les séances du compte : sous deux, les courbes ne disent rien encore. */
   nbSeances: number;
@@ -127,8 +136,8 @@ export type StatsPeriode = {
   /** Les mêmes chiffres sur les semaines d'avant, pour comparer. */
   precedents: Totaux;
   jours: JourEntraine[];
-  /** Le volume de chaque semaine de la période, de la plus ancienne à la courante. */
-  volumes: { lundi: string; volumeKg: number }[];
+  /** Le volume et les séances de chaque semaine de la période, de la plus ancienne à la courante. */
+  volumes: { lundi: string; volumeKg: number; seances: number }[];
   /** Les séries par zone principale, de la plus travaillée à la moins travaillée. */
   zones: { zone: Zone; series: number }[];
   /** Les exercices de la période, pour la carte du corps. */
@@ -190,6 +199,7 @@ export function calculerPeriode(
     volumes: semainesRecentes(courantes, maintenant, fuseau, n).map((s) => ({
       lundi: s.lundi,
       volumeKg: s.volumeKg,
+      seances: s.seances,
     })),
     zones: [...zones].sort((a, b) => b[1] - a[1]).map(([zone, series]) => ({ zone, series })),
     muscles: courantes.flatMap((s) =>
@@ -216,4 +226,20 @@ export function niveauxCalendrier(jours: readonly JourEntraine[]): Map<string, n
     niveaux.set(j.jour, Math.min(4, Math.max(1, Math.ceil((4 * (rang + 1)) / tries.length))));
   });
   return niveaux;
+}
+
+/**
+ * Les semaines de la période où l'objectif est tenu (D126, D128). La semaine en
+ * cours ne compte que si elle l'a déjà atteint : elle n'est pas finie.
+ */
+export function semainesTenues(
+  volumes: readonly { seances: number }[],
+  objectif: number,
+): { tenues: number; sur: number } {
+  const courante = volumes.at(-1);
+  const comptees = courante && courante.seances < objectif ? volumes.slice(0, -1) : volumes;
+  return {
+    tenues: comptees.filter((v) => v.seances >= objectif).length,
+    sur: comptees.length,
+  };
 }

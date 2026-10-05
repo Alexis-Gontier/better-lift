@@ -32,6 +32,8 @@ export function routesStats(depot: DepotStats, lireSession: LireSession) {
       .get("/", zValidator("query", requete), async (c) =>
         c.json(await depot.lire(c.get("userId"), new Date(), c.req.valid("query").fuseau)),
       )
+      // Le bilan de toujours (D128), pour l'en-tête du Profil.
+      .get("/bilan", async (c) => c.json(await depot.bilan(c.get("userId"))))
       // Par période (D125) : une route à part, `GET /stats` garde sa forme pour le web.
       .get("/periode", zValidator("query", requetePeriode), async (c) => {
         const { fuseau, periode } = c.req.valid("query");
