@@ -28,6 +28,11 @@ void AsyncStorage.getItem(CLE)
   })
   .catch(() => {});
 
+/** Le réglage, lu hors d'un composant (la notification de fin de repos). */
+export function vibrationsActives(): boolean {
+  return actives;
+}
+
 /** Le réglage et son interrupteur, pour l'écran Profil. */
 export function useVibrations(): [boolean, (valeur: boolean) => void] {
   const valeur = useSyncExternalStore(

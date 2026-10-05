@@ -178,7 +178,7 @@ const useStyles = creerStyles((couleurs) => ({
     borderBottomColor: couleurs.ligne,
   },
   // Fond blanc : les images du dataset sont dessinées sur blanc.
-  vignette: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#ffffff" },
+  vignette: { width: 48, height: 48, borderRadius: 24, backgroundColor: couleurs.fondImage },
   sansImage: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface3 },
   texte: { flex: 1, gap: 2 },
   exercice: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },

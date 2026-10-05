@@ -52,6 +52,11 @@ export type Couleurs = {
   corps: string;
   /** Muscles secondaires sur la carte du corps. */
   corpsSecondaire: string;
+  /**
+   * Fond des vignettes et GIF d'exercice. Blanc dans LES DEUX registres : les
+   * images du catalogue sont détourées sur blanc, un fond sombre les encadrerait.
+   */
+  fondImage: string;
 };
 
 const LIME = "#a8cf45";
@@ -79,6 +84,7 @@ const sombre: Couleurs = {
   voile: "rgba(0, 0, 0, 0.6)",
   corps: LIME,
   corpsSecondaire: "rgba(168, 207, 69, 0.45)",
+  fondImage: "#ffffff",
 };
 
 const clair: Couleurs = {
@@ -104,6 +110,7 @@ const clair: Couleurs = {
   voile: "rgba(0, 0, 0, 0.4)",
   corps: LIME,
   corpsSecondaire: "rgba(168, 207, 69, 0.45)",
+  fondImage: "#ffffff",
 };
 
 /** Les couleurs du thème courant, qui suit celui du téléphone (D102). */
@@ -186,6 +193,14 @@ export function creerStyles<T extends StyleSheet.NamedStyles<T>>(
 
 /** La plus petite cible tactile : 48 px, recommandation Android. */
 export const CIBLE = 48;
+
+/**
+ * Le grossissement maximal du texte DANS LES ÉLÉMENTS DE HAUTEUR FIXE de la
+ * séance (cases de 40, ligne de 52, pavé, bandeau de repos). Au-delà, les
+ * chiffres seraient rognés. Partout ailleurs, le texte suit le réglage du
+ * téléphone sans plafond.
+ */
+export const PLAFOND_TEXTE_DENSE = 1.3;
 
 /**
  * L'échelle (D104). `chrono` : la durée de séance, en coupe condensée ;

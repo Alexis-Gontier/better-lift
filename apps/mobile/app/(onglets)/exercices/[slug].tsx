@@ -208,7 +208,7 @@ const useStyles = creerStyles((couleurs) => ({
     width: "100%",
     aspectRatio: 1.4,
     borderRadius: rayon.carte,
-    backgroundColor: "#ffffff",
+    backgroundColor: couleurs.fondImage,
   },
   sansMedia: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface2 },
   attribution: { color: couleurs.encreAttenuee, fontSize: 11 },

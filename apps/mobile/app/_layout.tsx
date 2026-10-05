@@ -21,6 +21,10 @@ import {
 import { SeanceProvider } from "../lib/seance";
 import { polices, useCouleurs } from "../lib/theme";
 
+// Un écran qui plante affiche une issue plutôt qu'un écran mort ; les routes
+// qui ont la leur (la séance) l'emportent sur celle-ci.
+export { EcranErreur as ErrorBoundary } from "../components/ui/ecran-erreur";
+
 brancherReseauEtPremierPlan();
 // L'écran de démarrage reste affiché jusqu'au chargement des polices : sans lui,
 // le premier écran s'afficherait une fraction de seconde dans la police système.

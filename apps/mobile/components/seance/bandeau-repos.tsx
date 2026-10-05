@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formaterDuree } from "../../lib/temps";
-import { creerStyles, espace, polices, rayon } from "../../lib/theme";
+import { creerStyles, espace, PLAFOND_TEXTE_DENSE, polices, rayon } from "../../lib/theme";
 
 /**
  * Le repos restant, sur une ligne en bas de l'écran — là où le pouce et l'œil
@@ -32,12 +32,21 @@ export function BandeauRepos({
         accessibilityRole="button"
         accessibilityLabel="Retirer 15 secondes"
       >
-        <Text style={styles.boutonTexte}>−15</Text>
+        <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.boutonTexte}>
+          −15
+        </Text>
       </Pressable>
       {/* Lisible à bout de bras, téléphone posé sur le banc (D79). */}
       <View style={styles.centre}>
-        <Text style={styles.libelle}>{fini ? "Repos terminé" : "Repos"}</Text>
-        <Text style={[styles.temps, fini && styles.tempsFini]}>{formaterDuree(restant)}</Text>
+        <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.libelle}>
+          {fini ? "Repos terminé" : "Repos"}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          style={[styles.temps, fini && styles.tempsFini]}
+        >
+          {formaterDuree(restant)}
+        </Text>
       </View>
       <Pressable
         onPress={() => onAjuster(15)}
@@ -45,14 +54,18 @@ export function BandeauRepos({
         accessibilityRole="button"
         accessibilityLabel="Ajouter 15 secondes"
       >
-        <Text style={styles.boutonTexte}>+15</Text>
+        <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.boutonTexte}>
+          +15
+        </Text>
       </Pressable>
       <Pressable
         onPress={onPasser}
         style={[styles.bouton, styles.passer]}
         accessibilityRole="button"
       >
-        <Text style={styles.boutonTexte}>{fini ? "OK" : "Passer"}</Text>
+        <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.boutonTexte}>
+          {fini ? "OK" : "Passer"}
+        </Text>
       </Pressable>
     </View>
   );
