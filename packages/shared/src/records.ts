@@ -138,6 +138,25 @@ export type SerieLue = {
 export type SeanceDetail = SeanceResume & {
   /** La note de la séance (D130), `null` sans note. */
   note: string | null;
-  /** `note` : la note libre de l'exercice (D90), `null` sans note. */
-  exercices: { slug: string; nom: string; note: string | null; series: SerieLue[] }[];
+  /**
+   * `note` : la note libre de l'exercice (D90), `null` sans note. `precedentes` :
+   * TOUTES les séries de sa dernière occurrence antérieure, dans l'ordre — le
+   * détail les compare position par position (D123).
+   */
+  exercices: {
+    slug: string;
+    nom: string;
+    image: string | null;
+    note: string | null;
+    series: SerieLue[];
+    precedentes: { reps: number | null; chargeKg: number | null }[];
+  }[];
 };
+
+/** Les séances où figure un exercice, de la plus récente à la plus ancienne (D124). */
+export type HistoriqueExercice = {
+  id: string;
+  nom: string;
+  debut: string;
+  series: { type: TypeSerie; reps: number | null; chargeKg: number | null; faite: boolean }[];
+}[];

@@ -53,6 +53,10 @@ export function routesSeances(
         const seance = await lecture.lire(c.get("userId"), c.req.param("id"));
         return seance ? c.json(seance) : c.json({ erreur: "Séance introuvable." }, 404);
       })
+      .delete("/:id", async (c) => {
+        const ok = await depot.supprimer(c.get("userId"), c.req.param("id"));
+        return ok ? c.body(null, 204) : c.json({ erreur: "Séance introuvable." }, 404);
+      })
       .post("/", zValidator("json", seanceSaisie), async (c) => {
         const saisie = c.req.valid("json");
         try {

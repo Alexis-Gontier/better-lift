@@ -16,6 +16,7 @@ export {
 } from "./brouillon-routine.js";
 export { cleJour, formatHeure, formatJour, memeJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
+export { courbeUnRm, type Ecart, ecartSerie } from "./ecart.js";
 export {
   ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
@@ -57,6 +58,7 @@ export {
   texteRecherche,
 } from "./recherche.js";
 export {
+  type HistoriqueExercice,
   LIBELLE_RECORD,
   marquerRecords,
   type RecordExercice,
