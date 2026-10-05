@@ -90,6 +90,8 @@ const fauxLecture: DepotLectureSeances = {
               volumeKg: 495,
               routineId: null,
               nbRecords: 0,
+              nbExercices: 0,
+              apercu: [],
             },
           ],
           total: 1,

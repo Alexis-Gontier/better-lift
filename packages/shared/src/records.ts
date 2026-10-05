@@ -1,3 +1,4 @@
+import type { ApercuExercice } from "./apercu.js";
 import type { TypeSerie } from "./routines.js";
 import { estimate1RM } from "./training.js";
 
@@ -121,6 +122,9 @@ export type SeanceResume = {
   /** Les séries qui ont battu au moins un record, à ce moment-là (D64, D110). */
   nbRecords: number;
 };
+
+/** Une séance dans le fil de l'Accueil (D119) : son résumé et ses premiers exercices. */
+export type SeanceFil = SeanceResume & { nbExercices: number; apercu: ApercuExercice[] };
 
 export type SerieLue = {
   type: TypeSerie;

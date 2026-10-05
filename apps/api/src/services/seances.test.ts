@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anterieurA, type LigneSeance, versDetail, versResume } from "./seances.js";
+import { anterieurA, type LigneSeance, versDetail, versFil, versResume } from "./seances.js";
 
 // Prisma rend les charges en `Decimal` : un objet, pas un nombre.
 const d = (n: number) => ({ toString: () => String(n) });
@@ -14,7 +14,7 @@ const ligne: LigneSeance = {
   exercices: [
     {
       exerciseId: "bench",
-      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre" },
+      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre", gifUrl: null },
       note: "siège cran 4",
       series: [
         { type: "ECHAUFFEMENT", reps: 10, chargeKg: d(40), faite: true },
@@ -23,14 +23,14 @@ const ligne: LigneSeance = {
     },
     {
       exerciseId: "traction",
-      exercise: { slug: "pull-up", nomFr: "Traction" },
+      exercise: { slug: "pull-up", nomFr: "Traction", gifUrl: null },
       note: null,
       series: [{ type: "NORMALE", reps: 10, chargeKg: null, faite: true }],
     },
     // Le même exercice une seconde fois : il se mesure à la première occurrence.
     {
       exerciseId: "bench",
-      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre" },
+      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre", gifUrl: null },
       note: null,
       series: [{ type: "NORMALE", reps: 6, chargeKg: d(100), faite: true }],
     },
@@ -130,5 +130,19 @@ describe("anterieurA", () => {
     ]);
     const avant = anterieurA(h, new Date("2026-09-24T18:00:00.000Z"));
     expect(avant.get("bench")?.map((x) => x.date)).toEqual(["2026-09-20T18:00:00.000Z"]);
+  });
+});
+
+describe("versFil (D119)", () => {
+  it("compte les exercices et rend leur aperçu, charges en nombres", () => {
+    const f = versFil(ligne);
+    expect(f.nbExercices).toBe(3);
+    expect(f.apercu[0]).toEqual({
+      slug: "barbell-bench-press",
+      nom: "Développé couché à la barre",
+      image: null,
+      nbSeries: 2,
+      meilleure: { chargeKg: 100, reps: 5 },
+    });
   });
 });

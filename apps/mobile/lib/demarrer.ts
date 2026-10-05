@@ -8,13 +8,13 @@ import { useSeance } from "./seance";
 import { nouvelId } from "./temps";
 
 /**
- * Démarrer une séance, vide ou depuis une routine : partagé par la page d'une routine et
- * l'écran « Démarrer » ouvert depuis l'Accueil.
+ * Démarrer une séance, vide ou depuis une routine : partagé par la page d'une
+ * routine, la carte « À suivre » de l'Accueil et la feuille Démarrer (D120).
  *
  * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
  * relit le DISQUE au moment de l'appui, pas l'état d'un écran.
  */
-export function useDemarrer({ depuisModale = false }: { depuisModale?: boolean } = {}) {
+export function useDemarrer() {
   const router = useRouter();
   const client = useQueryClient();
   const { demarrer: demarrerSeance } = useSeance();
@@ -22,9 +22,8 @@ export function useDemarrer({ depuisModale = false }: { depuisModale?: boolean }
   const feuille = useFeuille();
   const informer = useInformer();
 
-  // Depuis l'écran « Démarrer », `replace` : le retour de la séance ne doit pas
-  // y ramener. Depuis l'Accueil, `push` : le retour ramène aux onglets.
-  const aller = () => (depuisModale ? router.replace("/seance") : router.push("/seance"));
+  // `push` : le retour de la séance ramène aux onglets.
+  const aller = () => router.push("/seance");
 
   const lancer = async (creer: () => ReturnType<typeof demarrerVide>) => {
     if (!(await demarrerSeance(creer()))) {
