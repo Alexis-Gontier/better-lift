@@ -9,16 +9,15 @@ import {
 } from "@better-lift/shared";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Play } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LigneSeance } from "../../components/historique/ligne-seance";
 import { Chargement, Erreur, Vide } from "../../components/ui/etats";
-import { useDemarrer } from "../../lib/demarrer";
 import { FUSEAU } from "../../lib/fuseau";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../../lib/requetes";
 import { useSeance } from "../../lib/seance";
-import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../../lib/theme";
+import { creerStyles, espace, polices, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
 const JOURS = ["L", "M", "M", "J", "V", "S", "D"] as const;
@@ -26,8 +25,8 @@ const JOURS = ["L", "M", "M", "J", "V", "S", "D"] as const;
 /**
  * L'Accueil (D110) répond aux trois questions qu'on se pose en ouvrant l'app :
  * où en est la semaine, quelle routine vient ensuite, ce qui s'est passé
- * dernièrement. Il porte le seul aplat de l'écran — démarrer (D105) — qui
- * disparaît pendant une séance : le bandeau la reprend (D107).
+ * dernièrement. Démarrer vit au centre de la barre (D74, rétabli) ; pendant
+ * une séance, le bandeau la reprend (D107).
  */
 export default function Accueil() {
   const styles = useStyles();
@@ -109,8 +108,9 @@ function Semaine({ seances }: { seances: readonly SeanceResume[] }) {
 }
 
 /**
- * « À suivre » : la routine qui suit la dernière faite (D110), avec l'aplat
- * pour la démarrer. Sans routine, l'aplat démarre une séance tout court.
+ * « À suivre » : la routine qui suit la dernière faite (D110). Le bouton
+ * central de la barre démarre (D74, rétabli) : la carte n'a pas d'aplat, elle
+ * ouvre la page de la routine.
  */
 function ASuivre({
   routines,
@@ -123,11 +123,10 @@ function ASuivre({
   const couleurs = useCouleurs();
   const router = useRouter();
   const { seance } = useSeance();
-  const demarrer = useDemarrer();
   const suivante = routines ? routineASuivre(routines, seances) : null;
   // Le détail est déjà en cache (préchargé pour le hors ligne) : la durée vient sans attente.
   const detail = useQuery({ ...optionsRoutine(suivante?.id ?? ""), enabled: !!suivante });
-  // Pendant une séance, le bandeau la reprend : pas d'aplat ici (D105, D107).
+  // Pendant une séance, le bandeau la reprend (D107).
   if (seance) return null;
 
   if (!suivante) {
@@ -135,17 +134,8 @@ function ASuivre({
       <View style={styles.bloc}>
         <Text style={styles.premiere}>Ta première séance t'attend.</Text>
         <Text style={styles.premiereSous}>
-          Démarre une routine préparée sur le web, ou une séance vide que tu remplis au fil de
-          l'eau.
+          Le bouton Démarrer, en bas, lance une routine ou une séance vide.
         </Text>
-        <Pressable
-          onPress={() => router.push("/demarrer")}
-          style={({ pressed }) => [styles.aplat, pressed && styles.aplatAppuye]}
-          accessibilityRole="button"
-        >
-          <Play size={20} color={couleurs.surAction} strokeWidth={2.4} />
-          <Text style={styles.aplatTexte}>Démarrer une séance</Text>
-        </Pressable>
       </View>
     );
   }
@@ -154,41 +144,30 @@ function ASuivre({
   const minutes = detail.data
     ? Math.max(1, Math.round(dureeEstimeeSec(detail.data.exercices) / 60))
     : null;
-  const enCours = demarrer.ouverture === suivante.id;
 
   return (
-    <View style={[styles.bloc, styles.carte]}>
-      <Text style={[styles.section, styles.sectionCarte]}>À suivre</Text>
-      <Text style={styles.routine} numberOfLines={2}>
-        {suivante.nom}
-      </Text>
-      <Text style={styles.meta}>
-        {suivante.nbExercices} exercice{suivante.nbExercices > 1 ? "s" : ""} · {suivante.nbSeries}{" "}
-        série{suivante.nbSeries > 1 ? "s" : ""}
-        {minutes ? ` · ≈ ${minutes} min` : ""}
-      </Text>
-      {derniere ? (
-        <Text style={styles.metaPale}>Dernière fois : {formatJour(derniere.debut, FUSEAU)}</Text>
-      ) : null}
-      <Pressable
-        onPress={() => void demarrer.routine(suivante.id)}
-        disabled={demarrer.ouverture !== null}
-        style={({ pressed }) => [styles.aplat, (pressed || enCours) && styles.aplatAppuye]}
-        accessibilityRole="button"
-      >
-        <Play size={20} color={couleurs.surAction} strokeWidth={2.4} />
-        <Text style={styles.aplatTexte} numberOfLines={1}>
-          Démarrer {suivante.nom}
+    <Pressable
+      onPress={() => router.push(`/routines/${suivante.id}`)}
+      style={({ pressed }) => [styles.bloc, styles.carte, pressed && styles.carteAppuyee]}
+      accessibilityRole="button"
+      accessibilityHint="Ouvre la routine"
+    >
+      <View style={styles.carteTexte}>
+        <Text style={[styles.section, styles.sectionCarte]}>À suivre</Text>
+        <Text style={styles.routine} numberOfLines={2}>
+          {suivante.nom}
         </Text>
-      </Pressable>
-      <Pressable
-        onPress={() => router.push("/demarrer")}
-        style={styles.tertiaire}
-        accessibilityRole="button"
-      >
-        <Text style={styles.tertiaireTexte}>Autre routine ou séance vide</Text>
-      </Pressable>
-    </View>
+        <Text style={styles.meta}>
+          {suivante.nbExercices} exercice{suivante.nbExercices > 1 ? "s" : ""} · {suivante.nbSeries}{" "}
+          série{suivante.nbSeries > 1 ? "s" : ""}
+          {minutes ? ` · ≈ ${minutes} min` : ""}
+        </Text>
+        {derniere ? (
+          <Text style={styles.metaPale}>Dernière fois : {formatJour(derniere.debut, FUSEAU)}</Text>
+        ) : null}
+      </View>
+      <ChevronRight size={22} color={couleurs.encreTertiaire} />
+    </Pressable>
   );
 }
 
@@ -250,6 +229,8 @@ const useStyles = creerStyles((couleurs) => ({
   lettre: { color: couleurs.encreAttenuee, fontSize: 11, fontWeight: "600" },
   lettreAujourdhui: { color: couleurs.encre, fontWeight: "800" },
   carte: {
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: espace.l,
     marginTop: espace.m,
     paddingBottom: espace.l,
@@ -260,6 +241,8 @@ const useStyles = creerStyles((couleurs) => ({
     backgroundColor: couleurs.surface1,
     gap: espace.xs,
   },
+  carteAppuyee: { backgroundColor: couleurs.surface2 },
+  carteTexte: { flex: 1, gap: espace.xs },
   routine: {
     color: couleurs.encre,
     fontSize: 30,
@@ -268,21 +251,6 @@ const useStyles = creerStyles((couleurs) => ({
   },
   meta: { color: couleurs.encreSecondaire, fontSize: 14 },
   metaPale: { color: couleurs.encreTertiaire, fontSize: 13 },
-  aplat: {
-    minHeight: CIBLE + 4,
-    marginTop: espace.m,
-    borderRadius: rayon.bouton,
-    backgroundColor: couleurs.action,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: espace.s,
-    paddingHorizontal: espace.l,
-  },
-  aplatAppuye: { opacity: 0.85 },
-  aplatTexte: { color: couleurs.surAction, fontSize: taille.courant, fontWeight: "700" },
-  tertiaire: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
-  tertiaireTexte: { color: couleurs.encreSecondaire, fontSize: 15, fontWeight: "600" },
   premiere: {
     color: couleurs.encre,
     fontSize: taille.grand + 4,

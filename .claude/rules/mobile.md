@@ -41,22 +41,23 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 - **Carte du corps** : la bibliothèque peint chaque partie d'une couleur codée en dur qui
   l'emporte sur `defaultFill` — chaque partie non travaillée reçoit `styles.fill` du thème.
 
-## Navigation (D106–D107, remplace D74–D80)
+## Navigation (D115 : barre D74 rétablie, bandeau D107)
 
 Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
 
-- Quatre onglets : **Accueil · Routines · Stats · Profil**, sans lime. **Onglet actif en encre**
-  et en gras (D106 remplace D76 révisée). Icônes Lucide.
-- **Un seul aplat lime par écran** (D105) : la barre n'en porte jamais. « Démarrer » vit sur
-  l'Accueil (ouvre la modale `app/demarrer.tsx`, logique dans `lib/demarrer.ts`) et sur la page
-  d'une routine ; il disparaît de l'Accueil pendant une séance.
+- Quatre onglets **Accueil · Routines · Stats · Profil** et, au centre, un **rond lime**
+  « Démarrer » (feuille `app/demarrer.tsx`, logique dans `lib/demarrer.ts`) qui devient
+  « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
+  en lime** (D115, remplace D106 à la demande de l'utilisateur). Icônes Lucide.
+- La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine. La page d'une
+  routine garde « Démarrer la routine », dégagé du débord du rond (30).
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Repos restant s'il tourne, chrono sinon ; tout le bandeau
   ramène à la séance.
 - **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
-  le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, aplat
-  « Démarrer … » masqué pendant une séance), puis le fil des séances (`LigneSeance`, avec le
+  le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, carte
+  masquée pendant une séance), puis le fil des séances (`LigneSeance`, avec le
   nombre de records que l'API compte dans `nbRecords`). L'écran Historique garde la liste seule. La file d'envoi vit dans Profil
   (`components/file-envoi.tsx`). Historique et Exercices sont hors de la barre (`href: null`) mais
   joignables : détail d'une séance depuis l'Accueil, fiche d'exercice depuis le détail.

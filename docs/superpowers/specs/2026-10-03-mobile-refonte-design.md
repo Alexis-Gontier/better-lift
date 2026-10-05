@@ -35,6 +35,7 @@ exception aux règles de couleur.
 | **D112** | **Stats**, calculées par l'**API** (`GET /stats`, dans le fuseau) : volume par semaine (8), régularité (12 semaines, jours entraînés), records récents, séries par muscle sur 4 semaines (carte du corps). Persistées dans le cache hors ligne (D96), affichées avec leur date | Une fonctionnalité neuve, pas un habillage ; l'historique n'est pas sur le téléphone (D96) |
 | **D113** | **Mouvement et vibrations** selon le tableau du *Système* : on vibre pour confirmer une action faite sans regarder (valider, fin de repos, record), jamais pour décorer ; on anime pour montrer d'où vient un objet ; `useReducedMotion` remplace les déplacements par des fondus. **Réglage « Vibrations »** dans Profil, gardé sur le téléphone | Le *Système* |
 | **D114** | **Micro-textes** du *Système* : tutoiement, phrases courtes avec un point, pas de point d'exclamation ; on décrit la situation, puis la suite | Le *Système* |
+| **D115** | **L'ancienne barre revient** (5 octobre, choix de l'utilisateur) : rond lime central « Démarrer / Reprendre » et onglet actif en lime (D74, D76 révisée), **remplace D106**. Le bandeau D107 reste au-dessus de la barre ; la carte « À suivre » de l'Accueil perd son aplat et ouvre la routine | L'utilisateur préfère l'action au centre, toujours à la même place, à la barre neutre |
 
 ## Écarts assumés avec la maquette
 
