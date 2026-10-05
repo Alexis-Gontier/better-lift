@@ -2,7 +2,16 @@ import type { ChampPave, TouchePave } from "@better-lift/shared";
 import { ChevronDown, Delete } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../../lib/theme";
+import {
+  CIBLE,
+  creerStyles,
+  espace,
+  PLAFOND_TEXTE_DENSE,
+  polices,
+  rayon,
+  taille,
+  useCouleurs,
+} from "../../lib/theme";
 import { UNITE } from "../../lib/unites";
 
 const TOUCHES: TouchePave[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0"];
@@ -47,10 +56,11 @@ export function PaveNumerique({
     <View style={[styles.pave, { paddingBottom: espace.m + bottom }]}>
       <View style={styles.entete}>
         <View style={styles.titre}>
-          <Text style={styles.libelle}>
+          <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.libelle}>
             {charge ? `Charge (${UNITE})` : "Répétitions"} · série {serie}
           </Text>
           <Text
+            maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
             style={[styles.valeur, invalide && styles.valeurKo]}
             accessibilityLiveRegion="polite"
           >
@@ -101,7 +111,9 @@ export function PaveNumerique({
             style={({ pressed }) => [styles.secondaire, pressed && styles.toucheAppuyee]}
             accessibilityRole="button"
           >
-            <Text style={styles.secondaireTexte}>Suivant · reps</Text>
+            <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.secondaireTexte}>
+              Suivant · reps
+            </Text>
           </Pressable>
         ) : null}
         <Pressable
@@ -115,7 +127,9 @@ export function PaveNumerique({
           accessibilityRole="button"
           accessibilityState={{ disabled: invalide }}
         >
-          <Text style={styles.validerTexte}>Valider la série</Text>
+          <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.validerTexte}>
+            Valider la série
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -147,7 +161,9 @@ function Touche({
       accessibilityRole="button"
       accessibilityLabel={texte === "," ? "Virgule" : texte}
     >
-      <Text style={styles.toucheTexte}>{texte}</Text>
+      <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.toucheTexte}>
+        {texte}
+      </Text>
     </Pressable>
   );
 }

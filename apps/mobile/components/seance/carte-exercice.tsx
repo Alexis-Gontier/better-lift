@@ -26,7 +26,15 @@ import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
+import {
+  CIBLE,
+  creerStyles,
+  espace,
+  PLAFOND_TEXTE_DENSE,
+  rayon,
+  taille,
+  useCouleurs,
+} from "../../lib/theme";
 import { UNITE } from "../../lib/unites";
 import { Feuille, type OptionFeuille } from "../ui/feuille";
 import { COLONNES, type EtatSerie, LigneSerie } from "./ligne-serie";
@@ -240,10 +248,38 @@ export function CarteExercice({
       ) : null}
 
       <View style={styles.colonnes}>
-        <Text style={[styles.colonne, { width: COLONNES.serie }]}>Série</Text>
-        <Text style={[styles.colonne, styles.gauche, { flex: 1.25 }]}>Précédent</Text>
-        <Text style={[styles.colonne, { flex: 1 }]}>{UNITE}</Text>
-        <Text style={[styles.colonne, { flex: 1 }]}>Reps</Text>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          style={[styles.colonne, { width: COLONNES.serie }]}
+        >
+          Série
+        </Text>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          style={[styles.colonne, styles.gauche, { flex: 1.25 }]}
+        >
+          Précédent
+        </Text>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          style={[styles.colonne, { flex: 1 }]}
+        >
+          {UNITE}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          style={[styles.colonne, { flex: 1 }]}
+        >
+          Reps
+        </Text>
         <View style={{ width: COLONNES.valider, alignItems: "center" }}>
           <Check size={14} color={couleurs.encreAttenuee} strokeWidth={3} />
         </View>
@@ -301,7 +337,7 @@ const useStyles = creerStyles((couleurs) => ({
   },
   entete: { flexDirection: "row", alignItems: "center", gap: espace.m },
   // Fond blanc : les GIF du dataset sont dessinés sur blanc.
-  vignette: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#ffffff" },
+  vignette: { width: 40, height: 40, borderRadius: 20, backgroundColor: couleurs.fondImage },
   sansImage: { backgroundColor: couleurs.surface3, alignItems: "center", justifyContent: "center" },
   nom: { flex: 1, color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "700" },
   menu: {
@@ -312,7 +348,7 @@ const useStyles = creerStyles((couleurs) => ({
     justifyContent: "center",
   },
   media: { alignItems: "center", gap: espace.xs },
-  gif: { width: 220, height: 220, borderRadius: 12, backgroundColor: "#ffffff" },
+  gif: { width: 220, height: 220, borderRadius: 12, backgroundColor: couleurs.fondImage },
   attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
   puces: { flexDirection: "row", gap: espace.s, flexWrap: "wrap" },
   puce: {

@@ -3,7 +3,13 @@
     "name": "better-lift",
     "slug": "better-lift",
     "scheme": "better-lift",
-    "version": "0.0.0",
+    "version": "0.1.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/971f278d-f407-494e-9840-eb357fc064db"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -19,7 +25,14 @@
           "backgroundColor": "#08090a"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/monochrome.png",
+          "color": "#a8cf45"
+        }
+      ]
     ],
     "android": {
       "package": "com.algont.betterlift",

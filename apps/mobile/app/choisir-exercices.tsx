@@ -198,7 +198,12 @@ const useStyles = creerStyles((couleurs) => ({
   // cocher n'est ni l'action ni un record.
   ligneCochee: { borderColor: couleurs.encreSecondaire },
   // Fond blanc : les images du dataset sont dessinées sur blanc.
-  vignette: { width: 52, height: 52, borderRadius: rayon.cellule, backgroundColor: "#ffffff" },
+  vignette: {
+    width: 52,
+    height: 52,
+    borderRadius: rayon.cellule,
+    backgroundColor: couleurs.fondImage,
+  },
   sansImage: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface3 },
   nom: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },

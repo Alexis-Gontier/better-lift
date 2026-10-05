@@ -22,6 +22,17 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   builds natifs passent par **EAS**, l'émulateur (`better-lift`) ne sert qu'à exécuter. Icônes et
   écran de démarrage ne se voient que dans un build EAS.
 - Dépendance Expo ou React Native : `npx expo install <paquet>`, jamais une version de mémoire.
+  Metro lancé AVANT l'installation ne voit pas le paquet (« Unable to resolve ») : le relancer
+  avec `--clear`.
+
+## Livraison (EAS)
+
+- `runtimeVersion: { policy: "appVersion" }` et `updates.url` dans `app.json` : un correctif JS
+  part par `eas update --channel <canal>` sans nouvel APK, vers les builds de **même `version`**.
+  Une dépendance native ajoutée ou un SDK changé : monter `version` et refaire un build.
+- Profils `preview` (canal `preview`) et `production` (canal `production`, `autoIncrement`,
+  `appVersionSource: "remote"` : EAS tient le `versionCode`). Chaque profil lit l'environnement
+  EAS du même nom : `EXPO_PUBLIC_API_URL` doit y exister, sinon l'app vise `10.0.2.2`.
 
 ## Système (D101–D103)
 
@@ -38,6 +49,15 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   `creerStyles` traduit `fontWeight` en famille Archivo de la bonne graisse : un style hors de la
   fabrique (options d'Expo Router, `tabBarLabelStyle`) pose `fontFamily: polices.…` lui-même.
   Chiffres héros : `polices.condense`, coupe générée par `scripts/polices/condenser-archivo.py`.
+- **Fond des images d'exercice** : rôle `fondImage`, blanc dans les deux registres (les médias du
+  catalogue sont détourés sur blanc).
+- **Taille du texte du système** : suivie partout, sauf dans les éléments de hauteur fixe de la
+  séance (lignes de série, en-têtes de colonnes, pavé, bandeau de repos), plafonnés par
+  `maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}` (1,3). Un nouvel élément de hauteur fixe le
+  reçoit ; une colonne étroite ajoute `numberOfLines={1} adjustsFontSizeToFit`.
+- **Écran de secours** : `ErrorBoundary` exporté par `app/_layout.tsx` (toutes les routes) et par
+  `app/seance.tsx` (« rien n'est perdu »), dans `components/ui/ecran-erreur.tsx`. Il ne lit aucun
+  contexte de l'app : c'est peut-être lui qui a planté.
 - **Carte du corps** : la bibliothèque peint chaque partie d'une couleur codée en dur qui
   l'emporte sur `defaultFill` — chaque partie non travaillée reçoit `styles.fill` du thème.
 
@@ -112,6 +132,12 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   `app/seance.tsx`). La logique des touches (`toucherPave`, `ajusterSurPave`, `lireReps`) vit
   dans `shared/pave.ts`. Une saisie invalide n'est jamais écrite ; la ligne saisie défile au
   quart haut de l'écran (positions des blocs et des lignes par `onLayout`).
+- **Fin du repos app fermée** : notification locale programmée à `repos.fin`
+  (`lib/notification-repos.ts`, appelée par le `SeanceProvider`), dérivée de l'état : tout
+  changement de `repos.fin` reprogramme ou annule, en file. Masquée au premier plan (l'écran vibre
+  déjà) ; canal choisi par le réglage Vibrations. **Absente d'Expo Go sous Android** : l'import
+  d'`expo-notifications` y lève une erreur, le module n'est donc chargé qu'à la demande et hors
+  Expo Go. Ne s'éprouve que sur un build EAS.
 - **Vibrations** : toujours par `lib/vibrations.ts` (`vibrer.valider`, `selection`, `finRepos`),
   jamais `expo-haptics` en direct : le réglage « Vibrations » du Profil (`useVibrations`, clé
   `better-lift:vibrations`, gardé sur le téléphone) les coupe toutes là (D113).

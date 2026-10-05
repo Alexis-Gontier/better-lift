@@ -1,7 +1,14 @@
 import { type ChampPave, chargeEnTexte, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
-import { creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
+import {
+  creerStyles,
+  espace,
+  PLAFOND_TEXTE_DENSE,
+  rayon,
+  taille,
+  useCouleurs,
+} from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 import { vibrer } from "../../lib/vibrations";
 
@@ -84,7 +91,12 @@ export function LigneSerie({
         accessibilityRole="button"
         accessibilityLabel={`Série ${numero} : type ou suppression`}
       >
-        <Text style={[styles.etiquetteTexte, { color: couleurEtiquette }]}>{etiquette}</Text>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          style={[styles.etiquetteTexte, { color: couleurEtiquette }]}
+        >
+          {etiquette}
+        </Text>
       </Pressable>
       {/* Une INDICATION, pas une valeur (D59) : les cases gardent la cible. Un
           appui la recopie. */}
@@ -95,7 +107,11 @@ export function LigneSerie({
         accessibilityRole="button"
         accessibilityLabel={`Recopier la dernière fois pour la série ${numero}`}
       >
-        <Text style={styles.precedentTexte} numberOfLines={1}>
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          style={styles.precedentTexte}
+          numberOfLines={1}
+        >
           {textePrecedent(precedent)}
         </Text>
       </Pressable>
@@ -185,7 +201,11 @@ function Case({
       accessibilityRole="button"
       accessibilityLabel={`${libelle} : ${texte || "vide"}`}
     >
-      <Text style={[styles.caseTexte, fantome && !editee && styles.caseFantome]} numberOfLines={1}>
+      <Text
+        maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+        style={[styles.caseTexte, fantome && !editee && styles.caseFantome]}
+        numberOfLines={1}
+      >
         {texte || "—"}
       </Text>
     </Pressable>

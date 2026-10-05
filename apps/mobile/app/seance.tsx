@@ -46,6 +46,9 @@ import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from 
 import { SYSTEME_UNITES } from "../lib/unites";
 import { vibrer } from "../lib/vibrations";
 
+// Le brouillon est sur le disque : un plantage de l'écran ne perd rien.
+export { EcranErreurSeance as ErrorBoundary } from "../components/ui/ecran-erreur";
+
 /** La case en cours de saisie au pavé (D109) : l'écran tient le texte tapé. */
 type Edition = { iE: number; iS: number; champ: ChampPave; texte: string; neuf: boolean };
 

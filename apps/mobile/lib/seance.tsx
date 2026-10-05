@@ -19,6 +19,7 @@ import {
 } from "react";
 import { AppState } from "react-native";
 import { api } from "./api";
+import { useNotificationRepos } from "./notification-repos";
 import { brouillon, fileEnvoi } from "./stockage";
 
 /**
@@ -147,6 +148,9 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
       finPremierPlan.remove();
     };
   }, [synchroniser]);
+
+  // La fin du repos s'annonce aussi app fermée ou téléphone verrouillé.
+  useNotificationRepos(seance?.repos?.fin ?? null);
 
   const modifier = useCallback((s: SeanceEnCours) => {
     poser(s);
