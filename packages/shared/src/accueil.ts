@@ -1,18 +1,10 @@
-import { cleJour } from "./calendar.js";
+import { lundiCourant, semainesRecentes } from "./stats.js";
 
 /**
  * Ce que l'Accueil répond en s'ouvrant (D110) : où en est la semaine, et
  * quelle routine vient ensuite. Pur et sans plateforme ; le découpage des
  * jours se fait dans le fuseau du profil, jamais en UTC.
  */
-
-const JOUR_MS = 86_400_000;
-
-/** Un jour civil « 2026-10-03 » en millisecondes UTC, pour compter en jours entiers. */
-function jourEnMs(cle: string): number {
-  const [a, m, j] = cle.split("-").map(Number);
-  return Date.UTC(a ?? 0, (m ?? 1) - 1, j ?? 1);
-}
 
 /**
  * La semaine en cours, du lundi au dimanche dans le fuseau : nombre de séances,
@@ -23,22 +15,13 @@ export function resumeSemaine(
   maintenant: Date,
   fuseau: string,
 ): { seances: number; volumeKg: number; jours: boolean[]; aujourdhui: number } {
-  const aujourdhuiMs = jourEnMs(cleJour(maintenant.toISOString(), fuseau));
-  // getUTCDay : 0 = dimanche. On veut 0 = lundi.
-  const aujourdhui = (new Date(aujourdhuiMs).getUTCDay() + 6) % 7;
-  const lundiMs = aujourdhuiMs - aujourdhui * JOUR_MS;
-
-  const jours: boolean[] = Array(7).fill(false);
-  let nombre = 0;
-  let volumeKg = 0;
-  for (const s of seances) {
-    const i = Math.round((jourEnMs(cleJour(s.debut, fuseau)) - lundiMs) / JOUR_MS);
-    if (i < 0 || i > 6) continue;
-    jours[i] = true;
-    nombre++;
-    volumeKg += s.volumeKg;
-  }
-  return { seances: nombre, volumeKg: Math.round(volumeKg * 100) / 100, jours, aujourdhui };
+  const [semaine] = semainesRecentes(seances, maintenant, fuseau, 1);
+  return {
+    seances: semaine?.seances ?? 0,
+    volumeKg: semaine?.volumeKg ?? 0,
+    jours: semaine?.jours ?? Array(7).fill(false),
+    aujourdhui: lundiCourant(maintenant, fuseau).rang,
+  };
 }
 
 /**

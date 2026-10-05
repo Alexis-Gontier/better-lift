@@ -10,8 +10,10 @@ import { health } from "./routes/health.js";
 import { routesRecords } from "./routes/records.js";
 import { routesRoutines } from "./routes/routines.js";
 import { routesSeances } from "./routes/seances.js";
+import { routesStats } from "./routes/stats.js";
 import { depotPrisma as depotRoutines } from "./services/routines.js";
 import { depotLecture, depotPrisma as depotSeances } from "./services/seances.js";
+import { depotStats } from "./services/stats.js";
 
 // Ce module construit l'app, sans aucun effet de bord (pas de `serve()`) : il
 // peut donc être importé tel quel par les tests, y compris pour vérifier le
@@ -43,7 +45,8 @@ const routes = app
   .route("/exercices", routesExercices())
   .route("/exercices", routesRecords(depotLecture, lireSession))
   .route("/routines", routesRoutines(depotRoutines, lireSession))
-  .route("/seances", routesSeances(depotSeances, depotLecture, lireSession));
+  .route("/seances", routesSeances(depotSeances, depotLecture, lireSession))
+  .route("/stats", routesStats(depotStats, lireSession));
 
 export type AppType = typeof routes;
 export default app;

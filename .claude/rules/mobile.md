@@ -54,7 +54,7 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Repos restant s'il tourne, chrono sinon ; tout le bandeau
   ramène à la séance.
-- Stats est vide pour l'instant. **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
+- **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
   le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, aplat
   « Démarrer … » masqué pendant une séance), puis le fil des séances (`LigneSeance`, avec le
   nombre de records que l'API compte dans `nbRecords`). L'écran Historique garde la liste seule. La file d'envoi vit dans Profil
@@ -125,7 +125,15 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   alerte.
 - **Démarrer** est une feuille basse (`presentation: "transparentModal"`) : l'écran dessine le
   voile et la feuille ; « À suivre » marque la routine de `routineASuivre`.
-- Une séance envoyée invalide `["seances"]` et `["records"]`.
+- Une séance envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
+
+## Stats (D112)
+
+- `GET /stats?fuseau=` (`apps/api/src/services/stats.ts`) : 12 semaines (`semainesRecentes` de
+  `shared`, que `resumeSemaine` de l'Accueil réutilise), records des 4 dernières semaines jugés
+  contre tout l'historique, exercices de la même fenêtre pour la carte du corps.
+- Persistées hors ligne (`gardeHorsLigne`) ; l'écran dit leur date de calcul (`dataUpdatedAt`).
+  Sous deux séances, un état vide plutôt que des courbes muettes.
 
 ## Hors ligne (D96–D100)
 

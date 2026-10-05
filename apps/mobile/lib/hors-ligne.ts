@@ -41,6 +41,8 @@ export function gardeHorsLigne(query: Query): boolean {
     domaine === "routines" ||
     // Les records d'avant la séance, pour annoncer à la fin ceux qu'elle bat (D111).
     domaine === "records" ||
+    // Les stats de la dernière lecture : l'onglet reste lisible hors ligne.
+    domaine === "stats" ||
     (domaine === "exercices" && sorte === "complet") ||
     (domaine === "seances" && sorte === "precedents")
   );
