@@ -2,6 +2,7 @@ import "./env.js";
 
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { auth } from "./auth.js";
@@ -30,6 +31,20 @@ app.use(
     credentials: true,
   }),
 );
+
+// Toute réponse d'erreur garde la forme `{ erreur }` des routes : les clients la
+// lisent. Une `HTTPException` (levée exprès, par Hono ou un middleware) garde son
+// code et son message ; toute autre exception est un défaut — journalisée en
+// entier, mais jamais détaillée au client.
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return c.json({ erreur: err.message || "Requête refusée." }, err.status);
+  }
+  console.error(`[api] ${c.req.method} ${c.req.path}`, err);
+  return c.json({ erreur: "Erreur interne du serveur." }, 500);
+});
+
+app.notFound((c) => c.json({ erreur: "Ressource introuvable." }, 404));
 
 // Better Auth gère lui-même ses routes : elles ne passent pas par le RPC Hono,
 // et n'apparaissent donc pas dans `AppType`. Le client web a son propre client

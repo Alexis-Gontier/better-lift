@@ -3,10 +3,18 @@ import "./styles/globals.css";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { PageErreur, PageIntrouvable } from "./components/etats/pages-routeur";
 import { auth, chargerSession } from "./lib/auth-session";
 import { routeTree } from "./routeTree.gen";
 
-const router = createRouter({ routeTree, context: { auth } });
+// Les écrans par défaut du routeur, en français et dans le système : une adresse
+// inconnue, et une route qui plante (rendue à sa place seulement).
+const router = createRouter({
+  routeTree,
+  context: { auth },
+  defaultNotFoundComponent: PageIntrouvable,
+  defaultErrorComponent: PageErreur,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {

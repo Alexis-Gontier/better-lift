@@ -27,6 +27,17 @@ export const auth = betterAuth({
   // comme origine, et sert le jeton porteur là où le web reçoit un cookie.
   plugins: [expo()],
 
+  // La limitation des tentatives vit EN BASE : sur Vercel, chaque instance de la
+  // fonction a sa propre mémoire, et le stockage par défaut (mémoire) ne
+  // limitait donc rien. Active en production seulement (défaut de Better Auth).
+  // L'IP vient de `x-forwarded-for`, que Vercel réécrit en une seule valeur.
+  rateLimit: {
+    storage: "database",
+    // Plus strict que le défaut (3 par 10 s) : 5 essais de mot de passe par
+    // minute et par IP. Les 2–3 comptes n'en ont jamais besoin de plus.
+    customRules: { "/sign-in/email": { window: 60, max: 5 } },
+  },
+
   trustedOrigins: [
     "http://localhost:3000",
     "better-lift://",

@@ -59,6 +59,11 @@ que `tsconfig.base.json`).
   (`apps/api/src/middlewares/`), qui pose `userId` dans le contexte ; le service le reçoit en
   argument et filtre par lui. La donnée d'autrui est **introuvable (404), jamais interdite
   (403)**. Le lecteur de session est injecté : les routes se testent sans Better Auth.
+- **Toute erreur de l'API répond `{ erreur }`** : les routes le font elles-mêmes, et
+  `app.onError` / `app.notFound` (`apps/api/src/app.ts`) couvrent le reste — une exception
+  imprévue est journalisée en entier et rend un 500 sans détail.
+- **Les tentatives de connexion sont limitées EN BASE** (table `rateLimit`, Better Auth) : en
+  mémoire, chaque instance Vercel aurait son compteur. Active en production seulement.
 - **Toute charge affichée ou saisie passe par `formaterCharge` / `lireCharge`** de `shared`, avec
   le système d'unités fixé en un seul endroit par surface.
 - **Records : tout est dérivé à la lecture** (`shared/records.ts`), jamais stocké. Un badge dit ce

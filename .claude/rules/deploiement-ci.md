@@ -36,6 +36,10 @@ Procédure complète : [`docs/deploiement.md`](../../docs/deploiement.md).
 - Le build Vercel n'a **ni `.git` ni `DIRECT_URL`** : `prepare` tolère l'échec de
   `lefthook install`, et le script de build pose une `DIRECT_URL` factice pour
   `prisma generate`. L'essai local, qui a les deux, ne le voit pas.
+- **Une migration atteint la prod À LA MAIN, avant la fusion** (`prisma migrate deploy` sur
+  `production`, voir `docs/deploiement.md`) : le build Vercel ne migre pas, et la fusion déploie
+  aussitôt un code qui attend déjà la nouvelle table. Exemple payé d'avance : la table
+  `rateLimit` manquante casserait toute connexion.
 - Base de prod : `betterlift` sur la branche Neon `production`. La console Neon propose `neondb`
   par défaut : **une URL de prod doit finir par `/betterlift`**, sinon l'API tombe sur le schéma
   de la V1 (`column nomFr does not exist`).
