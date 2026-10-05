@@ -30,15 +30,16 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
-import { ChevronDown, Plus } from "lucide-react-native";
+import { ChevronDown, Plus, Trash2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
 import { PaveNumerique } from "../components/seance/pave-numerique";
 import { Appuyable } from "../components/ui/appuyable";
 import { attendreChoix } from "../lib/choix-exercices";
+import { useConfirmer } from "../lib/confirmation";
 import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
@@ -50,6 +51,10 @@ import { vibrer } from "../lib/vibrations";
 // Le brouillon est sur le disque : un plantage de l'écran ne perd rien.
 export { EcranErreurSeance as ErrorBoundary } from "../components/ui/ecran-erreur";
 
+/** La hauteur d'une ligne de série, et la place que prend le bandeau de repos en bas. */
+const HAUTEUR_LIGNE = 52;
+const RESERVE_BANDEAU = 140;
+
 /** La case en cours de saisie au pavé (D109) : l'écran tient le texte tapé. */
 type Edition = { iE: number; iS: number; champ: ChampPave; texte: string; neuf: boolean };
 
@@ -58,8 +63,13 @@ function valeurDe(e: Edition): number | null {
   return e.champ === "charge" ? lireCharge(e.texte, SYSTEME_UNITES) : lireReps(e.texte);
 }
 
-/** La saisie écrite dans la séance — inchangée si elle est invalide. */
+/**
+ * La saisie écrite dans la séance — inchangée si elle est invalide, ou si
+ * aucune touche n'a été frappée : ouvrir puis fermer le pavé ne fait pas d'une
+ * cible une valeur saisie.
+ */
 function appliquer(s: SeanceEnCours, e: Edition): SeanceEnCours {
+  if (e.neuf) return s;
   const v = valeurDe(e);
   if (Number.isNaN(v)) return s;
   return modifierSerie(s, e.iE, e.iS, e.champ === "charge" ? { chargeKg: v } : { reps: v });
@@ -91,6 +101,11 @@ export default function Seance() {
     lignes: {},
   });
   const { height: hauteurEcran } = useWindowDimensions();
+  // Où en est le défilement, et la hauteur visible : de quoi savoir si la
+  // prochaine série est à l'écran après une coche.
+  const defilementY = useRef(0);
+  const hauteurVue = useRef(0);
+  const confirmer = useConfirmer();
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
   // posé sur le banc ne doit pas se verrouiller entre deux séries.
   useKeepAwake();
@@ -147,17 +162,17 @@ export default function Seance() {
   }
 
   const abandonner = () =>
-    Alert.alert("Abandonner la séance ?", "Rien ne sera enregistré.", [
-      { text: "Continuer", style: "cancel" },
-      {
-        text: "Abandonner",
-        style: "destructive",
-        onPress: async () => {
-          await effacerSeance();
-          router.replace("/");
-        },
+    confirmer({
+      titre: "Abandonner la séance ?",
+      message: "Rien ne sera enregistré.",
+      action: "Abandonner la séance",
+      icone: Trash2,
+      annuler: "Continuer la séance",
+      onConfirmer: async () => {
+        await effacerSeance();
+        router.replace("/");
       },
-    ]);
+    });
 
   // D93 : ajouter et remplacer passent par la modale du catalogue.
   const ajouter = () => {
@@ -230,11 +245,29 @@ export default function Seance() {
     const s = appliquer(seance, edition);
     const deja = s.exercices[edition.iE]?.series[edition.iS]?.faite;
     if (!deja) vibrer.valider();
-    modifier(deja ? s : validerSerie(s, edition.iE, edition.iS, new Date()));
+    const apres = deja ? s : validerSerie(s, edition.iE, edition.iS, new Date());
+    modifier(apres);
     setEdition(null);
+    if (!deja) suivre(apres);
+  };
+
+  // Après une coche, la prochaine série reste sous les yeux : si elle est hors
+  // de l'écran ou sous le bandeau de repos qui vient de s'ouvrir, on y défile.
+  // Sinon, rien ne bouge — un écran qui saute à chaque coche se perd.
+  const suivre = (s: SeanceEnCours) => {
+    const p = prochaineSerie(s);
+    if (!p) return;
+    const y =
+      (positions.current.blocs[p.iE] ?? 0) + (positions.current.lignes[`${p.iE}-${p.iS}`] ?? 0);
+    const haut = defilementY.current;
+    const bas = haut + hauteurVue.current - RESERVE_BANDEAU;
+    if (y >= haut && y + HAUTEUR_LIGNE <= bas) return;
+    defilement.current?.scrollTo({ y: Math.max(0, y - hauteurVue.current * 0.3), animated: true });
   };
 
   const bilan = bilanSeance(seance);
+  const totalSeries = seance.exercices.reduce((n, e) => n + e.series.length, 0);
+  const vide = seance.exercices.length === 0;
   const prochaine = prochaineSerie(seance);
   // Replier la séance (D108) : retour aux onglets, où le bandeau la garde à un
   // geste (D107). Ouverte sans historique (reprise de l'app), on y va directement.
@@ -259,7 +292,7 @@ export default function Seance() {
             </Text>
             <Text style={styles.sous}>Démarrée à {formatHeure(seance.debut, FUSEAU)}</Text>
           </View>
-          {/* Secondaire (D105) : l'aplat de l'écran est la ✓ de la prochaine série. */}
+          {/* Secondaire (D105) : terminer n'est pas l'action courante d'une séance. */}
           <Appuyable
             onPress={() => router.push("/fin")}
             hitSlop={4}
@@ -278,7 +311,8 @@ export default function Seance() {
             {formaterDuree(secondesEcoulees(seance.debut, maintenant))}
           </Text>
           <Chiffre libelle="Volume" valeur={formaterCharge(bilan.volumeKg, SYSTEME_UNITES)} />
-          <Chiffre libelle="Séries" valeur={String(bilan.seriesFaites)} />
+          {/* La progression, pas un simple compte : « 3 / 16 ». */}
+          <Chiffre libelle="Séries" valeur={`${bilan.seriesFaites} / ${totalSeries}`} />
         </View>
       </View>
 
@@ -288,6 +322,13 @@ export default function Seance() {
         // Assez de place sous la dernière série pour la remonter au-dessus du pavé.
         contentContainerStyle={{ paddingBottom: edition ? hauteurEcran * 0.6 : 200 }}
         keyboardShouldPersistTaps="handled"
+        onScroll={(e) => {
+          defilementY.current = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={32}
+        onLayout={(e) => {
+          hauteurVue.current = e.nativeEvent.layout.height;
+        }}
       >
         {seance.exercices.length === 0 ? (
           <Text style={styles.vide}>Ajoute un premier exercice pour commencer.</Text>
@@ -317,7 +358,12 @@ export default function Seance() {
               }}
               prochaine={prochaine?.iE === iE ? prochaine.iS : null}
               onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
-              onValiderSerie={(iS) => modifier(validerSerie(seance, iE, iS, new Date()))}
+              onValiderSerie={(iS) => {
+                const deja = seance.exercices[iE]?.series[iS]?.faite;
+                const apres = validerSerie(seance, iE, iS, new Date());
+                modifier(apres);
+                if (!deja) suivre(apres);
+              }}
               onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
               onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
               onNote={(note) => modifier(modifierNote(seance, iE, note))}
@@ -329,9 +375,16 @@ export default function Seance() {
           </View>
         ))}
         <View style={styles.pied}>
-          <Appuyable onPress={ajouter} style={styles.ajouter} accessibilityRole="button">
-            <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
-            <Text style={styles.ajouterTexte}>Ajouter un exercice</Text>
+          {/* Sans exercice, il n'y a pas de ✓ : ajouter devient l'aplat de l'écran (D105). */}
+          <Appuyable
+            onPress={ajouter}
+            style={[styles.ajouter, vide && styles.ajouterAplat]}
+            accessibilityRole="button"
+          >
+            <Plus size={18} color={vide ? couleurs.surAction : couleurs.encre} strokeWidth={2.4} />
+            <Text style={[styles.ajouterTexte, vide && styles.ajouterTexteAplat]}>
+              Ajouter un exercice
+            </Text>
           </Appuyable>
           <Appuyable onPress={abandonner} style={styles.abandon} accessibilityRole="button">
             <Text style={styles.abandonTexte}>Abandonner la séance</Text>
@@ -452,6 +505,8 @@ const useStyles = creerStyles((couleurs) => ({
     gap: espace.s,
   },
   ajouterTexte: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
+  ajouterAplat: { minHeight: CIBLE + 8, backgroundColor: couleurs.action },
+  ajouterTexteAplat: { color: couleurs.surAction, fontWeight: "700" },
   secondaire: {
     minHeight: CIBLE,
     borderRadius: 12,

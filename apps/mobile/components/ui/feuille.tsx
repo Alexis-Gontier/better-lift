@@ -25,11 +25,17 @@ export type OptionFeuille = {
 export function Feuille({
   visible,
   titre,
+  message,
   options,
   onFermer,
 }: {
   visible: boolean;
   titre?: string;
+  /**
+   * Une question, plus qu'un menu (confirmation) : le titre passe en encre et
+   * en gras, le message l'explique dessous.
+   */
+  message?: string;
   options: OptionFeuille[];
   onFermer: () => void;
 }) {
@@ -48,7 +54,14 @@ export function Feuille({
       <Pressable style={styles.voile} onPress={onFermer} accessibilityLabel="Fermer" />
       <View style={[styles.feuille, { paddingBottom: bottom + espace.s }]}>
         <View style={styles.poignee} />
-        {titre ? (
+        {message ? (
+          <View style={styles.question}>
+            <Text style={styles.questionTitre} accessibilityRole="header">
+              {titre}
+            </Text>
+            <Text style={styles.questionMessage}>{message}</Text>
+          </View>
+        ) : titre ? (
           <Text style={styles.titre} accessibilityRole="header" numberOfLines={1}>
             {titre}
           </Text>
@@ -107,6 +120,9 @@ const useStyles = creerStyles((couleurs) => ({
     paddingHorizontal: espace.m,
     paddingVertical: espace.s,
   },
+  question: { paddingHorizontal: espace.m, paddingTop: espace.xs, paddingBottom: espace.m, gap: 4 },
+  questionTitre: { color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
+  questionMessage: { color: couleurs.encreSecondaire, fontSize: taille.courant, lineHeight: 22 },
   option: {
     minHeight: 48,
     flexDirection: "row",

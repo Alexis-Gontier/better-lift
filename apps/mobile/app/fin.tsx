@@ -9,7 +9,7 @@ import {
 } from "@better-lift/shared";
 import { onlineManager, useInfiniteQuery, useQueries } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { CloudOff } from "lucide-react-native";
+import { CircleDashed, CloudOff } from "lucide-react-native";
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -29,6 +29,7 @@ import { vibrer } from "../lib/vibrations";
  */
 export default function Fin() {
   const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const { seance, terminer } = useSeance();
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
@@ -65,6 +66,14 @@ export default function Fin() {
       </SafeAreaView>
     );
   }
+
+  // Ce qui reste à valider : terminer ne doit pas se faire par mégarde au milieu
+  // d'une séance, comme Hevy qui le signale avant d'enregistrer.
+  const toutes = seance.exercices.flatMap((e) => e.series);
+  const nonValidees = toutes.filter((x) => !x.faite).length;
+  // D5 : l'échauffement ne compte pas dans le volume — l'écran le dit, sans quoi
+  // « 1 série · 0 kg » ressemble à une erreur.
+  const echauffementFait = toutes.some((x) => x.faite && x.type === "ECHAUFFEMENT");
 
   const avant = Object.fromEntries(slugs.map((slug, i) => [slug, records[i]?.data]));
   const { battus, incomplet } = recordsBattus(seance, avant);
@@ -104,6 +113,9 @@ export default function Fin() {
           <Chiffre valeur={String(seriesFaites)} libelle="Séries" />
           <Chiffre valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} libelle="Volume" />
         </View>
+        {echauffementFait ? (
+          <Text style={styles.note}>L'échauffement ne compte pas dans le volume.</Text>
+        ) : null}
 
         {chargement ? null : battus.length > 0 ? (
           <View>
@@ -138,6 +150,16 @@ export default function Fin() {
       </ScrollView>
 
       <View style={styles.pied}>
+        {nonValidees > 0 ? (
+          <View style={styles.encart} accessibilityRole="alert">
+            <CircleDashed size={18} color={couleurs.encreSecondaire} />
+            <Text style={styles.encartTexte}>
+              {nonValidees === 1
+                ? "1 série non validée : elle ne comptera pas."
+                : `${nonValidees} séries non validées : elles ne compteront pas.`}
+            </Text>
+          </View>
+        ) : null}
         {horsLigne ? <HorsLigne /> : null}
         <Appuyable
           style={({ pressed }) => [styles.aplat, (pressed || enregistrement) && styles.aplatAppuye]}
@@ -240,6 +262,18 @@ const useStyles = creerStyles((couleurs) => ({
     fontVariant: ["tabular-nums"],
   },
   pied: { padding: espace.xl, gap: espace.s },
+  // Un fait à savoir avant d'enregistrer, pas une alerte : même encart que le hors ligne.
+  encart: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.m,
+    padding: espace.m,
+    borderRadius: rayon.bouton,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: couleurs.ligneForte,
+  },
+  encartTexte: { flex: 1, color: couleurs.encreSecondaire, fontSize: 14 },
   horsLigne: {
     flexDirection: "row",
     alignItems: "center",

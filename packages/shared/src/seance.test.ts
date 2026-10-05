@@ -156,7 +156,20 @@ describe("modifier la séance", () => {
       reps: 6,
       chargeKg: 82.5,
       faite: false,
+      // Recopiées, ses valeurs restent des cibles : rien n'y est saisi.
+      saisi: {},
     });
+  });
+
+  it("marque saisi chaque champ modifié, pour lui seul, et jamais le type", () => {
+    expect(s.exercices[0]?.series[1]?.saisi).toBeUndefined();
+    const reps = modifierSerie(s, 0, 1, { reps: 5 });
+    expect(reps.exercices[0]?.series[1]?.saisi).toEqual({ reps: true });
+    const lesDeux = modifierSerie(reps, 0, 1, { chargeKg: null });
+    expect(lesDeux.exercices[0]?.series[1]?.saisi).toEqual({ reps: true, chargeKg: true });
+    expect(
+      modifierSerie(s, 0, 1, { type: "ECHEC" }).exercices[0]?.series[1]?.saisi,
+    ).toBeUndefined();
   });
 
   it("retire une série et un exercice", () => {
@@ -188,6 +201,11 @@ describe("versEnvoi et seanceSaisie", () => {
   const fin = plus(3600);
   const envoi = () =>
     versEnvoi(validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, T0), fin);
+
+  it("n'envoie pas le marquage local des champs saisis", () => {
+    const saisie = modifierSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, { reps: 7 });
+    expect(versEnvoi(saisie, fin).exercices[0]?.series[1]).not.toHaveProperty("saisi");
+  });
 
   it("recopie la séance, ordre et valeurs compris, en dates ISO", () => {
     const e = envoi();
@@ -362,9 +380,9 @@ describe("la carte d'exercice (D89–D92)", () => {
   });
 });
 
-describe("prochaineSerie (D105)", () => {
-  // La seule ✓ en aplat lime de l'écran : la première série pas encore faite,
-  // dans l'ordre des exercices puis des séries.
+describe("prochaineSerie (D116)", () => {
+  // Le repère de la ligne à faire : la série qui suit la dernière faite, dans
+  // l'ordre des exercices puis des séries.
   it("désigne la première série non faite, dans l'ordre", () => {
     let s = demarrerDepuisRoutine(routine, "s1", T0);
     expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 0 });
@@ -374,9 +392,15 @@ describe("prochaineSerie (D105)", () => {
     expect(prochaineSerie(s)).toEqual({ iE: 1, iS: 0 });
   });
 
-  it("revient sur une série sautée plutôt que d'avancer", () => {
+  it("avance après la dernière série faite, sans revenir sur une série sautée", () => {
     let s = demarrerDepuisRoutine(routine, "s1", T0);
     s = validerSerie(s, 0, 1, T0);
+    expect(prochaineSerie(s)).toEqual({ iE: 1, iS: 0 });
+  });
+
+  it("revient à la première série restante quand plus rien ne suit la dernière faite", () => {
+    let s = demarrerDepuisRoutine(routine, "s1", T0);
+    s = validerSerie(validerSerie(s, 0, 1, T0), 1, 0, T0);
     expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 0 });
   });
 

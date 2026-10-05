@@ -2,11 +2,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
-import { Alert, ScrollView, Switch, Text, View } from "react-native";
+import { ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FileEnvoi } from "../../components/file-envoi";
 import { Appuyable } from "../../components/ui/appuyable";
 import { authClient } from "../../lib/auth-client";
+import { useConfirmer } from "../../lib/confirmation";
 import { persister } from "../../lib/hors-ligne";
 import { useSeance } from "../../lib/seance";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
@@ -24,6 +25,7 @@ export default function Profil() {
   const { data: session } = authClient.useSession();
   const { file, seance } = useSeance();
   const [vibrations, reglerVibrations] = useVibrations();
+  const demander = useConfirmer();
   const enAttente = file.filter((e) => e.erreur === null).length;
 
   const seDeconnecter = async () => {
@@ -41,14 +43,14 @@ export default function Profil() {
   // mais partiraient sous le compte suivant. On prévient.
   const confirmer = () =>
     enAttente > 0 || seance
-      ? Alert.alert(
-          "Se déconnecter ?",
-          "Une séance est en cours ou attend d'être envoyée. Elle restera sur ce téléphone.",
-          [
-            { text: "Rester", style: "cancel" },
-            { text: "Se déconnecter", style: "destructive", onPress: () => void seDeconnecter() },
-          ],
-        )
+      ? demander({
+          titre: "Se déconnecter ?",
+          message:
+            "Une séance est en cours ou attend d'être envoyée. Elle restera sur ce téléphone.",
+          action: "Se déconnecter",
+          annuler: "Rester connecté",
+          onConfirmer: () => void seDeconnecter(),
+        })
       : void seDeconnecter();
 
   return (

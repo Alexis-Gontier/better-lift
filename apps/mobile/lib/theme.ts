@@ -12,7 +12,7 @@ import { StyleSheet, type TextStyle, useColorScheme } from "react-native";
 export type Couleurs = {
   /** Fond d'écran. */
   canevas: string;
-  /** Cartes, ligne de série faite. */
+  /** Cartes. */
   surface1: string;
   /** Cellules de saisie, puces, feuilles basses. */
   surface2: string;
@@ -20,6 +20,11 @@ export type Couleurs = {
   surface3: string;
   /** Filets entre lignes et blocs. */
   ligne: string;
+  /**
+   * Le fond d'une série faite : NETTEMENT distinct du canevas — c'est ce qu'on
+   * vérifie d'un coup d'œil entre deux séries. Neutre : le lime reste à l'action.
+   */
+  ligneFaite: string;
   /** Contours de boutons, ✓ à venir, filet d'attente. */
   ligneForte: string;
   /** Titres, valeurs saisies, onglet actif. */
@@ -72,6 +77,7 @@ const sombre: Couleurs = {
   surface2: "#181b1e",
   surface3: "#1e2226",
   ligne: "#24272b",
+  ligneFaite: "#1d2125",
   ligneForte: "#32363b",
   encre: "#f2f3f5",
   encreSecondaire: "#b6bcc4",
@@ -100,6 +106,7 @@ const clair: Couleurs = {
   surface2: "#eef0f2",
   surface3: "#e4e7ea",
   ligne: "#e1e4e8",
+  ligneFaite: "#e3e6ea",
   ligneForte: "#c9ced4",
   encre: "#0e1114",
   encreSecondaire: "#3e454d",

@@ -23,7 +23,8 @@ import {
   Trash2,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
+import { useConfirmer } from "../../lib/confirmation";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
 import {
@@ -80,7 +81,7 @@ export function CarteExercice({
   onRetirer,
 }: {
   exercice: ExerciceEnCours;
-  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D105). */
+  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D116). */
   prochaine: number | null;
   /** La case en cours de saisie au pavé, si elle est dans cet exercice (D109). */
   edition: { iS: number; champ: ChampPave; texte: string; invalide: boolean } | null;
@@ -111,12 +112,16 @@ export function CarteExercice({
   const [editionNote, setEditionNote] = useState(false);
   const [feuille, setFeuille] = useState<Feuilles>(null);
   const libelles = etiquettes(exercice.series);
+  const confirmer = useConfirmer();
 
   const retirer = () =>
-    Alert.alert(`Retirer « ${exercice.nom} » ?`, "Ses séries seront perdues.", [
-      { text: "Annuler", style: "cancel" },
-      { text: "Retirer", style: "destructive", onPress: onRetirer },
-    ]);
+    confirmer({
+      titre: `Retirer « ${exercice.nom} » ?`,
+      message: "Ses séries seront perdues.",
+      action: "Retirer l'exercice",
+      icone: Trash2,
+      onConfirmer: onRetirer,
+    });
 
   const options: OptionFeuille[] =
     feuille?.quoi === "menu"
@@ -360,9 +365,16 @@ const useStyles = creerStyles((couleurs) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  media: { alignItems: "center", gap: espace.xs },
-  gif: { width: 220, height: 220, borderRadius: 12, backgroundColor: couleurs.fondImage },
-  attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
+  media: { gap: espace.xs },
+  // Agrandi, le GIF prend toute la largeur du bloc : en salle, on le regarde de
+  // loin. Carré, comme les GIF du catalogue — sans marge blanche ni déformation.
+  gif: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: rayon.carte,
+    backgroundColor: couleurs.fondImage,
+  },
+  attribution: { color: couleurs.encreAttenuee, fontSize: 11, textAlign: "center" },
   puces: { flexDirection: "row", gap: espace.s, flexWrap: "wrap" },
   puce: {
     minHeight: 32,

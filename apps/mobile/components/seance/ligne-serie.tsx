@@ -18,9 +18,11 @@ import { Appuyable } from "../ui/appuyable";
 export const COLONNES = { serie: 40, valider: 40 } as const;
 
 /**
- * Les états d'une ligne (D108). La prochaine série porte la SEULE ✓ en aplat
- * lime de l'écran (D105) ; les suivantes montrent leurs cibles en valeurs
- * fantômes ; une série faite se fond dans une ligne teintée, ✓ neutre.
+ * Les états d'une ligne (D116), comme une case à cocher : à faire, la case est
+ * VIDE ; faite, elle porte la ✓ pleine à l'encre et la ligne se teinte. La
+ * prochaine se repère par un liseré et un contour épais — pas de lime : une ✓
+ * colorée se lit « fait », et l'ancienne ✓ lime de la prochaine série se lisait
+ * cochée avant de l'être. Les cibles à venir restent en valeurs fantômes.
  */
 export type EtatSerie = "faite" | "prochaine" | "a-venir";
 
@@ -76,15 +78,22 @@ export function LigneSerie({
   };
 
   const valider = () => {
-    // On ne vibre qu'à la validation : décocher une erreur de doigt se fait en silence.
-    if (!serie.faite) vibrer.valider();
+    // Décocher se sent aussi, plus légèrement : un second appui par erreur ne
+    // doit pas passer inaperçu.
+    if (serie.faite) vibrer.selection();
+    else vibrer.valider();
     onValider();
   };
 
   const faite = etat === "faite";
-  const fantome = etat === "a-venir";
+  const prochaine = etat === "prochaine";
+  // Une série à venir montre ses CIBLES en fantôme ; une valeur saisie, elle,
+  // s'écrit à l'encre, case par case (`saisi`).
+  const aVenir = etat === "a-venir";
   return (
     <View style={[styles.ligne, faite && styles.faite]}>
+      {/* La ligne à faire : un liseré, là où l'œil revient entre deux séries. */}
+      {prochaine ? <View style={styles.repere} /> : null}
       <Appuyable
         onPress={onEtiquette}
         hitSlop={6}
@@ -127,7 +136,7 @@ export function LigneSerie({
         }
         editee={edition?.champ === "charge"}
         invalide={edition?.champ === "charge" && edition.invalide}
-        fantome={fantome}
+        fantome={aVenir && !serie.saisi?.chargeKg}
         faite={faite}
         onPress={() => onEditer("charge")}
       />
@@ -138,7 +147,7 @@ export function LigneSerie({
         }
         editee={edition?.champ === "reps"}
         invalide={edition?.champ === "reps" && edition.invalide}
-        fantome={fantome}
+        fantome={aVenir && !serie.saisi?.reps}
         faite={faite}
         onPress={() => onEditer("reps")}
       />
@@ -148,23 +157,9 @@ export function LigneSerie({
         accessibilityLabel={`Série ${numero} faite`}
         onPress={valider}
         hitSlop={4}
-        style={[
-          styles.valider,
-          etat === "prochaine" && styles.validerProchaine,
-          faite && styles.validerFait,
-        ]}
+        style={[styles.valider, prochaine && styles.validerProchaine, faite && styles.validerFait]}
       >
-        <Check
-          size={18}
-          strokeWidth={3}
-          color={
-            etat === "prochaine"
-              ? couleurs.surAction
-              : faite
-                ? couleurs.encre
-                : couleurs.encreAttenuee
-          }
-        />
+        {faite ? <Check size={20} strokeWidth={3} color={couleurs.canevas} /> : null}
       </Appuyable>
     </View>
   );
@@ -223,8 +218,8 @@ const useStyles = creerStyles((couleurs) => ({
     paddingHorizontal: espace.xs,
     borderRadius: rayon.cellule,
   },
-  // Faite : la ligne se teinte, sans aplat — l'aplat reste réservé à l'action.
-  faite: { backgroundColor: couleurs.surface1 },
+  // Faite : la ligne se teinte nettement, sans lime — le lime reste à l'action.
+  faite: { backgroundColor: couleurs.ligneFaite },
   etiquette: {
     width: COLONNES.serie,
     height: 40,
@@ -259,16 +254,27 @@ const useStyles = creerStyles((couleurs) => ({
   // Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ.
   caseFaite: { backgroundColor: "transparent" },
   caseKo: { borderWidth: 2, borderColor: couleurs.dangerEncre },
-  // À venir : ✓ en contour.
+  // À faire : une case vide, au contour lisible (3:1 au moins, une commande).
   valider: {
     width: COLONNES.valider,
     height: 40,
     borderRadius: rayon.cellule,
-    borderWidth: 1,
-    borderColor: couleurs.ligneForte,
+    borderWidth: 1.5,
+    borderColor: couleurs.encreAttenuee,
     alignItems: "center",
     justifyContent: "center",
   },
-  validerProchaine: { backgroundColor: couleurs.action, borderColor: couleurs.action },
-  validerFait: { backgroundColor: couleurs.surface3, borderColor: couleurs.surface3 },
+  // La prochaine : même case vide, contour épais à l'encre.
+  validerProchaine: { borderWidth: 2.5, borderColor: couleurs.encre },
+  // Faite : ✓ pleine, à l'encre.
+  validerFait: { backgroundColor: couleurs.encre, borderColor: couleurs.encre },
+  repere: {
+    position: "absolute",
+    left: 0,
+    top: 10,
+    bottom: 10,
+    width: 3,
+    borderRadius: 2,
+    backgroundColor: couleurs.encre,
+  },
 }));

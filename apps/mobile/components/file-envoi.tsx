@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { Alert, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { useConfirmer, useInformer } from "../lib/confirmation";
 import { useSeance } from "../lib/seance";
 import { CIBLE, creerStyles, espace, rayon, taille } from "../lib/theme";
 import { Appuyable } from "./ui/appuyable";
@@ -14,6 +15,8 @@ export function FileEnvoi() {
   const { file, envoiEnCours, synchroniser, reprendreRefusee, supprimerRefusee } = useSeance();
   const enAttente = file.filter((e) => e.erreur === null);
   const refusees = file.filter((e) => e.erreur !== null);
+  const confirmer = useConfirmer();
+  const informer = useInformer();
 
   return (
     <>
@@ -46,8 +49,7 @@ export function FileEnvoi() {
               accessibilityRole="button"
               onPress={async () => {
                 if (await reprendreRefusee(e.seance.id)) router.push("/seance");
-                else
-                  Alert.alert("Une séance est en cours", "Termine-la avant de reprendre celle-ci.");
+                else informer("Une séance est en cours", "Termine-la avant de reprendre celle-ci.");
               }}
             >
               <Text style={styles.boutonTexte}>Reprendre</Text>
@@ -56,14 +58,13 @@ export function FileEnvoi() {
               style={styles.bouton}
               accessibilityRole="button"
               onPress={() =>
-                Alert.alert("Supprimer cette séance ?", "Elle ne sera jamais enregistrée.", [
-                  { text: "Garder", style: "cancel" },
-                  {
-                    text: "Supprimer",
-                    style: "destructive",
-                    onPress: () => void supprimerRefusee(e.seance.id),
-                  },
-                ])
+                confirmer({
+                  titre: "Supprimer cette séance ?",
+                  message: "Elle ne sera jamais enregistrée.",
+                  action: "Supprimer la séance",
+                  annuler: "Garder",
+                  onConfirmer: () => void supprimerRefusee(e.seance.id),
+                })
               }
             >
               <Text style={styles.danger}>Supprimer</Text>
