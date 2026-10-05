@@ -380,9 +380,9 @@ describe("la carte d'exercice (D89–D92)", () => {
   });
 });
 
-describe("prochaineSerie (D105)", () => {
-  // La seule ✓ en aplat lime de l'écran : la première série pas encore faite,
-  // dans l'ordre des exercices puis des séries.
+describe("prochaineSerie (D116)", () => {
+  // Le repère de la ligne à faire : la série qui suit la dernière faite, dans
+  // l'ordre des exercices puis des séries.
   it("désigne la première série non faite, dans l'ordre", () => {
     let s = demarrerDepuisRoutine(routine, "s1", T0);
     expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 0 });
@@ -392,9 +392,15 @@ describe("prochaineSerie (D105)", () => {
     expect(prochaineSerie(s)).toEqual({ iE: 1, iS: 0 });
   });
 
-  it("revient sur une série sautée plutôt que d'avancer", () => {
+  it("avance après la dernière série faite, sans revenir sur une série sautée", () => {
     let s = demarrerDepuisRoutine(routine, "s1", T0);
     s = validerSerie(s, 0, 1, T0);
+    expect(prochaineSerie(s)).toEqual({ iE: 1, iS: 0 });
+  });
+
+  it("revient à la première série restante quand plus rien ne suit la dernière faite", () => {
+    let s = demarrerDepuisRoutine(routine, "s1", T0);
+    s = validerSerie(validerSerie(s, 0, 1, T0), 1, 0, T0);
     expect(prochaineSerie(s)).toEqual({ iE: 0, iS: 0 });
   });
 

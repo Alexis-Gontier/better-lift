@@ -268,11 +268,18 @@ export function reposRestant(s: SeanceEnCours, maintenant: Date): number | null 
  * lime ; une série sautée reste la prochaine tant qu'elle n'est pas faite.
  */
 export function prochaineSerie(s: SeanceEnCours): { iE: number; iS: number } | null {
-  for (let iE = 0; iE < s.exercices.length; iE++) {
-    const iS = s.exercices[iE]?.series.findIndex((x) => !x.faite) ?? -1;
-    if (iS !== -1) return { iE, iS };
-  }
-  return null;
+  const ordre = s.exercices.flatMap((e, iE) =>
+    e.series.map((x, iS) => ({ iE, iS, faite: x.faite })),
+  );
+  let derniere = -1;
+  ordre.forEach((p, i) => {
+    if (p.faite) derniere = i;
+  });
+  // D116 : la suite de la DERNIÈRE série faite — une série sautée ne retient pas
+  // le repère en arrière (la fin de séance la signale). Rien après : la première
+  // qui reste.
+  const p = ordre.slice(derniere + 1).find((x) => !x.faite) ?? ordre.find((x) => !x.faite);
+  return p ? { iE: p.iE, iS: p.iS } : null;
 }
 
 /**

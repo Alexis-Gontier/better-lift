@@ -138,10 +138,13 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Direction « Carnet » (D108)** : en-tête compact (chevron qui replie vers les onglets, nom,
   « Démarrée à », chrono en `polices.condense`, volume, séries), « Terminer » en **secondaire**
   (D105). Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
-  en trois états (`EtatSerie`) : faite (teintée, ✓ neutre) · **prochaine** (seule ✓ lime de
-  l'écran, `prochaineSerie` de `shared`) · à venir (cibles en valeurs fantômes, ✓ en contour).
-  Cases de 40, ligne de 52. Une série faite a son fond `ligneFaite`, nettement distinct du
-  canevas, et sa ✓ pleine à l'encre.
+  en trois états (`EtatSerie`), **comme une case à cocher (D116)** : faite (fond `ligneFaite`,
+  ✓ pleine à l'encre) · **prochaine** (case vide au contour épais, liseré à gauche) · à venir
+  (case vide, cibles en valeurs fantômes). **Aucune ✓ n'est dessinée sur une série à faire, et
+  pas de lime sur les lignes** : une ✓ colorée se lit « fait ». La prochaine (`prochaineSerie`
+  de `shared`) suit la dernière série faite. Après une coche, l'écran défile vers elle si elle est
+  cachée (hors de l'écran ou sous le bandeau de repos), sinon rien ne bouge. L'en-tête dit
+  « 3 / 16 ». Décocher vibre (`selection`). Cases de 40, ligne de 52.
 - **Cible ou saisie** : `saisi` (`shared`, par champ : `chargeKg`, `reps`) marque ce qui a été
   tapé pendant la séance. Une case à venir non saisie montre sa cible en fantôme ; saisie, elle
   passe à l'encre. Ouvrir puis fermer le pavé sans toucher ne saisit rien (`Edition.neuf`).

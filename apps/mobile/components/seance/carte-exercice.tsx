@@ -81,7 +81,7 @@ export function CarteExercice({
   onRetirer,
 }: {
   exercice: ExerciceEnCours;
-  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D105). */
+  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D116). */
   prochaine: number | null;
   /** La case en cours de saisie au pavé, si elle est dans cet exercice (D109). */
   edition: { iS: number; champ: ChampPave; texte: string; invalide: boolean } | null;
