@@ -2,8 +2,9 @@ import { dureeEstimeeSec, routineASuivre } from "@better-lift/shared";
 import { useInfiniteQuery, useQueries, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ChevronRight, Plus } from "lucide-react-native";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../../../components/ui/appuyable";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../../../lib/requetes";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
@@ -30,17 +31,19 @@ export default function Routines() {
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <View style={styles.entete}>
-        <Text style={styles.titre}>Routines</Text>
+        <Text style={styles.titre} accessibilityRole="header">
+          Routines
+        </Text>
         {/* Le mobile crée ses routines sans le web (D82). Secondaire : l'écran
             n'a pas d'action principale, il mène aux routines. */}
-        <Pressable
+        <Appuyable
           onPress={() => router.push("/routine-edition")}
           style={({ pressed }) => [styles.nouvelle, pressed && styles.appuye]}
           accessibilityRole="button"
         >
           <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
           <Text style={styles.nouvelleTexte}>Nouvelle</Text>
-        </Pressable>
+        </Appuyable>
       </View>
       {routines.isPending && routines.fetchStatus === "paused" ? (
         <Vide titre="Hors ligne" message="Les routines apparaîtront au retour du réseau." />
@@ -68,7 +71,7 @@ export default function Routines() {
               ? Math.max(1, Math.round(dureeEstimeeSec(detail.exercices) / 60))
               : null;
             return (
-              <Pressable
+              <Appuyable
                 style={({ pressed }) => [styles.ligne, pressed && styles.appuye]}
                 onPress={() => router.push(`/routines/${item.id}`)}
                 accessibilityRole="button"
@@ -90,7 +93,7 @@ export default function Routines() {
                   </Text>
                 </View>
                 <ChevronRight size={20} color={couleurs.encreAttenuee} />
-              </Pressable>
+              </Appuyable>
             );
           }}
         />

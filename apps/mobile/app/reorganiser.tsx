@@ -1,9 +1,10 @@
 import { deplacerExercice, type ExerciceEnCours } from "@better-lift/shared";
 import { useRouter } from "expo-router";
 import { GripVertical } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../components/ui/appuyable";
 import { useSeance } from "../lib/seance";
 import { creerStyles, espace, taille, useCouleurs } from "../lib/theme";
 
@@ -32,15 +33,17 @@ export default function Reorganiser() {
   return (
     <SafeAreaView style={styles.ecran} edges={["top", "bottom"]}>
       <View style={styles.entete}>
-        <Text style={styles.titre}>Réorganiser</Text>
-        <Pressable
+        <Text style={styles.titre} accessibilityRole="header">
+          Réorganiser
+        </Text>
+        <Appuyable
           onPress={() => router.back()}
           hitSlop={8}
           style={styles.ok}
           accessibilityRole="button"
         >
           <Text style={styles.okTexte}>OK</Text>
-        </Pressable>
+        </Appuyable>
       </View>
       <Text style={styles.aide}>Glisse un exercice par sa poignée pour le déplacer.</Text>
       <DraggableFlatList
@@ -50,7 +53,7 @@ export default function Reorganiser() {
         contentContainerStyle={styles.liste}
         renderItem={({ item, drag, isActive }) => (
           <ScaleDecorator>
-            <Pressable
+            <Appuyable
               onLongPress={drag}
               delayLongPress={200}
               disabled={isActive}
@@ -62,15 +65,15 @@ export default function Reorganiser() {
               <Text style={styles.series}>
                 {item.e.series.length} {item.e.series.length > 1 ? "séries" : "série"}
               </Text>
-              <Pressable
+              <Appuyable
                 onPressIn={drag}
                 hitSlop={8}
                 style={styles.poignee}
                 accessibilityLabel={`Déplacer ${item.e.nom}`}
               >
                 <GripVertical size={20} color={couleurs.encreTertiaire} />
-              </Pressable>
-            </Pressable>
+              </Appuyable>
+            </Appuyable>
           </ScaleDecorator>
         )}
       />

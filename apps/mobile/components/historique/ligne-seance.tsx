@@ -1,10 +1,11 @@
 import { formaterCharge, formatJour, type SeanceResume } from "@better-lift/shared";
 import { useRouter } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { FUSEAU } from "../../lib/fuseau";
 import { dureeMin } from "../../lib/temps";
 import { CIBLE, creerStyles, espace, taille } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
+import { Appuyable } from "../ui/appuyable";
 import { BadgeRecord } from "../ui/badge-record";
 
 /**
@@ -15,7 +16,7 @@ export function LigneSeance({ seance }: { seance: SeanceResume }) {
   const styles = useStyles();
   const router = useRouter();
   return (
-    <Pressable
+    <Appuyable
       style={({ pressed }) => [styles.ligne, pressed && styles.appuye]}
       onPress={() => router.push(`/historique/${seance.id}`)}
       accessibilityRole="button"
@@ -36,7 +37,7 @@ export function LigneSeance({ seance }: { seance: SeanceResume }) {
         <Text style={styles.volume}>{formaterCharge(seance.volumeKg, SYSTEME_UNITES)}</Text>
         <Text style={styles.sous}>{dureeMin(seance)} min</Text>
       </View>
-    </Pressable>
+    </Appuyable>
   );
 }
 

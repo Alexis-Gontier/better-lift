@@ -2,8 +2,9 @@ import { LIBELLE_GROUPE } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { FlatList, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../../../components/ui/appuyable";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
 import { optionsCatalogue } from "../../../lib/requetes";
 import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
@@ -18,7 +19,9 @@ export default function Exercices() {
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <Text style={styles.titre}>Exercices</Text>
+      <Text style={styles.titre} accessibilityRole="header">
+        Exercices
+      </Text>
       <TextInput
         value={filtre}
         onChangeText={setFiltre}
@@ -43,7 +46,7 @@ export default function Exercices() {
           keyExtractor={(x) => x.slug}
           keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
-            <Pressable
+            <Appuyable
               style={({ pressed }) => [styles.ligne, pressed && styles.appuye]}
               onPress={() => router.push(`/exercices/${item.slug}`)}
               accessibilityRole="button"
@@ -56,7 +59,7 @@ export default function Exercices() {
                   {LIBELLE_GROUPE[item.groupe]} · {item.equipement}
                 </Text>
               </View>
-            </Pressable>
+            </Appuyable>
           )}
         />
       )}

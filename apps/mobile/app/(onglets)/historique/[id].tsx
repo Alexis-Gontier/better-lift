@@ -8,8 +8,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../../../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
@@ -78,7 +79,7 @@ export default function DetailSeance() {
         {s.exercices.map((ex, iE) => (
           <View key={`${ex.slug}-${iE}`} style={styles.exercice}>
             {/* La fiche porte les records de l'exercice (D95). */}
-            <Pressable
+            <Appuyable
               onPress={() => router.push(`/exercices/${ex.slug}`)}
               style={styles.titreExercice}
               accessibilityRole="link"
@@ -88,7 +89,7 @@ export default function DetailSeance() {
                 {ex.nom}
               </Text>
               <ChevronRight size={20} color={couleurs.encreTertiaire} />
-            </Pressable>
+            </Appuyable>
             {/* La note prise en séance (D90). */}
             {ex.note ? <Text style={styles.note}>{ex.note}</Text> : null}
             {ex.series.map((serie, i) => (

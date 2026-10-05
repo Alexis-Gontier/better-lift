@@ -1,10 +1,11 @@
 import { reposRestant, secondesEcoulees } from "@better-lift/shared";
 import { useRouter } from "expo-router";
 import { ChevronUp } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, creerStyles, espace, polices, taille, useCouleurs } from "../lib/theme";
+import { Appuyable } from "./ui/appuyable";
 
 /**
  * La séance en cours, joignable en un geste depuis n'importe quel onglet (D107).
@@ -34,7 +35,7 @@ function Contenu() {
       : formaterDuree(secondesEcoulees(seance.debut, maintenant));
 
   return (
-    <Pressable
+    <Appuyable
       onPress={() => router.push("/seance")}
       style={({ pressed }) => [styles.bandeau, pressed && styles.appuye]}
       accessibilityRole="button"
@@ -48,15 +49,20 @@ function Contenu() {
       </View>
       <Text style={styles.reprendre}>Reprendre</Text>
       <ChevronUp size={20} color={couleurs.encreSecondaire} />
-    </Pressable>
+    </Appuyable>
   );
 }
+
+/** Le débord du rond « Démarrer » au-dessus de la barre (`app/(onglets)/_layout.tsx`). */
+const DEBORD_ROND = 30;
 
 const useStyles = creerStyles((couleurs) => ({
   bandeau: {
     minHeight: CIBLE + 8,
     marginHorizontal: espace.s,
-    marginBottom: espace.s,
+    // Le rond central de la barre déborde de 30 au-dessus d'elle : le bandeau
+    // se pose au-dessus de ce débord, sans quoi le rond en mangeait le bas.
+    marginBottom: DEBORD_ROND + espace.s,
     paddingHorizontal: espace.l,
     flexDirection: "row",
     alignItems: "center",

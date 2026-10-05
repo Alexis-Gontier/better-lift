@@ -11,8 +11,9 @@ import { onlineManager, useInfiniteQuery, useQueries } from "@tanstack/react-que
 import { useRouter } from "expo-router";
 import { CloudOff } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../components/ui/badge-record";
 import { FUSEAU } from "../lib/fuseau";
 import { optionsRecords, optionsSeances } from "../lib/requetes";
@@ -32,6 +33,8 @@ export default function Fin() {
   const { seance, terminer } = useSeance();
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
   const [fin] = useState(() => new Date());
+  // Un second appui pendant l'enregistrement mettrait la séance deux fois en file.
+  const [enregistrement, setEnregistrement] = useState(false);
   const slugs = seance ? [...new Set(seance.exercices.map((e) => e.slug))] : [];
   // Les records d'avant : en cache hors ligne pour les exercices des routines (D96).
   const records = useQueries({ queries: slugs.map((slug) => optionsRecords(slug)) });
@@ -45,17 +48,19 @@ export default function Fin() {
     return (
       <SafeAreaView style={styles.ecran}>
         <View style={styles.contenu}>
-          <Text style={styles.titre}>Pas encore de série.</Text>
+          <Text style={styles.titre} accessibilityRole="header">
+            Pas encore de série.
+          </Text>
           <Text style={styles.texte}>Valide au moins une série pour enregistrer.</Text>
         </View>
         <View style={styles.pied}>
-          <Pressable
+          <Appuyable
             style={({ pressed }) => [styles.secondaire, pressed && styles.appuye]}
             onPress={reprendre}
             accessibilityRole="button"
           >
             <Text style={styles.secondaireTexte}>Reprendre la séance</Text>
-          </Pressable>
+          </Appuyable>
         </View>
       </SafeAreaView>
     );
@@ -75,6 +80,8 @@ export default function Fin() {
   const horsLigne = !onlineManager.isOnline();
 
   const enregistrer = async () => {
+    if (enregistrement) return;
+    setEnregistrement(true);
     vibrer.valider();
     // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
     // ensuite, et se retentera tant qu'il n'aura pas abouti.
@@ -85,7 +92,9 @@ export default function Fin() {
   return (
     <SafeAreaView style={styles.ecran}>
       <ScrollView contentContainerStyle={styles.contenu}>
-        <Text style={styles.titre}>Bien joué.</Text>
+        <Text style={styles.titre} accessibilityRole="header">
+          Bien joué.
+        </Text>
         <Text style={styles.sous}>
           {seance.nom} · {formatJour(seance.debut, FUSEAU)}
         </Text>
@@ -98,7 +107,7 @@ export default function Fin() {
 
         {chargement ? null : battus.length > 0 ? (
           <View>
-            <Text style={styles.section}>
+            <Text style={styles.section} accessibilityRole="header">
               {battus.length === 1 ? "1 record battu" : `${battus.length} records battus`}
             </Text>
             {battus.map((b, i) => (
@@ -130,16 +139,20 @@ export default function Fin() {
 
       <View style={styles.pied}>
         {horsLigne ? <HorsLigne /> : null}
-        <Pressable
-          style={({ pressed }) => [styles.aplat, pressed && styles.aplatAppuye]}
+        <Appuyable
+          style={({ pressed }) => [styles.aplat, (pressed || enregistrement) && styles.aplatAppuye]}
           accessibilityRole="button"
+          accessibilityState={{ disabled: enregistrement, busy: enregistrement }}
+          disabled={enregistrement}
           onPress={() => void enregistrer()}
         >
-          <Text style={styles.aplatTexte}>Enregistrer la séance</Text>
-        </Pressable>
-        <Pressable style={styles.tertiaire} onPress={reprendre} accessibilityRole="button">
+          <Text style={styles.aplatTexte}>
+            {enregistrement ? "Enregistrement…" : "Enregistrer la séance"}
+          </Text>
+        </Appuyable>
+        <Appuyable style={styles.tertiaire} onPress={reprendre} accessibilityRole="button">
           <Text style={styles.tertiaireTexte}>Reprendre la séance</Text>
-        </Pressable>
+        </Appuyable>
       </View>
     </SafeAreaView>
   );

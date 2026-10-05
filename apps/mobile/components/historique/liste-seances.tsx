@@ -19,7 +19,9 @@ export function ListeSeances({ titre }: { titre: string }) {
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <Text style={styles.titre}>{titre}</Text>
+      <Text style={styles.titre} accessibilityRole="header">
+        {titre}
+      </Text>
       {/* Hors ligne, la requête se met en pause au lieu d'échouer : sans ce cas,
           le chargement tournerait pour toujours. L'historique n'est pas gardé
           sur le téléphone (D96). */}

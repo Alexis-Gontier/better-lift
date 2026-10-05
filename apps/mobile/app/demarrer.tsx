@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Play, Plus } from "lucide-react-native";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Appuyable } from "../components/ui/appuyable";
 import { useDemarrer } from "../lib/demarrer";
 import { optionsRoutines, optionsSeances } from "../lib/requetes";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
@@ -34,9 +35,11 @@ export default function Demarrer() {
       <Pressable style={styles.voile} onPress={fermer} accessibilityLabel="Fermer" />
       <View style={[styles.feuille, { paddingBottom: espace.l + bottom }]}>
         <View style={styles.poignee} />
-        <Text style={styles.titre}>Démarrer</Text>
+        <Text style={styles.titre} accessibilityRole="header">
+          Démarrer
+        </Text>
 
-        <Pressable
+        <Appuyable
           style={({ pressed }) => [styles.ligne, pressed && styles.appuye]}
           onPress={() => void vide()}
           accessibilityRole="button"
@@ -48,9 +51,11 @@ export default function Demarrer() {
             <Text style={styles.nom}>Séance vide</Text>
             <Text style={styles.pale}>Ajoute tes exercices au fil de la séance.</Text>
           </View>
-        </Pressable>
+        </Appuyable>
 
-        <Text style={styles.section}>Routines</Text>
+        <Text style={styles.section} accessibilityRole="header">
+          Routines
+        </Text>
         <ScrollView style={styles.liste}>
           {/* Hors ligne et sans cache, la requête se met en pause : sans ce cas,
               l'indicateur tournerait pour toujours. */}
@@ -61,16 +66,16 @@ export default function Demarrer() {
           ) : routines.isPending ? (
             <ActivityIndicator color={couleurs.encreTertiaire} style={styles.attente} />
           ) : routines.isError && !routines.data ? (
-            <Pressable onPress={() => routines.refetch()} accessibilityRole="button">
+            <Appuyable onPress={() => routines.refetch()} accessibilityRole="button">
               <Text style={styles.message}>Routines indisponibles pour l'instant. Réessayer</Text>
-            </Pressable>
+            </Appuyable>
           ) : routines.data.length === 0 ? (
             <Text style={styles.message}>
               Pas encore de routine. Crée-en une ici ou sur le web.
             </Text>
           ) : (
             routines.data.map((r) => (
-              <Pressable
+              <Appuyable
                 key={r.id}
                 style={({ pressed }) => [
                   styles.ligne,
@@ -100,7 +105,7 @@ export default function Demarrer() {
                     <Text style={styles.puceTexte}>À suivre</Text>
                   </View>
                 ) : null}
-              </Pressable>
+              </Appuyable>
             ))
           )}
         </ScrollView>

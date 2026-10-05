@@ -1,7 +1,8 @@
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formaterDuree } from "../../lib/temps";
-import { creerStyles, espace, PLAFOND_TEXTE_DENSE, polices, rayon } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, PLAFOND_TEXTE_DENSE, polices, rayon } from "../../lib/theme";
+import { Appuyable } from "../ui/appuyable";
 
 /**
  * Le repos restant, sur une ligne en bas de l'écran — là où le pouce et l'œil
@@ -22,11 +23,8 @@ export function BandeauRepos({
   // Au-dessus de la barre de gestes du système, jamais dessous.
   const { bottom } = useSafeAreaInsets();
   return (
-    <View
-      style={[styles.bandeau, { bottom: espace.m + bottom }, fini && styles.fini]}
-      accessibilityLiveRegion="polite"
-    >
-      <Pressable
+    <View style={[styles.bandeau, { bottom: espace.m + bottom }, fini && styles.fini]}>
+      <Appuyable
         onPress={() => onAjuster(-15)}
         style={styles.bouton}
         accessibilityRole="button"
@@ -35,10 +33,16 @@ export function BandeauRepos({
         <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.boutonTexte}>
           −15
         </Text>
-      </Pressable>
+      </Appuyable>
       {/* Lisible à bout de bras, téléphone posé sur le banc (D79). */}
       <View style={styles.centre}>
-        <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.libelle}>
+        {/* Seul le libellé est annoncé, une fois, quand le repos se termine : sur
+            tout le bandeau, le lecteur d'écran lisait le décompte à chaque seconde. */}
+        <Text
+          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+          style={styles.libelle}
+          accessibilityLiveRegion="polite"
+        >
           {fini ? "Repos terminé" : "Repos"}
         </Text>
         <Text
@@ -48,7 +52,7 @@ export function BandeauRepos({
           {formaterDuree(restant)}
         </Text>
       </View>
-      <Pressable
+      <Appuyable
         onPress={() => onAjuster(15)}
         style={styles.bouton}
         accessibilityRole="button"
@@ -57,8 +61,8 @@ export function BandeauRepos({
         <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.boutonTexte}>
           +15
         </Text>
-      </Pressable>
-      <Pressable
+      </Appuyable>
+      <Appuyable
         onPress={onPasser}
         style={[styles.bouton, styles.passer]}
         accessibilityRole="button"
@@ -66,7 +70,7 @@ export function BandeauRepos({
         <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.boutonTexte}>
           {fini ? "OK" : "Passer"}
         </Text>
-      </Pressable>
+      </Appuyable>
     </View>
   );
 }
@@ -100,7 +104,7 @@ const useStyles = creerStyles((couleurs) => ({
   tempsFini: { color: couleurs.encre },
   bouton: {
     width: 52,
-    height: 44,
+    height: CIBLE,
     borderRadius: rayon.cellule,
     backgroundColor: couleurs.surface2,
     alignItems: "center",

@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
-import { useState } from "react";
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useRef, useState } from "react";
+import { KeyboardAvoidingView, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../components/ui/appuyable";
 import { Logo } from "../components/ui/logo";
 import { authClient } from "../lib/auth-client";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
@@ -28,6 +29,7 @@ export default function Connexion() {
   const [visible, setVisible] = useState(false);
   const [refus, setRefus] = useState<GenreRefus | null>(null);
   const [enCours, setEnCours] = useState(false);
+  const champMotDePasse = useRef<TextInput>(null);
   const { refetch: relireSession } = authClient.useSession();
 
   async function seConnecter() {
@@ -66,7 +68,9 @@ export default function Connexion() {
           </View>
 
           <View style={styles.formulaire}>
-            <Text style={styles.titre}>Connexion</Text>
+            <Text style={styles.titre} accessibilityRole="header">
+              Connexion
+            </Text>
             <Text style={styles.sousTitre}>Reprends là où tu t'étais arrêté.</Text>
 
             <Text style={styles.libelle} nativeID="libelle-email">
@@ -78,8 +82,13 @@ export default function Connexion() {
               placeholder="toi@exemple.fr"
               placeholderTextColor={couleurs.encreAttenuee}
               autoCapitalize="none"
+              autoCorrect={false}
               autoComplete="email"
               keyboardType="email-address"
+              // Le clavier enchaîne sur le mot de passe.
+              returnKeyType="next"
+              submitBehavior="submit"
+              onSubmitEditing={() => champMotDePasse.current?.focus()}
               value={email}
               onChangeText={setEmail}
             />
@@ -89,17 +98,19 @@ export default function Connexion() {
             </Text>
             <View>
               <TextInput
+                ref={champMotDePasse}
                 style={[styles.champ, styles.champMdp, champInvalide]}
                 aria-labelledby="libelle-mdp"
                 placeholderTextColor={couleurs.encreAttenuee}
                 autoCapitalize="none"
                 autoComplete="current-password"
                 secureTextEntry={!visible}
+                returnKeyType="go"
                 value={motDePasse}
                 onChangeText={setMotDePasse}
                 onSubmitEditing={seConnecter}
               />
-              <Pressable
+              <Appuyable
                 style={styles.oeil}
                 onPress={() => setVisible((v) => !v)}
                 accessibilityRole="button"
@@ -114,7 +125,7 @@ export default function Connexion() {
                 ) : (
                   <Eye size={20} color={couleurs.encreTertiaire} />
                 )}
-              </Pressable>
+              </Appuyable>
             </View>
 
             {refus ? (
@@ -123,14 +134,14 @@ export default function Connexion() {
               </Text>
             ) : null}
 
-            <Pressable
+            <Appuyable
               style={[styles.bouton, enCours && styles.boutonAttente]}
               onPress={seConnecter}
               disabled={enCours}
               accessibilityRole="button"
             >
               <Text style={styles.boutonTexte}>{enCours ? "Connexion…" : "Se connecter"}</Text>
-            </Pressable>
+            </Appuyable>
 
             <Text style={styles.note}>Pas de compte ? Il se crée depuis le web.</Text>
           </View>

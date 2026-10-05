@@ -34,6 +34,11 @@ export type Couleurs = {
   action: string;
   /** Texte et icône posés sur l'aplat. */
   surAction: string;
+  /**
+   * Icône et libellé de l'onglet actif (D115). Le lime en sombre ; en clair, il
+   * ne tient que 1,8:1 sur la barre blanche — l'olive du record y prend le relais.
+   */
+  ongletActif: string;
   /** Texte et flèche du badge record. */
   recordEncre: string;
   /** Fond teinté du badge record. */
@@ -71,10 +76,12 @@ const sombre: Couleurs = {
   encre: "#f2f3f5",
   encreSecondaire: "#b6bcc4",
   encreTertiaire: "#868d96",
-  // 4,9:1 sur le canevas (l'ancien #6a717a ne tenait que 4,0:1).
-  encreAttenuee: "#7a818a",
+  // 4,7:1 sur les feuilles (surface2), 5,4:1 sur le canevas : du petit texte
+  // (en-têtes de colonnes, sections) doit tenir 4,5:1 partout où il se pose.
+  encreAttenuee: "#7f868f",
   action: LIME,
   surAction: "#0b0f04",
+  ongletActif: LIME,
   recordEncre: LIME,
   recordFond: "rgba(168, 207, 69, 0.14)",
   recordLigne: "rgba(168, 207, 69, 0.35)",
@@ -97,9 +104,11 @@ const clair: Couleurs = {
   encre: "#0e1114",
   encreSecondaire: "#3e454d",
   encreTertiaire: "#5f666f",
-  encreAttenuee: "#7c838c",
+  // 4,9:1 sur le canevas (l'ancien #7c838c ne tenait que 3,5:1).
+  encreAttenuee: "#656c75",
   action: LIME,
   surAction: "#0b0f04",
+  ongletActif: "#4d6a12",
   // Le lime en texte ne se lit pas sur fond clair : le record passe à l'olive.
   recordEncre: "#4d6a12",
   recordFond: "rgba(168, 207, 69, 0.22)",

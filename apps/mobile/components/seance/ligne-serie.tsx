@@ -1,6 +1,6 @@
 import { type ChampPave, chargeEnTexte, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import {
   creerStyles,
   espace,
@@ -11,6 +11,7 @@ import {
 } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 import { vibrer } from "../../lib/vibrations";
+import { Appuyable } from "../ui/appuyable";
 
 /** Les largeurs des colonnes, partagées avec l'en-tête du tableau. */
 // 40 : « SÉRIE » en Archivo ne tient pas sur 34 (D103).
@@ -84,7 +85,7 @@ export function LigneSerie({
   const fantome = etat === "a-venir";
   return (
     <View style={[styles.ligne, faite && styles.faite]}>
-      <Pressable
+      <Appuyable
         onPress={onEtiquette}
         hitSlop={6}
         style={styles.etiquette}
@@ -97,10 +98,10 @@ export function LigneSerie({
         >
           {etiquette}
         </Text>
-      </Pressable>
+      </Appuyable>
       {/* Une INDICATION, pas une valeur (D59) : les cases gardent la cible. Un
           appui la recopie. */}
-      <Pressable
+      <Appuyable
         onPress={recopier}
         disabled={!precedent?.faite}
         style={styles.precedent}
@@ -114,7 +115,7 @@ export function LigneSerie({
         >
           {textePrecedent(precedent)}
         </Text>
-      </Pressable>
+      </Appuyable>
       <Case
         libelle={`Série ${numero}, charge`}
         texte={
@@ -141,7 +142,7 @@ export function LigneSerie({
         faite={faite}
         onPress={() => onEditer("reps")}
       />
-      <Pressable
+      <Appuyable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: faite }}
         accessibilityLabel={`Série ${numero} faite`}
@@ -164,7 +165,7 @@ export function LigneSerie({
                 : couleurs.encreAttenuee
           }
         />
-      </Pressable>
+      </Appuyable>
     </View>
   );
 }
@@ -189,7 +190,7 @@ function Case({
 }) {
   const styles = useStyles();
   return (
-    <Pressable
+    <Appuyable
       onPress={onPress}
       hitSlop={4}
       style={[
@@ -208,7 +209,7 @@ function Case({
       >
         {texte || "—"}
       </Text>
-    </Pressable>
+    </Appuyable>
   );
 }
 

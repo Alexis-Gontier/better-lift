@@ -15,7 +15,6 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Pressable,
   Text,
   TextInput,
   View,
@@ -23,6 +22,7 @@ import {
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteExerciceEdition } from "../components/routines/carte-exercice-edition";
+import { Appuyable } from "../components/ui/appuyable";
 import { Chargement, Erreur } from "../components/ui/etats";
 import { attendreChoix } from "../lib/choix-exercices";
 import {
@@ -164,27 +164,27 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
   return (
     <SafeAreaView style={styles.ecran} edges={["top", "bottom"]}>
       <View style={styles.entete}>
-        <Pressable
+        <Appuyable
           onPress={() => router.back()}
           style={styles.texteBouton}
           accessibilityRole="button"
         >
           <Text style={styles.annuler}>Annuler</Text>
-        </Pressable>
-        <Text style={styles.titre} numberOfLines={1}>
+        </Appuyable>
+        <Text style={styles.titre} accessibilityRole="header" numberOfLines={1}>
           {id ? "Modifier" : "Nouvelle routine"}
         </Text>
         {id ? (
-          <Pressable
+          <Appuyable
             onPress={confirmerSuppression}
             style={styles.icone}
             accessibilityRole="button"
             accessibilityLabel="Options de la routine"
           >
             <Ellipsis size={22} color={couleurs.encreSecondaire} />
-          </Pressable>
+          </Appuyable>
         ) : null}
-        <Pressable
+        <Appuyable
           onPress={enregistrer}
           disabled={!valide || !modifiee || enCours}
           style={[styles.enregistrer, (!valide || !modifiee || enCours) && styles.inactif]}
@@ -195,7 +195,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
           ) : (
             <Text style={styles.enregistrerTexte}>Enregistrer</Text>
           )}
-        </Pressable>
+        </Appuyable>
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
@@ -251,10 +251,10 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
             />
           )}
           ListFooterComponent={
-            <Pressable onPress={ajouterExercices} style={styles.ajouter} accessibilityRole="button">
+            <Appuyable onPress={ajouterExercices} style={styles.ajouter} accessibilityRole="button">
               <Plus size={20} color={couleurs.encre} />
               <Text style={styles.ajouterTexte}>Ajouter des exercices</Text>
-            </Pressable>
+            </Appuyable>
           }
         />
       </KeyboardAvoidingView>

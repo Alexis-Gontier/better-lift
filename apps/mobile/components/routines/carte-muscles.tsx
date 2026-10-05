@@ -71,7 +71,9 @@ export function CarteMuscles({ exercices, titre = "Muscles travaillés" }: Props
 
   return (
     <View style={styles.carte}>
-      <Text style={styles.titre}>{titre}</Text>
+      <Text style={styles.titre} accessibilityRole="header">
+        {titre}
+      </Text>
       <View
         style={styles.corps}
         onLayout={(e: LayoutChangeEvent) => setLargeur(e.nativeEvent.layout.width)}
