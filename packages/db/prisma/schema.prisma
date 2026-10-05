@@ -79,6 +79,7 @@ model User {
   accounts      Account[]
   routines      Routine[]
   seances       Seance[]
+  preferences   Preferences?
 
   @@unique([email])
   @@map("user")
@@ -220,6 +221,8 @@ model Seance {
   nom       String   @db.VarChar(120)
   debut     DateTime
   fin       DateTime
+  // D130 : la note libre de la séance, écrite à la fin.
+  note      String?  @db.VarChar(1000)
   createdAt DateTime @default(now())
 
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -260,4 +263,19 @@ model SeanceSerie {
   exercice SeanceExercice @relation(fields: [seanceExerciceId], references: [id], onDelete: Cascade)
 
   @@unique([seanceExerciceId, position])
+}
+
+// --- Préférences (D129) -------------------------------------------------------
+// Ce qui suit le compte d'un appareil à l'autre. Une ligne par utilisateur,
+// créée au premier enregistrement : sans ligne, les valeurs par défaut.
+
+model Preferences {
+  userId         String   @id
+  // Séances visées par semaine, de 1 à 7 (D128).
+  objectifHebdo  Int?
+  // Repos des exercices sans repos propre, en secondes.
+  reposDefautSec Int?
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

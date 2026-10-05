@@ -108,6 +108,8 @@ export const depotPrisma: DepotSeances = {
           nom: saisie.nom,
           debut: new Date(saisie.debut),
           fin: new Date(saisie.fin),
+          // Une note vide n'est pas une note.
+          note: saisie.note || null,
           exercices: {
             create: exercices.map((e) => ({
               position: e.position,
@@ -151,6 +153,8 @@ export type LigneSeance = {
   routineId: string | null;
   debut: Date;
   fin: Date;
+  /** La note de la séance (D130). */
+  note: string | null;
   exercices: {
     exerciseId: string;
     exercise: { slug: string; nomFr: string };
@@ -208,6 +212,7 @@ export function versDetail(
   return {
     ...versResume(l),
     nbRecords,
+    note: l.note,
     exercices: l.exercices.map((e) => ({
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
@@ -264,6 +269,7 @@ const LECTURE_SEANCE = {
   routineId: true,
   debut: true,
   fin: true,
+  note: true,
   exercices: {
     orderBy: { position: "asc" },
     select: {

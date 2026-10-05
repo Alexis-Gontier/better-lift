@@ -48,6 +48,7 @@ export {
   type TouchePave,
   toucherPave,
 } from "./pave.js";
+export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export {
   filtrerCatalogue,
   normaliserRecherche,

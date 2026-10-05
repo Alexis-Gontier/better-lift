@@ -57,7 +57,9 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 - **Questions et menus ponctuels : `useConfirmer` / `useFeuille` / `useInformer`**
   (`lib/confirmation.tsx`, une feuille montée à la racine), jamais `Alert.alert` : l'alerte
   native reste blanche en thème sombre et ne distingue pas l'action destructive. L'action vient
-  en tête (danger par défaut), « Annuler » en dernier.
+  en tête (danger par défaut), « Annuler » en dernier. Toute feuille se ferme aussi en glissant
+  vers le bas (80 px ou 800 px/s) ; sous Android, le contenu d'un `Modal` porte sa propre
+  `GestureHandlerRootView`.
 - **Contraste** : tout texte tient 4,5:1 sur la surface où il se pose, dans les deux registres
   (`encreAttenuee` comprise). Un nouveau token se mesure avant d'entrer.
 - **Fond des images d'exercice** : rôle `fondImage`, blanc dans les deux registres (les médias du

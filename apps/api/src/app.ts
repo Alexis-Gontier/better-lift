@@ -8,10 +8,12 @@ import { secureHeaders } from "hono/secure-headers";
 import { auth } from "./auth.js";
 import { routesExercices } from "./routes/exercices.js";
 import { health } from "./routes/health.js";
+import { routesPreferences } from "./routes/preferences.js";
 import { routesRecords } from "./routes/records.js";
 import { routesRoutines } from "./routes/routines.js";
 import { routesSeances } from "./routes/seances.js";
 import { routesStats } from "./routes/stats.js";
+import { depotPreferences } from "./services/preferences.js";
 import { depotPrisma as depotRoutines } from "./services/routines.js";
 import { depotLecture, depotPrisma as depotSeances } from "./services/seances.js";
 import { depotStats } from "./services/stats.js";
@@ -61,7 +63,8 @@ const routes = app
   .route("/exercices", routesRecords(depotLecture, lireSession))
   .route("/routines", routesRoutines(depotRoutines, lireSession))
   .route("/seances", routesSeances(depotSeances, depotLecture, lireSession))
-  .route("/stats", routesStats(depotStats, lireSession));
+  .route("/stats", routesStats(depotStats, lireSession))
+  .route("/preferences", routesPreferences(depotPreferences, lireSession));
 
 export type AppType = typeof routes;
 export default app;

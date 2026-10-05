@@ -103,6 +103,7 @@ const fauxLecture: DepotLectureSeances = {
           nom: "Push",
           debut: saisie.debut,
           fin: saisie.fin,
+          note: null,
           seriesFaites: 1,
           volumeKg: 495,
           routineId: null,

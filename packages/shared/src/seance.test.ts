@@ -261,6 +261,18 @@ describe("versEnvoi et seanceSaisie", () => {
     expect(() => seanceSaisie.parse(serie({ chargeKg: 1001 }))).toThrow();
     expect(() => seanceSaisie.parse(serie({ type: "SUPER" }))).toThrow();
   });
+
+  it("accepte une note de séance (D130), rognée, ou son absence", () => {
+    expect(seanceSaisie.parse({ ...envoi(), note: "  Bonne séance.  " }).note).toBe(
+      "Bonne séance.",
+    );
+    expect(seanceSaisie.parse({ ...envoi(), note: null }).note).toBeNull();
+    expect(seanceSaisie.parse(envoi())).not.toHaveProperty("note");
+  });
+
+  it("refuse une note de plus de 1000 caractères", () => {
+    expect(() => seanceSaisie.parse({ ...envoi(), note: "x".repeat(1001) })).toThrow();
+  });
 });
 
 describe("avecPrecedents", () => {
