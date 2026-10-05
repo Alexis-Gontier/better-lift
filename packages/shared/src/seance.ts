@@ -329,6 +329,8 @@ export const seanceSaisie = z
     nom: z.string().trim().min(1).max(120),
     debut: z.iso.datetime(),
     fin: z.iso.datetime(),
+    /** La note de la séance, écrite à la fin (D130). Absente des anciennes versions du mobile. */
+    note: z.string().trim().max(1000).nullable().optional(),
     exercices: z.array(exerciceEnvoye).max(100),
   })
   .refine((s) => Date.parse(s.fin) >= Date.parse(s.debut), "La fin précède le début.");
