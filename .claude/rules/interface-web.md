@@ -34,6 +34,11 @@ Conception : [`2026-09-24-coquille-shadcn-design.md`](../../docs/superpowers/spe
 - **Paramètres** (`/parametres`) : compte, thème (seul endroit où il se change), unités et fuseau.
 - **Liste des exercices** : image fixe (JPG ~6 Ko) déduite de `gifUrl` par `imageDe` — aucune
   colonne ni migration. Le GIF reste réservé aux fiches.
+- **Adresse inconnue et route qui plante** : `defaultNotFoundComponent` et
+  `defaultErrorComponent` du routeur (`main.tsx`), dans `components/etats/pages-routeur.tsx`. Ni
+  coquille ni requête : ils tiennent quand c'est elles qui tombent. La 404 prend la page,
+  l'erreur ne remplace que la route fautive (la coquille reste). Une 404 se voit à toute
+  adresse inconnue.
 - **Les quatre états par l'URL** : `?etat=chargement|erreur|vide`, derrière
   `import.meta.env.DEV`. `vide` vide le jeu de données plutôt que de substituer un composant.
 

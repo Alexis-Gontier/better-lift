@@ -132,6 +132,19 @@ model Verification {
   @@map("verification")
 }
 
+// La limitation des tentatives de connexion (`rateLimit.storage: "database"`) :
+// une ligne par couple IP + chemin. En mémoire, chaque instance Vercel aurait
+// son propre compteur.
+model RateLimit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("rateLimit")
+}
+
 // --- Routines (lot 5) --------------------------------------------------------
 // Des gabarits de séance, série par série (D47). Une routine est remplacée en
 // entier à chaque enregistrement (D50), et supprimée pour de bon (D51) : une
