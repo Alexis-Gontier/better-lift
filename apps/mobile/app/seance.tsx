@@ -30,15 +30,16 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
-import { ChevronDown, Plus } from "lucide-react-native";
+import { ChevronDown, Plus, Trash2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
 import { PaveNumerique } from "../components/seance/pave-numerique";
 import { Appuyable } from "../components/ui/appuyable";
 import { attendreChoix } from "../lib/choix-exercices";
+import { useConfirmer } from "../lib/confirmation";
 import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
@@ -58,8 +59,13 @@ function valeurDe(e: Edition): number | null {
   return e.champ === "charge" ? lireCharge(e.texte, SYSTEME_UNITES) : lireReps(e.texte);
 }
 
-/** La saisie écrite dans la séance — inchangée si elle est invalide. */
+/**
+ * La saisie écrite dans la séance — inchangée si elle est invalide, ou si
+ * aucune touche n'a été frappée : ouvrir puis fermer le pavé ne fait pas d'une
+ * cible une valeur saisie.
+ */
 function appliquer(s: SeanceEnCours, e: Edition): SeanceEnCours {
+  if (e.neuf) return s;
   const v = valeurDe(e);
   if (Number.isNaN(v)) return s;
   return modifierSerie(s, e.iE, e.iS, e.champ === "charge" ? { chargeKg: v } : { reps: v });
@@ -91,6 +97,7 @@ export default function Seance() {
     lignes: {},
   });
   const { height: hauteurEcran } = useWindowDimensions();
+  const confirmer = useConfirmer();
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
   // posé sur le banc ne doit pas se verrouiller entre deux séries.
   useKeepAwake();
@@ -147,17 +154,17 @@ export default function Seance() {
   }
 
   const abandonner = () =>
-    Alert.alert("Abandonner la séance ?", "Rien ne sera enregistré.", [
-      { text: "Continuer", style: "cancel" },
-      {
-        text: "Abandonner",
-        style: "destructive",
-        onPress: async () => {
-          await effacerSeance();
-          router.replace("/");
-        },
+    confirmer({
+      titre: "Abandonner la séance ?",
+      message: "Rien ne sera enregistré.",
+      action: "Abandonner la séance",
+      icone: Trash2,
+      annuler: "Continuer la séance",
+      onConfirmer: async () => {
+        await effacerSeance();
+        router.replace("/");
       },
-    ]);
+    });
 
   // D93 : ajouter et remplacer passent par la modale du catalogue.
   const ajouter = () => {
@@ -235,6 +242,7 @@ export default function Seance() {
   };
 
   const bilan = bilanSeance(seance);
+  const vide = seance.exercices.length === 0;
   const prochaine = prochaineSerie(seance);
   // Replier la séance (D108) : retour aux onglets, où le bandeau la garde à un
   // geste (D107). Ouverte sans historique (reprise de l'app), on y va directement.
@@ -329,9 +337,16 @@ export default function Seance() {
           </View>
         ))}
         <View style={styles.pied}>
-          <Appuyable onPress={ajouter} style={styles.ajouter} accessibilityRole="button">
-            <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
-            <Text style={styles.ajouterTexte}>Ajouter un exercice</Text>
+          {/* Sans exercice, il n'y a pas de ✓ : ajouter devient l'aplat de l'écran (D105). */}
+          <Appuyable
+            onPress={ajouter}
+            style={[styles.ajouter, vide && styles.ajouterAplat]}
+            accessibilityRole="button"
+          >
+            <Plus size={18} color={vide ? couleurs.surAction : couleurs.encre} strokeWidth={2.4} />
+            <Text style={[styles.ajouterTexte, vide && styles.ajouterTexteAplat]}>
+              Ajouter un exercice
+            </Text>
           </Appuyable>
           <Appuyable onPress={abandonner} style={styles.abandon} accessibilityRole="button">
             <Text style={styles.abandonTexte}>Abandonner la séance</Text>
@@ -452,6 +467,8 @@ const useStyles = creerStyles((couleurs) => ({
     gap: espace.s,
   },
   ajouterTexte: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
+  ajouterAplat: { minHeight: CIBLE + 8, backgroundColor: couleurs.action },
+  ajouterTexteAplat: { color: couleurs.surAction, fontWeight: "700" },
   secondaire: {
     minHeight: CIBLE,
     borderRadius: 12,

@@ -156,7 +156,20 @@ describe("modifier la séance", () => {
       reps: 6,
       chargeKg: 82.5,
       faite: false,
+      // Recopiées, ses valeurs restent des cibles : rien n'y est saisi.
+      saisi: {},
     });
+  });
+
+  it("marque saisi chaque champ modifié, pour lui seul, et jamais le type", () => {
+    expect(s.exercices[0]?.series[1]?.saisi).toBeUndefined();
+    const reps = modifierSerie(s, 0, 1, { reps: 5 });
+    expect(reps.exercices[0]?.series[1]?.saisi).toEqual({ reps: true });
+    const lesDeux = modifierSerie(reps, 0, 1, { chargeKg: null });
+    expect(lesDeux.exercices[0]?.series[1]?.saisi).toEqual({ reps: true, chargeKg: true });
+    expect(
+      modifierSerie(s, 0, 1, { type: "ECHEC" }).exercices[0]?.series[1]?.saisi,
+    ).toBeUndefined();
   });
 
   it("retire une série et un exercice", () => {
@@ -188,6 +201,11 @@ describe("versEnvoi et seanceSaisie", () => {
   const fin = plus(3600);
   const envoi = () =>
     versEnvoi(validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, T0), fin);
+
+  it("n'envoie pas le marquage local des champs saisis", () => {
+    const saisie = modifierSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, { reps: 7 });
+    expect(versEnvoi(saisie, fin).exercices[0]?.series[1]).not.toHaveProperty("saisi");
+  });
 
   it("recopie la séance, ordre et valeurs compris, en dates ISO", () => {
     const e = envoi();

@@ -47,7 +47,6 @@ function Contenu() {
         </Text>
         <Text style={styles.temps}>{temps}</Text>
       </View>
-      <Text style={styles.reprendre}>Reprendre</Text>
       <ChevronUp size={20} color={couleurs.encreSecondaire} />
     </Appuyable>
   );
@@ -81,5 +80,4 @@ const useStyles = creerStyles((couleurs) => ({
     fontFamily: polices.condense,
     fontVariant: ["tabular-nums"],
   },
-  reprendre: { color: couleurs.encre, fontSize: taille.petit + 1, fontWeight: "600" },
 }));

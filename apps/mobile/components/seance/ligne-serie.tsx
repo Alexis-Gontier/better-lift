@@ -82,7 +82,9 @@ export function LigneSerie({
   };
 
   const faite = etat === "faite";
-  const fantome = etat === "a-venir";
+  // Une série à venir montre ses CIBLES en fantôme ; une valeur saisie, elle,
+  // s'écrit à l'encre, case par case (`saisi`).
+  const aVenir = etat === "a-venir";
   return (
     <View style={[styles.ligne, faite && styles.faite]}>
       <Appuyable
@@ -127,7 +129,7 @@ export function LigneSerie({
         }
         editee={edition?.champ === "charge"}
         invalide={edition?.champ === "charge" && edition.invalide}
-        fantome={fantome}
+        fantome={aVenir && !serie.saisi?.chargeKg}
         faite={faite}
         onPress={() => onEditer("charge")}
       />
@@ -138,7 +140,7 @@ export function LigneSerie({
         }
         editee={edition?.champ === "reps"}
         invalide={edition?.champ === "reps" && edition.invalide}
-        fantome={fantome}
+        fantome={aVenir && !serie.saisi?.reps}
         faite={faite}
         onPress={() => onEditer("reps")}
       />
@@ -161,7 +163,7 @@ export function LigneSerie({
             etat === "prochaine"
               ? couleurs.surAction
               : faite
-                ? couleurs.encre
+                ? couleurs.canevas
                 : couleurs.encreAttenuee
           }
         />
@@ -223,8 +225,8 @@ const useStyles = creerStyles((couleurs) => ({
     paddingHorizontal: espace.xs,
     borderRadius: rayon.cellule,
   },
-  // Faite : la ligne se teinte, sans aplat — l'aplat reste réservé à l'action.
-  faite: { backgroundColor: couleurs.surface1 },
+  // Faite : la ligne se teinte nettement, sans lime — le lime reste à l'action.
+  faite: { backgroundColor: couleurs.ligneFaite },
   etiquette: {
     width: COLONNES.serie,
     height: 40,
@@ -270,5 +272,6 @@ const useStyles = creerStyles((couleurs) => ({
     justifyContent: "center",
   },
   validerProchaine: { backgroundColor: couleurs.action, borderColor: couleurs.action },
-  validerFait: { backgroundColor: couleurs.surface3, borderColor: couleurs.surface3 },
+  // Faite : ✓ plein, à l'encre. La prochaine porte le lime, les suivantes un contour.
+  validerFait: { backgroundColor: couleurs.encre, borderColor: couleurs.encre },
 }));

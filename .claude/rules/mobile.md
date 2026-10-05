@@ -54,6 +54,10 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   Seuls les voiles sous les feuilles restent des `Pressable` nus. Cible de 48 au minimum
   (`CIBLE`, ou `hitSlop` qui l'atteint) ; un titre d'écran ou de section porte
   `accessibilityRole="header"`.
+- **Questions et menus ponctuels : `useConfirmer` / `useFeuille` / `useInformer`**
+  (`lib/confirmation.tsx`, une feuille montée à la racine), jamais `Alert.alert` : l'alerte
+  native reste blanche en thème sombre et ne distingue pas l'action destructive. L'action vient
+  en tête (danger par défaut), « Annuler » en dernier.
 - **Contraste** : tout texte tient 4,5:1 sur la surface où il se pose, dans les deux registres
   (`encreAttenuee` comprise). Un nouveau token se mesure avant d'entrer.
 - **Fond des images d'exercice** : rôle `fondImage`, blanc dans les deux registres (les médias du
@@ -83,7 +87,7 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Il se pose au-dessus du débord du rond (30), sinon le rond le
   recouvre. Repos restant s'il tourne, chrono sinon ; tout le bandeau
-  ramène à la séance.
+  ramène à la séance. Il ne dit pas « Reprendre » : le rond central le dit déjà.
 - **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
   le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, carte
   masquée pendant une séance), puis le fil des séances (`LigneSeance`, avec le
@@ -104,10 +108,11 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/specs/2026-09-25-mobile-routines-design.md).
 
 - Le mobile crée, modifie et supprime les routines, indépendamment du web.
-- Page d'une routine : résumé (`dureeEstimeeSec`), **carte des muscles** face/dos
+- Page d'une routine : résumé (`dureeEstimeeSec`), cartes « 3 × 8 · 60 kg » (`resumeSeries`,
+  chacune ouvre la fiche de l'exercice), puis la **carte des muscles** face/dos
   (`react-native-body-highlighter`, `zonesTravaillees` de `shared/muscles.ts` — chaque muscle du
-  catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`), cartes « 3 × 8 · 60 kg »
-  (`resumeSeries`), Démarrer fixé. **Les muscles sont en vert** (D84 révisée) : seul usage du
+  catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`) — après la liste : en tête, elle
+  prenait tout le premier écran. Démarrer fixé. **Les muscles sont en vert** (D84 révisée) : seul usage du
   lime hors action et record, borné au dessin du corps.
 - Édition plein écran `app/routine-edition.tsx` (`?id=` pour modifier) :
   `react-native-draggable-flatlist`, `GestureHandlerRootView` à la racine, sortie avec
@@ -135,7 +140,12 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   (D105). Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
   en trois états (`EtatSerie`) : faite (teintée, ✓ neutre) · **prochaine** (seule ✓ lime de
   l'écran, `prochaineSerie` de `shared`) · à venir (cibles en valeurs fantômes, ✓ en contour).
-  Cases de 40, ligne de 52.
+  Cases de 40, ligne de 52. Une série faite a son fond `ligneFaite`, nettement distinct du
+  canevas, et sa ✓ pleine à l'encre.
+- **Cible ou saisie** : `saisi` (`shared`, par champ : `chargeKg`, `reps`) marque ce qui a été
+  tapé pendant la séance. Une case à venir non saisie montre sa cible en fantôme ; saisie, elle
+  passe à l'encre. Ouvrir puis fermer le pavé sans toucher ne saisit rien (`Edition.neuf`).
+  Local au téléphone : `versEnvoi` ne l'envoie pas.
 - **Pavé intégré (D109)** : les cases kg / reps ne sont pas des `TextInput` ; un appui ouvre
   `components/seance/pave-numerique.tsx`, et l'écran de séance tient la saisie (`Edition` dans
   `app/seance.tsx`). La logique des touches (`toucherPave`, `ajusterSurPave`, `lireReps`) vit
@@ -159,10 +169,13 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Fin de séance (D111)** : records battus calculés sur le téléphone (`recordsBattus` de
   `shared`) contre les records en cache (`["records", slug]`, persistés et préchargés pour les
   exercices des routines) ; un exercice aux records inconnus est écarté, sans record déclaré.
-  Sans série validée, la séance ne s'enregistre pas. Hors ligne : un encart pointillé, pas une
+  Sans série validée, la séance ne s'enregistre pas. Des séries restent à valider : un encart
+  le dit au-dessus d'« Enregistrer » ; un échauffement fait : l'écran rappelle qu'il ne compte pas
+  dans le volume (D5). Hors ligne : un encart pointillé, pas une
   alerte.
 - **Démarrer** est une feuille basse (`presentation: "transparentModal"`) : l'écran dessine le
-  voile et la feuille ; « À suivre » marque la routine de `routineASuivre`.
+  voile et la feuille ; « À suivre » marque la routine de `routineASuivre`, placée en tête de liste. Séance vide :
+  « Ajouter un exercice » devient l'aplat, faute de ✓.
 - Une séance envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
 
 ## Fiche d'exercice et détail d'une séance

@@ -9,8 +9,9 @@ import {
   TYPES_SERIE,
 } from "@better-lift/shared";
 import { Image } from "expo-image";
-import { Dumbbell, Ellipsis, GripVertical, Plus, X } from "lucide-react-native";
-import { Alert, Text, TextInput, View } from "react-native";
+import { Dumbbell, Ellipsis, GripVertical, Plus, Trash2, X } from "lucide-react-native";
+import { Text, TextInput, View } from "react-native";
+import { useConfirmer, useFeuille } from "../../lib/confirmation";
 import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES, UNITE } from "../../lib/unites";
 import { Appuyable } from "../ui/appuyable";
@@ -42,25 +43,39 @@ export function CarteExerciceEdition({
   const changerSerie = (i: number, s: Partial<SerieBrouillon>) =>
     onChange({ ...e, series: e.series.map((x, j) => (j === i ? { ...x, ...s } : x)) });
 
+  const feuille = useFeuille();
+  const confirmer = useConfirmer();
+
+  // Les mêmes feuilles qu'en séance (D89) : le type en vigueur est coché.
   const choisirType = (i: number) =>
-    Alert.alert(
-      "Type de série",
-      undefined,
-      [
-        ...TYPES_SERIE.map((t) => ({
-          text: LIBELLE_TYPE_SERIE[t],
-          onPress: () => changerSerie(i, { type: t }),
-        })),
-        { text: "Annuler", style: "cancel" as const },
-      ],
-      { cancelable: true },
-    );
+    feuille({
+      titre: `Série ${etiquettes[i]}`,
+      options: TYPES_SERIE.map((t) => ({
+        libelle: LIBELLE_TYPE_SERIE[t],
+        choisie: e.series[i]?.type === t,
+        onPress: () => changerSerie(i, { type: t }),
+      })),
+    });
 
   const menu = () =>
-    Alert.alert(e.nom, undefined, [
-      { text: "Retirer l'exercice", style: "destructive", onPress: onRetirer },
-      { text: "Annuler", style: "cancel" },
-    ]);
+    feuille({
+      titre: e.nom,
+      options: [
+        {
+          libelle: "Retirer l'exercice",
+          icone: Trash2,
+          danger: true,
+          onPress: () =>
+            confirmer({
+              titre: `Retirer « ${e.nom} » ?`,
+              message: "Ses séries cibles seront perdues.",
+              action: "Retirer l'exercice",
+              icone: Trash2,
+              onConfirmer: onRetirer,
+            }),
+        },
+      ],
+    });
 
   return (
     <View style={[styles.carte, enGlissement && styles.glisse]}>

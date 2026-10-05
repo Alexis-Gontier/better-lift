@@ -23,7 +23,8 @@ import {
   Trash2,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
+import { useConfirmer } from "../../lib/confirmation";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
 import {
@@ -111,12 +112,16 @@ export function CarteExercice({
   const [editionNote, setEditionNote] = useState(false);
   const [feuille, setFeuille] = useState<Feuilles>(null);
   const libelles = etiquettes(exercice.series);
+  const confirmer = useConfirmer();
 
   const retirer = () =>
-    Alert.alert(`Retirer « ${exercice.nom} » ?`, "Ses séries seront perdues.", [
-      { text: "Annuler", style: "cancel" },
-      { text: "Retirer", style: "destructive", onPress: onRetirer },
-    ]);
+    confirmer({
+      titre: `Retirer « ${exercice.nom} » ?`,
+      message: "Ses séries seront perdues.",
+      action: "Retirer l'exercice",
+      icone: Trash2,
+      onConfirmer: onRetirer,
+    });
 
   const options: OptionFeuille[] =
     feuille?.quoi === "menu"

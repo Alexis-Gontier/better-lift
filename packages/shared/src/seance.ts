@@ -18,6 +18,13 @@ export type SerieEnCours = {
   reps: number | null;
   chargeKg: number | null;
   faite: boolean;
+  /**
+   * Les champs saisis pendant la séance, chacun pour soi : une case saisie ne
+   * porte plus la cible de la routine. L'écran distingue ainsi ce qui est tapé
+   * (encre) de ce qui est prévu (fantôme). Absent d'un brouillon antérieur : rien
+   * de saisi. Jamais envoyé : il ne dit rien de l'entraînement.
+   */
+  saisi?: { chargeKg?: boolean; reps?: boolean };
 };
 
 export type ExerciceEnCours = {
@@ -131,17 +138,24 @@ export function modifierSerie(
   s: SeanceEnCours,
   iE: number,
   iS: number,
-  patch: Partial<Omit<SerieEnCours, "faite">>,
+  patch: Partial<Omit<SerieEnCours, "faite" | "saisi">>,
 ): SeanceEnCours {
-  return avecSerie(s, iE, iS, (x) => ({ ...x, ...patch }));
+  return avecSerie(s, iE, iS, (x) => {
+    const saisi = {
+      ...x.saisi,
+      ...("chargeKg" in patch ? { chargeKg: true } : {}),
+      ...("reps" in patch ? { reps: true } : {}),
+    };
+    return { ...x, ...patch, ...(Object.keys(saisi).length > 0 ? { saisi } : {}) };
+  });
 }
 
-/** Une série de plus, qui recopie la dernière — non faite. */
+/** Une série de plus, qui recopie la dernière — non faite, ses valeurs en cibles. */
 export function ajouterSerie(s: SeanceEnCours, iE: number): SeanceEnCours {
   return avecExercice(s, iE, (e) => {
     const derniere = e.series.at(-1);
     const nouvelle: SerieEnCours = derniere
-      ? { ...derniere, faite: false }
+      ? { ...derniere, faite: false, saisi: {} }
       : { type: "NORMALE", reps: null, chargeKg: null, faite: false };
     return { ...e, series: [...e.series, nouvelle] };
   });

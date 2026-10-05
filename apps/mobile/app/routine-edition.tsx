@@ -9,22 +9,16 @@ import {
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { Ellipsis, Plus } from "lucide-react-native";
+import { Ellipsis, Plus, Trash2 } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Text, TextInput, View } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteExerciceEdition } from "../components/routines/carte-exercice-edition";
 import { Appuyable } from "../components/ui/appuyable";
 import { Chargement, Erreur } from "../components/ui/etats";
 import { attendreChoix } from "../lib/choix-exercices";
+import { useConfirmer } from "../lib/confirmation";
 import {
   optionsRoutine,
   useCreerRoutine,
@@ -72,6 +66,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
   const couleurs = useCouleurs();
   const router = useRouter();
   const navigation = useNavigation();
+  const confirmer = useConfirmer();
   const creer = useCreerRoutine();
   const remplacer = useRemplacerRoutine(id ?? "");
   const supprimer = useSupprimerRoutine();
@@ -94,16 +89,15 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
       navigation.addListener("beforeRemove", (e) => {
         if (!modifiee || sortieAutorisee.current) return;
         e.preventDefault();
-        Alert.alert("Abandonner les modifications ?", "Elles ne seront pas enregistrées.", [
-          { text: "Continuer l'édition", style: "cancel" },
-          {
-            text: "Abandonner",
-            style: "destructive",
-            onPress: () => navigation.dispatch(e.data.action),
-          },
-        ]);
+        confirmer({
+          titre: "Abandonner les modifications ?",
+          message: "Elles ne seront pas enregistrées.",
+          action: "Abandonner",
+          annuler: "Continuer l'édition",
+          onConfirmer: () => navigation.dispatch(e.data.action),
+        });
       }),
-    [navigation, modifiee],
+    [navigation, modifiee, confirmer],
   );
 
   const enregistrer = () => {
@@ -131,24 +125,19 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
 
   const confirmerSuppression = () => {
     if (!id) return;
-    Alert.alert(
-      "Supprimer la routine ?",
-      `« ${brouillon.nom || initiale?.nom} » disparaîtra. Tes séances passées restent.`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () =>
-            supprimer.mutate(id, {
-              onSuccess: () => {
-                sortieAutorisee.current = true;
-                router.dismissTo("/routines");
-              },
-            }),
-        },
-      ],
-    );
+    confirmer({
+      titre: "Supprimer la routine ?",
+      message: `« ${brouillon.nom || initiale?.nom} » disparaîtra. Tes séances passées restent.`,
+      action: "Supprimer la routine",
+      icone: Trash2,
+      onConfirmer: () =>
+        supprimer.mutate(id, {
+          onSuccess: () => {
+            sortieAutorisee.current = true;
+            router.dismissTo("/routines");
+          },
+        }),
+    });
   };
 
   const ajouterExercices = () => {

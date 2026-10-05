@@ -2,7 +2,7 @@ import { avecPrecedents, demarrerDepuisRoutine, demarrerVide } from "@better-lif
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { useFeuille, useInformer } from "./confirmation";
 import { chargerPrecedents, chargerRoutine } from "./requetes";
 import { useSeance } from "./seance";
 import { nouvelId } from "./temps";
@@ -19,6 +19,8 @@ export function useDemarrer({ depuisModale = false }: { depuisModale?: boolean }
   const client = useQueryClient();
   const { demarrer: demarrerSeance } = useSeance();
   const [ouverture, setOuverture] = useState<string | null>(null);
+  const feuille = useFeuille();
+  const informer = useInformer();
 
   // Depuis l'écran « Démarrer », `replace` : le retour de la séance ne doit pas
   // y ramener. Depuis l'Accueil, `push` : le retour ramène aux onglets.
@@ -26,11 +28,11 @@ export function useDemarrer({ depuisModale = false }: { depuisModale?: boolean }
 
   const lancer = async (creer: () => ReturnType<typeof demarrerVide>) => {
     if (!(await demarrerSeance(creer()))) {
-      Alert.alert(
-        "Une séance est en cours",
-        "Termine-la ou abandonne-la avant d'en commencer une autre.",
-        [{ text: "Reprendre", onPress: () => aller() }],
-      );
+      feuille({
+        titre: "Une séance est en cours",
+        message: "Termine-la ou abandonne-la avant d'en commencer une autre.",
+        options: [{ libelle: "Reprendre la séance", onPress: aller }, { libelle: "Fermer" }],
+      });
       return;
     }
     aller();
@@ -54,7 +56,7 @@ export function useDemarrer({ depuisModale = false }: { depuisModale?: boolean }
         avecPrecedents(demarrerDepuisRoutine(detail, nouvelId(), new Date()), precedents),
       );
     } catch {
-      Alert.alert(
+      informer(
         "Routine indisponible",
         "Elle n'a jamais été chargée sur ce téléphone. Ouvre-la une fois avec du réseau.",
       );

@@ -74,39 +74,42 @@ export default function Demarrer() {
               Pas encore de routine. Crée-en une ici ou sur le web.
             </Text>
           ) : (
-            routines.data.map((r) => (
-              <Appuyable
-                key={r.id}
-                style={({ pressed }) => [
-                  styles.ligne,
-                  (pressed || ouverture === r.id) && styles.appuye,
-                ]}
-                disabled={ouverture !== null}
-                onPress={() => void routine(r.id)}
-                accessibilityRole="button"
-              >
-                <View style={styles.icone}>
-                  {ouverture === r.id ? (
-                    <ActivityIndicator size="small" color={couleurs.encre} />
-                  ) : (
-                    <Play size={18} color={couleurs.encre} />
-                  )}
-                </View>
-                <View style={styles.texte}>
-                  <Text style={styles.nom} numberOfLines={1}>
-                    {r.nom}
-                  </Text>
-                  <Text style={styles.pale}>
-                    {pluriel(r.nbExercices, "exercice")} · {pluriel(r.nbSeries, "série")}
-                  </Text>
-                </View>
-                {suivante?.id === r.id ? (
-                  <View style={styles.puce}>
-                    <Text style={styles.puceTexte}>À suivre</Text>
+            // La plus probable en tête : la routine « À suivre », puis les autres.
+            [...routines.data]
+              .sort((a, b) => Number(b.id === suivante?.id) - Number(a.id === suivante?.id))
+              .map((r) => (
+                <Appuyable
+                  key={r.id}
+                  style={({ pressed }) => [
+                    styles.ligne,
+                    (pressed || ouverture === r.id) && styles.appuye,
+                  ]}
+                  disabled={ouverture !== null}
+                  onPress={() => void routine(r.id)}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.icone}>
+                    {ouverture === r.id ? (
+                      <ActivityIndicator size="small" color={couleurs.encre} />
+                    ) : (
+                      <Play size={18} color={couleurs.encre} />
+                    )}
                   </View>
-                ) : null}
-              </Appuyable>
-            ))
+                  <View style={styles.texte}>
+                    <Text style={styles.nom} numberOfLines={1}>
+                      {r.nom}
+                    </Text>
+                    <Text style={styles.pale}>
+                      {pluriel(r.nbExercices, "exercice")} · {pluriel(r.nbSeries, "série")}
+                    </Text>
+                  </View>
+                  {suivante?.id === r.id ? (
+                    <View style={styles.puce}>
+                      <Text style={styles.puceTexte}>À suivre</Text>
+                    </View>
+                  ) : null}
+                </Appuyable>
+              ))
           )}
         </ScrollView>
       </View>

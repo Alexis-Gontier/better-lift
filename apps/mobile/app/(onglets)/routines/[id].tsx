@@ -2,7 +2,7 @@ import { dureeEstimeeSec, resumeSeries } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Dumbbell, Pencil } from "lucide-react-native";
+import { ChevronRight, Dumbbell, Pencil } from "lucide-react-native";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
@@ -82,8 +82,6 @@ export default function DetailRoutine() {
           {pluriel(r.exercices.length, "exercice")} · {pluriel(nbSeries, "série")} · ≈ {minutes} min
         </Text>
 
-        <CarteMuscles exercices={r.exercices} />
-
         {r.exercices.length === 0 ? (
           <Appuyable onPress={modifier} style={styles.invite} accessibilityRole="button">
             <Text style={styles.inviteTexte}>Ajoute des exercices à cette routine</Text>
@@ -97,7 +95,14 @@ export default function DetailRoutine() {
         ) : null}
         {r.exercices.map((ex, i) => (
           // L'index entre dans la clé : le même exercice peut figurer deux fois.
-          <View key={`${ex.slug}-${i}`} style={styles.carte}>
+          // Chaque exercice ouvre sa fiche : records, exécution.
+          <Appuyable
+            key={`${ex.slug}-${i}`}
+            onPress={() => router.push(`/exercices/${ex.slug}`)}
+            style={styles.carte}
+            accessibilityRole="link"
+            accessibilityHint="Ouvre la fiche de l'exercice"
+          >
             {ex.image ? (
               <Image
                 source={{ uri: ex.image }}
@@ -119,8 +124,13 @@ export default function DetailRoutine() {
                 <Text style={styles.repos}>Repos {formaterRepos(ex.reposSec)}</Text>
               ) : null}
             </View>
-          </View>
+            <ChevronRight size={20} color={couleurs.encreTertiaire} />
+          </Appuyable>
         ))}
+
+        {/* Après la liste : les exercices sont ce qu'on vient lire, la carte du
+            corps les résume. En tête, elle prenait tout le premier écran. */}
+        {r.exercices.length > 0 ? <CarteMuscles exercices={r.exercices} /> : null}
       </ScrollView>
 
       {/* L'action de l'écran, fixée sous le pouce : l'aplat lime (D105). */}
