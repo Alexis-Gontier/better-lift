@@ -1,13 +1,22 @@
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, Tabs, useRouter } from "expo-router";
 import { BottomTabBar } from "expo-router/tabs";
-import { ChartColumn, House, ListChecks, type LucideIcon, User } from "lucide-react-native";
+import {
+  ChartColumn,
+  Dumbbell,
+  House,
+  ListChecks,
+  type LucideIcon,
+  Play,
+  User,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { type ColorValue, Pressable, type PressableProps, Text } from "react-native";
+import { type ColorValue, Pressable, type PressableProps, Text, View } from "react-native";
 import { BandeauSeance } from "../../components/bandeau-seance";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
-import { polices, useCouleurs } from "../../lib/theme";
+import { useSeance } from "../../lib/seance";
+import { creerStyles, polices, useCouleurs } from "../../lib/theme";
 
 /**
  * Icônes Lucide, comme le web. L'onglet actif s'épaissit : avec la couleur,
@@ -20,13 +29,14 @@ const icone =
   );
 
 /**
- * Les quatre onglets (D106), sans lime : l'écran garde son seul aplat (D105).
- * « Démarrer » vit sur l'Accueil et la page d'une routine ; la séance en cours
- * se reprend par le bandeau posé au-dessus de la barre (D107). La garde de
- * session vit ici : tout ce qui est sous les onglets exige un compte, et un seul
- * endroit le vérifie.
+ * Les onglets (D74), façon opengym : deux liens de chaque côté, l'action au
+ * centre — rétablis à la demande de l'utilisateur, qui les préfère à la barre
+ * sans lime de D106. Le bandeau de la séance en cours (D107) reste posé
+ * au-dessus. La garde de session vit ici : tout ce qui est sous les onglets
+ * exige un compte, et un seul endroit le vérifie.
  */
 export default function Onglets() {
+  const styles = useStyles();
   const couleurs = useCouleurs();
   const { data: session, isPending, error } = authClient.useSession();
   // Un cookie de session est-il gardé sur le téléphone ? `null` tant que le
@@ -35,6 +45,10 @@ export default function Onglets() {
   useEffect(() => {
     void authClient.getCookie().then((c) => setCookieGarde(Boolean(c)));
   }, []);
+  const router = useRouter();
+  const { seance } = useSeance();
+  // Le bouton central : reprendre la séance en cours, sinon choisir comment démarrer.
+  const lancer = () => router.push(seance ? "/seance" : "/demarrer");
 
   if (isPending || (error && cookieGarde === null)) return <Chargement />;
   // D100 : une erreur de lecture (hors ligne) ne renvoie pas à la connexion
@@ -42,6 +56,8 @@ export default function Onglets() {
   // doit rester joignable en salle. Sans cookie, il n'y a jamais eu de compte
   // ici — une installation neuve ouverte hors ligne va à la connexion.
   if (!session && !(error && cookieGarde)) return <Redirect href="/connexion" />;
+
+  const Centrale = seance ? Play : Dumbbell;
 
   return (
     <>
@@ -52,7 +68,7 @@ export default function Onglets() {
         // le détail d'une séance y ramène, et non à l'Accueil (D95).
         backBehavior="history"
         // Le bandeau de la séance en cours se pose AU-DESSUS de la barre, sur
-        // tous les onglets et leurs écrans empilés : un seul mécanisme (D107).
+        // tous les onglets et leurs écrans empilés (D107).
         tabBar={(props) => (
           <>
             <BandeauSeance />
@@ -62,10 +78,9 @@ export default function Onglets() {
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: couleurs.canevas },
-          // L'onglet actif en encre (D106, remplace D76 révisée) : le lime reste
-          // à l'action et au record. La forme dit aussi la position — trait
-          // épaissi, libellé en gras.
-          tabBarActiveTintColor: couleurs.encre,
+          // L'onglet actif prend la couleur de l'application (choix de
+          // l'utilisateur, D76 révisée) ; les autres restent en encre faible.
+          tabBarActiveTintColor: couleurs.action,
           tabBarInactiveTintColor: couleurs.encreAttenuee,
           // Toute la largeur du bas, jusque sous la zone de geste : une marche
           // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
@@ -77,19 +92,7 @@ export default function Onglets() {
             borderTopColor: couleurs.ligne,
             paddingTop: 8,
           },
-          // Le libellé actif passe en gras : la position ne tient pas qu'à la couleur.
-          tabBarLabel: ({ focused, color, children }) => (
-            <Text
-              style={{
-                color,
-                fontSize: 11,
-                marginTop: 2,
-                fontFamily: focused ? polices.gras : polices.moyen,
-              }}
-            >
-              {children}
-            </Text>
-          ),
+          tabBarLabelStyle: { fontSize: 11, fontFamily: polices.demiGras, marginTop: 2 },
           // Aucun retour visuel à l'appui (ni ondulation Android, ni opacité) :
           // l'onglet actif se signale déjà par sa couleur.
           tabBarButton: ({ ref: _ref, ...props }) => (
@@ -102,6 +105,34 @@ export default function Onglets() {
           name="routines"
           options={{ title: "Routines", tabBarIcon: icone(ListChecks) }}
         />
+        {/* Au centre, l'action du moment : un aplat lime (D28), plus grand que les
+          onglets et qui déborde au-dessus de la barre. */}
+        <Tabs.Screen
+          name="lancer"
+          options={{
+            tabBarButton: () => (
+              <Pressable
+                onPress={lancer}
+                style={styles.place}
+                accessibilityRole="button"
+                accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
+              >
+                {() => (
+                  <>
+                    <View style={styles.central}>
+                      {/* L'haltère de Lucide est dessinée en diagonale : redressée de
+                        45° pour se lire à l'horizontale, comme une barre posée. */}
+                      <View style={seance ? undefined : styles.redresse}>
+                        <Centrale color={couleurs.surAction} size={26} strokeWidth={2.4} />
+                      </View>
+                    </View>
+                    <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
+                  </>
+                )}
+              </Pressable>
+            ),
+          }}
+        />
         <Tabs.Screen name="stats" options={{ title: "Stats", tabBarIcon: icone(ChartColumn) }} />
         <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
         {/* L'historique quitte la barre ; ses écrans restent, joignables par lien,
@@ -113,3 +144,21 @@ export default function Onglets() {
     </>
   );
 }
+
+const useStyles = creerStyles((couleurs) => ({
+  // Le libellé central s'aligne sur ceux des onglets : la barre réserve sous
+  // chaque libellé une marge que ce bouton personnalisé ne reçoit pas.
+  place: { flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: -8 },
+  central: {
+    width: 60,
+    height: 60,
+    marginTop: -30,
+    borderRadius: 30,
+    backgroundColor: couleurs.action,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  redresse: { transform: [{ rotate: "45deg" }] },
+  // En encre, pas en lime : le lime en texte est le registre du record (D28).
+  libelle: { color: couleurs.encre, fontSize: 11, fontWeight: "600", marginTop: 4 },
+}));

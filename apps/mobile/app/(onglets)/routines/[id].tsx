@@ -191,7 +191,9 @@ const useStyles = creerStyles((couleurs) => ({
   pied: {
     padding: espace.l,
     paddingTop: espace.m,
-    paddingBottom: espace.l,
+    // Le rond central de la barre déborde de 30 au-dessus d'elle : le bouton
+    // reste dégagé.
+    paddingBottom: espace.l + 30,
     borderTopWidth: 1,
     borderTopColor: couleurs.ligne,
     backgroundColor: couleurs.canevas,
