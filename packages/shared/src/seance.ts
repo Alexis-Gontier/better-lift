@@ -52,6 +52,8 @@ export type SeanceEnCours = {
   exercices: ExerciceEnCours[];
   /** `signale` : la fin a déjà vibré — une seule fois par repos. */
   repos: { fin: string; signale: boolean } | null;
+  /** La note de la séance, écrite à la fin (D130). Absente d'un brouillon antérieur. */
+  note?: string;
 };
 
 export function demarrerDepuisRoutine(
@@ -347,6 +349,8 @@ export function versEnvoi(s: SeanceEnCours, fin: Date): SeanceSaisie {
     nom: s.nom,
     debut: s.debut,
     fin: fin.toISOString(),
+    // Une note vide n'est pas une note : elle ne part pas.
+    ...(s.note?.trim() ? { note: s.note.trim() } : {}),
     exercices: s.exercices.map((e) => ({
       slug: e.slug,
       reposSec: e.reposSec,
