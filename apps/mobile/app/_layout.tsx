@@ -21,6 +21,11 @@ import {
 } from "../lib/hors-ligne";
 import { SeanceProvider } from "../lib/seance";
 import { polices, useCouleurs } from "../lib/theme";
+import { appliquerThemeGarde } from "../lib/theme-choix";
+
+// Le thème choisi dans le Profil (D128), appliqué dès le chargement : avant le
+// premier écran, pas après un clignotement dans le thème du système.
+void appliquerThemeGarde();
 
 // Un écran qui plante affiche une issue plutôt qu'un écran mort ; les routes
 // qui ont la leur (la séance) l'emportent sur celle-ci.

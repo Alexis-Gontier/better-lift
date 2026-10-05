@@ -3,7 +3,7 @@
     "name": "better-lift",
     "slug": "better-lift",
     "scheme": "better-lift",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -32,7 +32,8 @@
           "icon": "./assets/monochrome.png",
           "color": "#a8cf45"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "android": {
       "package": "com.algont.betterlift",

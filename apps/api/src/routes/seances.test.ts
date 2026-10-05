@@ -128,6 +128,9 @@ const fauxLecture: DepotLectureSeances = {
   async historiqueExercice() {
     return null;
   },
+  async exporter() {
+    return [];
+  },
 };
 
 const lireSession: LireSession = async (h) => {

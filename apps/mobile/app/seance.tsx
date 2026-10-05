@@ -27,7 +27,7 @@ import {
   toucherPave,
   validerSerie,
 } from "@better-lift/shared";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
 import { ChevronDown, Plus, Trash2 } from "lucide-react-native";
@@ -41,7 +41,7 @@ import { Appuyable } from "../components/ui/appuyable";
 import { attendreChoix } from "../lib/choix-exercices";
 import { useConfirmer } from "../lib/confirmation";
 import { FUSEAU } from "../lib/fuseau";
-import { chargerPrecedents } from "../lib/requetes";
+import { chargerPrecedents, optionsPreferences } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
 import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
@@ -101,6 +101,8 @@ export default function Seance() {
     lignes: {},
   });
   const { height: hauteurEcran } = useWindowDimensions();
+  // Le repos du compte, pour l'exercice qui n'a pas le sien (D128) ; en cache hors ligne.
+  const reposDefaut = useQuery(optionsPreferences()).data?.reposDefautSec ?? null;
   // Où en est le défilement, et la hauteur visible : de quoi savoir si la
   // prochaine série est à l'écran après une coche.
   const defilementY = useRef(0);
@@ -245,7 +247,7 @@ export default function Seance() {
     const s = appliquer(seance, edition);
     const deja = s.exercices[edition.iE]?.series[edition.iS]?.faite;
     if (!deja) vibrer.valider();
-    const apres = deja ? s : validerSerie(s, edition.iE, edition.iS, new Date());
+    const apres = deja ? s : validerSerie(s, edition.iE, edition.iS, new Date(), reposDefaut);
     modifier(apres);
     setEdition(null);
     if (!deja) suivre(apres);
@@ -360,7 +362,7 @@ export default function Seance() {
               onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
               onValiderSerie={(iS) => {
                 const deja = seance.exercices[iE]?.series[iS]?.faite;
-                const apres = validerSerie(seance, iE, iS, new Date());
+                const apres = validerSerie(seance, iE, iS, new Date(), reposDefaut);
                 modifier(apres);
                 if (!deja) suivre(apres);
               }}

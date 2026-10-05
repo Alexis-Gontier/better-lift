@@ -4,6 +4,7 @@ import {
   niveauxCalendrier,
   type SeancePeriode,
   semainesRecentes,
+  semainesTenues,
 } from "./stats.js";
 
 const PARIS = "Europe/Paris";
@@ -111,7 +112,7 @@ describe("calculerPeriode (D125)", () => {
       { zone: "chest", series: 8 },
       { zone: "triceps", series: 6 },
     ]);
-    expect(p.volumes).toEqual([{ lundi: "2026-09-28", volumeKg: 1200 }]);
+    expect(p.volumes).toEqual([{ lundi: "2026-09-28", volumeKg: 1200, seances: 2 }]);
   });
 });
 
@@ -127,5 +128,17 @@ describe("niveauxCalendrier (D126)", () => {
     const n = niveauxCalendrier([j("a", 100), j("b", 100), j("c", 300), j("d", 400)]);
     expect(n.get("a")).toBe(n.get("b"));
     expect(niveauxCalendrier([j("x", 0)]).get("x")).toBe(4);
+  });
+});
+
+describe("semainesTenues (D126)", () => {
+  const v = (...n: number[]) => n.map((seances) => ({ seances }));
+
+  it("compte les semaines où l'objectif est atteint", () => {
+    expect(semainesTenues(v(3, 1, 4, 3), 3)).toEqual({ tenues: 3, sur: 4 });
+  });
+
+  it("ne juge pas la semaine en cours tant qu'elle n'a pas atteint l'objectif", () => {
+    expect(semainesTenues(v(3, 3, 1), 3)).toEqual({ tenues: 2, sur: 2 });
   });
 });

@@ -24,6 +24,7 @@ export {
   type RequeteCatalogue,
   requeteCatalogue,
 } from "./exercices.js";
+export { type LigneExport, versCsv } from "./export.js";
 export {
   aEnvoyer,
   apresReponse,
@@ -119,6 +120,7 @@ export {
   versEnvoi,
 } from "./seance.js";
 export {
+  type Bilan,
   calculerPeriode,
   type JourEntraine,
   niveauxCalendrier,
@@ -131,6 +133,7 @@ export {
   type Stats,
   type StatsPeriode,
   semainesRecentes,
+  semainesTenues,
   type Totaux,
 } from "./stats.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";

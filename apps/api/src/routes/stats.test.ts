@@ -18,6 +18,10 @@ function monter() {
       appels.push({ userId, fuseau });
       return { nbSeances: 3, semaines: [], recordsRecents: [], muscles: [] } satisfies Stats;
     },
+    async bilan(userId) {
+      appels.push({ userId, fuseau: "" });
+      return { nbSeances: 12, volumeKg: 34_500, depuis: "2026-03-02T17:00:00.000Z" };
+    },
     async lirePeriode(userId, _maintenant, fuseau, periode) {
       appels.push({ userId, fuseau, periode });
       const totaux = { seances: 0, series: 0, dureeMin: 0 };
@@ -80,5 +84,20 @@ describe("GET /stats/periode (D125)", () => {
     const { lire } = monter();
     expect((await lire("/stats/periode?periode=siecle")).status).toBe(400);
     expect((await lire("/stats/periode")).status).toBe(400);
+  });
+});
+
+describe("GET /stats/bilan (D128)", () => {
+  it("exige une session, puis rend le bilan de l'utilisateur de la session", async () => {
+    const { lire, appels } = monter();
+    expect((await lire("/stats/bilan", null)).status).toBe(401);
+    const res = await lire("/stats/bilan");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      nbSeances: 12,
+      volumeKg: 34_500,
+      depuis: "2026-03-02T17:00:00.000Z",
+    });
+    expect(appels[0]?.userId).toBe("alice");
   });
 });

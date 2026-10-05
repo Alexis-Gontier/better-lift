@@ -43,6 +43,8 @@ export function gardeHorsLigne(query: Query): boolean {
     domaine === "records" ||
     // Les stats de la dernière lecture : l'onglet reste lisible hors ligne.
     domaine === "stats" ||
+    // Le repos par défaut sert en salle, hors ligne compris (D129).
+    domaine === "preferences" ||
     (domaine === "exercices" && sorte === "complet") ||
     (domaine === "seances" && sorte === "precedents")
   );
