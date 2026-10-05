@@ -36,6 +36,8 @@ const PARTIES: readonly Slug[] = [
 
 type Props = {
   exercices: readonly { musclePrincipal: string; musclesSecondaires: readonly string[] }[];
+  /** Le titre de la carte : la période, quand elle n'est pas celle d'une routine. */
+  titre?: string;
 };
 
 /**
@@ -43,7 +45,7 @@ type Props = {
  * révisée à la demande de l'utilisateur) : principal en lime plein, secondaire
  * en lime atténué, le reste du corps en surface.
  */
-export function CarteMuscles({ exercices }: Props) {
+export function CarteMuscles({ exercices, titre = "Muscles travaillés" }: Props) {
   const styles = useStyles();
   const couleurs = useCouleurs();
   const [largeur, setLargeur] = useState(0);
@@ -69,7 +71,7 @@ export function CarteMuscles({ exercices }: Props) {
 
   return (
     <View style={styles.carte}>
-      <Text style={styles.titre}>Muscles travaillés</Text>
+      <Text style={styles.titre}>{titre}</Text>
       <View
         style={styles.corps}
         onLayout={(e: LayoutChangeEvent) => setLargeur(e.nativeEvent.layout.width)}

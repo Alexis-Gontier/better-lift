@@ -9,6 +9,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { api } from "./api";
+import { FUSEAU } from "./fuseau";
 import { avantDelai, UNE_SEMAINE } from "./hors-ligne";
 
 /**
@@ -94,6 +95,21 @@ export function optionsRecords(slug: string) {
       const res = await api.exercices[":slug"].records.$get({ param: { slug } });
       if (!res.ok) throw new Error("Les records n'ont pas pu être chargés.");
       return (await res.json()).records;
+    },
+  });
+}
+
+/**
+ * Les statistiques (D112), calculées par l'API dans le fuseau du téléphone.
+ * Rangées sous leur propre clé : l'envoi d'une séance invalide `["stats"]`.
+ */
+export function optionsStats() {
+  return queryOptions({
+    queryKey: ["stats", FUSEAU],
+    queryFn: async () => {
+      const res = await api.stats.$get({ query: { fuseau: FUSEAU } });
+      if (!res.ok) throw new Error("Les stats n'ont pas pu se calculer.");
+      return res.json();
     },
   });
 }

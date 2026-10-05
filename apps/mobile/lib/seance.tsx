@@ -117,6 +117,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
       // resterait sur sa dernière lecture.
       void client.invalidateQueries({ queryKey: ["seances"] });
       void client.invalidateQueries({ queryKey: ["records"] });
+      void client.invalidateQueries({ queryKey: ["stats"] });
     }
   }, [client]);
 

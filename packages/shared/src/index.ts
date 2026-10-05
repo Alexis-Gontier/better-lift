@@ -113,6 +113,12 @@ export {
   validerSerie,
   versEnvoi,
 } from "./seance.js";
+export {
+  type RecordRecent,
+  type Semaine,
+  type Stats,
+  semainesRecentes,
+} from "./stats.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";

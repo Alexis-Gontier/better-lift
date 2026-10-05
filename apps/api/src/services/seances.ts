@@ -279,7 +279,7 @@ const LECTURE_SEANCE = {
 } as const;
 
 /** L'historique chronologique d'un utilisateur sur des exercices, avant une date. */
-async function historique(userId: string, exerciseIds: string[], avant?: Date) {
+export async function historique(userId: string, exerciseIds: string[], avant?: Date) {
   const lignes = await prisma.seanceSerie.findMany({
     where: {
       exercice: {
