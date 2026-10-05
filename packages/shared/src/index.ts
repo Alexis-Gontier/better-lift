@@ -1,5 +1,6 @@
 export { resumeSemaine, routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
+export { type ApercuExercice, apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
   brouillonValide,
@@ -61,6 +62,7 @@ export {
   type RecordExercice,
   recordsDe,
   type SeanceDetail,
+  type SeanceFil,
   type SeanceResume,
   type SerieHisto,
   type SerieLue,
