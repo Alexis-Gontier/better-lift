@@ -1,4 +1,4 @@
-import { cleJour, niveauxCalendrier, type StatsPeriode } from "@better-lift/shared";
+import { cleJour, niveauxCalendrier, type StatsPeriode, semainesTenues } from "@better-lift/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -23,6 +23,14 @@ const CASE_MAX = 30;
 const ECART = 3;
 const LARGEUR_LETTRES = 14;
 
+/** « Objectif tenu 3 / 4 semaines », sinon la moyenne par semaine. */
+function enTete(stats: StatsPeriode, objectif: number | null, moyenne: number): string {
+  if (!objectif) return `${MOYENNE.format(moyenne)} séance / semaine`;
+  const { tenues, sur } = semainesTenues(stats.volumes, objectif);
+  if (sur === 0) return `Objectif : ${objectif} / semaine`;
+  return `Objectif tenu ${tenues} / ${sur} semaine${sur > 1 ? "s" : ""}`;
+}
+
 const versCle = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 /**
@@ -30,7 +38,14 @@ const versCle = (ms: number) => new Date(ms).toISOString().slice(0, 10);
  * jour, l'intensité selon le volume du jour (quartiles de la période), aujourd'hui
  * cerclé. Toucher un jour ouvre sa séance. La semaine seule se lit en ligne.
  */
-export function Calendrier({ stats }: { stats: StatsPeriode }) {
+export function Calendrier({
+  stats,
+  objectif,
+}: {
+  stats: StatsPeriode;
+  /** L'objectif hebdomadaire du compte (D128) : l'en-tête dit les semaines tenues. */
+  objectif: number | null;
+}) {
   const styles = useStyles();
   const couleurs = useCouleurs();
   const router = useRouter();
@@ -80,7 +95,7 @@ export function Calendrier({ stats }: { stats: StatsPeriode }) {
     <View style={styles.bloc}>
       <View style={styles.tete}>
         <Section titre="Régularité" />
-        <Text style={styles.moyenne}>{MOYENNE.format(moyenne)} séance / semaine</Text>
+        <Text style={styles.moyenne}>{enTete(stats, objectif, moyenne)}</Text>
       </View>
 
       {stats.nbSemaines === 1 ? (

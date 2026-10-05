@@ -1,4 +1,4 @@
-import type { ExerciceResume, Periode, RoutineSaisie } from "@better-lift/shared";
+import type { ExerciceResume, Periode, Preferences, RoutineSaisie } from "@better-lift/shared";
 import {
   infiniteQueryOptions,
   keepPreviousData,
@@ -301,4 +301,49 @@ export function optionsHistoriqueExercice(slug: string) {
       return (await res.json()).seances;
     },
   });
+}
+
+/** Les préférences du compte (D129), gardées hors ligne : la séance lit le repos par défaut. */
+export function optionsPreferences() {
+  return queryOptions({
+    queryKey: ["preferences"],
+    queryFn: async () => {
+      const res = await api.preferences.$get();
+      if (!res.ok) throw new Error("Les préférences n'ont pas pu être chargées.");
+      return res.json();
+    },
+  });
+}
+
+export function useEcrirePreferences() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: Preferences) => {
+      const res = await joindre(() => api.preferences.$put({ json: p }));
+      if (!res.ok) return echec(res, "Les préférences n'ont pas pu être enregistrées.");
+      return res.json();
+    },
+    // Affichées tout de suite : un réglage qui attend le réseau paraît ignoré.
+    onMutate: (p) => client.setQueryData(optionsPreferences().queryKey, p),
+    onSettled: () => client.invalidateQueries({ queryKey: ["preferences"] }),
+  });
+}
+
+/** Le bilan de toujours, pour l'en-tête du Profil (D128). */
+export function optionsBilan() {
+  return queryOptions({
+    queryKey: ["stats", "bilan"],
+    queryFn: async () => {
+      const res = await api.stats.bilan.$get();
+      if (!res.ok) throw new Error("Le bilan n'a pas pu se calculer.");
+      return res.json();
+    },
+  });
+}
+
+/** Toutes les séries en CSV (D128), le texte du fichier. */
+export async function chargerExport(): Promise<string> {
+  const res = await api.export["seances.csv"].$get();
+  if (!res.ok) throw new Error("L'export n'a pas pu être préparé.");
+  return res.text();
 }

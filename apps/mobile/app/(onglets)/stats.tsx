@@ -19,7 +19,7 @@ import { Section } from "../../components/ui/section";
 import { Segments } from "../../components/ui/segments";
 import { Tuile } from "../../components/ui/tuile";
 import { FUSEAU } from "../../lib/fuseau";
-import { optionsStatsPeriode } from "../../lib/requetes";
+import { optionsPreferences, optionsStatsPeriode } from "../../lib/requetes";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
@@ -56,6 +56,7 @@ export default function Stats() {
   const couleurs = useCouleurs();
   const [periode, setPeriode] = useState<Periode>("mois");
   const stats = useQuery(optionsStatsPeriode(periode));
+  const objectif = useQuery(optionsPreferences()).data?.objectifHebdo ?? null;
 
   const etat =
     stats.isPending && stats.fetchStatus === "paused" ? (
@@ -94,7 +95,7 @@ export default function Stats() {
           >
             <Chiffres totaux={stats.data.totaux} precedents={stats.data.precedents} />
             <View style={styles.carte}>
-              <Calendrier stats={stats.data} />
+              <Calendrier stats={stats.data} objectif={objectif} />
             </View>
             <Muscles stats={stats.data} />
             <Volume stats={stats.data} />

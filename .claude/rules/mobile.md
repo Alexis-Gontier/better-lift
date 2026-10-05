@@ -64,6 +64,10 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   (`encreAttenuee` comprise). Un nouveau token se mesure avant d'entrer.
 - **Fond des images d'exercice** : rôle `fondImage`, blanc dans les deux registres (les médias du
   catalogue sont détourés sur blanc).
+- **Thème choisi (D128)** : Système · Sombre · Clair, gardé sur le téléphone
+  (`lib/theme-choix.ts`, clé `better-lift:theme`) et appliqué par `Appearance.setColorScheme`,
+  que `useColorScheme` — donc `useCouleurs` — suit partout. Lu dès le chargement de
+  `app/_layout.tsx`, avant le premier écran.
 - **Taille du texte du système** : suivie partout, sauf dans les éléments de hauteur fixe de la
   séance (lignes de série, en-têtes de colonnes, pavé, bandeau de repos), plafonnés par
   `maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}` (1,3). Un nouvel élément de hauteur fixe le
@@ -211,6 +215,17 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   l'exercice (`precedentes`, rendues par `GET /seances/:id` ; `ecartSerie` de `shared`).
   « ⋯ » : refaire la routine d'origine, supprimer (`DELETE`, confirmé ; retire le détail du cache
   et invalide fil, stats, records). Non gardé hors ligne (D96), il dit « Hors ligne ».
+
+## Profil (D128, D129)
+
+- En-tête : le bilan de toujours (`GET /stats/bilan`). Entraînement : objectif hebdomadaire et
+  repos par défaut, **sur le compte** (`GET` / `PUT /preferences`, écrits de façon optimiste,
+  gardés hors ligne). Le repos par défaut entre dans `validerSerie` pour l'exercice sans repos
+  propre ; l'objectif donne « Objectif tenu x / y semaines » au calendrier (`semainesTenues`).
+- Réglages du téléphone : thème, vibrations. Export : `GET /export/seances.csv` (`versCsv`),
+  écrit dans le cache (`expo-file-system`, `File` / `Paths`) puis `expo-sharing`.
+- Une ligne qui ouvre un choix est appuyable en entier, chevron au bout ; le choix se fait dans
+  une feuille (`useFeuille`, option `choisie`).
 
 ## Stats (D125–D127)
 
