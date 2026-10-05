@@ -1,3 +1,4 @@
+import { REPS_MAX_1RM } from "./records.js";
 import type { TypeSerie } from "./routines.js";
 import { estimate1RM } from "./training.js";
 
@@ -25,7 +26,8 @@ export function ecartSerie(serie: Valeurs, precedente: Valeurs | undefined): Eca
 
 /**
  * La courbe d'un exercice (D124) : le meilleur 1RM estimé de chaque séance, des
- * séries faites hors échauffement et avec une charge. Ordre chronologique ; une
+ * séries faites hors échauffement, avec une charge et au plus 12 répétitions
+ * (au-delà, Epley n'a plus de sens, comme pour le record). Ordre chronologique ; une
  * séance sans telle série n'a pas de point.
  */
 export function courbeUnRm(
@@ -44,6 +46,7 @@ export function courbeUnRm(
     let max = 0;
     for (const x of s.series) {
       if (!x.faite || x.type === "ECHAUFFEMENT" || x.chargeKg === null || !x.reps) continue;
+      if (x.reps > REPS_MAX_1RM) continue;
       max = Math.max(max, estimate1RM(x.chargeKg, x.reps));
     }
     if (max > 0) points.push({ date: s.debut, valeur: max });

@@ -39,7 +39,7 @@ describe("courbeUnRm (D124)", () => {
     ]);
   });
 
-  it("omet l'échauffement, les séries non faites et le poids du corps", () => {
+  it("omet l'échauffement, les séries non faites, le poids du corps et plus de 12 reps", () => {
     const c = courbeUnRm([
       {
         debut: "2026-10-03T17:00:00.000Z",
@@ -47,6 +47,7 @@ describe("courbeUnRm (D124)", () => {
           { type: "ECHAUFFEMENT", chargeKg: 100, reps: 5, faite: true },
           serie(120, 5, false),
           serie(null, 12),
+          serie(82.5, 56),
         ],
       },
     ]);

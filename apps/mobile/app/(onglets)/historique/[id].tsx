@@ -1,5 +1,7 @@
 import {
   ABREGE_TYPE_SERIE,
+  type Ecart,
+  ecartSerie,
   formaterCharge,
   formatJour,
   LIBELLE_RECORD,
@@ -7,15 +9,19 @@ import {
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, Ellipsis, RotateCcw, Trash2 } from "lucide-react-native";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Appuyable } from "../../../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
+import { Vignette } from "../../../components/ui/vignette";
+import { useConfirmer, useFeuille } from "../../../lib/confirmation";
+import { useDemarrer } from "../../../lib/demarrer";
 import { FUSEAU } from "../../../lib/fuseau";
-import { optionsSeance } from "../../../lib/requetes";
+import { optionsSeance, useSupprimerSeance } from "../../../lib/requetes";
+import { useSeance } from "../../../lib/seance";
 import { dureeMin } from "../../../lib/temps";
 import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
@@ -26,11 +32,22 @@ function etiquettes(series: readonly { type: TypeSerie }[]): string[] {
   return series.map((s) => (s.type === "NORMALE" ? String(++n) : ABREGE_TYPE_SERIE[s.type]));
 }
 
+/** « +2,5 kg », « −1 rep », « = » : ce qui a changé depuis la fois précédente (D123). */
+function texteEcart(e: Ecart): string {
+  if (e.genre === "egal") return "=";
+  const signe = (n: number) => (n > 0 ? "+" : "−");
+  if (e.genre === "charge") {
+    return `${signe(e.deltaKg)}${formaterCharge(Math.abs(e.deltaKg), SYSTEME_UNITES)}`;
+  }
+  return `${signe(e.delta)}${Math.abs(e.delta)} rep${Math.abs(e.delta) > 1 ? "s" : ""}`;
+}
+
 /**
  * Une séance passée, comme une page du carnet : chaque exercice, ses séries
  * dans l'ordre, et le badge des records qu'elles ont battus à ce moment-là
- * (D64). L'historique n'est pas gardé sur le téléphone (D96) : hors ligne, la
- * page attend le réseau.
+ * (D64), et l'écart de chacune avec la même série de la fois précédente (D123).
+ * « ⋯ » : refaire la routine, supprimer la séance. L'historique n'est pas gardé
+ * sur le téléphone (D96) : hors ligne, la page attend le réseau.
  */
 export default function DetailSeance() {
   const styles = useStyles();
@@ -38,6 +55,11 @@ export default function DetailSeance() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const seance = useQuery(optionsSeance(id));
+  const feuille = useFeuille();
+  const confirmer = useConfirmer();
+  const supprimer = useSupprimerSeance();
+  const { routine: refaire } = useDemarrer();
+  const { seance: enCours } = useSeance();
 
   if (!seance.data) {
     return (
@@ -59,9 +81,50 @@ export default function DetailSeance() {
 
   const s = seance.data;
   const libelles = s.exercices.map((ex) => etiquettes(ex.series));
+  const menu = () =>
+    feuille({
+      titre: s.nom,
+      options: [
+        // Refaire relance la routine d'origine ; pas pendant une séance (§ 8).
+        ...(s.routineId && !enCours
+          ? [
+              {
+                libelle: "Refaire cette routine",
+                icone: RotateCcw,
+                onPress: () => void refaire(s.routineId as string),
+              },
+            ]
+          : []),
+        {
+          libelle: "Supprimer la séance",
+          icone: Trash2,
+          danger: true,
+          onPress: () =>
+            confirmer({
+              titre: "Supprimer la séance ?",
+              message: "Elle disparaîtra de l'historique, des stats et des records.",
+              action: "Supprimer la séance",
+              icone: Trash2,
+              onConfirmer: () => supprimer.mutate(s.id, { onSuccess: () => router.back() }),
+            }),
+        },
+      ],
+    });
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <EnteteRetour titre="" />
+      <EnteteRetour
+        titre=""
+        action={
+          <Appuyable
+            onPress={menu}
+            style={styles.menu}
+            accessibilityRole="button"
+            accessibilityLabel="Options de la séance"
+          >
+            <Ellipsis size={22} color={couleurs.encreSecondaire} />
+          </Appuyable>
+        }
+      />
       <ScrollView contentContainerStyle={styles.contenu}>
         <View style={styles.tete}>
           <Text style={styles.nom}>{s.nom}</Text>
@@ -85,6 +148,7 @@ export default function DetailSeance() {
               accessibilityRole="link"
               accessibilityHint="Ouvre la fiche de l'exercice"
             >
+              <Vignette image={ex.image} taille={40} />
               <Text style={styles.nomExercice} numberOfLines={2}>
                 {ex.nom}
               </Text>
@@ -104,6 +168,7 @@ export default function DetailSeance() {
                 {serie.records.length > 0 ? (
                   <BadgeRecord libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")} />
                 ) : null}
+                <Ecarte ecart={ecartSerie(serie, ex.precedentes[i])} />
               </View>
             ))}
           </View>
@@ -111,6 +176,11 @@ export default function DetailSeance() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function Ecarte({ ecart }: { ecart: Ecart | null }) {
+  const styles = useStyles();
+  return ecart ? <Text style={styles.ecart}>{texteEcart(ecart)}</Text> : null;
 }
 
 function Chiffre({ valeur, libelle }: { valeur: string; libelle: string }) {
@@ -163,6 +233,14 @@ const useStyles = creerStyles((couleurs) => ({
     borderBottomColor: couleurs.ligne,
   },
   nonFaite: { opacity: 0.45 },
+  ecart: {
+    minWidth: 56,
+    color: couleurs.encreTertiaire,
+    fontSize: taille.petit,
+    fontVariant: ["tabular-nums"],
+    textAlign: "right",
+  },
+  menu: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
   numero: {
     width: 20,
     color: couleurs.encreAttenuee,

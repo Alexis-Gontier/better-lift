@@ -42,7 +42,7 @@ type Candidat = Omit<RecordExercice, "date">;
  * Au-delà, Epley n'a plus de sens : 56 × 82,5 kg donnerait un 1RM de 236,5 kg.
  * Une telle série compte pour la charge et le volume, pas pour le 1RM.
  */
-const REPS_MAX_1RM = 12;
+export const REPS_MAX_1RM = 12;
 
 function compte(s: SerieHisto): s is SerieHisto & { reps: number } {
   return s.faite && s.type !== "ECHAUFFEMENT" && s.reps !== null && s.reps > 0;
