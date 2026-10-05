@@ -28,6 +28,7 @@ export default function Connexion() {
   const [visible, setVisible] = useState(false);
   const [refus, setRefus] = useState<GenreRefus | null>(null);
   const [enCours, setEnCours] = useState(false);
+  const { refetch: relireSession } = authClient.useSession();
 
   async function seConnecter() {
     setEnCours(true);
@@ -38,6 +39,9 @@ export default function Connexion() {
         setRefus("identifiants");
         return;
       }
+      // La session se relit AVANT de quitter l'écran : sinon la garde des
+      // onglets la lit encore absente et renvoie ici, sur un formulaire vide.
+      await relireSession();
       router.replace("/");
     } catch {
       setRefus("reseau");

@@ -176,6 +176,8 @@ Conception : [`2026-10-03-mobile-epreuve-design.md`](../../docs/superpowers/spec
 
 ## Pièges
 
+- **Après `signIn`, relire la session avant de naviguer** (`await refetch()` de `useSession`) :
+  sinon la garde des onglets la lit encore absente et renvoie à une connexion vide.
 - **Cookie de session** : `authClient.getCookie()` est ASYNCHRONE. Sans `await` dans l'en-tête,
   chaque requête part sans session.
 - **Metro et les paquets du dépôt** : `packages/*` s'importe en `./x.js`, ce que Metro ne résout
