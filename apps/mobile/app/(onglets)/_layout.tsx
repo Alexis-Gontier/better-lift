@@ -11,6 +11,7 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { type ColorValue, type PressableProps, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BandeauSeance } from "../../components/bandeau-seance";
 import { FeuilleDemarrer } from "../../components/feuille-demarrer";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
@@ -48,6 +49,7 @@ export default function Onglets() {
     void authClient.getCookie().then((c) => setCookieGarde(Boolean(c)));
   }, []);
   const router = useRouter();
+  const { bottom } = useSafeAreaInsets();
   const { seance } = useSeance();
   // Le bouton central : reprendre la séance en cours, sinon choisir comment démarrer.
   const [demarrer, setDemarrer] = useState(false);
@@ -87,11 +89,12 @@ export default function Onglets() {
           // le lime ne tient pas sur la barre blanche : `ongletActif` passe à l'olive.
           tabBarActiveTintColor: couleurs.ongletActif,
           tabBarInactiveTintColor: couleurs.encreAttenuee,
-          // Toute la largeur du bas, jusque sous la zone de geste : une marche
-          // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
-          // Router y ajoute la marge de la zone de geste d'Android, qu'une hauteur
-          // imposée recouvrirait.
+          // Toute la largeur du bas, jusque sous les boutons du système : une marche
+          // au-dessus du canevas, séparée par un filet. Expo Router fixe la hauteur
+          // à 49 + la marge du bas : sans l'ajouter ici, le `paddingTop` serait pris
+          // sur les 49 et les libellés glisseraient sous les boutons d'Android.
           tabBarStyle: {
+            height: 49 + 8 + bottom,
             backgroundColor: couleurs.surface1,
             borderTopWidth: 1,
             borderTopColor: couleurs.ligne,
@@ -150,9 +153,8 @@ export default function Onglets() {
 }
 
 const useStyles = creerStyles((couleurs) => ({
-  // Le libellé central s'aligne sur ceux des onglets : la barre réserve sous
-  // chaque libellé une marge que ce bouton personnalisé ne reçoit pas.
-  place: { flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: -8 },
+  // Posé en bas de la place, le libellé central s'aligne sur ceux des onglets.
+  place: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
   central: {
     width: 60,
     height: 60,

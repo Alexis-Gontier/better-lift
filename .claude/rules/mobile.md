@@ -110,7 +110,8 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   `(onglets)` est déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 - Le `_layout` de `app/(onglets)/` porte la garde de session. `seance` et `fin` restent hors des
   onglets, en plein écran.
-- Pas de hauteur fixe sur la barre d'onglets : elle recouvrirait la zone de geste d'Android.
+- Hauteur de la barre d'onglets : `49 + 8 + bottom` (`useSafeAreaInsets`). Expo Router la fixe à
+  49 + la marge du bas ; un `paddingTop` non compté pousse les libellés sous les boutons d'Android.
 
 ## Routines (D82–D85)
 
