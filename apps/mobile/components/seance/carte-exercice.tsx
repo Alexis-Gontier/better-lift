@@ -365,9 +365,16 @@ const useStyles = creerStyles((couleurs) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  media: { alignItems: "center", gap: espace.xs },
-  gif: { width: 220, height: 220, borderRadius: 12, backgroundColor: couleurs.fondImage },
-  attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
+  media: { gap: espace.xs },
+  // Agrandi, le GIF prend toute la largeur du bloc : en salle, on le regarde de
+  // loin. Carré, comme les GIF du catalogue — sans marge blanche ni déformation.
+  gif: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: rayon.carte,
+    backgroundColor: couleurs.fondImage,
+  },
+  attribution: { color: couleurs.encreAttenuee, fontSize: 11, textAlign: "center" },
   puces: { flexDirection: "row", gap: espace.s, flexWrap: "wrap" },
   puce: {
     minHeight: 32,
