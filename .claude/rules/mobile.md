@@ -197,14 +197,20 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 
 ## Fiche d'exercice et détail d'une séance
 
-- **Fiche** : records d'abord, puis carte du corps et exécution. Hors ligne, elle s'appuie sur la
+- **Fiche (D124)**, une page qui défile : animation, nom, **1RM estimé** et sa courbe
+  (`courbeUnRm` de `shared` sur `GET /exercices/:slug/historique`, séries de 12 reps au plus
+  comme le record ; `react-native-svg`, dernier point aux couleurs du record s'il est le plus haut),
+  records, historique (chaque séance ouvre son détail), puis carte du corps et exécution. Hors ligne, elle s'appuie sur la
   ligne du catalogue complet (lue par `getQueryData`, jamais chargée par la fiche) et sur les
   records en cache, et dit ce qui manque.
 - **`expo-image` dans un écran réutilisé** (même route, autre paramètre) : `recyclingKey={source}`,
   sinon l'image du précédent reste affichée tant que la nouvelle ne charge pas — hors ligne, pour
   toujours. Un `onError` rabat sur l'haltère.
-- **Détail d'une séance** : étiquettes de séries comme en séance (D92) ; non gardé hors ligne
-  (D96), il dit « Hors ligne ».
+- **Détail d'une séance (D123)** : étiquettes de séries comme en séance (D92), vignettes, et
+  l'écart de chaque série avec la même position de la dernière occurrence antérieure de
+  l'exercice (`precedentes`, rendues par `GET /seances/:id` ; `ecartSerie` de `shared`).
+  « ⋯ » : refaire la routine d'origine, supprimer (`DELETE`, confirmé ; retire le détail du cache
+  et invalide fil, stats, records). Non gardé hors ligne (D96), il dit « Hors ligne ».
 
 ## Stats (D112)
 

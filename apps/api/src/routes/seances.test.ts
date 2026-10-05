@@ -71,6 +71,11 @@ function fauxDepot() {
       ecritures++;
       return "creee";
     },
+    async supprimer(userId, id) {
+      if (seances.get(id) !== userId) return false;
+      seances.delete(id);
+      return true;
+    },
   };
   return { depot, ecritures: () => ecritures };
 }
@@ -120,6 +125,9 @@ const fauxLecture: DepotLectureSeances = {
   async records() {
     return [];
   },
+  async historiqueExercice() {
+    return null;
+  },
 };
 
 const lireSession: LireSession = async (h) => {
@@ -138,7 +146,12 @@ function monter() {
     });
   const lire = (chemin: string, user: string | null = "alice") =>
     app.request(chemin, { headers: user ? { "x-test-user": user } : {} });
-  return { poster, lire, ecritures: f.ecritures };
+  const supprimer = (id: string, user: string | null = "alice") =>
+    app.request(`/seances/${id}`, {
+      method: "DELETE",
+      headers: user ? { "x-test-user": user } : {},
+    });
+  return { poster, lire, supprimer, ecritures: f.ecritures };
 }
 
 describe("POST /seances", () => {
@@ -208,5 +221,25 @@ describe("la lecture des séances", () => {
 
   it("refuse une liste de slugs vide", async () => {
     expect((await monter().lire("/seances/precedentes?slugs=,")).status).toBe(400);
+  });
+});
+
+describe("DELETE /seances/:id (D123)", () => {
+  it("rend 401 sans session", async () => {
+    expect((await monter().supprimer("s-1", null)).status).toBe(401);
+  });
+
+  it("supprime la séance de l'utilisateur (204), puis la dit introuvable", async () => {
+    const { poster, supprimer } = monter();
+    await poster(saisie);
+    expect((await supprimer("s-1")).status).toBe(204);
+    expect((await supprimer("s-1")).status).toBe(404);
+  });
+
+  it("rend 404 sur la séance d'un autre, sans la supprimer", async () => {
+    const { poster, supprimer } = monter();
+    await poster(saisie, "alice");
+    expect((await supprimer("s-1", "bob")).status).toBe(404);
+    expect((await supprimer("s-1", "alice")).status).toBe(204);
   });
 });

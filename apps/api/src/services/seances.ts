@@ -1,6 +1,7 @@
 import { prisma } from "@better-lift/db";
 import {
   apercuExercices,
+  type HistoriqueExercice,
   marquerRecords,
   type RecordExercice,
   recordsDe,
@@ -72,6 +73,8 @@ export type DepotSeances = {
    * rien n'est réécrit. `conflit` : il appartient à un autre. Lève `SlugInconnu`.
    */
   enregistrer(userId: string, saisie: SeanceSaisie): Promise<IssueEnregistrement>;
+  /** Supprime la séance ; `false` si elle n'existe pas ou n'est pas à lui (D123). */
+  supprimer(userId: string, id: string): Promise<boolean>;
 };
 
 async function proprietaire(id: string): Promise<string | null> {
@@ -80,6 +83,12 @@ async function proprietaire(id: string): Promise<string | null> {
 }
 
 export const depotPrisma: DepotSeances = {
+  async supprimer(userId, id) {
+    // Filtré par l'utilisateur : la séance d'autrui est introuvable, jamais supprimée.
+    const { count } = await prisma.seance.deleteMany({ where: { id, userId } });
+    return count > 0;
+  },
+
   async enregistrer(userId, saisie) {
     const deja = await proprietaire(saisie.id);
     if (deja) return deja === userId ? "existante" : "conflit";
@@ -219,7 +228,9 @@ export function versDetail(
     exercices: l.exercices.map((e) => ({
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
+      image: imageDe(e.exercise.gifUrl),
       note: e.note,
+      precedentes: derniereOccurrence(anterieur.get(e.exerciseId)),
       series: e.series.map((s) => {
         const i = curseur.get(e.exerciseId) ?? 0;
         curseur.set(e.exerciseId, i + 1);
@@ -233,6 +244,18 @@ export function versDetail(
       }),
     })),
   };
+}
+
+/**
+ * Les séries de la dernière occurrence d'un exercice dans un historique
+ * chronologique : toutes celles de la date la plus récente, dans l'ordre (D123).
+ */
+function derniereOccurrence(
+  h: readonly (SerieHisto & { date: string })[] | undefined,
+): { reps: number | null; chargeKg: number | null }[] {
+  const date = h?.at(-1)?.date;
+  if (!h || !date) return [];
+  return h.filter((s) => s.date === date).map((s) => ({ reps: s.reps, chargeKg: s.chargeKg }));
 }
 
 /** Ce que le fil de l'Accueil montre d'une séance, au-delà de son résumé (D119). */
@@ -267,6 +290,8 @@ export type DepotLectureSeances = {
     taille: number,
   ): Promise<{ seances: SeanceFil[]; total: number }>;
   lire(userId: string, id: string): Promise<SeanceDetail | null>;
+  /** Les séances où figure l'exercice, la plus récente d'abord ; `null` s'il n'existe pas (D124). */
+  historiqueExercice(userId: string, slug: string): Promise<HistoriqueExercice | null>;
   /**
    * Par slug, TOUTES les séries de la dernière séance qui contenait l'exercice,
    * avec leur état : le mobile les aligne position par position, comme Hevy.
@@ -394,6 +419,28 @@ export const depotLecture: DepotLectureSeances = {
       }),
     );
     return Object.fromEntries(paires);
+  },
+
+  async historiqueExercice(userId, slug) {
+    const exercice = await prisma.exercise.findUnique({ where: { slug }, select: { id: true } });
+    if (!exercice) return null;
+    const lignes = await prisma.seanceExercice.findMany({
+      where: { exerciseId: exercice.id, seance: { userId } },
+      orderBy: [{ seance: { debut: "desc" } }, { position: "asc" }],
+      select: {
+        seance: { select: { id: true, nom: true, debut: true } },
+        series: {
+          orderBy: { position: "asc" },
+          select: { type: true, reps: true, chargeKg: true, faite: true },
+        },
+      },
+    });
+    return lignes.map((l) => ({
+      id: l.seance.id,
+      nom: l.seance.nom,
+      debut: l.seance.debut.toISOString(),
+      series: l.series.map((s) => ({ ...s, chargeKg: enNombre(s.chargeKg) })),
+    }));
   },
 
   async records(userId, slug) {

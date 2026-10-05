@@ -113,6 +113,34 @@ describe("versDetail", () => {
     expect(versDetail({ ...ligne, note: "Bonne séance." }, new Map()).note).toBe("Bonne séance.");
     expect(versDetail(ligne, new Map()).note).toBeNull();
   });
+  it("rend la dernière occurrence antérieure de chaque exercice, toutes ses séries (D123)", () => {
+    const h = (date: string, reps: number) => ({
+      type: "NORMALE" as const,
+      reps,
+      chargeKg: 95,
+      faite: false,
+      date,
+    });
+    const d = versDetail(
+      ligne,
+      new Map([
+        [
+          "bench",
+          [
+            h("2026-09-17T18:00:00.000Z", 3),
+            h("2026-09-20T18:00:00.000Z", 5),
+            h("2026-09-20T18:00:00.000Z", 4),
+          ],
+        ],
+      ]),
+    );
+    expect(d.exercices[0]?.precedentes).toEqual([
+      { reps: 5, chargeKg: 95 },
+      { reps: 4, chargeKg: 95 },
+    ]);
+    expect(d.exercices[1]?.precedentes).toEqual([]);
+    expect(d.exercices[0]?.image).toBeNull();
+  });
 });
 
 describe("anterieurA", () => {

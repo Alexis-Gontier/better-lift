@@ -14,17 +14,25 @@ import { Dumbbell } from "lucide-react-native";
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HistoriqueSeances } from "../../../components/exercices/historique-exercice";
+import { Progression } from "../../../components/exercices/progression";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
 import { FUSEAU } from "../../../lib/fuseau";
-import { optionsCatalogueComplet, optionsExercice, optionsRecords } from "../../../lib/requetes";
+import {
+  optionsCatalogueComplet,
+  optionsExercice,
+  optionsHistoriqueExercice,
+  optionsRecords,
+} from "../../../lib/requetes";
 import { creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 /**
- * La fiche d'un exercice : ses records d'abord (D95), puis ce qu'il travaille
+ * La fiche d'un exercice, une page qui défile (D124) : l'animation, le 1RM
+ * estimé et sa courbe, les records (D95), l'historique, puis ce qu'il travaille
  * et comment le faire. Hors ligne, la ligne du catalogue (D97) et les records
  * (D111), tous deux gardés sur le téléphone, suffisent à l'essentiel.
  */
@@ -34,6 +42,7 @@ export default function FicheExercice() {
   const client = useQueryClient();
   const exercice = useQuery(optionsExercice(slug));
   const records = useQuery(optionsRecords(slug));
+  const historique = useQuery(optionsHistoriqueExercice(slug));
   // Lu dans le cache seulement : la fiche ne déclenche jamais le chargement du catalogue entier.
   const resume = client
     .getQueryData<ExerciceResume[]>(optionsCatalogueComplet().queryKey)
@@ -67,6 +76,8 @@ export default function FicheExercice() {
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <EnteteRetour titre="" />
       <ScrollView contentContainerStyle={styles.contenu}>
+        <Media gif={ex?.gif ?? null} image={resume?.image ?? null} nom={nom} />
+
         <View style={styles.tete}>
           <Text style={styles.nom}>{nom}</Text>
           <Text style={styles.sous}>
@@ -76,7 +87,7 @@ export default function FicheExercice() {
           </Text>
         </View>
 
-        <Media gif={ex?.gif ?? null} image={resume?.image ?? null} nom={nom} />
+        {historique.data ? <Progression seances={historique.data} /> : null}
 
         <View>
           <Text style={styles.section} accessibilityRole="header">
@@ -84,6 +95,9 @@ export default function FicheExercice() {
           </Text>
           <Records etat={records} />
         </View>
+
+        {/* L'historique n'est pas gardé hors ligne (D96) : il revient avec le réseau. */}
+        {historique.data ? <HistoriqueSeances seances={historique.data} /> : null}
 
         {ex ? (
           <>

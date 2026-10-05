@@ -270,3 +270,35 @@ export function useSupprimerRoutine() {
     },
   });
 }
+
+export function useSupprimerSeance() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await joindre(() => api.seances[":id"].$delete({ param: { id } }));
+      if (!res.ok) return echec(res, "La séance n'a pas pu être supprimée.");
+    },
+    // Le détail se RETIRE du cache (comme une routine supprimée) ; le fil, les
+    // stats et les records en dépendaient (D123).
+    onSuccess: (_, id) => {
+      client.removeQueries({ queryKey: ["seances", "detail", id] });
+      return Promise.all(
+        [["seances", "liste"], ["stats"], ["records"]].map((queryKey) =>
+          client.invalidateQueries({ queryKey }),
+        ),
+      );
+    },
+  });
+}
+
+/** Les séances d'un exercice, pour sa fiche (D124). */
+export function optionsHistoriqueExercice(slug: string) {
+  return queryOptions({
+    queryKey: ["seances", "exercice", slug],
+    queryFn: async () => {
+      const res = await api.exercices[":slug"].historique.$get({ param: { slug } });
+      if (!res.ok) throw new Error("L'historique de l'exercice n'a pas pu être chargé.");
+      return (await res.json()).seances;
+    },
+  });
+}
