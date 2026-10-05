@@ -10,6 +10,7 @@ const ligne: LigneSeance = {
   routineId: "r-push",
   debut: new Date("2026-09-24T18:00:00.000Z"),
   fin: new Date("2026-09-24T19:00:00.000Z"),
+  note: null,
   exercices: [
     {
       exerciseId: "bench",
@@ -107,6 +108,10 @@ describe("versDetail", () => {
     expect(detail.exercices[0]?.series[1]?.records).toEqual(["CHARGE", "UN_RM", "VOLUME"]);
     expect(detail.exercices[1]?.series[0]?.records).toEqual(["REPS"]);
     expect(detail.nbRecords).toBe(3);
+  });
+  it("rend la note de la séance (D130), null sans note", () => {
+    expect(versDetail({ ...ligne, note: "Bonne séance." }, new Map()).note).toBe("Bonne séance.");
+    expect(versDetail(ligne, new Map()).note).toBeNull();
   });
 });
 

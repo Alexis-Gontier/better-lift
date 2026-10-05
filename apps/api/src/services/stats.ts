@@ -77,6 +77,8 @@ export const depotStats: DepotStats = {
           routineId: true,
           debut: true,
           fin: true,
+          // Lue pour la forme `LigneSeance`, sans usage ici.
+          note: true,
           exercices: {
             select: {
               exerciseId: true,
