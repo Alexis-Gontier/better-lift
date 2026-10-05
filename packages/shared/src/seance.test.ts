@@ -280,6 +280,12 @@ describe("versEnvoi et seanceSaisie", () => {
     expect(seanceSaisie.parse(envoi())).not.toHaveProperty("note");
   });
 
+  it("envoie la note de séance rognée, et pas une note vide (D130)", () => {
+    const base = validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, T0);
+    expect(versEnvoi({ ...base, note: "  Bonne séance. " }, fin).note).toBe("Bonne séance.");
+    expect(versEnvoi({ ...base, note: "   " }, fin)).not.toHaveProperty("note");
+  });
+
   it("refuse une note de plus de 1000 caractères", () => {
     expect(() => seanceSaisie.parse({ ...envoi(), note: "x".repeat(1001) })).toThrow();
   });

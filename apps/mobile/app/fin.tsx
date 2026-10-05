@@ -9,29 +9,31 @@ import {
 } from "@better-lift/shared";
 import { onlineManager, useInfiniteQuery, useQueries } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { CircleDashed, CloudOff } from "lucide-react-native";
+import { ArrowUp, CircleDashed, CloudOff } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Appuyable } from "../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../components/ui/badge-record";
 import { FUSEAU } from "../lib/fuseau";
 import { optionsRecords, optionsSeances } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
-import { formaterDuree } from "../lib/temps";
+import { dureeMin, formaterDuree } from "../lib/temps";
 import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 import { vibrer } from "../lib/vibrations";
 
 /**
- * La fin de séance (D111) : le bilan, les records battus, puis l'enregistrement.
- * Une séance sans série validée ne s'enregistre pas — elle se reprend.
+ * La fin de séance, la récompense d'abord (D130) : les records battus (sinon la
+ * régularité), le bilan comparé à la dernière séance de la même routine, une
+ * note, puis l'enregistrement. Une séance sans série validée ne s'enregistre
+ * pas — elle se reprend.
  */
 export default function Fin() {
   const styles = useStyles();
   const couleurs = useCouleurs();
   const router = useRouter();
-  const { seance, terminer } = useSeance();
+  const { seance, terminer, modifier } = useSeance();
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
   const [fin] = useState(() => new Date());
   // Un second appui pendant l'enregistrement mettrait la séance deux fois en file.
@@ -87,6 +89,12 @@ export default function Fin() {
       ).seances
     : null;
   const horsLigne = !onlineManager.isOnline();
+  // La dernière séance de la même routine, dans le fil déjà chargé (D130) ; une
+  // séance vide n'a rien à quoi se comparer.
+  const precedente = seance.routineId
+    ? historique.data?.pages.flatMap((p) => p.seances).find((x) => x.routineId === seance.routineId)
+    : undefined;
+  const minutes = Math.round(secondesEcoulees(seance.debut, fin) / 60);
 
   const enregistrer = async () => {
     if (enregistrement) return;
@@ -108,20 +116,18 @@ export default function Fin() {
           {seance.nom} · {formatJour(seance.debut, FUSEAU)}
         </Text>
 
-        <View style={styles.chiffres}>
-          <Chiffre valeur={formaterDuree(secondesEcoulees(seance.debut, fin))} libelle="Durée" />
-          <Chiffre valeur={String(seriesFaites)} libelle="Séries" />
-          <Chiffre valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} libelle="Volume" />
-        </View>
-        {echauffementFait ? (
-          <Text style={styles.note}>L'échauffement ne compte pas dans le volume.</Text>
-        ) : null}
-
         {chargement ? null : battus.length > 0 ? (
           <View>
-            <Text style={styles.section} accessibilityRole="header">
-              {battus.length === 1 ? "1 record battu" : `${battus.length} records battus`}
-            </Text>
+            {/* La récompense d'abord (D130) : le moment où l'app peut dire « tu progresses ». */}
+            <View style={styles.vedette}>
+              <View style={styles.medaille}>
+                <ArrowUp size={22} strokeWidth={2.6} color={couleurs.recordEncre} />
+                <Text style={styles.medailleTexte}>{battus.length}</Text>
+              </View>
+              <Text style={styles.vedetteTitre} accessibilityRole="header">
+                {battus.length === 1 ? "1 record battu" : `${battus.length} records battus`}
+              </Text>
+            </View>
             {battus.map((b, i) => (
               <View key={`${b.slug}-${i}`} style={styles.record}>
                 <View style={styles.recordGauche}>
@@ -147,6 +153,47 @@ export default function Fin() {
             Les records des autres exercices se calculeront à l'envoi, dans l'historique.
           </Text>
         ) : null}
+
+        <View style={styles.chiffres}>
+          <Chiffre
+            valeur={formaterDuree(secondesEcoulees(seance.debut, fin))}
+            libelle="Durée"
+            ecart={precedente ? ecart(minutes - dureeMin(precedente), (n) => `${n} min`) : null}
+          />
+          <Chiffre
+            valeur={String(seriesFaites)}
+            libelle="Séries"
+            ecart={precedente ? ecart(seriesFaites - precedente.seriesFaites, String) : null}
+          />
+          <Chiffre
+            valeur={formaterCharge(volumeKg, SYSTEME_UNITES)}
+            libelle="Volume"
+            ecart={
+              precedente
+                ? ecart(volumeKg - precedente.volumeKg, (n) => formaterCharge(n, SYSTEME_UNITES))
+                : null
+            }
+          />
+        </View>
+        {precedente ? (
+          <Text style={styles.note}>
+            Écarts avec la dernière {seance.nom}, le {formatJour(precedente.debut, FUSEAU)}.
+          </Text>
+        ) : null}
+        {echauffementFait ? (
+          <Text style={styles.note}>L'échauffement ne compte pas dans le volume.</Text>
+        ) : null}
+
+        <TextInput
+          value={seance.note ?? ""}
+          onChangeText={(note) => modifier({ ...seance, note })}
+          placeholder="Ajouter une note sur la séance…"
+          placeholderTextColor={couleurs.encreAttenuee}
+          style={styles.saisieNote}
+          multiline
+          maxLength={1000}
+          accessibilityLabel="Note de la séance"
+        />
       </ScrollView>
 
       <View style={styles.pied}>
@@ -194,17 +241,65 @@ function HorsLigne() {
   );
 }
 
-function Chiffre({ valeur, libelle }: { valeur: string; libelle: string }) {
+/** « ↗ +115 kg », « ↘ −1 », « = » : l'écart avec la dernière séance de la routine (D130). */
+function ecart(delta: number, unite: (n: number) => string): string {
+  const arrondi = Math.round(delta * 10) / 10;
+  return arrondi === 0 ? "=" : `${arrondi > 0 ? "↗ +" : "↘ −"}${unite(Math.abs(arrondi))}`;
+}
+
+function Chiffre({
+  valeur,
+  libelle,
+  ecart,
+}: {
+  valeur: string;
+  libelle: string;
+  ecart?: string | null;
+}) {
   const styles = useStyles();
   return (
     <View style={styles.chiffre}>
       <Text style={styles.valeur}>{valeur}</Text>
       <Text style={styles.libelle}>{libelle}</Text>
+      {ecart ? <Text style={styles.ecartChiffre}>{ecart}</Text> : null}
     </View>
   );
 }
 
 const useStyles = creerStyles((couleurs) => ({
+  vedette: { alignItems: "center", gap: espace.s, marginBottom: espace.s },
+  // Le record est un contour (D28) : lime en texte sur fond teinté.
+  medaille: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 1.5,
+    borderColor: couleurs.recordLigne,
+    backgroundColor: couleurs.recordFond,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+  },
+  medailleTexte: { color: couleurs.recordEncre, fontSize: 26, fontWeight: "800" },
+  vedetteTitre: { color: couleurs.encre, fontSize: taille.grand + 2, fontWeight: "800" },
+  ecartChiffre: {
+    color: couleurs.encreSecondaire,
+    fontSize: taille.petit,
+    fontVariant: ["tabular-nums"],
+    marginTop: 2,
+  },
+  saisieNote: {
+    minHeight: 72,
+    padding: espace.m,
+    borderRadius: rayon.cellule,
+    borderWidth: 1,
+    borderColor: couleurs.ligne,
+    backgroundColor: couleurs.surface2,
+    color: couleurs.encre,
+    fontSize: taille.courant,
+    textAlignVertical: "top",
+  },
   ecran: { flex: 1, backgroundColor: couleurs.canevas, justifyContent: "space-between" },
   contenu: { padding: espace.xl, paddingTop: espace.xxl * 2, gap: espace.s },
   // Un seul usage de cette taille : la fin de séance (D103).

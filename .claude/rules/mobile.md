@@ -186,6 +186,11 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Une relecture du brouillon n'écrase jamais un changement survenu pendant qu'elle lisait**
   (`recharger` et le compteur d'écritures de `lib/seance.tsx`) : l'écran relit le disque à chaque
   retour, y compris au retour de la modale qui vient d'ajouter des exercices.
+- **Fin de séance, la récompense d'abord (D130)** : les records battus en vedette (médaille en
+  contour record) ou, sans record, la régularité ; puis durée, séries et volume, chacun avec son
+  écart avec la dernière séance de la même routine (lue dans le fil en cache ; une séance vide
+  n'en a pas) ; puis la note de séance (`SeanceEnCours.note`, gardée au brouillon, envoyée rognée
+  par `versEnvoi`, vide : absente). Le reste ci-dessous tient toujours.
 - **Fin de séance (D111)** : records battus calculés sur le téléphone (`recordsBattus` de
   `shared`) contre les records en cache (`["records", slug]`, persistés et préchargés pour les
   exercices des routines) ; un exercice aux records inconnus est écarté, sans record déclaré.
