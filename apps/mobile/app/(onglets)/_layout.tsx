@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { type ColorValue, type PressableProps, Text, View } from "react-native";
 import { BandeauSeance } from "../../components/bandeau-seance";
+import { FeuilleDemarrer } from "../../components/feuille-demarrer";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Appuyable } from "../../components/ui/appuyable";
 import { Chargement } from "../../components/ui/etats";
@@ -49,7 +50,8 @@ export default function Onglets() {
   const router = useRouter();
   const { seance } = useSeance();
   // Le bouton central : reprendre la séance en cours, sinon choisir comment démarrer.
-  const lancer = () => router.push(seance ? "/seance" : "/demarrer");
+  const [demarrer, setDemarrer] = useState(false);
+  const lancer = () => (seance ? router.push("/seance") : setDemarrer(true));
 
   if (isPending || (error && cookieGarde === null)) return <Chargement />;
   // D100 : une erreur de lecture (hors ligne) ne renvoie pas à la connexion
@@ -64,6 +66,7 @@ export default function Onglets() {
     <>
       {/* Hors ligne (D96) : remplir le cache tant qu'il y a du réseau. */}
       <PreparerHorsLigne />
+      <FeuilleDemarrer visible={demarrer} onFermer={() => setDemarrer(false)} />
       <Tabs
         // Le retour suit le chemin parcouru : la fiche d'un exercice ouverte depuis
         // le détail d'une séance y ramène, et non à l'Accueil (D95).
@@ -137,8 +140,7 @@ export default function Onglets() {
         />
         <Tabs.Screen name="stats" options={{ title: "Stats", tabBarIcon: icone(ChartColumn) }} />
         <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
-        {/* L'historique quitte la barre ; ses écrans restent, joignables par lien,
-          le temps de décider où il vivra. */}
+        {/* La pile du détail d'une séance, ouvert depuis le fil de l'Accueil (D117). */}
         <Tabs.Screen name="historique" options={{ href: null }} />
         {/* Les exercices cèdent leur place aux Stats ; leurs écrans restent. */}
         <Tabs.Screen name="exercices" options={{ href: null }} />

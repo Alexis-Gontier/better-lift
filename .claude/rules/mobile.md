@@ -79,28 +79,32 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
 
 - Quatre onglets **Accueil · Routines · Stats · Profil** et, au centre, un **rond lime**
-  « Démarrer » (feuille `app/demarrer.tsx`, logique dans `lib/demarrer.ts`) qui devient
+  « Démarrer » (la feuille `components/feuille-demarrer.tsx`, D120, ouverte par l'état du
+  `_layout` des onglets ; logique dans `lib/demarrer.ts`) qui devient
   « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
   en lime** (D115, remplace D106 à la demande de l'utilisateur) — token `ongletActif` : lime en
   sombre, olive en clair, où le lime ne tient que 1,8:1 sur la barre. Icônes Lucide.
-- La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine. La page d'une
-  routine garde « Démarrer la routine », dégagé du débord du rond (30).
+- La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine et porte « Lancer »
+  en contour (`BoutonContour`, D118). La page d'une routine garde « Démarrer la routine », dégagé
+  du débord du rond (30).
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Il se pose au-dessus du débord du rond (30), sinon le rond le
   recouvre. Repos restant s'il tourne, chrono sinon ; tout le bandeau
   ramène à la séance. Il ne dit pas « Reprendre » : le rond central le dit déjà.
-- **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
-  le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, carte
-  masquée pendant une séance), puis le fil des séances (`LigneSeance`, avec le
-  nombre de records que l'API compte dans `nbRecords`). L'écran Historique garde la liste seule. La file d'envoi vit dans Profil
-  (`components/file-envoi.tsx`). Historique et Exercices sont hors de la barre (`href: null`) mais
-  joignables : détail d'une séance depuis l'Accueil, fiche d'exercice depuis le détail.
+- **L'Accueil, journal en tête (D117, D119)** : « À suivre » (`components/accueil/a-suivre.tsx`,
+  `routineASuivre`, zones principales et durée tirées du détail en cache, masquée pendant une
+  séance), puis le fil de TOUTES les séances (`CarteSeance` : tuiles durée · volume · séries, les
+  trois premiers exercices et leur meilleure série — `SeanceFil.apercu`, calculé par l'API avec
+  `apercuExercices` de `shared`). « Cette semaine » vit dans les Stats. La file d'envoi vit dans
+  Profil (`components/file-envoi.tsx`). La pile `historique` ne garde que le détail (`[id]`).
+- **Composants communs des pages (D118)** : `Section`, `Vignette` (fond `fondImage`, haltère sans
+  image), `Tuile`, `BoutonContour`, `FeuilleBasse` (le conteneur glissable de toute feuille) dans
+  `components/ui/`. Un composant naît dans le lot qui s'en sert (Knip).
 - Les onglets reviennent en arrière **par l'historique** (`backBehavior="history"`) : sans lui, le
   retour depuis un écran d'un onglet masqué ramène à l'Accueil.
 - **Piège** : une pile qui déclare ses écrans prend le premier pour route initiale —
-  `(onglets)` est déclaré avant `demarrer` dans `app/_layout.tsx`, sinon l'app s'ouvre sur la
-  modale.
+  `(onglets)` est déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 - Le `_layout` de `app/(onglets)/` porte la garde de session. `seance` et `fin` restent hors des
   onglets, en plein écran.
 - Pas de hauteur fixe sur la barre d'onglets : elle recouvrirait la zone de geste d'Android.
@@ -178,9 +182,10 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   le dit au-dessus d'« Enregistrer » ; un échauffement fait : l'écran rappelle qu'il ne compte pas
   dans le volume (D5). Hors ligne : un encart pointillé, pas une
   alerte.
-- **Démarrer** est une feuille basse (`presentation: "transparentModal"`) : l'écran dessine le
-  voile et la feuille ; « À suivre » marque la routine de `routineASuivre`, placée en tête de liste. Séance vide :
-  « Ajouter un exercice » devient l'aplat, faute de ✓.
+- **Démarrer (D120)** est une `FeuilleBasse` : « À suivre » et son aplat « Commencer … », la
+  séance vide, puis les autres routines. Chaque choix ferme la feuille AVANT de lancer : un `Modal`
+  resterait au-dessus de la séance. Séance vide : « Ajouter un exercice » devient l'aplat, faute
+  de ✓.
 - Une séance envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
 
 ## Fiche d'exercice et détail d'une séance
