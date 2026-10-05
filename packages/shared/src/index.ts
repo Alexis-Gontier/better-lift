@@ -119,10 +119,19 @@ export {
   versEnvoi,
 } from "./seance.js";
 export {
+  calculerPeriode,
+  type JourEntraine,
+  niveauxCalendrier,
+  PERIODES,
+  type Periode,
   type RecordRecent,
+  SEMAINES_PERIODE,
+  type SeancePeriode,
   type Semaine,
   type Stats,
+  type StatsPeriode,
   semainesRecentes,
+  type Totaux,
 } from "./stats.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";

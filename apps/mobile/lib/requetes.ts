@@ -1,4 +1,4 @@
-import type { ExerciceResume, RoutineSaisie } from "@better-lift/shared";
+import type { ExerciceResume, Periode, RoutineSaisie } from "@better-lift/shared";
 import {
   infiniteQueryOptions,
   keepPreviousData,
@@ -90,11 +90,11 @@ export function optionsRecords(slug: string) {
  * Les statistiques (D112), calculées par l'API dans le fuseau du téléphone.
  * Rangées sous leur propre clé : l'envoi d'une séance invalide `["stats"]`.
  */
-export function optionsStats() {
+export function optionsStatsPeriode(periode: Periode) {
   return queryOptions({
-    queryKey: ["stats", FUSEAU],
+    queryKey: ["stats", "periode", periode, FUSEAU],
     queryFn: async () => {
-      const res = await api.stats.$get({ query: { fuseau: FUSEAU } });
+      const res = await api.stats.periode.$get({ query: { fuseau: FUSEAU, periode } });
       if (!res.ok) throw new Error("Les stats n'ont pas pu se calculer.");
       return res.json();
     },

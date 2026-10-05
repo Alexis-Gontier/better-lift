@@ -63,6 +63,12 @@ export type Couleurs = {
   /** Muscles secondaires sur la carte du corps. */
   corpsSecondaire: string;
   /**
+   * Le calendrier des Stats (D126, D127) : jour sans séance (0), puis quatre
+   * niveaux d'effort. Deuxième exception au lime après la carte du corps, de
+   * même nature : une intensité d'entraînement, jamais une action ni un record.
+   */
+  calendrier: readonly [string, string, string, string, string];
+  /**
    * Fond des vignettes et GIF d'exercice. Blanc dans LES DEUX registres : les
    * images du catalogue sont détourées sur blanc, un fond sombre les encadrerait.
    */
@@ -97,6 +103,13 @@ const sombre: Couleurs = {
   voile: "rgba(0, 0, 0, 0.6)",
   corps: LIME,
   corpsSecondaire: "rgba(168, 207, 69, 0.45)",
+  calendrier: [
+    "#181b1e",
+    "rgba(168, 207, 69, 0.25)",
+    "rgba(168, 207, 69, 0.5)",
+    "rgba(168, 207, 69, 0.75)",
+    LIME,
+  ],
   fondImage: "#ffffff",
 };
 
@@ -126,6 +139,14 @@ const clair: Couleurs = {
   voile: "rgba(0, 0, 0, 0.4)",
   corps: LIME,
   corpsSecondaire: "rgba(168, 207, 69, 0.45)",
+  // En clair, le lime pâle disparaît sur le blanc : le dégradé passe à l'olive.
+  calendrier: [
+    "#e4e7ea",
+    "rgba(77, 106, 18, 0.2)",
+    "rgba(77, 106, 18, 0.42)",
+    "rgba(77, 106, 18, 0.68)",
+    "#4d6a12",
+  ],
   fondImage: "#ffffff",
 };
 

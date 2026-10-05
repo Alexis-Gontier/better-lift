@@ -1,9 +1,13 @@
 import { prisma } from "@better-lift/db";
 import {
+  calculerPeriode,
+  type Periode,
   type RecordRecent,
   recordsDe,
+  SEMAINES_PERIODE,
   type SerieHisto,
   type Stats,
+  type StatsPeriode,
   semainesRecentes,
 } from "@better-lift/shared";
 import { historique, type LigneSeance, versResume } from "./seances.js";
@@ -60,9 +64,88 @@ export function recordsRecents(
 
 export type DepotStats = {
   lire(userId: string, maintenant: Date, fuseau: string): Promise<Stats>;
+  /** Les stats d'une période et de la période d'avant (D125). */
+  lirePeriode(
+    userId: string,
+    maintenant: Date,
+    fuseau: string,
+    periode: Periode,
+  ): Promise<StatsPeriode>;
 };
 
 export const depotStats: DepotStats = {
+  async lirePeriode(userId, maintenant, fuseau, periode) {
+    // Deux périodes et une semaine de marge : le découpage civil se fait ensuite.
+    const semaines = 2 * SEMAINES_PERIODE[periode] + 1;
+    const debut = new Date(maintenant.getTime() - semaines * 7 * JOUR_MS);
+    const [nbSeances, lignes] = await Promise.all([
+      prisma.seance.count({ where: { userId } }),
+      prisma.seance.findMany({
+        where: { userId, debut: { gte: debut } },
+        select: {
+          id: true,
+          nom: true,
+          routineId: true,
+          debut: true,
+          fin: true,
+          note: true,
+          exercices: {
+            select: {
+              exerciseId: true,
+              exercise: {
+                select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
+              },
+              note: true,
+              series: { select: { type: true, reps: true, chargeKg: true, faite: true } },
+            },
+          },
+        },
+      }),
+    ]);
+
+    const p = calculerPeriode(
+      lignes.map((l) => {
+        const resume = versResume(l as LigneSeance);
+        return {
+          id: l.id,
+          debut: resume.debut,
+          fin: resume.fin,
+          volumeKg: resume.volumeKg,
+          seriesFaites: resume.seriesFaites,
+          exercices: l.exercices.map((e) => ({
+            musclePrincipal: e.exercise.target,
+            musclesSecondaires: e.exercise.secondary,
+            seriesComptees: e.series.filter((s) => s.faite && s.type !== "ECHAUFFEMENT").length,
+          })),
+        };
+      }),
+      maintenant,
+      fuseau,
+      periode,
+    );
+
+    // Les records de la période : chaque série se juge contre TOUT ce qui la
+    // précède (D64), d'où l'historique complet des exercices de la période.
+    const dansPeriode = new Set(p.jours.flatMap((j) => j.seances));
+    const courantes = lignes.filter((l) => dansPeriode.has(l.id));
+    const exercices = new Map<string, { slug: string; nom: string }>();
+    for (const l of courantes) {
+      for (const e of l.exercices) {
+        exercices.set(e.exerciseId, { slug: e.exercise.slug, nom: e.exercise.nomFr });
+      }
+    }
+    const depuis = new Date(
+      Math.min(...courantes.map((l) => l.debut.getTime()), maintenant.getTime()),
+    );
+    const h = await historique(userId, [...exercices.keys()]);
+    const records = recordsRecents(
+      [...exercices].map(([id, e]) => ({ ...e, historique: h.get(id) ?? [] })),
+      depuis,
+      10,
+    );
+    return { ...p, records, nbSeances };
+  },
+
   async lire(userId, maintenant, fuseau) {
     // Une semaine de marge : le découpage civil, dans le fuseau, se fait ensuite.
     const debut = new Date(maintenant.getTime() - (SEMAINES + 1) * 7 * JOUR_MS);
