@@ -112,7 +112,8 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   dans `shared/pave.ts`. Une saisie invalide n'est jamais écrite ; la ligne saisie défile au
   quart haut de l'écran (positions des blocs et des lignes par `onLayout`).
 - **Vibrations** : toujours par `lib/vibrations.ts` (`vibrer.valider`, `selection`, `finRepos`),
-  jamais `expo-haptics` en direct — le réglage du Profil s'y branchera (D113).
+  jamais `expo-haptics` en direct : le réglage « Vibrations » du Profil (`useVibrations`, clé
+  `better-lift:vibrations`, gardé sur le téléphone) les coupe toutes là (D113).
 - Un rappel de modale qui attend (les précédents) applique son choix à la séance **du moment**
   (`useRef`), pas à celle capturée à l'ouverture.
 - **Une relecture du brouillon n'écrase jamais un changement survenu pendant qu'elle lisait**
@@ -126,6 +127,17 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Démarrer** est une feuille basse (`presentation: "transparentModal"`) : l'écran dessine le
   voile et la feuille ; « À suivre » marque la routine de `routineASuivre`.
 - Une séance envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
+
+## Fiche d'exercice et détail d'une séance
+
+- **Fiche** : records d'abord, puis carte du corps et exécution. Hors ligne, elle s'appuie sur la
+  ligne du catalogue complet (lue par `getQueryData`, jamais chargée par la fiche) et sur les
+  records en cache, et dit ce qui manque.
+- **`expo-image` dans un écran réutilisé** (même route, autre paramètre) : `recyclingKey={source}`,
+  sinon l'image du précédent reste affichée tant que la nouvelle ne charge pas — hors ligne, pour
+  toujours. Un `onError` rabat sur l'haltère.
+- **Détail d'une séance** : étiquettes de séries comme en séance (D92) ; non gardé hors ligne
+  (D96), il dit « Hors ligne ».
 
 ## Stats (D112)
 

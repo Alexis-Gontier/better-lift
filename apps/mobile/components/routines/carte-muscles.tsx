@@ -2,7 +2,7 @@ import { LIBELLE_ZONE, zonesTravaillees } from "@better-lift/shared";
 import { useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
 import Body, { type ExtendedBodyPart, type Slug } from "react-native-body-highlighter";
-import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 
 // Le dessin de la bibliothèque mesure 200 × 400 à l'échelle 1.
 const LARGEUR_DESSIN = 200;
@@ -116,7 +116,7 @@ export function CarteMuscles({ exercices, titre = "Muscles travaillés" }: Props
 
 const useStyles = creerStyles((couleurs) => ({
   carte: {
-    borderRadius: 12,
+    borderRadius: rayon.carte,
     borderWidth: 1,
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface1,

@@ -1,149 +1,245 @@
 import {
   ATTRIBUTION_MEDIAS,
+  type ExerciceResume,
   formaterCharge,
   formatJour,
   LIBELLE_GROUPE,
   LIBELLE_RECORD,
+  type RecordExercice,
 } from "@better-lift/shared";
-import { useQuery } from "@tanstack/react-query";
+import { type UseQueryResult, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
+import { Dumbbell } from "lucide-react-native";
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CarteMuscles } from "../../../components/routines/carte-muscles";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
-import { Chargement, Erreur } from "../../../components/ui/etats";
+import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
 import { FUSEAU } from "../../../lib/fuseau";
-import { optionsExercice, optionsRecords } from "../../../lib/requetes";
-import { creerStyles, espace, taille } from "../../../lib/theme";
+import { optionsCatalogueComplet, optionsExercice, optionsRecords } from "../../../lib/requetes";
+import { creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
+/**
+ * La fiche d'un exercice : ses records d'abord (D95), puis ce qu'il travaille
+ * et comment le faire. Hors ligne, la ligne du catalogue (D97) et les records
+ * (D111), tous deux gardés sur le téléphone, suffisent à l'essentiel.
+ */
 export default function FicheExercice() {
   const styles = useStyles();
   const { slug } = useLocalSearchParams<{ slug: string }>();
+  const client = useQueryClient();
   const exercice = useQuery(optionsExercice(slug));
   const records = useQuery(optionsRecords(slug));
-
-  if (exercice.isPending) {
-    return (
-      <SafeAreaView style={styles.ecran} edges={["top"]}>
-        <EnteteRetour titre="" />
-        <Chargement />
-      </SafeAreaView>
-    );
-  }
-  if (exercice.isError) {
-    return (
-      <SafeAreaView style={styles.ecran} edges={["top"]}>
-        <EnteteRetour titre="" />
-        <Erreur
-          message="Cet exercice n'a pas pu être chargé."
-          onReessayer={() => exercice.refetch()}
-        />
-      </SafeAreaView>
-    );
-  }
+  // Lu dans le cache seulement : la fiche ne déclenche jamais le chargement du catalogue entier.
+  const resume = client
+    .getQueryData<ExerciceResume[]>(optionsCatalogueComplet().queryKey)
+    ?.find((e) => e.slug === slug);
 
   const ex = exercice.data;
+  const horsLigne = exercice.isPending && exercice.fetchStatus === "paused";
+  const nom = ex?.nom ?? resume?.nom;
+
+  if (!nom) {
+    return (
+      <SafeAreaView style={styles.ecran} edges={["top"]}>
+        <EnteteRetour titre="" />
+        {horsLigne ? (
+          <Vide titre="Hors ligne" message="Cet exercice s'affichera au retour du réseau." />
+        ) : exercice.isPending ? (
+          <Chargement />
+        ) : (
+          <Erreur
+            message="Cet exercice n'a pas pu être chargé."
+            onReessayer={() => exercice.refetch()}
+          />
+        )}
+      </SafeAreaView>
+    );
+  }
+
+  const groupe = ex?.groupe ?? resume?.groupe;
+  const equipement = ex?.equipement ?? resume?.equipement;
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <EnteteRetour titre={ex.nom} />
+      <EnteteRetour titre="" />
       <ScrollView contentContainerStyle={styles.contenu}>
-        <Text style={styles.sous}>
-          {ex.nomAnglais} · {LIBELLE_GROUPE[ex.groupe]} · {ex.equipement}
-        </Text>
+        <View style={styles.tete}>
+          <Text style={styles.nom}>{nom}</Text>
+          <Text style={styles.sous}>
+            {[ex?.nomAnglais, groupe ? LIBELLE_GROUPE[groupe] : null, equipement]
+              .filter(Boolean)
+              .join(" · ")}
+          </Text>
+        </View>
 
-        {/* Le GIF est affiché depuis le dépôt du dataset, jamais copié (D46). */}
-        {ex.gif ? (
-          <View style={styles.media}>
-            <Image
-              source={{ uri: ex.gif }}
-              style={styles.gif}
-              contentFit="contain"
-              cachePolicy="disk"
-              accessibilityLabel={`Animation de l'exercice : ${ex.nom}`}
+        <Media gif={ex?.gif ?? null} image={resume?.image ?? null} nom={nom} />
+
+        <View>
+          <Text style={styles.section}>Records</Text>
+          <Records etat={records} />
+        </View>
+
+        {ex ? (
+          <>
+            <CarteMuscles
+              exercices={[{ musclePrincipal: ex.cible, musclesSecondaires: ex.secondaires }]}
+              titre="Muscles"
             />
-            <Text style={styles.attribution}>{ATTRIBUTION_MEDIAS}</Text>
-          </View>
-        ) : null}
-
-        <Text style={styles.section}>Records</Text>
-        {records.isPending ? (
-          <Text style={styles.pale}>Chargement…</Text>
-        ) : records.isError ? (
-          <Text style={styles.pale}>Les records n'ont pas pu être chargés.</Text>
-        ) : records.data.length === 0 ? (
-          <Text style={styles.pale}>Aucun record pour l'instant.</Text>
-        ) : (
-          <View style={styles.carte}>
-            {records.data.map((r, i) => (
-              <View key={r.type} style={[styles.record, i > 0 && styles.separe]}>
-                <Text style={styles.recordType}>{LIBELLE_RECORD[r.type]}</Text>
-                <View style={{ flex: 1, gap: 4 }}>
-                  <BadgeRecord
-                    libelle={
-                      r.type === "UN_RM" || r.type === "VOLUME"
-                        ? formaterCharge(r.valeur, SYSTEME_UNITES)
-                        : formaterSerie(r.chargeKg, r.reps)
-                    }
-                  />
-                  <Text style={styles.pale}>
-                    {r.type === "UN_RM" || r.type === "VOLUME"
-                      ? `${formaterSerie(r.chargeKg, r.reps)} · `
-                      : ""}
-                    {formatJour(r.date, FUSEAU)}
-                  </Text>
-                </View>
+            {ex.instructions.length > 0 ? (
+              <View style={styles.etapes}>
+                <Text style={styles.section}>Exécution</Text>
+                {ex.instructions.map((etape, i) => (
+                  <View key={etape} style={styles.etape}>
+                    <Text style={styles.numero}>{i + 1}</Text>
+                    <Text style={styles.texte}>{etape}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
+            ) : null}
+          </>
+        ) : (
+          // La ligne du catalogue tient lieu de fiche : on dit ce qui manque.
+          <Text style={styles.pale}>
+            {horsLigne
+              ? "Hors ligne : l'animation, les muscles et l'exécution reviendront avec le réseau."
+              : exercice.isPending
+                ? "Chargement de la fiche…"
+                : "La fiche complète n'a pas pu être chargée."}
+          </Text>
         )}
-
-        <Text style={styles.section}>Muscles</Text>
-        <Text style={styles.texte}>
-          {ex.cible}
-          {ex.secondaires.length > 0 ? (
-            <Text style={styles.pale}> · {ex.secondaires.join(", ")}</Text>
-          ) : null}
-        </Text>
-
-        <Text style={styles.section}>Exécution</Text>
-        {ex.instructions.map((etape, i) => (
-          <View key={etape} style={styles.etape}>
-            <Text style={styles.numero}>{i + 1}</Text>
-            <Text style={[styles.texte, { flex: 1 }]}>{etape}</Text>
-          </View>
-        ))}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+/** L'animation si on l'a, sinon l'image fixe du catalogue, sinon une haltère. */
+function Media({ gif, image, nom }: { gif: string | null; image: string | null; nom: string }) {
+  const styles = useStyles();
+  const couleurs = useCouleurs();
+  const source = gif ?? image;
+  // L'image qui n'a pas pu se charger (hors ligne, jamais vue) : on montre l'haltère.
+  const [echec, setEchec] = useState<string | null>(null);
+  if (!source || echec === source) {
+    return (
+      <View style={[styles.media, styles.sansMedia]}>
+        <Dumbbell size={40} color={couleurs.encreAttenuee} />
+      </View>
+    );
+  }
+  return (
+    <View style={styles.cadre}>
+      {/* Le GIF est affiché depuis le dépôt du dataset, jamais copié (D46). */}
+      <Image
+        source={{ uri: source }}
+        style={styles.media}
+        contentFit="contain"
+        cachePolicy="disk"
+        // L'écran est réutilisé d'un exercice à l'autre : sans clé, expo-image
+        // garderait l'image du précédent tant que la nouvelle ne charge pas.
+        recyclingKey={source}
+        onError={() => setEchec(source)}
+        accessibilityLabel={`Animation de l'exercice : ${nom}`}
+      />
+      <Text style={styles.attribution}>{ATTRIBUTION_MEDIAS}</Text>
+    </View>
+  );
+}
+
+/** Un record par ligne : sa valeur en badge, la série et le jour où il est tombé. */
+function Records({ etat }: { etat: UseQueryResult<RecordExercice[]> }) {
+  const styles = useStyles();
+  if (!etat.data) {
+    return (
+      <Text style={styles.pale}>
+        {etat.isPending && etat.fetchStatus === "paused"
+          ? "Hors ligne : les records s'afficheront au retour du réseau."
+          : etat.isPending
+            ? "Chargement…"
+            : "Les records n'ont pas pu être chargés."}
+      </Text>
+    );
+  }
+  if (etat.data.length === 0) {
+    return (
+      <Text style={styles.pale}>Pas encore de record. Le premier tombe à la première série.</Text>
+    );
+  }
+  return (
+    <View>
+      {etat.data.map((r) => {
+        // 1RM et volume sont des valeurs calculées : la série qui les porte vient en dessous.
+        const calcule = r.type === "UN_RM" || r.type === "VOLUME";
+        return (
+          <View key={r.type} style={styles.record}>
+            <View style={styles.recordGauche}>
+              <Text style={styles.recordType}>{LIBELLE_RECORD[r.type]}</Text>
+              <Text style={styles.pale}>
+                {calcule ? `${formaterSerie(r.chargeKg, r.reps)} · ` : ""}
+                {formatJour(r.date, FUSEAU)}
+              </Text>
+            </View>
+            <BadgeRecord
+              libelle={
+                calcule
+                  ? formaterCharge(r.valeur, SYSTEME_UNITES)
+                  : formaterSerie(r.chargeKg, r.reps)
+              }
+            />
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
-  contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl * 2 },
-  sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
-  // Fond blanc : les GIF du dataset sont dessinés sur blanc.
-  media: { alignItems: "center", gap: espace.xs },
-  gif: { width: 240, height: 240, borderRadius: 12, backgroundColor: "#ffffff" },
+  contenu: { padding: espace.l, gap: espace.xl, paddingBottom: espace.xxl * 2 },
+  tete: { gap: espace.xs },
+  nom: { color: couleurs.encre, fontSize: 30, lineHeight: 34, fontWeight: "700" },
+  sous: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
+  cadre: { alignItems: "center", gap: espace.xs },
+  // Fond blanc dans les deux thèmes : les images du dataset sont dessinées sur blanc.
+  media: {
+    width: "100%",
+    aspectRatio: 1.4,
+    borderRadius: rayon.carte,
+    backgroundColor: "#ffffff",
+  },
+  sansMedia: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface2 },
   attribution: { color: couleurs.encreAttenuee, fontSize: 11 },
   section: {
-    color: couleurs.encreTertiaire,
-    fontSize: taille.petit,
+    color: couleurs.encreAttenuee,
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.8,
     textTransform: "uppercase",
-    marginTop: espace.s,
+    marginBottom: espace.s,
   },
-  texte: { color: couleurs.encre, fontSize: taille.courant, lineHeight: 22 },
-  pale: { color: couleurs.encreTertiaire, fontSize: taille.petit },
-  carte: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface1,
+  pale: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
+  record: {
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espace.m,
+    paddingVertical: espace.s,
+    borderBottomWidth: 1,
+    borderBottomColor: couleurs.ligne,
   },
-  record: { flexDirection: "row", alignItems: "center", gap: espace.m, padding: espace.m },
-  separe: { borderTopWidth: 1, borderTopColor: couleurs.ligne },
-  recordType: { width: 88, color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
-  etape: { flexDirection: "row", gap: espace.s },
-  numero: { width: 18, color: couleurs.encreAttenuee, fontSize: taille.petit, paddingTop: 3 },
+  recordGauche: { flex: 1, gap: 2 },
+  recordType: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
+  etapes: { gap: espace.m },
+  etape: { flexDirection: "row", gap: espace.m },
+  numero: {
+    width: 22,
+    color: couleurs.encreAttenuee,
+    fontSize: taille.petit,
+    fontWeight: "600",
+    paddingTop: 3,
+  },
+  texte: { flex: 1, color: couleurs.encre, fontSize: taille.courant, lineHeight: 23 },
 }));

@@ -1,20 +1,28 @@
 import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import { Alert, Pressable, Text, View } from "react-native";
+import type { ReactNode } from "react";
+import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FileEnvoi } from "../../components/file-envoi";
 import { authClient } from "../../lib/auth-client";
 import { persister } from "../../lib/hors-ligne";
 import { useSeance } from "../../lib/seance";
-import { CIBLE, creerStyles, espace, taille } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
+import { useVibrations } from "../../lib/vibrations";
 
+/**
+ * Le compte, les réglages du téléphone et la file d'envoi. Aucun aplat : rien
+ * ici n'est l'action principale d'une séance (D105).
+ */
 export default function Profil() {
   const styles = useStyles();
+  const couleurs = useCouleurs();
   const router = useRouter();
   const client = useQueryClient();
   const { data: session } = authClient.useSession();
   const { file, seance } = useSeance();
+  const [vibrations, reglerVibrations] = useVibrations();
   const enAttente = file.filter((e) => e.erreur === null).length;
 
   const seDeconnecter = async () => {
@@ -45,70 +53,132 @@ export default function Profil() {
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <Text style={styles.titre}>Profil</Text>
-      <View style={styles.carte}>
-        <Ligne libelle="Compte" valeur={session?.user.email ?? "—"} />
-        <Ligne
-          libelle="En attente d'envoi"
-          valeur={enAttente === 0 ? "Rien" : `${enAttente} séance${enAttente > 1 ? "s" : ""}`}
-        />
-        <Ligne libelle="Version" valeur={Constants.expoConfig?.version ?? "—"} dernier />
-      </View>
-      {/* Les séances pas encore arrivées au serveur : réessayer, reprendre ou
-          supprimer une séance refusée. */}
-      <FileEnvoi />
-      <Pressable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
-        <Text style={styles.dangerTexte}>Se déconnecter</Text>
-      </Pressable>
+      <ScrollView contentContainerStyle={styles.contenu}>
+        <Section titre="Compte">
+          <Ligne libelle="Adresse">
+            <Text style={styles.valeur} numberOfLines={1}>
+              {session?.user.email ?? "—"}
+            </Text>
+          </Ligne>
+          <Ligne libelle="Version" dernier>
+            <Text style={styles.valeur}>{Constants.expoConfig?.version ?? "—"}</Text>
+          </Ligne>
+        </Section>
+
+        <Section titre="Réglages">
+          <Ligne libelle="Vibrations" detail="Série validée, fin du repos." dernier>
+            <Switch
+              value={vibrations}
+              onValueChange={reglerVibrations}
+              accessibilityLabel="Vibrations"
+              // Un état, ni une action ni un record : l'encre, pas le lime.
+              trackColor={{ true: couleurs.encre, false: couleurs.surface3 }}
+              thumbColor={couleurs.surface1}
+            />
+          </Ligne>
+        </Section>
+
+        <Section titre="Envoi">
+          <Ligne libelle="En attente" dernier>
+            <Text style={styles.valeur}>
+              {enAttente === 0 ? "Rien" : `${enAttente} séance${enAttente > 1 ? "s" : ""}`}
+            </Text>
+          </Ligne>
+        </Section>
+        {/* Les séances pas encore arrivées au serveur : réessayer, reprendre ou
+            supprimer une séance refusée. */}
+        <FileEnvoi />
+
+        <Pressable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
+          <Text style={styles.dangerTexte}>Se déconnecter</Text>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function Section({ titre, children }: { titre: string; children: ReactNode }) {
+  const styles = useStyles();
+  return (
+    <View>
+      <Text style={styles.section}>{titre}</Text>
+      <View style={styles.carte}>{children}</View>
+    </View>
   );
 }
 
 function Ligne({
   libelle,
-  valeur,
+  detail,
   dernier,
+  children,
 }: {
   libelle: string;
-  valeur: string;
+  detail?: string;
   dernier?: boolean;
+  children: ReactNode;
 }) {
   const styles = useStyles();
   return (
     <View style={[styles.ligne, !dernier && styles.separe]}>
-      <Text style={styles.libelle}>{libelle}</Text>
-      <Text style={styles.valeur} numberOfLines={1}>
-        {valeur}
-      </Text>
+      <View style={styles.gauche}>
+        <Text style={styles.libelle}>{libelle}</Text>
+        {detail ? <Text style={styles.detail}>{detail}</Text> : null}
+      </View>
+      {children}
     </View>
   );
 }
 
 const useStyles = creerStyles((couleurs) => ({
-  ecran: { flex: 1, backgroundColor: couleurs.canevas, padding: espace.l, gap: espace.l },
-  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700" },
+  ecran: { flex: 1, backgroundColor: couleurs.canevas },
+  titre: {
+    color: couleurs.encre,
+    fontSize: taille.titre,
+    fontWeight: "700",
+    padding: espace.l,
+  },
+  contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xxl, gap: espace.l },
+  section: {
+    color: couleurs.encreAttenuee,
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginBottom: espace.s,
+  },
   carte: {
-    borderRadius: 12,
+    borderRadius: rayon.carte,
     borderWidth: 1,
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface1,
   },
   ligne: {
-    minHeight: CIBLE + 4,
+    minHeight: CIBLE + 8,
     flexDirection: "row",
     alignItems: "center",
     gap: espace.m,
     paddingHorizontal: espace.l,
+    paddingVertical: espace.s,
   },
   separe: { borderBottomWidth: 1, borderBottomColor: couleurs.ligne },
-  libelle: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
-  valeur: { flex: 1, textAlign: "right", color: couleurs.encre, fontSize: taille.courant },
+  // Le libellé prend la place libre et pousse la valeur ou l'interrupteur au bord.
+  gauche: { flex: 1, minWidth: 96, gap: 2 },
+  libelle: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
+  detail: { color: couleurs.encreTertiaire, fontSize: taille.petit },
+  valeur: {
+    flexShrink: 1,
+    textAlign: "right",
+    color: couleurs.encreSecondaire,
+    fontSize: taille.courant,
+  },
   deconnexion: {
     minHeight: CIBLE,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     alignItems: "center",
     justifyContent: "center",
   },
-  dangerTexte: { color: couleurs.dangerEncre, fontSize: taille.courant },
+  dangerTexte: { color: couleurs.dangerEncre, fontSize: taille.courant, fontWeight: "600" },
 }));

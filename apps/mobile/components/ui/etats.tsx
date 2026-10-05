@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 
 /**
  * Les quatre états de chaque écran (chargement, erreur, vide — le nominal est
@@ -51,7 +51,7 @@ const useStyles = creerStyles((couleurs) => ({
   bouton: {
     minHeight: CIBLE,
     paddingHorizontal: espace.xl,
-    borderRadius: 10,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     justifyContent: "center",
