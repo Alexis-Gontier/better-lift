@@ -3,6 +3,7 @@ import { Check } from "lucide-react-native";
 import { Modal, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { Appuyable } from "./appuyable";
 
 export type OptionFeuille = {
   libelle: string;
@@ -48,7 +49,7 @@ export function Feuille({
       <View style={[styles.feuille, { paddingBottom: bottom + espace.s }]}>
         <View style={styles.poignee} />
         {titre ? (
-          <Text style={styles.titre} numberOfLines={1}>
+          <Text style={styles.titre} accessibilityRole="header" numberOfLines={1}>
             {titre}
           </Text>
         ) : null}
@@ -60,7 +61,7 @@ export function Feuille({
               ? couleurs.dangerEncre
               : couleurs.encre;
           return (
-            <Pressable
+            <Appuyable
               key={o.libelle}
               disabled={Boolean(o.inactive)}
               onPress={() => {
@@ -75,7 +76,7 @@ export function Feuille({
               <Text style={[styles.libelle, { color: couleur }]}>{o.libelle}</Text>
               {o.inactive ? <Text style={styles.indication}>{o.inactive}</Text> : null}
               {o.choisie ? <Check size={18} color={couleurs.encre} strokeWidth={2.6} /> : null}
-            </Pressable>
+            </Appuyable>
           );
         })}
       </View>

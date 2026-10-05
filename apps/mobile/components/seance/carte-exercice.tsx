@@ -23,7 +23,7 @@ import {
   Trash2,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Text, TextInput, View } from "react-native";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
 import {
@@ -36,6 +36,7 @@ import {
   useCouleurs,
 } from "../../lib/theme";
 import { UNITE } from "../../lib/unites";
+import { Appuyable } from "../ui/appuyable";
 import { Feuille, type OptionFeuille } from "../ui/feuille";
 import { COLONNES, type EtatSerie, LigneSerie } from "./ligne-serie";
 
@@ -50,6 +51,10 @@ export function etiquettes(series: SerieEnCours[]): string[] {
 
 const etatDe = (faite: boolean, prochaine: boolean): EtatSerie =>
   faite ? "faite" : prochaine ? "prochaine" : "a-venir";
+
+/** Puce de 32 : 8 au-dessus et dessous pour une cible de 48, 4 sur les côtés pour
+ * que deux puces voisines (8 d'écart) ne se disputent pas le doigt. */
+const HITSLOP_PUCE = { top: 8, bottom: 8, left: 4, right: 4 } as const;
 
 type Feuilles = { quoi: "menu" } | { quoi: "repos" } | { quoi: "serie"; iS: number } | null;
 
@@ -154,8 +159,11 @@ export function CarteExercice({
   return (
     <View style={styles.bloc}>
       <View style={styles.entete}>
-        <Pressable
-          onPress={() => gif && setGrand((g) => !g)}
+        {/* Sans GIF, la vignette n'est qu'une image : ni bouton, ni annonce. */}
+        <Appuyable
+          onPress={() => setGrand((g) => !g)}
+          disabled={!gif}
+          accessible={Boolean(gif)}
           accessibilityRole="button"
           accessibilityLabel={grand ? "Réduire l'animation" : "Agrandir l'animation"}
         >
@@ -173,11 +181,11 @@ export function CarteExercice({
               <Dumbbell size={18} color={couleurs.encreAttenuee} />
             </View>
           )}
-        </Pressable>
+        </Appuyable>
         <Text style={styles.nom} numberOfLines={2}>
           {exercice.nom}
         </Text>
-        <Pressable
+        <Appuyable
           onPress={() => setFeuille({ quoi: "menu" })}
           hitSlop={8}
           style={styles.menu}
@@ -185,22 +193,27 @@ export function CarteExercice({
           accessibilityLabel={`Actions pour ${exercice.nom}`}
         >
           <Ellipsis size={20} color={couleurs.encreSecondaire} />
-        </Pressable>
+        </Appuyable>
       </View>
 
       {grand && gif ? (
-        <Pressable onPress={() => setGrand(false)} style={styles.media} accessibilityRole="button">
+        <Appuyable
+          onPress={() => setGrand(false)}
+          style={styles.media}
+          accessibilityRole="button"
+          accessibilityLabel="Réduire l'animation"
+        >
           <Image source={{ uri: gif }} style={styles.gif} contentFit="contain" cachePolicy="disk" />
           <Text style={styles.attribution}>{ATTRIBUTION_MEDIAS}</Text>
-        </Pressable>
+        </Appuyable>
       ) : null}
 
       {/* Le repos et la note en deux puces (D108) : 44 dp gagnés par exercice.
           La note saisie remplace le mot « Note ». */}
       <View style={styles.puces}>
-        <Pressable
+        <Appuyable
           onPress={() => setFeuille({ quoi: "repos" })}
-          hitSlop={4}
+          hitSlop={HITSLOP_PUCE}
           style={styles.puce}
           accessibilityRole="button"
           accessibilityLabel={`Repos : ${libelleRepos(exercice.reposSec)}`}
@@ -212,10 +225,10 @@ export function CarteExercice({
           <Text style={[styles.puceTexte, !exercice.reposSec && styles.puceEteinte]}>
             {exercice.reposSec ? libelleRepos(exercice.reposSec) : "Sans repos"}
           </Text>
-        </Pressable>
-        <Pressable
+        </Appuyable>
+        <Appuyable
           onPress={() => setEditionNote(true)}
-          hitSlop={4}
+          hitSlop={HITSLOP_PUCE}
           style={[styles.puce, styles.puceNote]}
           accessibilityRole="button"
           accessibilityLabel={note ? `Note : ${note}` : "Ajouter une note"}
@@ -224,7 +237,7 @@ export function CarteExercice({
           <Text style={[styles.puceTexte, !note && styles.puceEteinte]} numberOfLines={1}>
             {note || "Note"}
           </Text>
-        </Pressable>
+        </Appuyable>
       </View>
 
       {/* D90 : la note s'écrit à chaque frappe. Pas à la sortie du champ : un
@@ -306,7 +319,7 @@ export function CarteExercice({
         </View>
       ))}
 
-      <Pressable
+      <Appuyable
         onPress={onAjouterSerie}
         style={styles.ajouter}
         hitSlop={4}
@@ -315,7 +328,7 @@ export function CarteExercice({
       >
         <Plus size={16} color={couleurs.encreSecondaire} strokeWidth={2.4} />
         <Text style={styles.ajouterTexte}>Série</Text>
-      </Pressable>
+      </Appuyable>
 
       <Feuille
         visible={feuille !== null}

@@ -10,9 +10,10 @@ import {
 } from "@better-lift/shared";
 import { Image } from "expo-image";
 import { Dumbbell, Ellipsis, GripVertical, Plus, X } from "lucide-react-native";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Text, TextInput, View } from "react-native";
 import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES, UNITE } from "../../lib/unites";
+import { Appuyable } from "../ui/appuyable";
 
 type Props = {
   exercice: ExerciceBrouillon;
@@ -64,7 +65,7 @@ export function CarteExerciceEdition({
   return (
     <View style={[styles.carte, enGlissement && styles.glisse]}>
       <View style={styles.entete}>
-        <Pressable
+        <Appuyable
           onLongPress={onGlisser}
           delayLongPress={200}
           style={styles.poignee}
@@ -72,7 +73,7 @@ export function CarteExerciceEdition({
           accessibilityLabel="Déplacer l'exercice (appui long)"
         >
           <GripVertical size={20} color={couleurs.encreAttenuee} />
-        </Pressable>
+        </Appuyable>
         {e.image ? (
           <Image
             source={{ uri: e.image }}
@@ -88,14 +89,14 @@ export function CarteExerciceEdition({
         <Text style={styles.nom} numberOfLines={2}>
           {e.nom}
         </Text>
-        <Pressable
+        <Appuyable
           onPress={menu}
           style={styles.icone}
           accessibilityRole="button"
           accessibilityLabel={`Options de ${e.nom}`}
         >
           <Ellipsis size={20} color={couleurs.encreSecondaire} />
-        </Pressable>
+        </Appuyable>
       </View>
 
       <View style={styles.repos}>
@@ -121,7 +122,7 @@ export function CarteExerciceEdition({
       {e.series.map((s, i) => (
         // Les séries n'ont pas d'identité propre : leur rang en tient lieu.
         <View key={i} style={styles.serie}>
-          <Pressable
+          <Appuyable
             onPress={() => choisirType(i)}
             style={[styles.etiquette, styles.colSerie]}
             accessibilityRole="button"
@@ -136,7 +137,7 @@ export function CarteExerciceEdition({
             >
               {etiquettes[i]}
             </Text>
-          </Pressable>
+          </Appuyable>
           <TextInput
             value={s.charge}
             onChangeText={(charge) => changerSerie(i, { charge })}
@@ -159,18 +160,18 @@ export function CarteExerciceEdition({
             style={[styles.champ, styles.colValeur, repsInvalides(s.reps) && styles.invalide]}
             accessibilityLabel={`Répétitions de la série ${etiquettes[i]}`}
           />
-          <Pressable
+          <Appuyable
             onPress={() => onChange({ ...e, series: e.series.filter((_, j) => j !== i) })}
             style={[styles.icone, styles.colRetirer]}
             accessibilityRole="button"
             accessibilityLabel={`Retirer la série ${etiquettes[i]}`}
           >
             <X size={18} color={couleurs.encreAttenuee} />
-          </Pressable>
+          </Appuyable>
         </View>
       ))}
 
-      <Pressable
+      <Appuyable
         onPress={() => {
           // La nouvelle série reprend la dernière : on enchaîne souvent à l'identique.
           const derniere = e.series.at(-1) ?? { type: "NORMALE" as const, reps: "", charge: "" };
@@ -181,7 +182,7 @@ export function CarteExerciceEdition({
       >
         <Plus size={18} color={couleurs.encreSecondaire} />
         <Text style={styles.ajouterSerieTexte}>Ajouter une série</Text>
-      </Pressable>
+      </Appuyable>
     </View>
   );
 }

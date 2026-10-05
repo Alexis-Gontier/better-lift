@@ -10,9 +10,10 @@ import {
   User,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { type ColorValue, Pressable, type PressableProps, Text, View } from "react-native";
+import { type ColorValue, type PressableProps, Text, View } from "react-native";
 import { BandeauSeance } from "../../components/bandeau-seance";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
+import { Appuyable } from "../../components/ui/appuyable";
 import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
@@ -79,8 +80,9 @@ export default function Onglets() {
           headerShown: false,
           sceneStyle: { backgroundColor: couleurs.canevas },
           // L'onglet actif prend la couleur de l'application (choix de
-          // l'utilisateur, D76 révisée) ; les autres restent en encre faible.
-          tabBarActiveTintColor: couleurs.action,
+          // l'utilisateur, D115) ; les autres restent en encre faible. En clair,
+          // le lime ne tient pas sur la barre blanche : `ongletActif` passe à l'olive.
+          tabBarActiveTintColor: couleurs.ongletActif,
           tabBarInactiveTintColor: couleurs.encreAttenuee,
           // Toute la largeur du bas, jusque sous la zone de geste : une marche
           // au-dessus du canevas, séparée par un filet. Pas de hauteur fixe : Expo
@@ -93,10 +95,10 @@ export default function Onglets() {
             paddingTop: 8,
           },
           tabBarLabelStyle: { fontSize: 11, fontFamily: polices.demiGras, marginTop: 2 },
-          // Aucun retour visuel à l'appui (ni ondulation Android, ni opacité) :
-          // l'onglet actif se signale déjà par sa couleur.
+          // L'appui pâlit l'onglet (Appuyable), sans ondulation Android qui
+          // déborderait de la barre.
           tabBarButton: ({ ref: _ref, ...props }) => (
-            <Pressable {...(props as PressableProps)} android_ripple={null} />
+            <Appuyable {...(props as PressableProps)} android_ripple={null} />
           ),
         }}
       >
@@ -111,7 +113,7 @@ export default function Onglets() {
           name="lancer"
           options={{
             tabBarButton: () => (
-              <Pressable
+              <Appuyable
                 onPress={lancer}
                 style={styles.place}
                 accessibilityRole="button"
@@ -129,7 +131,7 @@ export default function Onglets() {
                     <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
                   </>
                 )}
-              </Pressable>
+              </Appuyable>
             ),
           }}
         />

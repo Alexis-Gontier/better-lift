@@ -10,9 +10,10 @@ import {
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LigneSeance } from "../../components/historique/ligne-seance";
+import { Appuyable } from "../../components/ui/appuyable";
 import { Chargement, Erreur, Vide } from "../../components/ui/etats";
 import { FUSEAU } from "../../lib/fuseau";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../../lib/requetes";
@@ -21,6 +22,7 @@ import { creerStyles, espace, polices, rayon, taille, useCouleurs } from "../../
 import { SYSTEME_UNITES } from "../../lib/unites";
 
 const JOURS = ["L", "M", "M", "J", "V", "S", "D"] as const;
+const NOMS_JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
 /**
  * L'Accueil (D110) répond aux trois questions qu'on se pose en ouvrant l'app :
@@ -48,10 +50,16 @@ export default function Accueil() {
         contentContainerStyle={styles.contenu}
         ListHeaderComponent={
           <View>
-            <Text style={styles.titre}>Accueil</Text>
+            <Text style={styles.titre} accessibilityRole="header">
+              Accueil
+            </Text>
             {liste.length > 0 ? <Semaine seances={liste} /> : null}
             <ASuivre routines={routines.data ?? null} seances={liste} />
-            {liste.length > 0 ? <Text style={styles.section}>Dernières séances</Text> : null}
+            {liste.length > 0 ? (
+              <Text style={styles.section} accessibilityRole="header">
+                Dernières séances
+              </Text>
+            ) : null}
           </View>
         }
         ListEmptyComponent={
@@ -79,14 +87,25 @@ function Semaine({ seances }: { seances: readonly SeanceResume[] }) {
   const s = resumeSemaine(seances, new Date(), FUSEAU);
   return (
     <View style={styles.bloc}>
-      <Text style={styles.section}>Cette semaine</Text>
+      <Text style={styles.section} accessibilityRole="header">
+        Cette semaine
+      </Text>
       <View style={styles.chiffreLigne}>
         <Text style={styles.chiffre}>{s.seances}</Text>
         <Text style={styles.chiffreSous}>
           {s.seances > 1 ? "séances" : "séance"} · {formaterCharge(s.volumeKg, SYSTEME_UNITES)}
         </Text>
       </View>
-      <View style={styles.jours}>
+      {/* Une seule annonce pour la semaine : sept cases muettes ne disent rien. */}
+      <View
+        style={styles.jours}
+        accessible
+        accessibilityLabel={
+          s.jours.some(Boolean)
+            ? `Jours entraînés : ${NOMS_JOURS.filter((_, i) => s.jours[i]).join(", ")}`
+            : "Aucun jour entraîné cette semaine"
+        }
+      >
         {JOURS.map((lettre, i) => (
           <View key={`${lettre}-${i}`} style={styles.jour}>
             <View
@@ -95,7 +114,6 @@ function Semaine({ seances }: { seances: readonly SeanceResume[] }) {
                 s.jours[i] && styles.caseEntrainee,
                 i === s.aujourdhui && styles.caseAujourdhui,
               ]}
-              accessibilityLabel={s.jours[i] ? "Jour entraîné" : "Jour sans séance"}
             />
             <Text style={[styles.lettre, i === s.aujourdhui && styles.lettreAujourdhui]}>
               {lettre}
@@ -146,7 +164,7 @@ function ASuivre({
     : null;
 
   return (
-    <Pressable
+    <Appuyable
       onPress={() => router.push(`/routines/${suivante.id}`)}
       style={({ pressed }) => [styles.bloc, styles.carte, pressed && styles.carteAppuyee]}
       accessibilityRole="button"
@@ -167,7 +185,7 @@ function ASuivre({
         ) : null}
       </View>
       <ChevronRight size={22} color={couleurs.encreTertiaire} />
-    </Pressable>
+    </Appuyable>
   );
 }
 

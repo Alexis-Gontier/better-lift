@@ -52,7 +52,9 @@ export default function Stats() {
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <View style={styles.entete}>
-        <Text style={styles.titre}>Stats</Text>
+        <Text style={styles.titre} accessibilityRole="header">
+          Stats
+        </Text>
         <Text style={styles.periode}>12 dernières semaines</Text>
       </View>
       {contenu ?? (
@@ -94,7 +96,9 @@ function Volume({ semaines }: { semaines: Semaine[] }) {
   const enCours = semaines.at(-1);
   return (
     <View>
-      <Text style={styles.section}>Volume par semaine</Text>
+      <Text style={styles.section} accessibilityRole="header">
+        Volume par semaine
+      </Text>
       <View style={styles.chiffreLigne}>
         <Text style={styles.chiffre}>
           {formaterCharge(enCours?.volumeKg ?? 0, SYSTEME_UNITES).replace(/\s?kg$/, "")}
@@ -131,7 +135,9 @@ function Regularite({ semaines }: { semaines: Semaine[] }) {
   const total = semaines.reduce((n, s) => n + s.seances, 0);
   return (
     <View>
-      <Text style={styles.section}>Régularité · 12 semaines</Text>
+      <Text style={styles.section} accessibilityRole="header">
+        Régularité · 12 semaines
+      </Text>
       <View style={styles.grille}>
         {semaines.map((s) => (
           <View key={s.lundi} style={styles.grilleColonne}>
@@ -154,7 +160,9 @@ function RecordsRecents({ records }: { records: RecordRecent[] }) {
   if (records.length === 0) return null;
   return (
     <View>
-      <Text style={styles.section}>Records récents</Text>
+      <Text style={styles.section} accessibilityRole="header">
+        Records récents
+      </Text>
       {records.map((r) => (
         <View key={`${r.slug}-${r.date}`} style={styles.record}>
           <View style={styles.recordGauche}>

@@ -4,8 +4,9 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, Dumbbell, Search, X } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { FlatList, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appuyable } from "../components/ui/appuyable";
 import { Chargement, Erreur, Vide } from "../components/ui/etats";
 import { type ExerciceChoisi, rendreChoix } from "../lib/choix-exercices";
 import { optionsCatalogueComplet } from "../lib/requetes";
@@ -51,15 +52,15 @@ export default function ChoisirExercices() {
   return (
     <SafeAreaView style={styles.ecran} edges={["top", "bottom"]}>
       <View style={styles.entete}>
-        <Pressable
+        <Appuyable
           onPress={() => router.back()}
           style={styles.fermer}
           accessibilityRole="button"
           accessibilityLabel="Fermer"
         >
           <X size={24} color={couleurs.encre} />
-        </Pressable>
-        <Text style={styles.titre}>
+        </Appuyable>
+        <Text style={styles.titre} accessibilityRole="header">
           {unique ? "Remplacer l'exercice" : "Ajouter des exercices"}
         </Text>
       </View>
@@ -102,7 +103,7 @@ export default function ChoisirExercices() {
           renderItem={({ item }) => {
             const coche = choix.some((c) => c.slug === item.slug);
             return (
-              <Pressable
+              <Appuyable
                 style={[styles.ligne, coche && styles.ligneCochee]}
                 onPress={() => basculer({ slug: item.slug, nom: item.nom, image: item.image })}
                 accessibilityRole={unique ? "button" : "checkbox"}
@@ -133,7 +134,7 @@ export default function ChoisirExercices() {
                     {coche ? <Check size={16} color={couleurs.canevas} strokeWidth={3} /> : null}
                   </View>
                 )}
-              </Pressable>
+              </Appuyable>
             );
           }}
         />
@@ -141,7 +142,7 @@ export default function ChoisirExercices() {
 
       {unique ? null : (
         <View style={styles.pied}>
-          <Pressable
+          <Appuyable
             style={[styles.ajouter, choix.length === 0 && styles.inactif]}
             disabled={choix.length === 0}
             onPress={ajouter}
@@ -150,7 +151,7 @@ export default function ChoisirExercices() {
             <Text style={styles.ajouterTexte}>
               {choix.length === 0 ? "Coche des exercices" : `Ajouter (${choix.length})`}
             </Text>
-          </Pressable>
+          </Appuyable>
         </View>
       )}
     </SafeAreaView>

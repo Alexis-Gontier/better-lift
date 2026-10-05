@@ -32,11 +32,12 @@ import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
 import { ChevronDown, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Alert, BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
 import { PaveNumerique } from "../components/seance/pave-numerique";
+import { Appuyable } from "../components/ui/appuyable";
 import { attendreChoix } from "../lib/choix-exercices";
 import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents } from "../lib/requetes";
@@ -118,15 +119,29 @@ export default function Seance() {
     }
   }, [repos, seance, modifier]);
 
+  // Le retour d'Android ferme d'abord le pavé, comme une feuille, en gardant la
+  // saisie : sans lui, il quittait la séance et perdait la valeur tapée.
+  // `fermerPave` se lit au moment du retour, jamais figé à l'abonnement.
+  const fermerPave = useRef<() => void>(() => {});
+  const paveOuvert = edition !== null;
+  useEffect(() => {
+    if (!paveOuvert) return;
+    const abonnement = BackHandler.addEventListener("hardwareBackPress", () => {
+      fermerPave.current();
+      return true;
+    });
+    return () => abonnement.remove();
+  }, [paveOuvert]);
+
   if (!pret) return <SafeAreaView style={styles.ecran} />;
 
   if (!seance) {
     return (
       <SafeAreaView style={[styles.ecran, styles.centre]}>
         <Text style={styles.pale}>Aucune séance en cours.</Text>
-        <Pressable onPress={() => router.replace("/")} style={styles.secondaire}>
+        <Appuyable onPress={() => router.replace("/")} style={styles.secondaire}>
           <Text style={styles.secondaireTexte}>Retour</Text>
-        </Pressable>
+        </Appuyable>
       </SafeAreaView>
     );
   }
@@ -198,6 +213,7 @@ export default function Seance() {
     if (edition) modifier(appliquer(seance, edition));
     setEdition(null);
   };
+  fermerPave.current = fermer;
   const suivant = () => {
     if (!edition) return;
     modifier(appliquer(seance, edition));
@@ -228,7 +244,7 @@ export default function Seance() {
     <SafeAreaView style={styles.ecran}>
       <View style={styles.entete}>
         <View style={styles.titreLigne}>
-          <Pressable
+          <Appuyable
             onPress={replier}
             hitSlop={8}
             style={styles.replier}
@@ -236,24 +252,29 @@ export default function Seance() {
             accessibilityLabel="Replier la séance"
           >
             <ChevronDown size={24} color={couleurs.encreSecondaire} />
-          </Pressable>
+          </Appuyable>
           <View style={styles.titre}>
-            <Text style={styles.nom} numberOfLines={1}>
+            <Text style={styles.nom} numberOfLines={1} accessibilityRole="header">
               {seance.nom}
             </Text>
             <Text style={styles.sous}>Démarrée à {formatHeure(seance.debut, FUSEAU)}</Text>
           </View>
           {/* Secondaire (D105) : l'aplat de l'écran est la ✓ de la prochaine série. */}
-          <Pressable
+          <Appuyable
             onPress={() => router.push("/fin")}
+            hitSlop={4}
             style={({ pressed }) => [styles.terminer, pressed && styles.appuye]}
             accessibilityRole="button"
           >
             <Text style={styles.terminerTexte}>Terminer</Text>
-          </Pressable>
+          </Appuyable>
         </View>
         <View style={styles.chiffres}>
-          <Text style={styles.chrono} accessibilityLabel="Durée">
+          {/* Le libellé porte la valeur : seul, « Durée » la remplaçait à la lecture. */}
+          <Text
+            style={styles.chrono}
+            accessibilityLabel={`Durée ${formaterDuree(secondesEcoulees(seance.debut, maintenant))}`}
+          >
             {formaterDuree(secondesEcoulees(seance.debut, maintenant))}
           </Text>
           <Chiffre libelle="Volume" valeur={formaterCharge(bilan.volumeKg, SYSTEME_UNITES)} />
@@ -308,13 +329,13 @@ export default function Seance() {
           </View>
         ))}
         <View style={styles.pied}>
-          <Pressable onPress={ajouter} style={styles.ajouter} accessibilityRole="button">
+          <Appuyable onPress={ajouter} style={styles.ajouter} accessibilityRole="button">
             <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
             <Text style={styles.ajouterTexte}>Ajouter un exercice</Text>
-          </Pressable>
-          <Pressable onPress={abandonner} style={styles.abandon} accessibilityRole="button">
+          </Appuyable>
+          <Appuyable onPress={abandonner} style={styles.abandon} accessibilityRole="button">
             <Text style={styles.abandonTexte}>Abandonner la séance</Text>
-          </Pressable>
+          </Appuyable>
         </View>
       </ScrollView>
 
@@ -441,6 +462,6 @@ const useStyles = creerStyles((couleurs) => ({
     paddingHorizontal: espace.l,
   },
   secondaireTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
-  abandon: { height: 44, alignItems: "center", justifyContent: "center" },
+  abandon: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
   abandonTexte: { color: couleurs.dangerEncre, fontSize: 15 },
 }));

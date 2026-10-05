@@ -1,7 +1,8 @@
 import type { ErrorBoundaryProps } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CIBLE, creerStyles, espace, rayon, taille } from "../../lib/theme";
+import { Appuyable } from "./appuyable";
 
 /**
  * Ce qu'Expo Router affiche quand un écran plante, au lieu d'un écran mort
@@ -17,13 +18,15 @@ export function EcranErreur({
   return (
     <SafeAreaView style={styles.ecran}>
       <View style={styles.centre} accessibilityRole="alert">
-        <Text style={styles.titre}>Quelque chose s'est mal passé.</Text>
+        <Text style={styles.titre} accessibilityRole="header">
+          Quelque chose s'est mal passé.
+        </Text>
         <Text style={styles.texte}>{message}</Text>
         {__DEV__ ? <Text style={styles.detail}>{error.message}</Text> : null}
       </View>
-      <Pressable onPress={retry} style={styles.bouton} accessibilityRole="button">
+      <Appuyable onPress={retry} style={styles.bouton} accessibilityRole="button">
         <Text style={styles.boutonTexte}>Réessayer</Text>
-      </Pressable>
+      </Appuyable>
     </SafeAreaView>
   );
 }

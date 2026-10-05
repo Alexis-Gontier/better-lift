@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
 import { CIBLE, creerStyles, espace, rayon, taille } from "../lib/theme";
+import { Appuyable } from "./ui/appuyable";
 
 /**
  * Les séances terminées qui n'ont pas encore atteint le serveur : en attente
@@ -23,14 +24,14 @@ export function FileEnvoi() {
               ? "1 séance en attente d'envoi"
               : `${enAttente.length} séances en attente d'envoi`}
           </Text>
-          <Pressable
+          <Appuyable
             onPress={() => void synchroniser()}
             disabled={envoiEnCours}
             style={styles.bouton}
             accessibilityRole="button"
           >
             <Text style={styles.boutonTexte}>{envoiEnCours ? "Envoi…" : "Réessayer"}</Text>
-          </Pressable>
+          </Appuyable>
         </View>
       ) : null}
 
@@ -40,7 +41,7 @@ export function FileEnvoi() {
             « {e.seance.nom} » refusée : {e.erreur}
           </Text>
           <View style={{ flexDirection: "row", gap: espace.s }}>
-            <Pressable
+            <Appuyable
               style={styles.bouton}
               accessibilityRole="button"
               onPress={async () => {
@@ -50,8 +51,8 @@ export function FileEnvoi() {
               }}
             >
               <Text style={styles.boutonTexte}>Reprendre</Text>
-            </Pressable>
-            <Pressable
+            </Appuyable>
+            <Appuyable
               style={styles.bouton}
               accessibilityRole="button"
               onPress={() =>
@@ -66,7 +67,7 @@ export function FileEnvoi() {
               }
             >
               <Text style={styles.danger}>Supprimer</Text>
-            </Pressable>
+            </Appuyable>
           </View>
         </View>
       ))}

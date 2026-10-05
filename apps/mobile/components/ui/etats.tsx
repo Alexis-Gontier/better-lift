@@ -1,5 +1,6 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
+import { Appuyable } from "./appuyable";
 
 /**
  * Les quatre états de chaque écran (chargement, erreur, vide — le nominal est
@@ -21,9 +22,9 @@ export function Erreur({ message, onReessayer }: { message: string; onReessayer:
   return (
     <View style={styles.centre}>
       <Text style={styles.texte}>{message}</Text>
-      <Pressable onPress={onReessayer} style={styles.bouton} accessibilityRole="button">
+      <Appuyable onPress={onReessayer} style={styles.bouton} accessibilityRole="button">
         <Text style={styles.boutonTexte}>Réessayer</Text>
-      </Pressable>
+      </Appuyable>
     </View>
   );
 }
@@ -32,7 +33,9 @@ export function Vide({ titre, message }: { titre: string; message: string }) {
   const styles = useStyles();
   return (
     <View style={styles.centre}>
-      <Text style={styles.titre}>{titre}</Text>
+      <Text style={styles.titre} accessibilityRole="header">
+        {titre}
+      </Text>
       <Text style={styles.texte}>{message}</Text>
     </View>
   );

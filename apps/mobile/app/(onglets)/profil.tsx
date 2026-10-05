@@ -2,9 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
-import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { Alert, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FileEnvoi } from "../../components/file-envoi";
+import { Appuyable } from "../../components/ui/appuyable";
 import { authClient } from "../../lib/auth-client";
 import { persister } from "../../lib/hors-ligne";
 import { useSeance } from "../../lib/seance";
@@ -52,7 +53,9 @@ export default function Profil() {
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <Text style={styles.titre}>Profil</Text>
+      <Text style={styles.titre} accessibilityRole="header">
+        Profil
+      </Text>
       <ScrollView contentContainerStyle={styles.contenu}>
         <Section titre="Compte">
           <Ligne libelle="Adresse">
@@ -89,9 +92,9 @@ export default function Profil() {
             supprimer une séance refusée. */}
         <FileEnvoi />
 
-        <Pressable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
+        <Appuyable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
           <Text style={styles.dangerTexte}>Se déconnecter</Text>
-        </Pressable>
+        </Appuyable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -101,7 +104,9 @@ function Section({ titre, children }: { titre: string; children: ReactNode }) {
   const styles = useStyles();
   return (
     <View>
-      <Text style={styles.section}>{titre}</Text>
+      <Text style={styles.section} accessibilityRole="header">
+        {titre}
+      </Text>
       <View style={styles.carte}>{children}</View>
     </View>
   );

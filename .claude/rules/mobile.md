@@ -49,6 +49,13 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   `creerStyles` traduit `fontWeight` en famille Archivo de la bonne graisse : un style hors de la
   fabrique (options d'Expo Router, `tabBarLabelStyle`) pose `fontFamily: polices.…` lui-même.
   Chiffres héros : `polices.condense`, coupe générée par `scripts/polices/condenser-archivo.py`.
+- **Tout élément appuyable passe par `Appuyable`** (`components/ui/appuyable.tsx`) : il pâlit
+  sous le doigt. Un style en fonction (`({ pressed }) => …`) garde la main sur l'état appuyé.
+  Seuls les voiles sous les feuilles restent des `Pressable` nus. Cible de 48 au minimum
+  (`CIBLE`, ou `hitSlop` qui l'atteint) ; un titre d'écran ou de section porte
+  `accessibilityRole="header"`.
+- **Contraste** : tout texte tient 4,5:1 sur la surface où il se pose, dans les deux registres
+  (`encreAttenuee` comprise). Un nouveau token se mesure avant d'entrer.
 - **Fond des images d'exercice** : rôle `fondImage`, blanc dans les deux registres (les médias du
   catalogue sont détourés sur blanc).
 - **Taille du texte du système** : suivie partout, sauf dans les éléments de hauteur fixe de la
@@ -68,12 +75,14 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 - Quatre onglets **Accueil · Routines · Stats · Profil** et, au centre, un **rond lime**
   « Démarrer » (feuille `app/demarrer.tsx`, logique dans `lib/demarrer.ts`) qui devient
   « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
-  en lime** (D115, remplace D106 à la demande de l'utilisateur). Icônes Lucide.
+  en lime** (D115, remplace D106 à la demande de l'utilisateur) — token `ongletActif` : lime en
+  sombre, olive en clair, où le lime ne tient que 1,8:1 sur la barre. Icônes Lucide.
 - La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine. La page d'une
   routine garde « Démarrer la routine », dégagé du débord du rond (30).
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
-  onglets et leurs écrans empilés. Repos restant s'il tourne, chrono sinon ; tout le bandeau
+  onglets et leurs écrans empilés. Il se pose au-dessus du débord du rond (30), sinon le rond le
+  recouvre. Repos restant s'il tourne, chrono sinon ; tout le bandeau
   ramène à la séance.
 - **L'Accueil (D110)** : « Cette semaine » (`resumeSemaine`, dans
   le fuseau), « À suivre » (`routineASuivre` : la routine qui suit la dernière faite, carte
@@ -130,7 +139,8 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Pavé intégré (D109)** : les cases kg / reps ne sont pas des `TextInput` ; un appui ouvre
   `components/seance/pave-numerique.tsx`, et l'écran de séance tient la saisie (`Edition` dans
   `app/seance.tsx`). La logique des touches (`toucherPave`, `ajusterSurPave`, `lireReps`) vit
-  dans `shared/pave.ts`. Une saisie invalide n'est jamais écrite ; la ligne saisie défile au
+  dans `shared/pave.ts`. Le retour Android ferme le pavé en gardant la saisie (`BackHandler`),
+  au lieu de quitter la séance. Une saisie invalide n'est jamais écrite ; la ligne saisie défile au
   quart haut de l'écran (positions des blocs et des lignes par `onLayout`).
 - **Fin du repos app fermée** : notification locale programmée à `repos.fin`
   (`lib/notification-repos.ts`, appelée par le `SeanceProvider`), dérivée de l'état : tout

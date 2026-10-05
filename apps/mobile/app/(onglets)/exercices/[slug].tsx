@@ -79,7 +79,9 @@ export default function FicheExercice() {
         <Media gif={ex?.gif ?? null} image={resume?.image ?? null} nom={nom} />
 
         <View>
-          <Text style={styles.section}>Records</Text>
+          <Text style={styles.section} accessibilityRole="header">
+            Records
+          </Text>
           <Records etat={records} />
         </View>
 
@@ -91,7 +93,9 @@ export default function FicheExercice() {
             />
             {ex.instructions.length > 0 ? (
               <View style={styles.etapes}>
-                <Text style={styles.section}>Exécution</Text>
+                <Text style={styles.section} accessibilityRole="header">
+                  Exécution
+                </Text>
                 {ex.instructions.map((etape, i) => (
                   <View key={etape} style={styles.etape}>
                     <Text style={styles.numero}>{i + 1}</Text>

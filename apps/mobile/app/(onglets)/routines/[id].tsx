@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Dumbbell, Pencil } from "lucide-react-native";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
+import { Appuyable } from "../../../components/ui/appuyable";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
 import { useDemarrer } from "../../../lib/demarrer";
@@ -64,7 +65,7 @@ export default function DetailRoutine() {
       <EnteteRetour
         titre=""
         action={
-          <Pressable
+          <Appuyable
             onPress={modifier}
             style={styles.modifier}
             accessibilityRole="button"
@@ -72,7 +73,7 @@ export default function DetailRoutine() {
           >
             <Pencil size={18} color={couleurs.encreSecondaire} />
             <Text style={styles.modifierTexte}>Modifier</Text>
-          </Pressable>
+          </Appuyable>
         }
       />
       <ScrollView contentContainerStyle={styles.contenu}>
@@ -84,12 +85,16 @@ export default function DetailRoutine() {
         <CarteMuscles exercices={r.exercices} />
 
         {r.exercices.length === 0 ? (
-          <Pressable onPress={modifier} style={styles.invite} accessibilityRole="button">
+          <Appuyable onPress={modifier} style={styles.invite} accessibilityRole="button">
             <Text style={styles.inviteTexte}>Ajoute des exercices à cette routine</Text>
-          </Pressable>
+          </Appuyable>
         ) : null}
 
-        {r.exercices.length > 0 ? <Text style={styles.section}>Exercices</Text> : null}
+        {r.exercices.length > 0 ? (
+          <Text style={styles.section} accessibilityRole="header">
+            Exercices
+          </Text>
+        ) : null}
         {r.exercices.map((ex, i) => (
           // L'index entre dans la clé : le même exercice peut figurer deux fois.
           <View key={`${ex.slug}-${i}`} style={styles.carte}>
@@ -121,16 +126,21 @@ export default function DetailRoutine() {
       {/* L'action de l'écran, fixée sous le pouce : l'aplat lime (D105). */}
       {seance ? null : (
         <View style={styles.pied}>
-          <Pressable
-            style={[styles.demarrer, ouverture !== null && { opacity: 0.6 }]}
+          <Appuyable
+            // Inactif, il le montre : sans exercice, il n'y a rien à démarrer.
+            style={[
+              styles.demarrer,
+              (ouverture !== null || r.exercices.length === 0) && { opacity: 0.6 },
+            ]}
             disabled={ouverture !== null || r.exercices.length === 0}
+            accessibilityState={{ disabled: ouverture !== null || r.exercices.length === 0 }}
             onPress={() => void demarrer(r.id)}
             accessibilityRole="button"
           >
             <Text style={styles.demarrerTexte}>
               {ouverture !== null ? "Ouverture…" : "Démarrer la routine"}
             </Text>
-          </Pressable>
+          </Appuyable>
         </View>
       )}
     </SafeAreaView>

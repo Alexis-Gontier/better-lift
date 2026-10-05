@@ -1,6 +1,6 @@
 import type { ChampPave, TouchePave } from "@better-lift/shared";
 import { ChevronDown, Delete } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   CIBLE,
@@ -13,6 +13,7 @@ import {
   useCouleurs,
 } from "../../lib/theme";
 import { UNITE } from "../../lib/unites";
+import { Appuyable } from "../ui/appuyable";
 
 const TOUCHES: TouchePave[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0"];
 
@@ -73,7 +74,7 @@ export function PaveNumerique({
             <Touche texte="+2,5" onPress={() => onAjuster(2.5)} etroite />
           </View>
         ) : null}
-        <Pressable
+        <Appuyable
           onPress={onFermer}
           hitSlop={8}
           style={styles.fermer}
@@ -81,7 +82,7 @@ export function PaveNumerique({
           accessibilityLabel="Fermer le pavé"
         >
           <ChevronDown size={24} color={couleurs.encreSecondaire} />
-        </Pressable>
+        </Appuyable>
       </View>
 
       <View style={styles.grille}>
@@ -94,19 +95,19 @@ export function PaveNumerique({
             onPress={() => onTouche(t)}
           />
         ))}
-        <Pressable
+        <Appuyable
           onPress={onEffacer}
           style={({ pressed }) => [styles.touche, pressed && styles.toucheAppuyee]}
           accessibilityRole="button"
           accessibilityLabel="Effacer"
         >
           <Delete size={22} color={couleurs.encre} />
-        </Pressable>
+        </Appuyable>
       </View>
 
       <View style={styles.actions}>
         {charge ? (
-          <Pressable
+          <Appuyable
             onPress={onSuivant}
             style={({ pressed }) => [styles.secondaire, pressed && styles.toucheAppuyee]}
             accessibilityRole="button"
@@ -114,9 +115,9 @@ export function PaveNumerique({
             <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.secondaireTexte}>
               Suivant · reps
             </Text>
-          </Pressable>
+          </Appuyable>
         ) : null}
-        <Pressable
+        <Appuyable
           onPress={onValider}
           disabled={invalide}
           style={({ pressed }) => [
@@ -130,7 +131,7 @@ export function PaveNumerique({
           <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.validerTexte}>
             Valider la série
           </Text>
-        </Pressable>
+        </Appuyable>
       </View>
     </View>
   );
@@ -149,7 +150,7 @@ function Touche({
 }) {
   const styles = useStyles();
   return (
-    <Pressable
+    <Appuyable
       onPress={onPress}
       disabled={inactive}
       style={({ pressed }) => [
@@ -164,7 +165,7 @@ function Touche({
       <Text maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE} style={styles.toucheTexte}>
         {texte}
       </Text>
-    </Pressable>
+    </Appuyable>
   );
 }
 
