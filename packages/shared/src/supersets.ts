@@ -9,7 +9,7 @@
  */
 
 export type AvecGroupe = { supersetGroupe?: number | null };
-export type Groupe = { debut: number; fin: number; lettre: string };
+export type GroupeSuperset = { debut: number; fin: number; lettre: string };
 
 const num = (x: AvecGroupe | undefined) => x?.supersetGroupe ?? null;
 const avec = <T extends AvecGroupe>(x: T, n: number | null): T => ({ ...x, supersetGroupe: n });
@@ -39,11 +39,11 @@ export function normaliserGroupes<T extends AvecGroupe>(liste: readonly T[]): T[
   return res;
 }
 
-export function groupes(liste: readonly AvecGroupe[]): Groupe[] {
+export function groupes(liste: readonly AvecGroupe[]): GroupeSuperset[] {
   return suites(liste).map((s, rang) => ({ ...s, lettre: lettre(rang) }));
 }
 
-export function groupeDe(liste: readonly AvecGroupe[], i: number): Groupe | null {
+export function groupeDe(liste: readonly AvecGroupe[], i: number): GroupeSuperset | null {
   return groupes(liste).find((g) => g.debut <= i && i <= g.fin) ?? null;
 }
 

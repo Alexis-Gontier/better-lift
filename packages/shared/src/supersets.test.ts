@@ -27,7 +27,7 @@ describe("normaliserGroupes (D146)", () => {
     expect(vue(normaliserGroupes(l("a1 b1 c d1 e1")))).toBe("a1 b1 c d2 e2");
   });
   it("lit un champ absent comme null", () => {
-    expect(vue(normaliserGroupes([{ nom: "a" }, { nom: "b" }]))).toBe("a b");
+    expect(vue(normaliserGroupes<E>([{ nom: "a" }, { nom: "b" }]))).toBe("a b");
   });
   it("ne modifie pas la liste reçue", () => {
     const avant = l("a7 b7");

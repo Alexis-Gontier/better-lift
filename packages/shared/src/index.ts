@@ -140,7 +140,7 @@ export {
   type AvecGroupe,
   defaireGroupe,
   deplacerAvecGroupes,
-  type Groupe,
+  type GroupeSuperset,
   groupeDe,
   groupes,
   lierAuSuivant,

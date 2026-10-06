@@ -159,3 +159,25 @@ describe("résumés d'une routine", () => {
     expect(dureeEstimeeSec([])).toBe(0);
   });
 });
+
+describe("routineSaisie et les supersets (D145)", () => {
+  const exo = {
+    slug: "a",
+    reposSec: null,
+    series: [{ type: "NORMALE", repsCible: 8, chargeCibleKg: null }],
+  };
+  const avec = (g?: number | null) => ({
+    nom: "Push",
+    exercices: [g === undefined ? exo : { ...exo, supersetGroupe: g }],
+  });
+  it("accepte un exercice sans supersetGroupe", () => {
+    expect(routineSaisie.safeParse(avec()).success).toBe(true);
+  });
+  it("accepte un groupe ou null", () => {
+    expect(routineSaisie.safeParse(avec(1)).success).toBe(true);
+    expect(routineSaisie.safeParse(avec(null)).success).toBe(true);
+  });
+  it("refuse un groupe nul ou négatif", () => {
+    expect(routineSaisie.safeParse(avec(0)).success).toBe(false);
+  });
+});

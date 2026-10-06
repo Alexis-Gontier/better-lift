@@ -42,6 +42,7 @@ describe("versBrouillon / versSaisie", () => {
         {
           slug: "barbell-bench-press",
           reposSec: 180,
+          supersetGroupe: null,
           series: [
             { type: "ECHAUFFEMENT", repsCible: 10, chargeCibleKg: 40 },
             { type: "NORMALE", repsCible: 6, chargeCibleKg: 82.5 },
@@ -64,6 +65,7 @@ describe("versBrouillon / versSaisie", () => {
     expect(versSaisie(b, "metric").exercices[0]).toEqual({
       slug: "barbell-bench-press",
       reposSec: null,
+      supersetGroupe: null,
       series: [{ type: "NORMALE", repsCible: null, chargeCibleKg: null }],
     });
   });
@@ -106,5 +108,40 @@ describe("nouvelExercice et empreinte", () => {
     expect(empreinte(versBrouillon(routine, "metric"))).toBe(
       empreinte(versBrouillon(routine, "metric")),
     );
+  });
+});
+
+describe("supersets dans le brouillon (D145)", () => {
+  const exo = (slug: string, g?: number | null): RoutineDetail["exercices"][number] => ({
+    slug,
+    nom: slug,
+    image: null,
+    musclePrincipal: "Pectoraux",
+    musclesSecondaires: [],
+    reposSec: null,
+    ...(g === undefined ? {} : { supersetGroupe: g }),
+    series: [{ type: "NORMALE", repsCible: 8, chargeCibleKg: null }],
+  });
+  const de = (...exercices: RoutineDetail["exercices"]) =>
+    versBrouillon({ id: "r", nom: "R", exercices }, "metric");
+
+  it("versBrouillon lit le groupe, absent = null", () => {
+    expect(de(exo("a", 1), exo("b", 1), exo("c")).exercices.map((e) => e.supersetGroupe)).toEqual([
+      1,
+      1,
+      null,
+    ]);
+  });
+  it("nouvelExercice est hors groupe", () => {
+    expect(nouvelExercice("a", "A").supersetGroupe).toBeNull();
+  });
+  it("versSaisie envoie des groupes normalisés", () => {
+    const b = de(exo("a", 7), exo("b", 7), exo("c", 3));
+    expect(versSaisie(b, "metric").exercices.map((e) => e.supersetGroupe)).toEqual([1, 1, null]);
+  });
+  it("l'empreinte change quand un groupe change", () => {
+    const b = de(exo("a", null), exo("b", null));
+    const lie = { ...b, exercices: b.exercices.map((e) => ({ ...e, supersetGroupe: 1 })) };
+    expect(empreinte(lie)).not.toBe(empreinte(b));
   });
 });
