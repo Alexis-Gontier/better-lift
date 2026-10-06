@@ -1,6 +1,7 @@
 import { type ExerciceResume, GROUPES, type Groupe, LIBELLE_GROUPE } from "@better-lift/shared";
 import { Search } from "lucide-react";
 import { EtatVide } from "@/components/etats/etat-vide";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,32 +46,32 @@ export function ListeExercices({
 }: Props) {
   return (
     <section aria-label="Exercices" className="flex h-full flex-col">
-      <header className="flex flex-col gap-2.5 px-5 pt-6 pb-3">
-        <div>
-          <h2 className="text-[22px] font-extrabold tracking-tight">Exercices</h2>
-          <p className="text-[13px] text-(--ink-muted)">
-            {total} {total > 1 ? "exercices" : "exercice"}
-          </p>
-        </div>
-        <div className="relative">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-(--ink-faint)"
-          />
-          <Input
-            type="search"
-            aria-label="Rechercher un exercice"
-            value={q}
-            onChange={(e) => onRecherche(e.target.value)}
-            placeholder="Rechercher un exercice…"
-            className="rounded-[10px] pl-8"
-          />
+      {/* Le titre est dans l'en-tête commun (D157) ; ici, la recherche et le groupe (D160). */}
+      <header className="flex flex-col gap-2 border-b px-3 py-2.5">
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-(--ink-faint)"
+            />
+            <Input
+              type="search"
+              aria-label="Rechercher un exercice"
+              value={q}
+              onChange={(e) => onRecherche(e.target.value)}
+              placeholder="Rechercher un exercice…"
+              className="h-8 pl-8"
+            />
+          </div>
+          <Badge variant="outline" title={`${total} ${total > 1 ? "exercices" : "exercice"}`}>
+            {total}
+          </Badge>
         </div>
         <Select
           value={groupe ?? TOUS}
           onValueChange={(v) => onGroupe(v === TOUS ? undefined : (v as Groupe))}
         >
-          <SelectTrigger aria-label="Groupe musculaire" className="w-full rounded-[10px]">
+          <SelectTrigger aria-label="Groupe musculaire" size="sm" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -99,7 +100,7 @@ export function ListeExercices({
         // Radix enveloppe le contenu dans un `display: table` : sans ce `block`, les
         // noms longs débordent au lieu de se couper.
         <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
-          <ul className="flex flex-col gap-0.5 px-2.5">
+          <ul className="flex flex-col">
             {exercices.map((ex) => (
               <li key={ex.slug}>
                 <button
@@ -109,8 +110,11 @@ export function ListeExercices({
                   ref={(el) => {
                     if (ex.slug === slugSelectionne) el?.scrollIntoView({ block: "nearest" });
                   }}
-                  className={`flex h-[60px] w-full items-center gap-3 rounded-xl px-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) ${
-                    ex.slug === slugSelectionne ? "bg-(--surface-3)" : "hover:bg-(--surface-2)"
+                  className={`flex h-[60px] w-full items-center gap-3 border-b px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) focus-visible:ring-inset ${
+                    // La sélection est une surface et un liseré d'encre, jamais le lime (D160).
+                    ex.slug === slugSelectionne
+                      ? "bg-(--surface-2) shadow-[inset_2px_0_0_var(--ink)]"
+                      : "hover:bg-(--surface-1)"
                   }`}
                 >
                   {/* L'image FIXE de l'exercice (D46, jamais copiée) : ~6 Ko, là où le GIF

@@ -76,8 +76,9 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
 - **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
 - **Exercices** en disposition `fil` : catalogue à gauche, **fiche en une page** (D141) — GIF,
-  1RM estimé et sa courbe SVG (`courbe` de `calculs.ts`, testée ; dernier point en lime s'il
-  est record), records, historique (`["seances","historique",slug]`, invalidé par la
+  1RM estimé et sa courbe en `Chart` (Recharts, tracé `linear`, animations coupées ; `courbe`
+  de `calculs.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en lime s'il est record),
+  blocs en `Card`, historique en `Table`, nom dans le fil d'Ariane et nom anglais en sous-titre, records, historique (`["seances","historique",slug]`, invalidé par la
   suppression d'une séance), consignes.
 - **`BadgeRecord`** (`features/exercices/badge-record.tsx`) est la SEULE pastille record du web :
   ne jamais recopier ses classes.
