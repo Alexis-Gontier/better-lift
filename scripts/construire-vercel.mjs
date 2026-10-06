@@ -22,10 +22,14 @@ const executer = (/** @type {string} */ cmd) => execSync(cmd, { stdio: "inherit"
 
 rmSync(SORTIE, { recursive: true, force: true });
 
+// Lue AVANT la valeur factice ci-dessous : seule une vraie URL peut migrer.
+// biome-ignore lint/suspicious/noUndeclaredEnvVars: lancé par Vercel, hors de turbo.
+const urlDirecte = process.env.DIRECT_URL;
+
 // Le client Prisma est généré, pas commité : il doit exister avant le bundle.
-// `prisma.config.ts` exige DIRECT_URL, que Vercel ne fournit pas (le runtime ne
-// lit que DATABASE_URL) : `generate` ne contacte jamais la base, une URL
-// factice suffit — comme en CI. Une vraie valeur, en local, l'emporte.
+// `prisma.config.ts` exige DIRECT_URL, que seule la production fournit (pour
+// migrer, plus bas ; le runtime ne lit que DATABASE_URL) : `generate` ne contacte
+// jamais la base, une URL factice suffit — comme en CI. Une vraie valeur l'emporte.
 process.env.DIRECT_URL ??= "postgresql://build:build@localhost:5432/build";
 executer("pnpm --filter @better-lift/db generate");
 executer("pnpm --filter @better-lift/web build");
@@ -70,5 +74,16 @@ writeFileSync(
     ],
   }),
 );
+
+// Les migrations partent avec le déploiement de PRODUCTION, et lui seul : une
+// prévisualisation de PR migrerait la base de prod avant la fusion. En dernier,
+// une fois tout construit : un build cassé ne touche pas la base. Sans URL
+// directe, le build échoue plutôt que de déployer un code qui attend une
+// colonne absente — l'ancien déploiement reste en ligne.
+if (process.env.VERCEL_ENV === "production") {
+  if (!urlDirecte) throw new Error("DIRECT_URL manque : la production ne peut pas migrer.");
+  process.env.DIRECT_URL = urlDirecte;
+  executer("pnpm --filter @better-lift/db exec prisma migrate deploy");
+}
 
 console.log(`Déploiement construit dans ${SORTIE}`);

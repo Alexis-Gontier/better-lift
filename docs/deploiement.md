@@ -29,6 +29,9 @@ Remove-Item Env:DIRECT_URL, Env:DATABASE_URL
 Attendu : cinq migrations appliquées, puis `Catalogue semé : 1316 exercices.` Les variables
 posées dans le terminal l'emportent sur le `.env`, qui continue de viser `dev`.
 
+Ensuite, les migrations n'ont plus à être lancées à la main : chaque build de production les
+applique (voir `DIRECT_URL` ci-dessous). Le semis du catalogue, lui, reste manuel.
+
 ## 2. Déployer sur Vercel
 
 ```powershell
@@ -40,6 +43,7 @@ Dans les réglages du projet (**Settings → Environment Variables**, environnem
 | Variable | Valeur |
 |---|---|
 | `DATABASE_URL` | l'URL **poolée** de `production/betterlift` |
+| `DIRECT_URL` | l'URL **directe** de `production/betterlift` (sans `-pooler`) — environnement *Production* SEUL : le build de production l'utilise pour `prisma migrate deploy` |
 | `BETTER_AUTH_SECRET` | un secret **neuf** : `openssl rand -base64 32` — jamais celui du dev |
 | `BETTER_AUTH_URL` | `https://<ton-domaine>` (sans `/api`) |
 | `SIGNUP_ALLOWLIST` | les adresses autorisées, séparées par des virgules, sans espace |
