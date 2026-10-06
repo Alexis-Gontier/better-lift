@@ -68,13 +68,13 @@ model Exercise {
 // mot de passe.
 
 model User {
-  id            String    @id
+  id            String       @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean      @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   sessions      Session[]
   accounts      Account[]
   routines      Routine[]
@@ -180,7 +180,7 @@ model RoutineExercice {
   exerciseId     String
   position       Int
   reposSec       Int?
-  // D11 : les supersets sont portés par le modèle, absents de l'interface.
+  // D145 : le groupe de superset (D11 révisée : il entre dans l'interface).
   supersetGroupe Int?
 
   routine  Routine        @relation(fields: [routineId], references: [id], onDelete: Cascade)
@@ -234,13 +234,15 @@ model Seance {
 }
 
 model SeanceExercice {
-  id         String @id @default(cuid())
-  seanceId   String
-  exerciseId String
-  position   Int
-  reposSec   Int?
+  id             String  @id @default(cuid())
+  seanceId       String
+  exerciseId     String
+  position       Int
+  reposSec       Int?
   // D90 : la note libre de l'exercice pendant la séance (« siège cran 4 »).
-  note       String?       @db.VarChar(500)
+  note           String? @db.VarChar(500)
+  // D145 : le groupe de superset, recopié de la routine ou fait en séance.
+  supersetGroupe Int?
 
   seance   Seance        @relation(fields: [seanceId], references: [id], onDelete: Cascade)
   exercise Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
