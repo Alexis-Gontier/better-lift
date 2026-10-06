@@ -98,10 +98,13 @@ export {
   arreterRepos,
   avecPrecedents,
   bilanSeance,
+  defaireSuperset,
+  delierExercice,
   demarrerDepuisRoutine,
   demarrerVide,
   deplacerExercice,
   type ExerciceEnCours,
+  lierExercices,
   marquerReposSignale,
   modifierNote,
   modifierReposExercice,
@@ -136,6 +139,17 @@ export {
   semainesTenues,
   type Totaux,
 } from "./stats.js";
+export {
+  type AvecGroupe,
+  defaireGroupe,
+  deplacerAvecGroupes,
+  type GroupeSuperset,
+  groupeDe,
+  groupes,
+  lierAuSuivant,
+  normaliserGroupes,
+  retirerDuGroupe,
+} from "./supersets.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";

@@ -38,6 +38,7 @@ describe("versEcriture", () => {
         exerciseId: "ex-1",
         reposSec: 120,
         note: null,
+        supersetGroupe: null,
         series: [{ position: 0, type: "NORMALE", reps: 6, chargeKg: 82.5, faite: true }],
       },
     ]);
@@ -51,6 +52,22 @@ describe("versEcriture", () => {
     } as SeanceSaisie;
     expect(versEcriture(avecNote, ids)[0]?.note).toBe("siège cran 4");
     expect(versEcriture(saisie, ids)[0]?.note).toBeNull();
+  });
+
+  it("normalise les groupes de superset, absents = null (D145, D146)", () => {
+    const exo = saisie.exercices[0];
+    if (!exo) throw new Error("exercice manquant");
+    const avecGroupes = {
+      ...saisie,
+      exercices: [
+        { ...exo, supersetGroupe: 4 },
+        { ...exo, supersetGroupe: 4 },
+        { ...exo, supersetGroupe: 9 },
+        exo,
+      ],
+    } as SeanceSaisie;
+    const ids = new Map([["barbell-bench-press", "ex-1"]]);
+    expect(versEcriture(avecGroupes, ids).map((e) => e.supersetGroupe)).toEqual([1, 1, null, null]);
   });
 
   it("refuse un slug inconnu, en le nommant", () => {

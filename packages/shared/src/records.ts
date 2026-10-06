@@ -148,6 +148,8 @@ export type SeanceDetail = SeanceResume & {
     nom: string;
     image: string | null;
     note: string | null;
+    /** Le groupe de superset (D153), `null` hors groupe ; absent d'un cache antérieur. */
+    supersetGroupe?: number | null;
     series: SerieLue[];
     precedentes: { reps: number | null; chargeKg: number | null }[];
   }[];

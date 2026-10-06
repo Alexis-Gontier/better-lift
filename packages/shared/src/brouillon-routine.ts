@@ -1,5 +1,6 @@
 import { chargeEnTexte, lireCharge } from "./charge.js";
 import type { RoutineDetail, RoutineSaisie, TypeSerie } from "./routines.js";
+import { normaliserGroupes } from "./supersets.js";
 import type { UnitSystem } from "./units.js";
 
 /**
@@ -19,6 +20,8 @@ export type ExerciceBrouillon = {
   nom: string;
   image: string | null;
   repos: string;
+  /** Le groupe de superset (D145), `null` hors groupe. */
+  supersetGroupe: number | null;
   series: SerieBrouillon[];
 };
 
@@ -39,6 +42,7 @@ export function versBrouillon(r: RoutineDetail | null, systeme: UnitSystem): Bro
       nom: e.nom,
       image: e.image,
       repos: e.reposSec === null ? "" : String(e.reposSec),
+      supersetGroupe: e.supersetGroupe ?? null,
       series: e.series.map((s) => ({
         type: s.type,
         reps: s.repsCible === null ? "" : String(s.repsCible),
@@ -55,7 +59,15 @@ export function nouvelExercice(
   image: string | null = null,
 ): ExerciceBrouillon {
   const vide: SerieBrouillon = { type: "NORMALE", reps: "", charge: "" };
-  return { cle: cle(), slug, nom, image, repos: "", series: [vide, { ...vide }, { ...vide }] };
+  return {
+    cle: cle(),
+    slug,
+    nom,
+    image,
+    repos: "",
+    supersetGroupe: null,
+    series: [vide, { ...vide }, { ...vide }],
+  };
 }
 
 /** Un entier de 0 à `max`, ou vide. `NaN` signale une saisie à corriger. */
@@ -89,9 +101,10 @@ export function brouillonValide(b: Brouillon, systeme: UnitSystem): boolean {
 export function versSaisie(b: Brouillon, systeme: UnitSystem): RoutineSaisie {
   return {
     nom: b.nom.trim(),
-    exercices: b.exercices.map((e) => ({
+    exercices: normaliserGroupes(b.exercices).map((e) => ({
       slug: e.slug,
       reposSec: lireEntier(e.repos, 3600),
+      supersetGroupe: e.supersetGroupe,
       series: e.series.map((s) => ({
         type: s.type,
         repsCible: lireEntier(s.reps, 999),

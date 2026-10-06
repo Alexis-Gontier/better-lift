@@ -45,6 +45,11 @@ export type ExerciceRoutine = {
   musclePrincipal: string;
   musclesSecondaires: string[];
   reposSec: number | null;
+  /**
+   * Le groupe de superset (D145), `null` hors groupe. Facultatif : une routine
+   * gardée hors ligne par une version antérieure du mobile ne l'a pas.
+   */
+  supersetGroupe?: number | null;
   series: SerieRoutine[];
 };
 
@@ -65,6 +70,8 @@ export const serieSaisie = z.object({
 export const exerciceSaisi = z.object({
   slug: z.string().min(1).max(200),
   reposSec: z.number().int().min(0).max(3600).nullable(),
+  // Facultatif (D145) : un éditeur d'avant les supersets ne l'envoie pas.
+  supersetGroupe: z.number().int().min(1).max(100).nullable().optional(),
   series: z.array(serieSaisie).min(1).max(20),
 });
 
