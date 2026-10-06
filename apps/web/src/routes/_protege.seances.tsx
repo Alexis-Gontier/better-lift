@@ -79,6 +79,11 @@ function PageSeances() {
   // Le panneau de détail n'existe que lorsqu'une séance est ouverte : la coquille
   // change alors son jeu de panneaux (et sa clé de persistance).
   return (
-    <PageListeDetail titre="Séances" liste={panneauListe()} detail={id ? <Outlet /> : undefined} />
+    <PageListeDetail
+      titre="Séances"
+      disposition="fil"
+      liste={panneauListe()}
+      detail={id ? <Outlet /> : undefined}
+    />
   );
 }

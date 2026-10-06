@@ -55,7 +55,9 @@ export function ListeSeances({
           message="Ton historique se remplira au fil de tes entraînements, sur ton téléphone."
         />
       ) : (
-        <ScrollArea className="min-h-0 flex-1">
+        // Radix enveloppe le contenu dans un `display: table` qui s'élargit au lieu de
+        // couper : sans ce `block`, les aperçus débordent sans points de suspension.
+        <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
           {grouperParMois(seances, FUSEAU).map((g) => (
             <div key={g.cle}>
               <h3 className="px-5 pt-4 pb-1.5 text-[11px] font-bold tracking-[0.09em] text-(--ink-subtle) uppercase">
