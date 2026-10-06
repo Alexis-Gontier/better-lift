@@ -84,8 +84,8 @@
   --color-destructive-foreground: var(--danger-on);
   --color-destructive-ink: var(--danger-ink);
 
-  /* `card` : les blocs posés dans un panneau, une marche au-dessus de lui. */
-  --color-card: var(--surface-2);
+  /* `card` (D158) : la carte se détache par son filet, une marche au-dessus du canevas. */
+  --color-card: var(--surface-1);
   --color-card-foreground: var(--ink);
 
   /* La sidebar (D72, D154). Même fond que le canevas et le contenu : la coquille
