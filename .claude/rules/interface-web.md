@@ -39,15 +39,17 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
 
 ## Écrans
 
-- **Routines** en disposition `colonne` (`PageListeDetail`) : cartes à gauche, routine ouverte
-  **toujours modifiable** à droite. La barre Annuler/Enregistrer n'apparaît qu'une fois la copie
-  différente de la version enregistrée (`empreinte`). Cartes d'exercice à la Hevy : image,
+- **Routines** en disposition `colonne` (`PageListeDetail`) : lignes à gauche (filtre `?q=` par
+  `plier` de `lib/texte.ts`, « Nouvelle routine » en contour), routine ouverte **toujours
+  modifiable** à droite. Annuler / Enregistrer vivent dans l'en-tête commun (`DansEnTete`) et
+  n'apparaissent qu'une fois la copie différente de la version enregistrée (`empreinte`) :
+  Enregistrer est le seul aplat de l'écran. Cartes d'exercice à la Hevy : image,
   « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées É/1/2/3
   (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
-  Espace, flèches, Espace) par `useOrdonnerRoutines`, mutation OPTIMISTE sur
+  Espace, flèches, Espace ; poignées masquées tant qu'un filtre est actif) par `useOrdonnerRoutines`, mutation OPTIMISTE sur
   `["routines","liste"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
 - **Supersets dans l'éditeur (D151, D152)** : un groupe se rend d'un bloc — `EtiquetteSuperset`
-  (« SUPERSET A », ouvre « Défaire le superset »), puis ses cartes derrière un filet de 3 px
+  (« Superset A », casse normale, ouvre « Défaire le superset »), puis ses cartes derrière un filet de 3 px
   `border-superset` ; le `SortableContext` garde la liste PLATE des clés. Toute retouche passe par
   `modifier` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
   `arrayMove`). Menu ⋯ : « Superset avec le suivant » (`peutLierAuSuivant`), « Retirer du

@@ -74,7 +74,7 @@ export function CarteExercice({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       // Pendant le glisser, la carte FLOTTE : elle gagne l'ombre que la doctrine
       // réserve au passager, et la perd en se posant.
-      className={`relative flex overflow-hidden rounded-2xl bg-(--surface-2) ${
+      className={`relative flex overflow-hidden rounded-xl border bg-card ${
         isDragging ? "z-10 shadow-lg" : ""
       }`}
     >

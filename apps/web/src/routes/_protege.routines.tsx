@@ -7,10 +7,11 @@ import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat
 import { PageListeDetail } from "@/components/shell/page-liste-detail";
 import { ListeRoutines } from "@/features/routines/liste-routines";
 import { optionsRoutines, useOrdonnerRoutines } from "@/features/routines/requetes";
+import { plier } from "@/lib/texte";
 
 // La routine ouverte vit dans le CHEMIN (`/routines/$id`, `/routines/nouvelle`,
 // D81). Plus de paramètre `edition` : une routine ouverte est toujours modifiable.
-const recherche = z.object({ etat: champEtat });
+const recherche = z.object({ q: z.string().optional().catch(undefined), etat: champEtat });
 
 /**
  * La mise en page des routines, en disposition `colonne` : la colonne de
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/_protege/routines")({
 });
 
 function PageRoutines() {
-  const { etat } = Route.useSearch();
+  const { q = "", etat } = Route.useSearch();
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useQuery(optionsRoutines());
@@ -43,11 +44,23 @@ function PageRoutines() {
         />
       );
     }
+    const toutes = estVideForce(etat) ? [] : liste.data;
+    const cherche = plier(q.trim());
     return (
       <ListeRoutines
-        routines={estVideForce(etat) ? [] : liste.data}
+        routines={cherche ? toutes.filter((r) => plier(r.nom).includes(cherche)) : toutes}
+        total={toutes.length}
+        filtre={q}
+        onFiltre={(texte) => {
+          // Le filtre garde la routine ouverte : son chemin reste, seul `q` change.
+          const search = (s: { q?: string }) => ({ ...s, q: texte || undefined });
+          if (id) navigate({ to: "/routines/$id", params: { id }, search, replace: true });
+          else navigate({ search, replace: true });
+        }}
         idSelectionne={id}
-        onSelection={(rId) => navigate({ to: "/routines/$id", params: { id: rId } })}
+        onSelection={(rId) =>
+          navigate({ to: "/routines/$id", params: { id: rId }, search: (s) => s })
+        }
         onCreer={() => navigate({ to: "/routines/nouvelle" })}
         onOrdonner={(ids) => ordonner.mutate(ids)}
       />

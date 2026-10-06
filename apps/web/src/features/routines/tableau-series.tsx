@@ -50,7 +50,7 @@ export function TableauSeries({
           colonne de retrait n'apparaît qu'au survol de sa ligne. */}
       <div
         aria-hidden="true"
-        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-(--line) px-4 py-2 text-[11px] font-bold tracking-[0.08em] text-(--ink-subtle) uppercase"
+        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-(--line) px-4 py-2 text-xs font-medium text-(--ink-subtle)"
       >
         <span>Série</span>
         <span>Type</span>

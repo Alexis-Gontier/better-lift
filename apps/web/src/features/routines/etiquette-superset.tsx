@@ -23,7 +23,7 @@ export function EtiquetteSuperset({
         <button
           type="button"
           aria-label={`Superset ${lettre}, options`}
-          className="mb-1.5 rounded-md px-1 py-0.5 text-[11px] font-bold tracking-wider text-superset uppercase hover:bg-(--surface-3) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
+          className="mb-1.5 rounded-md px-1 py-0.5 text-xs font-bold text-superset hover:bg-(--surface-3) focus-visible:outline-2 focus-visible:outline-(--focus-ring)"
         >
           Superset {lettre}
         </button>
