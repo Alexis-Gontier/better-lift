@@ -63,7 +63,9 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur une carte). **Profil** (`/profil`, ex-`/parametres`, D143) :
   bilan de toujours, objectif hebdo et repos par défaut (SUR LE COMPTE, `["preferences"]`, la
   clé des tuiles du Tableau de bord), thème (appareil, seul endroit où il se change), unités et
-  fuseau (affichés), export CSV par un simple lien, déconnexion.
+  fuseau (affichés), export CSV par un simple lien, déconnexion (aussi au menu du pied de
+  barre). Une `Card` par section, lignes séparées par des filets. **Connexion** : le formulaire
+  dans une `Card` sous le logo.
 - **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
   fil groupé par mois (`grouperParMois`, fuseau), filtré par `?q=` (`filtrerSeances` : nom et
   aperçu, sans casse ni accents, sur les pages chargées ; le filtre garde le chemin du détail),

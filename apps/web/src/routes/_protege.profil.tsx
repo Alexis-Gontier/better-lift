@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, LogOut, Moon, Sun } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { initiales, nomAffiche } from "@/components/shell/nom-compte";
 import { PageTableau } from "@/components/shell/page-tableau";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -64,12 +66,12 @@ function Profil() {
   return (
     <PageTableau titre="Profil" largeur="lecture">
       {/* Le bilan de toujours (D128). */}
-      <section className="flex items-center gap-4 rounded-2xl bg-(--surface-2) p-5">
+      <Card className="flex-row items-center gap-4 px-5">
         <span className="grid size-14 shrink-0 place-items-center rounded-full bg-(--surface-3) text-lg font-extrabold">
-          {email.charAt(0).toUpperCase()}
+          {initiales(email)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold">{email}</p>
+          <p className="truncate font-bold">{nomAffiche(email)}</p>
           <p className="text-[13px] text-(--ink-muted)">
             {bilan.data?.depuis
               ? `Depuis ${MOIS_ANNEE.format(new Date(bilan.data.depuis))}`
@@ -82,7 +84,7 @@ function Profil() {
         <Chiffre libelle="soulevés">
           {bilan.data ? formaterCharge(bilan.data.volumeKg, SYSTEME_UNITES) : "—"}
         </Chiffre>
-      </section>
+      </Card>
 
       <Section titre="Entraînement" description="Sur ton compte : le téléphone les suit aussi.">
         <Ligne libelle="Objectif hebdomadaire" detail="Les semaines tenues, au Tableau de bord.">
@@ -115,7 +117,7 @@ function Profil() {
           />
         </Ligne>
         {ecrire.isError ? (
-          <p role="alert" className="text-sm text-destructive-ink">
+          <p role="alert" className="pt-3 text-sm text-destructive-ink">
             {ecrire.error.message}
           </p>
         ) : null}
@@ -126,7 +128,7 @@ function Profil() {
         description="Le thème de cet appareil, retenu d'une visite à l'autre."
       >
         {/* Deux boutons à état plutôt qu'un interrupteur : on lit le choix courant. */}
-        <fieldset className="flex gap-2">
+        <fieldset className="flex gap-2 pt-3">
           <legend className="sr-only">Thème</legend>
           {THEMES.map(({ valeur, libelle, icone: Icone }) => (
             <Button
@@ -169,7 +171,7 @@ function Profil() {
         <Ligne libelle="Rechercher, aller à une page">
           <kbd className="rounded border border-(--line) px-1.5 py-0.5 text-xs">Ctrl K</kbd>
         </Ligne>
-        <div className="pt-1">
+        <div className="pt-3">
           <Button variant="outline" onClick={seDeconnecter} className="text-destructive-ink">
             <LogOut aria-hidden="true" />
             Se déconnecter
@@ -199,15 +201,16 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3 rounded-2xl bg-(--surface-2) p-5">
-      <header>
-        <h2 className="text-[11px] font-bold tracking-[0.09em] text-(--ink-subtle) uppercase">
-          {titre}
-        </h2>
-        {description ? <p className="mt-1 text-[13px] text-(--ink-muted)">{description}</p> : null}
-      </header>
-      {children}
-    </section>
+    // Une `Card` par section (D158), ses lignes séparées par des filets.
+    <Card className="gap-2">
+      <CardHeader>
+        <CardTitle>
+          <h2>{titre}</h2>
+        </CardTitle>
+        {description ? <CardDescription>{description}</CardDescription> : null}
+      </CardHeader>
+      <CardContent className="flex flex-col divide-y">{children}</CardContent>
+    </Card>
   );
 }
 
@@ -221,7 +224,7 @@ function Ligne({
   children: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 text-sm">
+    <div className="flex items-center justify-between gap-4 py-3 text-sm last:pb-0">
       <div>
         <p>{libelle}</p>
         {detail ? <p className="text-xs text-(--ink-subtle)">{detail}</p> : null}
@@ -244,7 +247,7 @@ function Choix({
 }) {
   return (
     <Select value={valeur} onValueChange={onChange}>
-      <SelectTrigger aria-label={libelle} className="w-44 rounded-[10px]">
+      <SelectTrigger aria-label={libelle} className="w-44">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
