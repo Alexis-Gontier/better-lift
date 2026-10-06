@@ -1,10 +1,19 @@
 import {
   brouillonValide,
+  defaireGroupe,
+  deplacerAvecGroupes,
+  type ExerciceBrouillon,
   empreinte,
+  groupes,
+  lierAuSuivant,
   meilleureSerie,
+  normaliserGroupes,
   nouvelExercice,
+  peutLierAuSuivant,
   type RoutineDetail,
   type RoutineSaisie,
+  retirerDuGroupe,
+  roleRepos,
   versBrouillon,
   versSaisie,
 } from "@better-lift/shared";
@@ -18,7 +27,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -38,6 +46,7 @@ import { SYSTEME_UNITES } from "@/lib/unites";
 import { BoutonFermer } from "./bouton-fermer";
 import { CarteExercice } from "./carte-exercice";
 import { ConfirmerSuppression } from "./confirmer-suppression";
+import { EtiquetteSuperset } from "./etiquette-superset";
 import { optionsPrecedentes } from "./requetes";
 import { SelecteurExercice } from "./selecteur-exercice";
 
@@ -84,14 +93,36 @@ export function EditeurRoutine({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  // Toute retouche de la liste passe par ici : les règles des supersets (D147,
+  // D148) s'appliquent à l'état du moment, pas à celui du dernier rendu.
+  const modifier = (f: (xs: ExerciceBrouillon[]) => ExerciceBrouillon[]) =>
+    setBrouillon((b) => ({ ...b, exercices: f(b.exercices) }));
+
   const deposer = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
-    setBrouillon((b) => {
-      const de = b.exercices.findIndex((e) => e.cle === active.id);
-      const vers = b.exercices.findIndex((e) => e.cle === over.id);
-      return { ...b, exercices: arrayMove(b.exercices, de, vers) };
+    modifier((xs) => {
+      const de = xs.findIndex((e) => e.cle === active.id);
+      const vers = xs.findIndex((e) => e.cle === over.id);
+      // D148 : le déplacé quitte son groupe, ou rejoint celui où il tombe.
+      return deplacerAvecGroupes(xs, de, vers);
     });
   };
+
+  const blocs = groupes(brouillon.exercices);
+  const carte = (ex: ExerciceBrouillon, i: number) => (
+    <CarteExercice
+      key={ex.cle}
+      exercice={ex}
+      derniere={meilleureSerie(precedentes.data?.[ex.slug] ?? [])}
+      repos={roleRepos(brouillon.exercices, i)}
+      peutLier={peutLierAuSuivant(brouillon.exercices, i)}
+      dansGroupe={roleRepos(brouillon.exercices, i) !== "propre"}
+      onLier={() => modifier((xs) => lierAuSuivant(xs, i))}
+      onDelier={() => modifier((xs) => retirerDuGroupe(xs, i))}
+      onChange={(nouveau) => modifier((xs) => xs.map((e) => (e.cle === ex.cle ? nouveau : e)))}
+      onRetirer={() => modifier((xs) => normaliserGroupes(xs.filter((e) => e.cle !== ex.cle)))}
+    />
+  );
 
   const valide = brouillonValide(brouillon, SYSTEME_UNITES);
 
@@ -145,25 +176,27 @@ export function EditeurRoutine({
                 strategy={verticalListSortingStrategy}
               >
                 <ol className="flex flex-col gap-3">
-                  {brouillon.exercices.map((ex) => (
-                    <CarteExercice
-                      key={ex.cle}
-                      exercice={ex}
-                      derniere={meilleureSerie(precedentes.data?.[ex.slug] ?? [])}
-                      onChange={(nouveau) =>
-                        setBrouillon((b) => ({
-                          ...b,
-                          exercices: b.exercices.map((e) => (e.cle === ex.cle ? nouveau : e)),
-                        }))
-                      }
-                      onRetirer={() =>
-                        setBrouillon((b) => ({
-                          ...b,
-                          exercices: b.exercices.filter((e) => e.cle !== ex.cle),
-                        }))
-                      }
-                    />
-                  ))}
+                  {brouillon.exercices.map((ex, i) => {
+                    // Un superset se rend d'un bloc (D151) : étiquette, puis ses
+                    // membres derrière le filet. Le SortableContext, lui, garde la
+                    // liste plate des clés.
+                    const g = blocs.find((b) => b.debut <= i && i <= b.fin);
+                    if (!g) return carte(ex, i);
+                    if (i !== g.debut) return null;
+                    return (
+                      <li key={`superset-${ex.cle}`}>
+                        <EtiquetteSuperset
+                          lettre={g.lettre}
+                          onDefaire={() => modifier((xs) => defaireGroupe(xs, i))}
+                        />
+                        <ol className="flex flex-col gap-3 border-l-[3px] border-superset pl-3">
+                          {brouillon.exercices
+                            .slice(g.debut, g.fin + 1)
+                            .map((m, k) => carte(m, g.debut + k))}
+                        </ol>
+                      </li>
+                    );
+                  })}
                 </ol>
               </SortableContext>
             </DndContext>

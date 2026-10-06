@@ -1,8 +1,8 @@
-import { type ExerciceBrouillon, LIBELLE_GROUPE } from "@better-lift/shared";
+import { type ExerciceBrouillon, LIBELLE_GROUPE, type RoleRepos } from "@better-lift/shared";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useQuery } from "@tanstack/react-query";
-import { Ellipsis, GripVertical, Timer, Trash2 } from "lucide-react";
+import { Ellipsis, GripVertical, Link2, Timer, Trash2, Unlink2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,15 +23,31 @@ const REPOS = ["", "30", "45", "60", "90", "120", "150", "180", "240", "300"];
 
 /** « 2:00 », « 1:30 » : la lecture d'un chrono. */
 const enChrono = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
-const libelleRepos = (t: string) => (t === "" ? "Sans repos" : `Repos ${enChrono(Number(t))}`);
+/** D149 : le dernier d'un superset porte le repos de tout le groupe. */
+const libelleRepos = (t: string, groupe = false) => {
+  const apres = groupe ? " après le groupe" : "";
+  return t === "" ? `Sans repos${apres}` : `Repos${apres} ${enChrono(Number(t))}`;
+};
 
 export function CarteExercice({
   exercice,
   derniere,
+  repos,
+  peutLier,
+  dansGroupe,
+  onLier,
+  onDelier,
   onChange,
   onRetirer,
 }: {
   exercice: ExerciceBrouillon;
+  /** D149 : masqué sur un membre non dernier d'un superset. */
+  repos: RoleRepos;
+  /** D152 : hors groupe ou au bout d'un groupe, et pas sur le dernier exercice. */
+  peutLier: boolean;
+  dansGroupe: boolean;
+  onLier: () => void;
+  onDelier: () => void;
   /** La meilleure série de la dernière fois, s'il y en a une (D67). */
   derniere: { reps: number | null; chargeKg: number | null } | null;
   onChange: (e: ExerciceBrouillon) => void;
@@ -100,35 +116,37 @@ export function CarteExercice({
             </p>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full text-xs"
-                aria-label={`${libelleRepos(exercice.repos)}, modifier`}
-              >
-                <Timer aria-hidden="true" />
-                {libelleRepos(exercice.repos)}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-40">
-              <DropdownMenuLabel className="text-(--ink-subtle)">
-                Repos entre les séries
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={exercice.repos}
-                onValueChange={(repos) => onChange({ ...exercice, repos })}
-              >
-                {choix.map((r) => (
-                  <DropdownMenuRadioItem key={r} value={r} className="text-xs">
-                    {r === "" ? "Sans repos" : enChrono(Number(r))}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {repos === "masque" ? null : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full text-xs"
+                  aria-label={`${libelleRepos(exercice.repos, repos === "groupe")}, modifier`}
+                >
+                  <Timer aria-hidden="true" />
+                  {libelleRepos(exercice.repos, repos === "groupe")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-40">
+                <DropdownMenuLabel className="text-(--ink-subtle)">
+                  Repos entre les séries
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={exercice.repos}
+                  onValueChange={(repos) => onChange({ ...exercice, repos })}
+                >
+                  {choix.map((r) => (
+                    <DropdownMenuRadioItem key={r} value={r} className="text-xs">
+                      {r === "" ? "Sans repos" : enChrono(Number(r))}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -142,6 +160,17 @@ export function CarteExercice({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onLier} disabled={!peutLier}>
+                <Link2 aria-hidden="true" />
+                Superset avec le suivant
+              </DropdownMenuItem>
+              {dansGroupe ? (
+                <DropdownMenuItem onSelect={onDelier}>
+                  <Unlink2 aria-hidden="true" />
+                  Retirer du superset
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={onRetirer} className="text-destructive-ink">
                 <Trash2 aria-hidden="true" />
                 Retirer l'exercice
