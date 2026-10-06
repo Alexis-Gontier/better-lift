@@ -1,4 +1,5 @@
 import { cleJour, type Ecart, formaterCharge } from "@better-lift/shared";
+import { plier } from "@/lib/texte";
 import { SYSTEME_UNITES } from "@/lib/unites";
 
 const MOIS = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -39,13 +40,6 @@ export function texteEcart(e: Ecart): string {
   }
   return `${signe(e.delta)}${Math.abs(e.delta)} rep${Math.abs(e.delta) > 1 ? "s" : ""}`;
 }
-
-/** Minuscules, sans accents : « Développé » → « developpe ». */
-const plier = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
 
 /**
  * Le filtre du fil (D160) : sur le nom et les exercices de l'aperçu, sans casse ni accents.

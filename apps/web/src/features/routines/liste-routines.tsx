@@ -17,12 +17,18 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "cn";
-import { GripVertical, Plus } from "lucide-react";
+import { GripVertical, Plus, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Props = {
+  /** Les routines affichées, déjà filtrées. */
   routines: RoutineResume[];
+  total: number;
+  filtre: string;
+  onFiltre: (texte: string) => void;
   idSelectionne?: string;
   onSelection: (id: string) => void;
   onCreer: () => void;
@@ -32,12 +38,15 @@ type Props = {
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /**
- * La colonne des routines (D142) : l'action en tête — le seul aplat de l'écran —,
- * puis une carte par routine, réordonnable par la poignée (souris ou clavier).
- * La carte choisie est une SURFACE, pas une couleur : le lime reste à l'action.
+ * La colonne des routines (D142, D160) : le filtre et l'action en tête, puis une ligne par
+ * routine, réordonnable par la poignée (souris ou clavier) — sauf filtrée : on ne réordonne
+ * pas une liste partielle. La ligne choisie est une SURFACE, jamais le lime.
  */
 export function ListeRoutines({
   routines,
+  total,
+  filtre,
+  onFiltre,
   idSelectionne,
   onSelection,
   onCreer,
@@ -57,19 +66,38 @@ export function ListeRoutines({
 
   return (
     <section aria-label="Routines" className="flex h-full flex-col">
-      <header className="flex flex-col gap-3 px-5 pt-6 pb-3">
-        <div>
-          <h2 className="text-[22px] font-extrabold tracking-tight">Routines</h2>
-          <p className="text-[13px] text-(--ink-muted)">{pluriel(routines.length, "routine")}</p>
+      {/* Le titre est dans l'en-tête commun (D157) ; ici, le filtre et l'action (D160). */}
+      <header className="flex flex-col gap-2 border-b px-3 py-2.5">
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-(--ink-faint)"
+            />
+            <Input
+              value={filtre}
+              onChange={(e) => onFiltre(e.target.value)}
+              placeholder="Filtrer…"
+              aria-label="Filtrer les routines"
+              className="h-8 pl-8"
+            />
+          </div>
+          <Badge variant="outline" title={pluriel(total, "routine")}>
+            {total}
+          </Badge>
         </div>
-        <Button onClick={onCreer} className="w-full rounded-[10px] font-bold">
+        <Button size="sm" variant="outline" onClick={onCreer} className="w-full font-semibold">
           <Plus aria-hidden="true" />
           Nouvelle routine
         </Button>
       </header>
 
-      {/* Un compte neuf n'a aucune routine : c'est le tout premier écran qu'on verra. */}
-      {routines.length === 0 ? (
+      {routines.length === 0 && filtre.trim() ? (
+        <p className="px-5 py-6 text-center text-sm text-(--ink-subtle)">
+          Aucune routine ne correspond à ce filtre.
+        </p>
+      ) : routines.length === 0 ? (
+        // Un compte neuf n'a aucune routine : c'est le tout premier écran qu'on verra.
         <p className="px-5 py-6 text-center text-sm text-(--ink-subtle)">
           Aucune routine pour l'instant. Une routine est un modèle de séance : ses exercices et
           leurs séries cibles.
@@ -81,12 +109,13 @@ export function ListeRoutines({
               items={routines.map((r) => r.id)}
               strategy={verticalListSortingStrategy}
             >
-              <ul className="flex flex-col gap-1 px-2.5 pb-3">
+              <ul className="flex flex-col">
                 {routines.map((r) => (
                   <CarteRoutine
                     key={r.id}
                     routine={r}
                     choisie={r.id === idSelectionne}
+                    ordonnable={!filtre.trim()}
                     onClick={() => onSelection(r.id)}
                   />
                 ))}
@@ -102,10 +131,12 @@ export function ListeRoutines({
 function CarteRoutine({
   routine: r,
   choisie,
+  ordonnable,
   onClick,
 }: {
   routine: RoutineResume;
   choisie: boolean;
+  ordonnable: boolean;
   onClick: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -117,25 +148,29 @@ function CarteRoutine({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "group flex items-center rounded-xl",
-        choisie ? "bg-(--surface-3)" : "hover:bg-(--surface-2)",
+        "group flex items-center border-b",
+        choisie ? "bg-(--surface-2) shadow-[inset_2px_0_0_var(--ink)]" : "hover:bg-(--surface-1)",
         isDragging && "relative z-10 bg-(--surface-3) shadow-lg",
       )}
     >
-      <button
-        type="button"
-        aria-label={`Déplacer « ${r.nom} »`}
-        className="cursor-grab touch-none self-stretch rounded-l-xl pl-1.5 text-(--ink-faint) opacity-0 outline-none group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical aria-hidden="true" className="size-4" />
-      </button>
+      {ordonnable ? (
+        <button
+          type="button"
+          aria-label={`Déplacer « ${r.nom} »`}
+          className="cursor-grab touch-none self-stretch pl-1.5 text-(--ink-faint) opacity-0 outline-none group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical aria-hidden="true" className="size-4" />
+        </button>
+      ) : (
+        <span className="w-[22px] shrink-0" />
+      )}
       <button
         type="button"
         onClick={onClick}
         aria-current={choisie ? "true" : undefined}
-        className="min-w-0 flex-1 rounded-r-xl px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+        className="min-w-0 flex-1 px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) focus-visible:ring-inset"
       >
         <span className="block truncate font-bold">{r.nom}</span>
         <span className="mt-0.5 block text-[12.5px] text-(--ink-muted)">

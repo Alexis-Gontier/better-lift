@@ -129,23 +129,42 @@ export function EditeurRoutine({
 
   return (
     <div className="flex h-full flex-col">
-      <DansEnTete titre={brouillon.nom || "Nouvelle routine"} />
-      <div className="flex items-center gap-2 px-8 pt-6 pb-2">
-        <input
-          aria-label="Nom de la routine"
-          placeholder="Nom de la routine"
-          maxLength={120}
-          value={brouillon.nom}
-          onChange={(e) => setBrouillon({ ...brouillon, nom: e.target.value })}
-          className="-ml-2 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-[26px] font-extrabold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
-        />
+      {/* Les actions montent dans l'en-tête commun (D157) : enregistrer d'abord, quand il y a
+          des changements, puis le menu et la fermeture. */}
+      <DansEnTete titre={brouillon.nom || "Nouvelle routine"}>
+        {modifiee ? (
+          <>
+            <span className="text-[13px] text-(--ink-subtle)">
+              {initiale ? "Modifications non enregistrées" : "Nouvelle routine"}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              // Annuler une routine neuve la ferme ; une existante revient à sa
+              // version enregistrée.
+              onClick={() =>
+                initiale ? setBrouillon(versBrouillon(initiale, SYSTEME_UNITES)) : onFermer()
+              }
+            >
+              Annuler
+            </Button>
+            <Button
+              size="sm"
+              disabled={!valide || enregistrement}
+              onClick={() => onEnregistrer(versSaisie(brouillon, SYSTEME_UNITES))}
+              className="font-semibold"
+            >
+              {enregistrement ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+          </>
+        ) : null}
         {onSupprimer ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="size-8 text-(--ink-subtle)"
+                className="size-8"
                 aria-label="Actions de la routine"
               >
                 <Ellipsis aria-hidden="true" />
@@ -163,10 +182,20 @@ export function EditeurRoutine({
           </DropdownMenu>
         ) : null}
         <BoutonFermer onFermer={onFermer} />
+      </DansEnTete>
+      <div className="px-6 pt-5 pb-2">
+        <input
+          aria-label="Nom de la routine"
+          placeholder="Nom de la routine"
+          maxLength={120}
+          value={brouillon.nom}
+          onChange={(e) => setBrouillon({ ...brouillon, nom: e.target.value })}
+          className="-ml-2 w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-[22px] font-extrabold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+        />
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 px-8 pt-2 pb-6">
+        <div className="flex flex-col gap-4 px-6 pt-2 pb-6">
           {brouillon.exercices.length === 0 ? (
             <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
@@ -216,37 +245,10 @@ export function EditeurRoutine({
       </ScrollArea>
 
       {erreur ? (
-        <p role="alert" className="border-t border-(--line) px-6 pt-3 text-sm text-destructive-ink">
+        <p role="alert" className="border-t border-(--line) px-6 py-3 text-sm text-destructive-ink">
           {erreur}
         </p>
       ) : null}
-      {/* La barre n'apparaît qu'avec des changements à enregistrer. */}
-      {modifiee ? (
-        <div className="flex items-center gap-2 border-t border-(--line) px-6 py-3">
-          <span className="text-sm text-(--ink-subtle)">
-            {initiale ? "Modifications non enregistrées" : "Nouvelle routine"}
-          </span>
-          <Button
-            variant="outline"
-            // Annuler une routine neuve la ferme ; une existante revient à sa
-            // version enregistrée.
-            onClick={() =>
-              initiale ? setBrouillon(versBrouillon(initiale, SYSTEME_UNITES)) : onFermer()
-            }
-            className="ml-auto"
-          >
-            Annuler
-          </Button>
-          <Button
-            disabled={!valide || enregistrement}
-            onClick={() => onEnregistrer(versSaisie(brouillon, SYSTEME_UNITES))}
-            className="font-semibold"
-          >
-            {enregistrement ? "Enregistrement…" : "Enregistrer"}
-          </Button>
-        </div>
-      ) : null}
-
       <SelecteurExercice
         ouvert={selecteur}
         onFermer={() => setSelecteur(false)}
