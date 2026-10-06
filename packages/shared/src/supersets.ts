@@ -104,3 +104,19 @@ export function deplacerAvecGroupes<T extends AvecGroupe>(
   res.splice(vers, 0, avec(bouge, avant !== null && avant === apres ? avant : null));
   return normaliserGroupes(res);
 }
+
+/** Le repos d'un exercice (D149) : le sien, masqué dans un groupe, ou celui du groupe. */
+export type RoleRepos = "propre" | "masque" | "groupe";
+
+export function roleRepos(liste: readonly AvecGroupe[], i: number): RoleRepos {
+  const g = groupeDe(liste, i);
+  if (!g) return "propre";
+  return i === g.fin ? "groupe" : "masque";
+}
+
+/** D152 : « Superset avec le suivant » a un sens hors groupe ou au bout d'un groupe. */
+export function peutLierAuSuivant(liste: readonly AvecGroupe[], i: number): boolean {
+  if (i < 0 || i + 1 >= liste.length) return false;
+  const g = groupeDe(liste, i);
+  return !g || i === g.fin;
+}

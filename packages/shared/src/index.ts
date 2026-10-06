@@ -148,7 +148,10 @@ export {
   groupes,
   lierAuSuivant,
   normaliserGroupes,
+  peutLierAuSuivant,
+  type RoleRepos,
   retirerDuGroupe,
+  roleRepos,
 } from "./supersets.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
