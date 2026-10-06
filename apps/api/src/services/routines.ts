@@ -1,5 +1,11 @@
 import { prisma } from "@better-lift/db";
-import type { RoutineDetail, RoutineResume, RoutineSaisie, TypeSerie } from "@better-lift/shared";
+import {
+  normaliserGroupes,
+  type RoutineDetail,
+  type RoutineResume,
+  type RoutineSaisie,
+  type TypeSerie,
+} from "@better-lift/shared";
 import { imageDe } from "./exercices.js";
 
 /**
@@ -27,6 +33,7 @@ type ExerciceEcrit = {
   position: number;
   exerciseId: string;
   reposSec: number | null;
+  supersetGroupe: number | null;
   series: SerieEcrite[];
 };
 
@@ -37,13 +44,15 @@ export function versEcriture(
 ): { nom: string; exercices: ExerciceEcrit[] } {
   return {
     nom: saisie.nom,
-    exercices: saisie.exercices.map((e, position) => {
+    // D146 : un groupe mal formé se corrige, il ne fait pas refuser la routine.
+    exercices: normaliserGroupes(saisie.exercices).map((e, position) => {
       const exerciseId = idsParSlug.get(e.slug);
       if (!exerciseId) throw new SlugInconnu(e.slug);
       return {
         position,
         exerciseId,
         reposSec: e.reposSec,
+        supersetGroupe: e.supersetGroupe ?? null,
         series: e.series.map((s, i) => ({ position: i, ...s })),
       };
     }),
@@ -59,6 +68,7 @@ export type LigneRoutine = {
   nom: string;
   exercices: {
     reposSec: number | null;
+    supersetGroupe: number | null;
     exercise: {
       slug: string;
       nomFr: string;
@@ -85,6 +95,7 @@ export function versDetail(l: LigneRoutine): RoutineDetail {
       musclePrincipal: e.exercise.target,
       musclesSecondaires: e.exercise.secondary,
       reposSec: e.reposSec,
+      supersetGroupe: e.supersetGroupe,
       series: e.series.map((s) => ({
         type: s.type,
         repsCible: s.repsCible,
@@ -122,6 +133,7 @@ const LECTURE = {
     orderBy: { position: "asc" },
     select: {
       reposSec: true,
+      supersetGroupe: true,
       exercise: {
         select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
       },
@@ -150,6 +162,7 @@ function creationImbriquee(ecriture: ReturnType<typeof versEcriture>) {
       position: e.position,
       exerciseId: e.exerciseId,
       reposSec: e.reposSec,
+      supersetGroupe: e.supersetGroupe,
       series: { create: e.series },
     })),
   };

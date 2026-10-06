@@ -77,6 +77,7 @@ const ligne: LigneRoutine = {
   exercices: [
     {
       reposSec: 180,
+      supersetGroupe: null,
       exercise: {
         slug: "barbell-bench-press",
         nomFr: "Développé couché à la barre",
@@ -105,6 +106,7 @@ describe("projections", () => {
           musclePrincipal: "Pectoraux",
           musclesSecondaires: ["Triceps", "Épaules"],
           reposSec: 180,
+          supersetGroupe: null,
           series: [
             { type: "NORMALE", repsCible: 6, chargeCibleKg: 82.5 },
             { type: "ECHEC", repsCible: null, chargeCibleKg: null },
@@ -116,5 +118,28 @@ describe("projections", () => {
 
   it("résume en comptant exercices et séries", () => {
     expect(versResume(ligne)).toEqual({ id: "r1", nom: "Push", nbExercices: 1, nbSeries: 2 });
+  });
+});
+
+describe("supersets (D146)", () => {
+  it("versEcriture normalise les groupes", () => {
+    const s: RoutineSaisie = {
+      ...saisie,
+      exercices: saisie.exercices.map((e, i) => ({ ...e, supersetGroupe: i < 2 ? 7 : 3 })),
+    };
+    expect(versEcriture(s, ids).exercices.map((e) => e.supersetGroupe)).toEqual([1, 1, null]);
+  });
+
+  it("versEcriture : champ absent = null", () => {
+    expect(versEcriture(saisie, ids).exercices.map((e) => e.supersetGroupe)).toEqual([
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it("versDetail rend le groupe", () => {
+    const l = { ...ligne, exercices: ligne.exercices.map((e) => ({ ...e, supersetGroupe: 1 })) };
+    expect(versDetail(l).exercices[0]?.supersetGroupe).toBe(1);
   });
 });

@@ -16,6 +16,7 @@ const ligne: LigneSeance = {
       exerciseId: "bench",
       exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre", gifUrl: null },
       note: "siège cran 4",
+      supersetGroupe: null,
       series: [
         { type: "ECHAUFFEMENT", reps: 10, chargeKg: d(40), faite: true },
         { type: "NORMALE", reps: 5, chargeKg: d(100), faite: true },
@@ -25,6 +26,7 @@ const ligne: LigneSeance = {
       exerciseId: "traction",
       exercise: { slug: "pull-up", nomFr: "Traction", gifUrl: null },
       note: null,
+      supersetGroupe: null,
       series: [{ type: "NORMALE", reps: 10, chargeKg: null, faite: true }],
     },
     // Le même exercice une seconde fois : il se mesure à la première occurrence.
@@ -32,6 +34,7 @@ const ligne: LigneSeance = {
       exerciseId: "bench",
       exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre", gifUrl: null },
       note: null,
+      supersetGroupe: null,
       series: [{ type: "NORMALE", reps: 6, chargeKg: d(100), faite: true }],
     },
   ],
@@ -172,5 +175,15 @@ describe("versFil (D119)", () => {
       nbSeries: 2,
       meilleure: { chargeKg: 100, reps: 5 },
     });
+  });
+});
+
+describe("supersets dans le détail (D153)", () => {
+  it("rend le groupe de superset de chaque exercice", () => {
+    const l = {
+      ...ligne,
+      exercices: ligne.exercices.map((e, i) => ({ ...e, supersetGroupe: i < 2 ? 1 : null })),
+    };
+    expect(versDetail(l, new Map()).exercices.map((e) => e.supersetGroupe)).toEqual([1, 1, null]);
   });
 });

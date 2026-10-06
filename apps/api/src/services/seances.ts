@@ -4,6 +4,7 @@ import {
   type HistoriqueExercice,
   type LigneExport,
   marquerRecords,
+  normaliserGroupes,
   type RecordExercice,
   recordsDe,
   type SeanceDetail,
@@ -37,6 +38,7 @@ type ExerciceEcrit = {
   exerciseId: string;
   reposSec: number | null;
   note: string | null;
+  supersetGroupe: number | null;
   series: SerieEcrite[];
 };
 
@@ -45,7 +47,8 @@ export function versEcriture(
   saisie: SeanceSaisie,
   idsParSlug: Map<string, string>,
 ): ExerciceEcrit[] {
-  return saisie.exercices.map((e, position) => {
+  // D146 : un groupe mal formé se corrige ; il ne fait jamais perdre une séance.
+  return normaliserGroupes(saisie.exercices).map((e, position) => {
     const exerciseId = idsParSlug.get(e.slug);
     if (!exerciseId) throw new SlugInconnu(e.slug);
     return {
@@ -53,6 +56,7 @@ export function versEcriture(
       exerciseId,
       reposSec: e.reposSec,
       note: e.note ?? null,
+      supersetGroupe: e.supersetGroupe ?? null,
       // Seuls les champs connus sont retenus : la saisie est non stricte (D57),
       // elle peut en porter d'autres, qui n'ont rien à faire en base.
       series: e.series.map((s, i) => ({
@@ -129,6 +133,7 @@ export const depotPrisma: DepotSeances = {
               exerciseId: e.exerciseId,
               reposSec: e.reposSec,
               note: e.note,
+              supersetGroupe: e.supersetGroupe,
               series: { create: e.series },
             })),
           },
@@ -172,6 +177,7 @@ export type LigneSeance = {
     exerciseId: string;
     exercise: { slug: string; nomFr: string; gifUrl: string | null };
     note: string | null;
+    supersetGroupe: number | null;
     series: LigneSerie[];
   }[];
 };
@@ -231,6 +237,7 @@ export function versDetail(
       nom: e.exercise.nomFr,
       image: imageDe(e.exercise.gifUrl),
       note: e.note,
+      supersetGroupe: e.supersetGroupe,
       precedentes: derniereOccurrence(anterieur.get(e.exerciseId)),
       series: e.series.map((s) => {
         const i = curseur.get(e.exerciseId) ?? 0;
@@ -322,6 +329,7 @@ const LECTURE_SEANCE = {
       exerciseId: true,
       exercise: { select: { slug: true, nomFr: true, gifUrl: true } },
       note: true,
+      supersetGroupe: true,
       series: {
         orderBy: { position: "asc" },
         select: { type: true, reps: true, chargeKg: true, faite: true },
