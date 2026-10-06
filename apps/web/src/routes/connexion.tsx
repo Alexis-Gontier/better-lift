@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
 import { z } from "zod";
 import { champEtat, etatForceRendu } from "@/components/etats/etat-force";
 import { Logo } from "@/components/logo";
+import { Card } from "@/components/ui/card";
 import { FormulaireConnexion } from "@/features/auth/formulaire-connexion";
 import { chargerSession } from "@/lib/auth-session";
 
@@ -30,16 +31,19 @@ function PageConnexion() {
           <span className="text-xl font-extrabold tracking-tight">better-lift</span>
         </div>
         {force ?? (
-          <FormulaireConnexion
-            onSucces={async () => {
-              // Relire la session PUIS invalider : sans l'invalidation, le
-              // `beforeLoad` de `_protege` relirait l'ancien contexte et
-              // renverrait aussitôt vers /connexion.
-              await chargerSession();
-              await router.invalidate();
-              await navigate({ to: redirect ?? "/" });
-            }}
-          />
+          // Le formulaire dans une `Card` (D158), sous le logo.
+          <Card className="px-6 py-6">
+            <FormulaireConnexion
+              onSucces={async () => {
+                // Relire la session PUIS invalider : sans l'invalidation, le
+                // `beforeLoad` de `_protege` relirait l'ancien contexte et
+                // renverrait aussitôt vers /connexion.
+                await chargerSession();
+                await router.invalidate();
+                await navigate({ to: redirect ?? "/" });
+              }}
+            />
+          </Card>
         )}
       </div>
       <p className="text-xs text-(--ink-faint)">Un carnet privé, pour quelques comptes.</p>

@@ -21,7 +21,8 @@ Hevy (D86–D94) et le hors ligne avec l'Accueil en fil des séances (D95–D100
 repensé en **poste d'analyse** (D132–D144, `2026-10-06-web-refonte-design.md`) : Tableau de bord,
 Séances, Routines, Exercices, Profil — pas de séance en direct sur le web. Les **supersets** sont
 livrés (D145–D153, `2026-10-06-supersets-design.md`) : éditeur de routine web et mobile, séance
-mobile, historique. **Prochaine
+mobile, historique. Le web est **nettoyé** (D154–D160, `2026-10-06-web-nettoyage-design.md`) :
+coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. **Prochaine
 étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
 

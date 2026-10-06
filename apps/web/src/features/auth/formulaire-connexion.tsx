@@ -123,7 +123,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={enCours} className="mt-6 h-10 rounded-[10px] font-bold">
+      <Button type="submit" disabled={enCours} className="mt-6 h-10 font-bold">
         {enCours ? "…" : t.action}
       </Button>
 
