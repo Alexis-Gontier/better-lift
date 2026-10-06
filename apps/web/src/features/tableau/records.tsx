@@ -1,0 +1,66 @@
+import { formaterCharge, LIBELLE_RECORD, type RecordRecent } from "@better-lift/shared";
+import { Link } from "@tanstack/react-router";
+import { ArrowUpRight } from "lucide-react";
+import { FUSEAU } from "@/lib/fuseau";
+import { SYSTEME_UNITES } from "@/lib/unites";
+import { Carte } from "./carte";
+
+const DATE = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: FUSEAU,
+});
+
+/** Les records de la période en tableau (D137) ; le nom ouvre la fiche de l'exercice. */
+export function Records({ records }: { records: readonly RecordRecent[] }) {
+  return (
+    <Carte
+      titre={`Records de la période${records.length ? ` · ${records.length}` : ""}`}
+      className="lg:col-span-12"
+    >
+      {records.length === 0 ? (
+        <p className="py-6 text-center text-sm text-(--ink-subtle)">Aucun record sur la période.</p>
+      ) : (
+        <table className="w-full text-[13.5px]">
+          <thead>
+            <tr className="text-left text-[11px] font-bold tracking-[0.08em] text-(--ink-subtle) uppercase">
+              <th className="py-1.5 font-bold">Exercice</th>
+              <th className="font-bold">Série</th>
+              <th className="font-bold">Record</th>
+              <th className="text-right font-bold">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((r) => (
+              <tr key={`${r.slug}-${r.date}`} className="border-t border-(--line)">
+                <td className="py-2.5">
+                  <Link
+                    to="/exercices/$slug"
+                    params={{ slug: r.slug }}
+                    className="font-semibold hover:underline hover:underline-offset-4"
+                  >
+                    {r.nom}
+                  </Link>
+                </td>
+                <td>
+                  {r.chargeKg === null
+                    ? `${r.reps} reps`
+                    : `${formaterCharge(r.chargeKg, SYSTEME_UNITES)} × ${r.reps}`}
+                </td>
+                <td>
+                  {/* Le record est un CONTOUR : lime en texte sur fond teinté (CLAUDE.md). */}
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent-line bg-accent-wash px-2 py-0.5 text-[11px] font-bold text-accent-ink">
+                    <ArrowUpRight aria-hidden="true" className="size-3" />
+                    {r.types.map((t) => LIBELLE_RECORD[t]).join(" · ")}
+                  </span>
+                </td>
+                <td className="text-right text-(--ink-muted)">{DATE.format(new Date(r.date))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Carte>
+  );
+}
