@@ -136,6 +136,17 @@ export {
   semainesTenues,
   type Totaux,
 } from "./stats.js";
+export {
+  type AvecGroupe,
+  defaireGroupe,
+  deplacerAvecGroupes,
+  type Groupe,
+  groupeDe,
+  groupes,
+  lierAuSuivant,
+  normaliserGroupes,
+  retirerDuGroupe,
+} from "./supersets.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";
