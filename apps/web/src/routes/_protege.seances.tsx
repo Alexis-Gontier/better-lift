@@ -4,7 +4,7 @@ import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
-import { AppShell } from "@/components/shell/app-shell";
+import { PageListeDetail } from "@/components/shell/page-liste-detail";
 import { ListeSeances } from "@/features/seances/liste-seances";
 import { optionsSeances } from "@/features/seances/requetes";
 
@@ -60,5 +60,7 @@ function PageSeances() {
 
   // Le panneau de détail n'existe que lorsqu'une séance est ouverte : la coquille
   // change alors son jeu de panneaux (et sa clé de persistance).
-  return <AppShell titre="Séances" liste={panneauListe()} detail={id ? <Outlet /> : undefined} />;
+  return (
+    <PageListeDetail titre="Séances" liste={panneauListe()} detail={id ? <Outlet /> : undefined} />
+  );
 }

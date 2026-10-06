@@ -13,7 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtegeRouteImport } from './routes/_protege'
 import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
-import { Route as ProtegeParametresRouteImport } from './routes/_protege.parametres'
+import { Route as ProtegeProfilRouteImport } from './routes/_protege.profil'
 import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
 import { Route as ProtegeSeancesRouteImport } from './routes/_protege.seances'
 import { Route as ProtegeExercicesSlugRouteImport } from './routes/_protege.exercices.$slug'
@@ -41,9 +41,9 @@ const ProtegeExercicesRoute = ProtegeExercicesRouteImport.update({
   path: '/exercices',
   getParentRoute: () => ProtegeRoute,
 } as any)
-const ProtegeParametresRoute = ProtegeParametresRouteImport.update({
-  id: '/parametres',
-  path: '/parametres',
+const ProtegeProfilRoute = ProtegeProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
   getParentRoute: () => ProtegeRoute,
 } as any)
 const ProtegeRoutinesRoute = ProtegeRoutinesRouteImport.update({
@@ -86,7 +86,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
   '/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/parametres': typeof ProtegeParametresRoute
+  '/profil': typeof ProtegeProfilRoute
   '/routines': typeof ProtegeRoutinesRouteWithChildren
   '/seances': typeof ProtegeSeancesRouteWithChildren
   '/exercices/$slug': typeof ProtegeExercicesSlugRoute
@@ -99,7 +99,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
   '/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/parametres': typeof ProtegeParametresRoute
+  '/profil': typeof ProtegeProfilRoute
   '/seances': typeof ProtegeSeancesRouteWithChildren
   '/exercices/$slug': typeof ProtegeExercicesSlugRoute
   '/routines/$id': typeof ProtegeRoutinesIdRoute
@@ -113,7 +113,7 @@ export interface FileRoutesById {
   '/_protege': typeof ProtegeRouteWithChildren
   '/connexion': typeof ConnexionRoute
   '/_protege/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/_protege/parametres': typeof ProtegeParametresRoute
+  '/_protege/profil': typeof ProtegeProfilRoute
   '/_protege/routines': typeof ProtegeRoutinesRouteWithChildren
   '/_protege/seances': typeof ProtegeSeancesRouteWithChildren
   '/_protege/exercices/$slug': typeof ProtegeExercicesSlugRoute
@@ -128,7 +128,7 @@ export interface FileRouteTypes {
     | '/'
     | '/connexion'
     | '/exercices'
-    | '/parametres'
+    | '/profil'
     | '/routines'
     | '/seances'
     | '/exercices/$slug'
@@ -141,7 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/connexion'
     | '/exercices'
-    | '/parametres'
+    | '/profil'
     | '/seances'
     | '/exercices/$slug'
     | '/routines/$id'
@@ -154,7 +154,7 @@ export interface FileRouteTypes {
     | '/_protege'
     | '/connexion'
     | '/_protege/exercices'
-    | '/_protege/parametres'
+    | '/_protege/profil'
     | '/_protege/routines'
     | '/_protege/seances'
     | '/_protege/exercices/$slug'
@@ -200,11 +200,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtegeExercicesRouteImport
       parentRoute: typeof ProtegeRoute
     }
-    '/_protege/parametres': {
-      id: '/_protege/parametres'
-      path: '/parametres'
-      fullPath: '/parametres'
-      preLoaderRoute: typeof ProtegeParametresRouteImport
+    '/_protege/profil': {
+      id: '/_protege/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof ProtegeProfilRouteImport
       parentRoute: typeof ProtegeRoute
     }
     '/_protege/routines': {
@@ -300,14 +300,14 @@ const ProtegeSeancesRouteWithChildren = ProtegeSeancesRoute._addFileChildren(
 
 interface ProtegeRouteChildren {
   ProtegeExercicesRoute: typeof ProtegeExercicesRouteWithChildren
-  ProtegeParametresRoute: typeof ProtegeParametresRoute
+  ProtegeProfilRoute: typeof ProtegeProfilRoute
   ProtegeRoutinesRoute: typeof ProtegeRoutinesRouteWithChildren
   ProtegeSeancesRoute: typeof ProtegeSeancesRouteWithChildren
 }
 
 const ProtegeRouteChildren: ProtegeRouteChildren = {
   ProtegeExercicesRoute: ProtegeExercicesRouteWithChildren,
-  ProtegeParametresRoute: ProtegeParametresRoute,
+  ProtegeProfilRoute: ProtegeProfilRoute,
   ProtegeRoutinesRoute: ProtegeRoutinesRouteWithChildren,
   ProtegeSeancesRoute: ProtegeSeancesRouteWithChildren,
 }

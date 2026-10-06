@@ -1,23 +1,7 @@
 import { Link, useRouteContext } from "@tanstack/react-router";
-import {
-  ChevronsUpDown,
-  Dumbbell,
-  History,
-  ListChecks,
-  LogOut,
-  Search,
-  Settings,
-} from "lucide-react";
+import { Dumbbell, History, LayoutDashboard, ListChecks, Search } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -28,14 +12,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useDeconnexion } from "@/lib/deconnexion";
 import { OUVRIR_PALETTE } from "./palette";
 
+// Le Tableau de bord est la page d'arrivée (D134) ; le Profil vit en pied de barre.
 const ENTREES = [
+  { to: "/", label: "Tableau de bord", icone: LayoutDashboard },
   { to: "/seances", label: "Séances", icone: History },
   { to: "/routines", label: "Routines", icone: ListChecks },
   { to: "/exercices", label: "Exercices", icone: Dumbbell },
-  { to: "/parametres", label: "Paramètres", icone: Settings },
 ] as const;
 
 /** Deux lettres tirées de l'adresse : « alexis.gontier » → « AG ». */
@@ -45,7 +29,6 @@ function initiales(email: string) {
 }
 
 export function NavLaterale() {
-  const seDeconnecter = useDeconnexion();
   const email = useRouteContext({ strict: false }).auth?.session?.user.email ?? "";
 
   return (
@@ -56,7 +39,7 @@ export function NavLaterale() {
             <SidebarMenuButton size="lg" asChild>
               <Link to="/">
                 <Logo />
-                <span className="text-sm font-semibold tracking-tight text-(--ink)">
+                <span className="text-base font-extrabold tracking-tight text-(--ink)">
                   better-lift
                 </span>
               </Link>
@@ -82,11 +65,16 @@ export function NavLaterale() {
               <SidebarMenuItem key={to}>
                 {/* `isActive` passe par le `data-active` que pose le lien actif : la
                     route décide, pas un état recopié. */}
-                <SidebarMenuButton asChild tooltip={label}>
-                  {/* Les filtres de l'URL (`?groupe=…`) ne doivent pas éteindre l'entrée. */}
+                <SidebarMenuButton
+                  asChild
+                  tooltip={label}
+                  className="h-9 data-[active=true]:font-bold"
+                >
+                  {/* Les filtres de l'URL (`?groupe=…`) ne doivent pas éteindre l'entrée ;
+                      sans `exact`, `/` resterait actif sur toutes les pages. */}
                   <Link
                     to={to}
-                    activeOptions={{ includeSearch: false }}
+                    activeOptions={{ includeSearch: false, exact: to === "/" }}
                     activeProps={{ "data-active": true, "aria-current": "page" }}
                   >
                     <Icone aria-hidden="true" />
@@ -99,38 +87,25 @@ export function NavLaterale() {
         </SidebarGroup>
       </SidebarContent>
 
+      {/* La déconnexion vit dans le Profil. */}
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" tooltip="Compte">
-                  <Avatar className="size-7 rounded-md">
-                    <AvatarFallback className="rounded-md bg-(--surface-3) text-xs">
-                      {initiales(email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate text-sm">{email || "Compte"}</span>
-                  <ChevronsUpDown aria-hidden="true" className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end" className="min-w-56">
-                <DropdownMenuLabel className="truncate font-normal text-(--ink-subtle)">
-                  {email}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/parametres">
-                    <Settings aria-hidden="true" />
-                    Paramètres
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={seDeconnecter}>
-                  <LogOut aria-hidden="true" />
-                  Se déconnecter
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              tooltip="Profil"
+              className="data-[active=true]:font-bold"
+            >
+              <Link to="/profil" activeProps={{ "data-active": true, "aria-current": "page" }}>
+                <Avatar className="size-7 rounded-full">
+                  <AvatarFallback className="rounded-full bg-(--surface-3) text-xs font-bold">
+                    {initiales(email)}
+                  </AvatarFallback>
+                </Avatar>
+                <span>Profil</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

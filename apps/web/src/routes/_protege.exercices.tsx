@@ -5,7 +5,7 @@ import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
-import { AppShell } from "@/components/shell/app-shell";
+import { PageListeDetail } from "@/components/shell/page-liste-detail";
 import { ListeExercices } from "@/features/exercices/liste-exercices";
 import { optionsCatalogue } from "@/features/exercices/requetes";
 
@@ -77,6 +77,10 @@ function PageExercices() {
   }
 
   return (
-    <AppShell titre="Exercices" liste={panneauListe()} detail={slug ? <Outlet /> : undefined} />
+    <PageListeDetail
+      titre="Exercices"
+      liste={panneauListe()}
+      detail={slug ? <Outlet /> : undefined}
+    />
   );
 }
