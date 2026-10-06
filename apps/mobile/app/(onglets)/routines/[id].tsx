@@ -1,8 +1,10 @@
 import {
   dureeEstimeeSec,
+  groupes,
   LIBELLE_ZONE,
   meilleureSerie,
   resumeSeries,
+  roleRepos,
   zonesTravaillees,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +18,7 @@ import { formaterSerie } from "../../../components/ui/badge-record";
 import { BoutonContour } from "../../../components/ui/bouton-contour";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur } from "../../../components/ui/etats";
+import { RepereSuperset } from "../../../components/ui/repere-superset";
 import { Vignette } from "../../../components/ui/vignette";
 import { useDemarrer } from "../../../lib/demarrer";
 import { optionsPrecedents, optionsRoutine } from "../../../lib/requetes";
@@ -70,6 +73,7 @@ export default function DetailRoutine() {
 
   const r = routine.data;
   const nbSeries = r.exercices.reduce((n, e) => n + e.series.length, 0);
+  const blocs = groupes(r.exercices);
   const minutes = Math.max(1, Math.round(dureeEstimeeSec(r.exercices) / 60));
   const zones = zonesTravaillees(r.exercices)
     .filter((z) => z.niveau === "principal")
@@ -123,26 +127,35 @@ export default function DetailRoutine() {
         {r.exercices.map((ex, i) => (
           // L'index entre dans la clé : le même exercice peut figurer deux fois.
           // Chaque exercice ouvre sa fiche : records, exécution.
-          <Appuyable
+          <RepereSuperset
             key={`${ex.slug}-${i}`}
-            onPress={() => router.push(`/exercices/${ex.slug}`)}
-            style={styles.carte}
-            accessibilityRole="link"
-            accessibilityHint="Ouvre la fiche de l'exercice"
+            groupe={blocs.find((b) => b.debut <= i && i <= b.fin) ?? null}
+            index={i}
+            ecart={espace.m}
           >
-            <Vignette image={ex.image} taille={48} />
-            <View style={styles.texte}>
-              <Text style={styles.exercice} numberOfLines={2}>
-                {ex.nom}
-              </Text>
-              <Text style={styles.series}>{resumeSeries(ex.series, SYSTEME_UNITES)}</Text>
-              {ex.reposSec ? (
-                <Text style={styles.repos}>Repos {formaterRepos(ex.reposSec)}</Text>
-              ) : null}
-              {derniereFois(precedents.data?.[ex.slug])}
-            </View>
-            <ChevronRight size={20} color={couleurs.encreTertiaire} />
-          </Appuyable>
+            <Appuyable
+              onPress={() => router.push(`/exercices/${ex.slug}`)}
+              style={styles.carte}
+              accessibilityRole="link"
+              accessibilityHint="Ouvre la fiche de l'exercice"
+            >
+              <Vignette image={ex.image} taille={48} />
+              <View style={styles.texte}>
+                <Text style={styles.exercice} numberOfLines={2}>
+                  {ex.nom}
+                </Text>
+                <Text style={styles.series}>{resumeSeries(ex.series, SYSTEME_UNITES)}</Text>
+                {ex.reposSec && roleRepos(r.exercices, i) !== "masque" ? (
+                  <Text style={styles.repos}>
+                    {roleRepos(r.exercices, i) === "groupe" ? "Repos après le groupe" : "Repos"}{" "}
+                    {formaterRepos(ex.reposSec)}
+                  </Text>
+                ) : null}
+                {derniereFois(precedents.data?.[ex.slug])}
+              </View>
+              <ChevronRight size={20} color={couleurs.encreTertiaire} />
+            </Appuyable>
+          </RepereSuperset>
         ))}
 
         {/* Après la liste : les exercices sont ce qu'on vient lire, la carte du

@@ -3,12 +3,13 @@ import {
   type ExerciceBrouillon,
   etiquettesSeries,
   LIBELLE_TYPE_SERIE,
+  type RoleRepos,
   reposInvalide,
   repsInvalides,
   type SerieBrouillon,
   TYPES_SERIE,
 } from "@better-lift/shared";
-import { Ellipsis, GripVertical, Plus, Trash2, X } from "lucide-react-native";
+import { Ellipsis, GripVertical, Link2, Plus, Trash2, Unlink2, X } from "lucide-react-native";
 import { Text, TextInput, View } from "react-native";
 import { useConfirmer, useFeuille } from "../../lib/confirmation";
 import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
@@ -23,6 +24,13 @@ type Props = {
   /** Le glisser-déposer : la poignée le déclenche à l'appui long. */
   onGlisser: () => void;
   enGlissement: boolean;
+  /** D149 : masqué sur un membre non dernier d'un superset. */
+  repos: RoleRepos;
+  /** D152 : hors groupe ou au bout d'un groupe, et pas sur le dernier exercice. */
+  peutLier: boolean;
+  dansGroupe: boolean;
+  onLier: () => void;
+  onDelier: () => void;
 };
 
 /**
@@ -36,6 +44,11 @@ export function CarteExerciceEdition({
   onRetirer,
   onGlisser,
   enGlissement,
+  repos,
+  peutLier,
+  dansGroupe,
+  onLier,
+  onDelier,
 }: Props) {
   const styles = useStyles();
   const couleurs = useCouleurs();
@@ -61,6 +74,16 @@ export function CarteExerciceEdition({
     feuille({
       titre: e.nom,
       options: [
+        {
+          libelle: "Superset avec le suivant",
+          icone: Link2,
+          ...(peutLier
+            ? { onPress: onLier }
+            : { inactive: dansGroupe ? "dans le groupe" : "dernier exercice" }),
+        },
+        ...(dansGroupe
+          ? [{ libelle: "Retirer du superset", icone: Unlink2, onPress: onDelier }]
+          : []),
         {
           libelle: "Retirer l'exercice",
           icone: Trash2,
@@ -103,19 +126,23 @@ export function CarteExerciceEdition({
         </Appuyable>
       </View>
 
-      <View style={styles.repos}>
-        <Text style={styles.libelle}>Repos</Text>
-        <TextInput
-          value={e.repos}
-          onChangeText={(repos) => onChange({ ...e, repos })}
-          keyboardType="number-pad"
-          placeholder="—"
-          placeholderTextColor={couleurs.encreAttenuee}
-          style={[styles.champ, styles.champRepos, reposInvalide(e.repos) && styles.invalide]}
-          accessibilityLabel="Repos en secondes"
-        />
-        <Text style={styles.unite}>s</Text>
-      </View>
+      {repos === "masque" ? null : (
+        <View style={styles.repos}>
+          <Text style={styles.libelle}>
+            {repos === "groupe" ? "Repos après le groupe" : "Repos"}
+          </Text>
+          <TextInput
+            value={e.repos}
+            onChangeText={(repos) => onChange({ ...e, repos })}
+            keyboardType="number-pad"
+            placeholder="—"
+            placeholderTextColor={couleurs.encreAttenuee}
+            style={[styles.champ, styles.champRepos, reposInvalide(e.repos) && styles.invalide]}
+            accessibilityLabel="Repos en secondes"
+          />
+          <Text style={styles.unite}>s</Text>
+        </View>
+      )}
 
       <View style={styles.enteteSeries}>
         <Text style={[styles.colonne, styles.colSerie]}>Série</Text>
