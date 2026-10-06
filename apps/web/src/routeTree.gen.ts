@@ -9,9 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtegeRouteImport } from './routes/_protege'
 import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as ProtegeIndexRouteImport } from './routes/_protege.index'
 import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
 import { Route as ProtegeProfilRouteImport } from './routes/_protege.profil'
 import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
@@ -22,11 +22,6 @@ import { Route as ProtegeRoutinesIdRouteImport } from './routes/_protege.routine
 import { Route as ProtegeRoutinesNouvelleRouteImport } from './routes/_protege.routines.nouvelle'
 import { Route as ProtegeSeancesIdRouteImport } from './routes/_protege.seances.$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProtegeRoute = ProtegeRouteImport.update({
   id: '/_protege',
   getParentRoute: () => rootRouteImport,
@@ -35,6 +30,11 @@ const ConnexionRoute = ConnexionRouteImport.update({
   id: '/connexion',
   path: '/connexion',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProtegeIndexRoute = ProtegeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtegeRoute,
 } as any)
 const ProtegeExercicesRoute = ProtegeExercicesRouteImport.update({
   id: '/exercices',
@@ -83,7 +83,7 @@ const ProtegeSeancesIdRoute = ProtegeSeancesIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof ProtegeIndexRoute
   '/connexion': typeof ConnexionRoute
   '/exercices': typeof ProtegeExercicesRouteWithChildren
   '/profil': typeof ProtegeProfilRoute
@@ -96,11 +96,11 @@ export interface FileRoutesByFullPath {
   '/routines/': typeof ProtegeRoutinesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/connexion': typeof ConnexionRoute
   '/exercices': typeof ProtegeExercicesRouteWithChildren
   '/profil': typeof ProtegeProfilRoute
   '/seances': typeof ProtegeSeancesRouteWithChildren
+  '/': typeof ProtegeIndexRoute
   '/exercices/$slug': typeof ProtegeExercicesSlugRoute
   '/routines/$id': typeof ProtegeRoutinesIdRoute
   '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
@@ -109,13 +109,13 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_protege': typeof ProtegeRouteWithChildren
   '/connexion': typeof ConnexionRoute
   '/_protege/exercices': typeof ProtegeExercicesRouteWithChildren
   '/_protege/profil': typeof ProtegeProfilRoute
   '/_protege/routines': typeof ProtegeRoutinesRouteWithChildren
   '/_protege/seances': typeof ProtegeSeancesRouteWithChildren
+  '/_protege/': typeof ProtegeIndexRoute
   '/_protege/exercices/$slug': typeof ProtegeExercicesSlugRoute
   '/_protege/routines/$id': typeof ProtegeRoutinesIdRoute
   '/_protege/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
@@ -138,11 +138,11 @@ export interface FileRouteTypes {
     | '/routines/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/connexion'
     | '/exercices'
     | '/profil'
     | '/seances'
+    | '/'
     | '/exercices/$slug'
     | '/routines/$id'
     | '/routines/nouvelle'
@@ -150,13 +150,13 @@ export interface FileRouteTypes {
     | '/routines'
   id:
     | '__root__'
-    | '/'
     | '/_protege'
     | '/connexion'
     | '/_protege/exercices'
     | '/_protege/profil'
     | '/_protege/routines'
     | '/_protege/seances'
+    | '/_protege/'
     | '/_protege/exercices/$slug'
     | '/_protege/routines/$id'
     | '/_protege/routines/nouvelle'
@@ -165,20 +165,12 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   ProtegeRoute: typeof ProtegeRouteWithChildren
   ConnexionRoute: typeof ConnexionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_protege': {
       id: '/_protege'
       path: ''
@@ -192,6 +184,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/connexion'
       preLoaderRoute: typeof ConnexionRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_protege/': {
+      id: '/_protege/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof ProtegeIndexRouteImport
+      parentRoute: typeof ProtegeRoute
     }
     '/_protege/exercices': {
       id: '/_protege/exercices'
@@ -303,6 +302,7 @@ interface ProtegeRouteChildren {
   ProtegeProfilRoute: typeof ProtegeProfilRoute
   ProtegeRoutinesRoute: typeof ProtegeRoutinesRouteWithChildren
   ProtegeSeancesRoute: typeof ProtegeSeancesRouteWithChildren
+  ProtegeIndexRoute: typeof ProtegeIndexRoute
 }
 
 const ProtegeRouteChildren: ProtegeRouteChildren = {
@@ -310,13 +310,13 @@ const ProtegeRouteChildren: ProtegeRouteChildren = {
   ProtegeProfilRoute: ProtegeProfilRoute,
   ProtegeRoutinesRoute: ProtegeRoutinesRouteWithChildren,
   ProtegeSeancesRoute: ProtegeSeancesRouteWithChildren,
+  ProtegeIndexRoute: ProtegeIndexRoute,
 }
 
 const ProtegeRouteWithChildren =
   ProtegeRoute._addFileChildren(ProtegeRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   ProtegeRoute: ProtegeRouteWithChildren,
   ConnexionRoute: ConnexionRoute,
 }

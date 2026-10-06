@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   CommandDialog,
@@ -11,8 +12,19 @@ import {
 /** Ouvre la palette depuis un bouton : même chemin que `Cmd+K`, sans état partagé. */
 export const OUVRIR_PALETTE = "better-lift:ouvrir-palette";
 
+// Les destinations de la barre latérale (D134). Exercices, routines et séances
+// s'ajoutent à la palette avec leurs lots.
+const PAGES = [
+  { to: "/", label: "Tableau de bord" },
+  { to: "/seances", label: "Séances" },
+  { to: "/routines", label: "Routines" },
+  { to: "/exercices", label: "Exercices" },
+  { to: "/profil", label: "Profil" },
+] as const;
+
 export function Palette() {
   const [ouverte, setOuverte] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     function surTouche(e: KeyboardEvent) {
@@ -35,7 +47,7 @@ export function Palette() {
       open={ouverte}
       onOpenChange={setOuverte}
       title="Palette de commandes"
-      description="Rechercher un exercice ou lancer une action"
+      description="Aller à une page"
       // Seul élément élevé de l'interface (D27) : flou, filet et ombre portée du
       // registre flottant, jamais utilisés par les panneaux permanents. --scrim,
       // --float-bg, --float-line et --float-shadow ne sont pas exposés à Tailwind
@@ -44,12 +56,21 @@ export function Palette() {
       className="border-(--float-line) bg-(--float-bg) shadow-(--float-shadow) backdrop-blur-[20px]"
       overlayClassName="bg-(--scrim)"
     >
-      <CommandInput placeholder="Rechercher un exercice, une routine, une action…" />
+      <CommandInput placeholder="Aller à…" />
       <CommandList>
         <CommandEmpty>Aucun résultat.</CommandEmpty>
-        <CommandGroup heading="Actions">
-          <CommandItem>Démarrer une séance libre</CommandItem>
-          <CommandItem>Créer une routine</CommandItem>
+        <CommandGroup heading="Pages">
+          {PAGES.map(({ to, label }) => (
+            <CommandItem
+              key={to}
+              onSelect={() => {
+                setOuverte(false);
+                navigate({ to });
+              }}
+            >
+              {label}
+            </CommandItem>
+          ))}
         </CommandGroup>
       </CommandList>
     </CommandDialog>

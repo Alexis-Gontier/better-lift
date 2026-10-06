@@ -85,7 +85,7 @@ function PageConnexion() {
                 // renverrait aussitôt vers /connexion.
                 await chargerSession();
                 await router.invalidate();
-                await navigate({ to: redirect ?? "/seances" });
+                await navigate({ to: redirect ?? "/" });
               }}
             />
           )}
