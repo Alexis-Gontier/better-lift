@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { initiales } from "./nom-compte";
 import { OUVRIR_PALETTE } from "./palette";
 
 // Le Tableau de bord est la page d'arrivée (D134) ; le Profil vit en pied de barre.
@@ -21,12 +22,6 @@ const ENTREES = [
   { to: "/routines", label: "Routines", icone: ListChecks },
   { to: "/exercices", label: "Exercices", icone: Dumbbell },
 ] as const;
-
-/** Deux lettres tirées de l'adresse : « alexis.gontier » → « AG ». */
-function initiales(email: string) {
-  const [a = "", b = ""] = email.split("@")[0]?.split(/[._-]/) ?? [];
-  return (a.charAt(0) + (b.charAt(0) || a.charAt(1))).toUpperCase() || "?";
-}
 
 export function NavLaterale() {
   const email = useRouteContext({ strict: false }).auth?.session?.user.email ?? "";
