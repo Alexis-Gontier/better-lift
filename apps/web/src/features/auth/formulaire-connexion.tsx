@@ -30,7 +30,7 @@ const TEXTES = {
   },
 } as const;
 
-const CHAMP = "h-10 bg-(--surface-1)";
+const CHAMP = "h-10 rounded-[10px] bg-(--surface-1)";
 
 export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
   const [mode, setMode] = useState<"connexion" | "creation">("connexion");
@@ -71,7 +71,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
 
   return (
     <form onSubmit={soumettre} className="flex w-full flex-col">
-      <h1 className="text-3xl font-semibold tracking-tight">{t.titre}</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">{t.titre}</h1>
       <p className="mt-1.5 text-sm text-(--ink-subtle)">{t.sousTitre}</p>
 
       <label htmlFor="email" className="mt-8 text-sm font-medium">
@@ -123,7 +123,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={enCours} className="mt-6 h-10 font-semibold">
+      <Button type="submit" disabled={enCours} className="mt-6 h-10 rounded-[10px] font-bold">
         {enCours ? "…" : t.action}
       </Button>
 
