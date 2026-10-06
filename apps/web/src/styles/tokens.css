@@ -36,6 +36,9 @@
   --danger-ink: #e98b85;
   --danger-wash: rgb(168 62 57 / 0.16);
 
+  /* Le repère d'un superset (D151) : ni lime, ni danger. 6,1:1 sur --surface-2. */
+  --superset: #9a8cf0;
+
   /* Calendrier (D126, D127) : jour sans séance, puis quatre niveaux d'effort.
      Exception au lime de même nature que la carte du corps (D84) : une intensité,
      jamais une action ni un record. `--cal-0` s'écarte du mobile : le calendrier
@@ -89,6 +92,9 @@
   --danger-on: #fdf3f2;
   --danger-ink: #a83e39;
   --danger-wash: rgb(168 62 57 / 0.1);
+
+  /* 5,8:1 sur --surface-2. */
+  --superset: #5a4bbf;
 
   /* En clair, le lime pâle disparaît sur le blanc : le dégradé passe à l'olive. */
   --cal-0: #dde1e5;

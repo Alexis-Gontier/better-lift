@@ -6,7 +6,9 @@ import {
   groupes,
   lierAuSuivant,
   normaliserGroupes,
+  peutLierAuSuivant,
   retirerDuGroupe,
+  roleRepos,
 } from "./supersets.js";
 
 type E = { nom: string; supersetGroupe?: number | null };
@@ -111,5 +113,26 @@ describe("deplacerAvecGroupes (D148)", () => {
   it("ignore un indice hors bornes ou un déplacement nul", () => {
     expect(vue(deplacerAvecGroupes(l("a1 b1"), 0, 0))).toBe("a1 b1");
     expect(vue(deplacerAvecGroupes(l("a1 b1"), 0, 5))).toBe("a1 b1");
+  });
+});
+
+describe("roleRepos (D149)", () => {
+  it("hors groupe : son propre repos", () => {
+    expect(roleRepos(l("a b1 c1"), 0)).toBe("propre");
+  });
+  it("membre non dernier : masqué ; dernier : repos du groupe", () => {
+    const xs = l("a1 b1 c1");
+    expect([0, 1, 2].map((i) => roleRepos(xs, i))).toEqual(["masque", "masque", "groupe"]);
+  });
+});
+
+describe("peutLierAuSuivant (D152)", () => {
+  it("vrai hors groupe, sauf sur le dernier exercice", () => {
+    const xs = l("a b c");
+    expect([0, 1, 2].map((i) => peutLierAuSuivant(xs, i))).toEqual([true, true, false]);
+  });
+  it("dans un groupe : seul son dernier peut l'agrandir", () => {
+    const xs = l("a1 b1 c");
+    expect([0, 1].map((i) => peutLierAuSuivant(xs, i))).toEqual([false, true]);
   });
 });

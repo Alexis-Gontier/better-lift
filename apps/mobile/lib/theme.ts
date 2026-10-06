@@ -58,6 +58,11 @@ export type Couleurs = {
   dangerEncre: string;
   /** Voile sous les feuilles basses. */
   voile: string;
+  /**
+   * Le repère d'un superset (D151) : filet et étiquette. Ni l'action ni le record
+   * (lime), ni le danger. 5,6:1 à 7,0:1 sur les surfaces en sombre, 5,3:1 à 6,6:1 en clair.
+   */
+  superset: string;
   /** Muscles principaux sur la carte du corps (D84). */
   corps: string;
   /** Muscles secondaires sur la carte du corps. */
@@ -101,6 +106,7 @@ const sombre: Couleurs = {
   surDanger: "#fdf3f2",
   dangerEncre: "#e98b85",
   voile: "rgba(0, 0, 0, 0.6)",
+  superset: "#9a8cf0",
   corps: LIME,
   corpsSecondaire: "rgba(168, 207, 69, 0.45)",
   calendrier: [
@@ -137,6 +143,7 @@ const clair: Couleurs = {
   surDanger: "#fdf3f2",
   dangerEncre: "#a83e39",
   voile: "rgba(0, 0, 0, 0.4)",
+  superset: "#5a4bbf",
   corps: LIME,
   corpsSecondaire: "rgba(168, 207, 69, 0.45)",
   // En clair, le lime pâle disparaît sur le blanc : le dégradé passe à l'olive.

@@ -1,15 +1,24 @@
 import {
   type Brouillon,
   brouillonValide,
+  defaireGroupe,
+  deplacerAvecGroupes,
+  type ExerciceBrouillon,
   empreinte,
+  groupes,
+  lierAuSuivant,
+  normaliserGroupes,
   nouvelExercice,
+  peutLierAuSuivant,
   type RoutineDetail,
+  retirerDuGroupe,
+  roleRepos,
   versBrouillon,
   versSaisie,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { Ellipsis, Plus, Trash2 } from "lucide-react-native";
+import { Ellipsis, Plus, Trash2, Unlink2 } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Text, TextInput, View } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
@@ -17,8 +26,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteExerciceEdition } from "../components/routines/carte-exercice-edition";
 import { Appuyable } from "../components/ui/appuyable";
 import { Chargement, Erreur } from "../components/ui/etats";
+import { RepereSuperset } from "../components/ui/repere-superset";
 import { attendreChoix } from "../lib/choix-exercices";
-import { useConfirmer } from "../lib/confirmation";
+import { useConfirmer, useFeuille } from "../lib/confirmation";
 import {
   optionsRoutine,
   useCreerRoutine,
@@ -67,6 +77,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
   const router = useRouter();
   const navigation = useNavigation();
   const confirmer = useConfirmer();
+  const feuille = useFeuille();
   const creer = useCreerRoutine();
   const remplacer = useRemplacerRoutine(id ?? "");
   const supprimer = useSupprimerRoutine();
@@ -77,6 +88,11 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
   const reference = useMemo(() => empreinte(versBrouillon(initiale, SYSTEME_UNITES)), [initiale]);
   const modifiee = empreinte(brouillon) !== reference;
   const valide = brouillonValide(brouillon, SYSTEME_UNITES);
+  // Toute retouche de la liste passe par ici : les règles des supersets (D147,
+  // D148) s'appliquent à l'état du moment, pas à celui du dernier rendu.
+  const modifier = (f: (xs: ExerciceBrouillon[]) => ExerciceBrouillon[]) =>
+    setBrouillon((b) => ({ ...b, exercices: f(b.exercices) }));
+  const blocs = groupes(brouillon.exercices);
   const enCours = creer.isPending || remplacer.isPending || supprimer.isPending;
   const erreur = creer.error ?? remplacer.error ?? supprimer.error;
 
@@ -191,7 +207,8 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
         <DraggableFlatList
           data={brouillon.exercices}
           keyExtractor={(e) => e.cle}
-          onDragEnd={({ data }) => setBrouillon((b) => ({ ...b, exercices: data }))}
+          // D148 : le déplacé quitte son groupe, ou rejoint celui où il tombe.
+          onDragEnd={({ from, to }) => modifier((xs) => deplacerAvecGroupes(xs, from, to))}
           containerStyle={{ flex: 1 }}
           contentContainerStyle={styles.contenu}
           keyboardShouldPersistTaps="handled"
@@ -220,25 +237,44 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
               )}
             </View>
           }
-          renderItem={({ item, drag, isActive }) => (
-            <CarteExerciceEdition
-              exercice={item}
-              enGlissement={isActive}
-              onGlisser={drag}
-              onChange={(e) =>
-                setBrouillon((b) => ({
-                  ...b,
-                  exercices: b.exercices.map((x) => (x.cle === e.cle ? e : x)),
-                }))
-              }
-              onRetirer={() =>
-                setBrouillon((b) => ({
-                  ...b,
-                  exercices: b.exercices.filter((x) => x.cle !== item.cle),
-                }))
-              }
-            />
-          )}
+          renderItem={({ item, drag, isActive, getIndex }) => {
+            const i = getIndex() ?? 0;
+            const g = blocs.find((b) => b.debut <= i && i <= b.fin) ?? null;
+            return (
+              <RepereSuperset
+                groupe={g}
+                index={i}
+                marge={espace.m}
+                onEtiquette={() =>
+                  feuille({
+                    titre: `Superset ${g?.lettre ?? ""}`,
+                    options: [
+                      {
+                        libelle: "Défaire le superset",
+                        icone: Unlink2,
+                        onPress: () => modifier((xs) => defaireGroupe(xs, i)),
+                      },
+                    ],
+                  })
+                }
+              >
+                <CarteExerciceEdition
+                  exercice={item}
+                  enGlissement={isActive}
+                  onGlisser={drag}
+                  repos={roleRepos(brouillon.exercices, i)}
+                  peutLier={peutLierAuSuivant(brouillon.exercices, i)}
+                  dansGroupe={g !== null}
+                  onLier={() => modifier((xs) => lierAuSuivant(xs, i))}
+                  onDelier={() => modifier((xs) => retirerDuGroupe(xs, i))}
+                  onChange={(e) => modifier((xs) => xs.map((x) => (x.cle === e.cle ? e : x)))}
+                  onRetirer={() =>
+                    modifier((xs) => normaliserGroupes(xs.filter((x) => x.cle !== item.cle)))
+                  }
+                />
+              </RepereSuperset>
+            );
+          }}
           ListFooterComponent={
             <Appuyable onPress={ajouterExercices} style={styles.ajouter} accessibilityRole="button">
               <Plus size={20} color={couleurs.encre} />
