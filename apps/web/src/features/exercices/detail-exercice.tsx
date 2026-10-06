@@ -10,8 +10,24 @@ import {
 } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { Line, LineChart, YAxis } from "recharts";
 import { DansEnTete } from "@/components/shell/en-tete-page";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { BoutonFermer } from "@/features/routines/bouton-fermer";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
@@ -45,8 +61,10 @@ export function DetailExercice({
 }) {
   return (
     <ScrollArea className="h-full">
-      <div className="flex flex-col gap-5 px-8 py-6">
-        <DansEnTete titre={exercice.nom} />
+      <div className="flex flex-col gap-4 px-6 py-5">
+        <DansEnTete titre={exercice.nom}>
+          <BoutonFermer onFermer={onFermer} />
+        </DansEnTete>
         <header className="flex items-start gap-5">
           <AnimationExercice
             key={exercice.gif ?? exercice.slug}
@@ -54,7 +72,7 @@ export function DetailExercice({
             nom={exercice.nom}
           />
           <div className="min-w-0 flex-1">
-            <h2 className="text-[26px] font-extrabold tracking-tight">{exercice.nom}</h2>
+            {/* Le nom est dans le fil d'Ariane (D157) ; ici, ce qui le complète. */}
             <p className="text-[13px] text-(--ink-subtle)">{exercice.nomAnglais}</p>
             <p className="mt-2 text-[13px] text-(--ink-muted)">
               {LIBELLE_GROUPE[exercice.groupe]} · {exercice.equipement}
@@ -66,7 +84,6 @@ export function DetailExercice({
               ) : null}
             </p>
           </div>
-          <BoutonFermer onFermer={onFermer} />
         </header>
 
         {historique === undefined ? (
@@ -113,26 +130,26 @@ function Bloc({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3 rounded-2xl bg-(--surface-2) p-5">
-      <header className="flex items-baseline justify-between gap-4">
-        <h3 className="text-[11px] font-bold tracking-[0.09em] text-(--ink-subtle) uppercase">
-          {titre}
-        </h3>
-        {detail ? <p className="text-xs text-(--ink-muted)">{detail}</p> : null}
-      </header>
-      {children}
-    </section>
+    <Card>
+      <CardHeader>
+        <CardTitle>{titre}</CardTitle>
+        {detail ? <CardAction className="text-xs text-(--ink-muted)">{detail}</CardAction> : null}
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">{children}</CardContent>
+    </Card>
   );
 }
 
-// Le cadre du dessin : le SVG s'étire en largeur, ses traits gardent leur épaisseur.
-const LARGEUR = 600;
-const HAUTEUR = 160;
+const CONFIG = { valeur: { label: "1RM estimé" } } satisfies ChartConfig;
 
-/** Le 1RM estimé et sa courbe, séance par séance (D141). Le dernier point en lime s'il est record. */
+/**
+ * Le 1RM estimé et sa courbe, séance par séance (D141, D159). Le dernier point en lime s'il
+ * est record. `courbe()` ne sert plus qu'aux chiffres (min, max, écart, record) : le tracé
+ * est celui de Recharts.
+ */
 function Progression({ historique }: { historique: HistoriqueExercice }) {
   const points = courbeUnRm(historique);
-  const c = courbe(points, LARGEUR, HAUTEUR);
+  const c = courbe(points, 1, 1);
   const dernier = points.at(-1);
   const premier = points[0];
 
@@ -145,7 +162,6 @@ function Progression({ historique }: { historique: HistoriqueExercice }) {
       </Bloc>
     );
   }
-  const fin = c.xy.at(-1);
 
   return (
     <Bloc
@@ -162,43 +178,48 @@ function Progression({ historique }: { historique: HistoriqueExercice }) {
           </p>
         ) : null}
       </div>
-      <svg
-        viewBox={`0 0 ${LARGEUR} ${HAUTEUR}`}
-        preserveAspectRatio="none"
-        className="h-40 w-full"
+      <ChartContainer
+        config={CONFIG}
+        className="aspect-auto h-40 w-full"
         role="img"
         aria-label={`Courbe du 1RM estimé sur ${points.length} séances, de ${kg(premier.valeur)} à ${kg(dernier.valeur)}`}
       >
-        <line
-          x1="0"
-          x2={LARGEUR}
-          y1={HAUTEUR / 2}
-          y2={HAUTEUR / 2}
-          stroke="var(--line)"
-          vectorEffect="non-scaling-stroke"
-        />
-        <polyline
-          points={c.xy.map((p) => `${p.x},${p.y}`).join(" ")}
-          fill="none"
-          stroke="var(--ink-muted)"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        {c.xy.map((p, i) => (
-          <circle
-            // Deux séances peuvent commencer au même instant : la position fait la clé.
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r={p === fin ? 5 : 3}
-            fill={p === fin && c.record ? "var(--accent)" : "var(--ink-muted)"}
-            vectorEffect="non-scaling-stroke"
-          >
-            <title>{`${formatJour(points[i]?.date ?? "", FUSEAU)} : ${kg(points[i]?.valeur ?? 0)}`}</title>
-          </circle>
-        ))}
-      </svg>
+        <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
+          <YAxis hide domain={["dataMin", "dataMax"]} />
+          <ChartTooltip
+            cursor={false}
+            content={
+              <ChartTooltipContent
+                hideIndicator
+                labelFormatter={(_, charge) =>
+                  formatJour(String(charge[0]?.payload?.date ?? ""), FUSEAU)
+                }
+                formatter={(v) => kg(Number(v))}
+              />
+            }
+          />
+          {/* Les animations de Recharts échappent à `prefers-reduced-motion` : coupées. */}
+          <Line
+            dataKey="valeur"
+            type="linear"
+            stroke="var(--ink-muted)"
+            strokeWidth={2}
+            isAnimationActive={false}
+            dot={({ cx, cy, index }: { cx?: number; cy?: number; index?: number }) => {
+              const fin = index === points.length - 1;
+              return (
+                <circle
+                  key={index}
+                  cx={cx}
+                  cy={cy}
+                  r={fin ? 5 : 3}
+                  fill={fin && c.record ? "var(--accent)" : "var(--ink-muted)"}
+                />
+              );
+            }}
+          />
+        </LineChart>
+      </ChartContainer>
       <div className="flex justify-between text-[11px] text-(--ink-subtle)">
         <span>{DATE_COURTE.format(new Date(premier.date))}</span>
         <span>
@@ -222,7 +243,7 @@ function Records({ records }: { records: RecordExercice[] | null | undefined }) 
       ) : (
         <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {records.map((r) => (
-            <li key={r.type} className="rounded-[14px] bg-(--surface-1) px-4 py-3">
+            <li key={r.type} className="rounded-lg border px-4 py-3">
               {/* Le record est un CONTOUR (D28) : lime en texte sur fond teinté. */}
               <BadgeRecord libelle={LIBELLE_RECORD[r.type]} />
               <p className="chiffre mt-2 text-[26px]">
@@ -252,25 +273,25 @@ function Historique({ historique }: { historique: HistoriqueExercice }) {
       titre="Historique"
       detail={`${historique.length} ${historique.length > 1 ? "séances" : "séance"}`}
     >
-      <table className="w-full text-[13.5px]">
-        <thead>
-          <tr className="text-left text-[11px] font-bold tracking-[0.08em] text-(--ink-subtle) uppercase">
-            <th className="w-32 py-1.5 font-bold">Date</th>
-            <th className="font-bold">Séance</th>
-            <th className="font-bold">Séries faites</th>
-            <th className="text-right font-bold">1RM estimé</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="text-[13.5px]">
+        <TableHeader>
+          <TableRow className="text-xs hover:bg-transparent">
+            <TableHead className="h-8 w-32 px-0 text-(--ink-subtle)">Date</TableHead>
+            <TableHead className="h-8 text-(--ink-subtle)">Séance</TableHead>
+            <TableHead className="h-8 text-(--ink-subtle)">Séries faites</TableHead>
+            <TableHead className="h-8 px-0 text-right text-(--ink-subtle)">1RM estimé</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {historique.map((s) => {
             const unRm = courbeUnRm([s])[0]?.valeur;
             const faites = s.series.filter((x) => x.faite && x.type !== "ECHAUFFEMENT");
             return (
-              <tr key={s.id} className="border-t border-(--line) align-top">
-                <td className="py-2.5 whitespace-nowrap text-(--ink-muted)">
+              <TableRow key={s.id} className="align-top hover:bg-transparent">
+                <TableCell className="px-0 text-(--ink-muted)">
                   {DATE_COURTE.format(new Date(s.debut))}
-                </td>
-                <td className="py-2.5">
+                </TableCell>
+                <TableCell>
                   <Link
                     to="/seances/$id"
                     params={{ id: s.id }}
@@ -278,18 +299,18 @@ function Historique({ historique }: { historique: HistoriqueExercice }) {
                   >
                     {s.nom}
                   </Link>
-                </td>
-                <td className="py-2.5 text-(--ink-muted)">
+                </TableCell>
+                <TableCell className="whitespace-normal text-(--ink-muted)">
                   {faites.length > 0
                     ? faites.map((x) => formaterSerie(x.chargeKg, x.reps)).join(" · ")
                     : "—"}
-                </td>
-                <td className="py-2.5 text-right whitespace-nowrap">{unRm ? kg(unRm) : "—"}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="px-0 text-right">{unRm ? kg(unRm) : "—"}</TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </Bloc>
   );
 }
