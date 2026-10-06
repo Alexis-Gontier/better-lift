@@ -78,6 +78,7 @@ function PageExercices() {
 
   return (
     <PageListeDetail
+      vers="/exercices"
       titre="Exercices"
       disposition="fil"
       liste={panneauListe()}

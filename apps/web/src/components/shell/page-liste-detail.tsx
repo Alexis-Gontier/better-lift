@@ -2,9 +2,12 @@ import type { ReactNode } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Coquille } from "./coquille";
+import { EnTetePage } from "./en-tete-page";
 
 type Props = {
   titre: string;
+  /** La liste de la page : le titre du fil y ramène quand un détail est ouvert. */
+  vers: "/seances" | "/routines" | "/exercices";
   liste: ReactNode;
   detail?: ReactNode;
   /**
@@ -23,7 +26,7 @@ const TAILLES = {
   fil: { liste: "34%", detail: "66%", listeMin: "24%", detailMin: "45%", detailMax: "76%" },
 } as const;
 
-export function PageListeDetail({ titre, liste, detail, disposition = "liste" }: Props) {
+export function PageListeDetail({ titre, vers, liste, detail, disposition = "liste" }: Props) {
   const t = TAILLES[disposition];
   // react-resizable-panels 4 n'a plus de prop `autoSaveId` (API des versions 1/2) : la
   // persistance passe par ce hook, qui lit `localStorage` de façon SYNCHRONE au rendu
@@ -36,39 +39,39 @@ export function PageListeDetail({ titre, liste, detail, disposition = "liste" }:
 
   return (
     <Coquille>
-      <h1 className="sr-only">{titre}</h1>
-
-      <ResizablePanelGroup
-        orientation="horizontal"
-        defaultLayout={defaultLayout}
-        onLayoutChanged={onLayoutChanged}
-        className="min-h-0 flex-1"
-      >
-        <ResizablePanel
-          id="liste"
-          defaultSize={detail ? t.liste : "100%"}
-          minSize={t.listeMin}
-          maxSize={{ colonne: "35%", fil: "55%", liste: undefined }[disposition]}
+      <EnTetePage titre={titre} vers={vers}>
+        <ResizablePanelGroup
+          orientation="horizontal"
+          defaultLayout={defaultLayout}
+          onLayoutChanged={onLayoutChanged}
+          className="min-h-0 flex-1"
         >
-          {liste}
-        </ResizablePanel>
+          <ResizablePanel
+            id="liste"
+            defaultSize={detail ? t.liste : "100%"}
+            minSize={t.listeMin}
+            maxSize={{ colonne: "35%", fil: "55%", liste: undefined }[disposition]}
+          >
+            {liste}
+          </ResizablePanel>
 
-        {detail ? (
-          <>
-            <ResizableHandle className="bg-(--line)" />
-            <ResizablePanel
-              id="detail"
-              defaultSize={t.detail}
-              minSize={t.detailMin}
-              maxSize={t.detailMax}
-            >
-              <aside aria-label="Détail" className="h-full bg-(--surface-1)">
-                {detail}
-              </aside>
-            </ResizablePanel>
-          </>
-        ) : null}
-      </ResizablePanelGroup>
+          {detail ? (
+            <>
+              <ResizableHandle className="bg-(--line)" />
+              <ResizablePanel
+                id="detail"
+                defaultSize={t.detail}
+                minSize={t.detailMin}
+                maxSize={t.detailMax}
+              >
+                <aside aria-label="Détail" className="h-full">
+                  {detail}
+                </aside>
+              </ResizablePanel>
+            </>
+          ) : null}
+        </ResizablePanelGroup>
+      </EnTetePage>
     </Coquille>
   );
 }

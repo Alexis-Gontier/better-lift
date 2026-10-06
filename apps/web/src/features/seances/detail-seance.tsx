@@ -9,6 +9,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { DansEnTete } from "@/components/shell/en-tete-page";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -61,6 +62,7 @@ export function DetailSeance({
 
   return (
     <div className="flex h-full flex-col">
+      <DansEnTete titre={seance.nom} />
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-5 px-8 py-6">
           <header className="flex items-start gap-2">

@@ -56,6 +56,7 @@ function PageRoutines() {
 
   return (
     <PageListeDetail
+      vers="/routines"
       titre="Routines"
       disposition="colonne"
       liste={panneauListe()}

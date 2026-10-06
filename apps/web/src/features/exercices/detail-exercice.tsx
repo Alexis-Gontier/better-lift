@@ -10,6 +10,7 @@ import {
 } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { DansEnTete } from "@/components/shell/en-tete-page";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BoutonFermer } from "@/features/routines/bouton-fermer";
 import { FUSEAU } from "@/lib/fuseau";
@@ -45,6 +46,7 @@ export function DetailExercice({
   return (
     <ScrollArea className="h-full">
       <div className="flex flex-col gap-5 px-8 py-6">
+        <DansEnTete titre={exercice.nom} />
         <header className="flex items-start gap-5">
           <AnimationExercice
             key={exercice.gif ?? exercice.slug}

@@ -34,6 +34,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Ellipsis, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { DansEnTete } from "@/components/shell/en-tete-page";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -128,6 +129,7 @@ export function EditeurRoutine({
 
   return (
     <div className="flex h-full flex-col">
+      <DansEnTete titre={brouillon.nom || "Nouvelle routine"} />
       <div className="flex items-center gap-2 px-8 pt-6 pb-2">
         <input
           aria-label="Nom de la routine"
