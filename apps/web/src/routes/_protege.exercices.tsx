@@ -79,6 +79,7 @@ function PageExercices() {
   return (
     <PageListeDetail
       titre="Exercices"
+      disposition="fil"
       liste={panneauListe()}
       detail={slug ? <Outlet /> : undefined}
     />

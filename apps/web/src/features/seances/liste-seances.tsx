@@ -1,9 +1,9 @@
 import { formaterCharge, type SeanceFil } from "@better-lift/shared";
 import { cn } from "cn";
-import { ArrowUpRight } from "lucide-react";
 import { EtatVide } from "@/components/etats/etat-vide";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BadgeRecord } from "@/features/exercices/badge-record";
 import { dureeTexte } from "@/features/tableau/calculs";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
@@ -121,12 +121,8 @@ function Entree({
       <span className="flex items-center justify-between gap-2">
         <span className="truncate font-bold">{s.nom}</span>
         {s.nbRecords > 0 ? (
-          <span
-            title={`${s.nbRecords} ${s.nbRecords > 1 ? "records" : "record"}`}
-            className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-accent-wash px-2 py-0.5 text-[11px] font-bold text-accent-ink"
-          >
-            <ArrowUpRight aria-hidden="true" className="size-3" />
-            {s.nbRecords}
+          <span title={`${s.nbRecords} ${s.nbRecords > 1 ? "records" : "record"}`}>
+            <BadgeRecord libelle={String(s.nbRecords)} />
           </span>
         ) : null}
       </span>

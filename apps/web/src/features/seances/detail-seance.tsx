@@ -6,7 +6,7 @@ import {
   type SeanceDetail,
 } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formaterSerie } from "@/features/exercices/badge-record";
+import { BadgeRecord, formaterSerie } from "@/features/exercices/badge-record";
 import { BoutonFermer } from "@/features/routines/bouton-fermer";
 import { ConfirmerSuppression } from "@/features/routines/confirmer-suppression";
 import { dureeTexte } from "@/features/tableau/calculs";
@@ -219,10 +219,9 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
                 </td>
                 <td className="text-right">
                   {serie.records.length > 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-accent-line bg-accent-wash px-2 py-0.5 text-[11px] font-bold text-accent-ink">
-                      <ArrowUpRight aria-hidden="true" className="size-3" />
-                      {serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")}
-                    </span>
+                    <BadgeRecord
+                      libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")}
+                    />
                   ) : null}
                 </td>
               </tr>

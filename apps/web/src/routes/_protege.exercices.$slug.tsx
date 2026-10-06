@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { DetailExercice } from "@/features/exercices/detail-exercice";
-import { optionsExercice } from "@/features/exercices/requetes";
+import { optionsExercice, optionsHistorique } from "@/features/exercices/requetes";
 import { optionsRecords } from "@/features/seances/requetes";
 
 /**
@@ -17,6 +17,7 @@ function PageExercice() {
   const navigate = Route.useNavigate();
   const detail = useQuery(optionsExercice(slug));
   const records = useQuery(optionsRecords(slug));
+  const historique = useQuery(optionsHistorique(slug));
 
   if (detail.isPending) return <EtatChargement />;
   if (detail.isError) {
@@ -30,6 +31,7 @@ function PageExercice() {
   return (
     <DetailExercice
       records={records.isError ? null : records.data}
+      historique={historique.isError ? null : historique.data}
       exercice={detail.data}
       // Fermer garde les filtres : on retombe sur la liste telle qu'on l'a laissée.
       onFermer={() => navigate({ to: "/exercices", search: (s) => s })}
