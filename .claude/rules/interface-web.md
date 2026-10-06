@@ -44,6 +44,12 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   (testé). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
   à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur `--surface-2`). **Profil** (`/profil`, ex-`/parametres`) :
   compte, thème (seul endroit où il se change), unités et fuseau.
+- **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
+  fil groupé par mois (`grouperParMois`, fuseau), ↑ / ↓ d'une séance à l'autre ; détail = relevé
+  comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
+  RETIRE le détail puis invalide `["seances"]`, `["stats"]`, `["records"]`.
+- **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
+  Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
 - **Liste des exercices** : image fixe (JPG ~6 Ko) déduite de `gifUrl` par `imageDe` — aucune
   colonne ni migration. Le GIF reste réservé aux fiches.
 - **Adresse inconnue et route qui plante** : `defaultNotFoundComponent` et

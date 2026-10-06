@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
@@ -27,6 +28,23 @@ function PageSeances() {
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useInfiniteQuery(optionsSeances());
+  const ids = liste.data?.pages.flatMap((p) => p.seances.map((x) => x.id)) ?? [];
+
+  // ↑ / ↓ passent d'une séance à l'autre (D140), sauf pendant une saisie.
+  useEffect(() => {
+    function surTouche(e: KeyboardEvent) {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      const cible = e.target as HTMLElement;
+      if (cible.closest("input, textarea, [contenteditable], [role=dialog]")) return;
+      const i = id ? ids.indexOf(id) : -1;
+      const suivant = ids[e.key === "ArrowDown" ? i + 1 : Math.max(0, i - 1)];
+      if (!suivant || suivant === id) return;
+      e.preventDefault();
+      navigate({ to: "/seances/$id", params: { id: suivant }, search: (s) => s });
+    }
+    document.addEventListener("keydown", surTouche);
+    return () => document.removeEventListener("keydown", surTouche);
+  }, [id, ids, navigate]);
 
   function panneauListe() {
     const force = etatForceRendu(etat, "L'historique n'a pas pu être chargé.", () =>
@@ -61,6 +79,11 @@ function PageSeances() {
   // Le panneau de détail n'existe que lorsqu'une séance est ouverte : la coquille
   // change alors son jeu de panneaux (et sa clé de persistance).
   return (
-    <PageListeDetail titre="Séances" liste={panneauListe()} detail={id ? <Outlet /> : undefined} />
+    <PageListeDetail
+      titre="Séances"
+      disposition="fil"
+      liste={panneauListe()}
+      detail={id ? <Outlet /> : undefined}
+    />
   );
 }
