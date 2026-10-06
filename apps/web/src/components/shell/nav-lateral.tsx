@@ -1,114 +1,155 @@
 import { Link, useRouteContext } from "@tanstack/react-router";
-import { Dumbbell, History, LayoutDashboard, ListChecks, Search } from "lucide-react";
+import {
+  Dumbbell,
+  History,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  MoreHorizontal,
+  Search,
+  UserRound,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useDeconnexion } from "@/lib/deconnexion";
+import { initiales, nomAffiche } from "./nom-compte";
 import { OUVRIR_PALETTE } from "./palette";
 
-// Le Tableau de bord est la page d'arrivée (D134) ; le Profil vit en pied de barre.
-const ENTREES = [
-  { to: "/", label: "Tableau de bord", icone: LayoutDashboard },
-  { to: "/seances", label: "Séances", icone: History },
-  { to: "/routines", label: "Routines", icone: ListChecks },
-  { to: "/exercices", label: "Exercices", icone: Dumbbell },
+// Le Tableau de bord seul en tête, puis les groupes (D155) ; le Profil vit dans le pied (D156).
+const GROUPES = [
+  { libelle: null, entrees: [{ to: "/", label: "Tableau de bord", icone: LayoutDashboard }] },
+  {
+    libelle: "Entraînement",
+    entrees: [
+      { to: "/seances", label: "Séances", icone: History },
+      { to: "/routines", label: "Routines", icone: ListChecks },
+    ],
+  },
+  { libelle: "Catalogue", entrees: [{ to: "/exercices", label: "Exercices", icone: Dumbbell }] },
 ] as const;
-
-/** Deux lettres tirées de l'adresse : « alexis.gontier » → « AG ». */
-function initiales(email: string) {
-  const [a = "", b = ""] = email.split("@")[0]?.split(/[._-]/) ?? [];
-  return (a.charAt(0) + (b.charAt(0) || a.charAt(1))).toUpperCase() || "?";
-}
 
 export function NavLaterale() {
   const email = useRouteContext({ strict: false }).auth?.session?.user.email ?? "";
 
   return (
-    <Sidebar variant="inset" collapsible="none" aria-label="Navigation principale">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link to="/">
-                <Logo />
-                <span className="text-base font-extrabold tracking-tight text-(--ink)">
-                  better-lift
-                </span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Rechercher (Ctrl K)"
-              onClick={() => document.dispatchEvent(new Event(OUVRIR_PALETTE))}
-            >
-              <Search aria-hidden="true" />
-              <span>Rechercher</span>
-              <kbd className="ml-auto text-xs text-(--ink-faint)">Ctrl K</kbd>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    // Non repliable : shadcn rend alors un simple bloc, sans le filet de la variante
+    // `sidebar` — il est posé ici (D154).
+    <Sidebar collapsible="none" aria-label="Navigation principale" className="border-r">
+      <SidebarHeader className="gap-3">
+        <Link to="/" className="flex items-center gap-2 px-2 pt-1.5">
+          <Logo />
+          <span className="text-base font-extrabold tracking-tight text-(--ink)">better-lift</span>
+        </Link>
+        {/* Un champ en apparence (D155), un bouton en fait : il ouvre la palette. */}
+        <button
+          type="button"
+          onClick={() => document.dispatchEvent(new Event(OUVRIR_PALETTE))}
+          className="flex h-8 items-center gap-2 rounded-md border border-(--line-strong) bg-(--surface-1) px-2.5 text-[13px] text-(--ink-faint) outline-none hover:text-(--ink-muted) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+        >
+          <Search className="size-3.5" aria-hidden="true" />
+          Rechercher
+          <kbd className="ml-auto rounded border border-(--line-strong) px-1 text-[11px]">
+            Ctrl K
+          </kbd>
+        </button>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {ENTREES.map(({ to, label, icone: Icone }) => (
-              <SidebarMenuItem key={to}>
-                {/* `isActive` passe par le `data-active` que pose le lien actif : la
-                    route décide, pas un état recopié. */}
-                <SidebarMenuButton
-                  asChild
-                  tooltip={label}
-                  className="h-9 data-[active=true]:font-bold"
-                >
-                  {/* Les filtres de l'URL (`?groupe=…`) ne doivent pas éteindre l'entrée ;
-                      sans `exact`, `/` resterait actif sur toutes les pages. */}
-                  <Link
-                    to={to}
-                    activeOptions={{ includeSearch: false, exact: to === "/" }}
-                    activeProps={{ "data-active": true, "aria-current": "page" }}
-                  >
-                    <Icone aria-hidden="true" />
-                    <span>{label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+        {GROUPES.map(({ libelle, entrees }) => (
+          <SidebarGroup key={libelle ?? "accueil"} className="py-1">
+            {libelle ? <SidebarGroupLabel>{libelle}</SidebarGroupLabel> : null}
+            <SidebarMenu>
+              {entrees.map(({ to, label, icone: Icone }) => (
+                <SidebarMenuItem key={to}>
+                  {/* `isActive` passe par le `data-active` du lien actif : la route décide. */}
+                  <SidebarMenuButton asChild className="h-8 data-[active=true]:font-bold">
+                    {/* Les filtres de l'URL ne doivent pas éteindre l'entrée ; sans `exact`,
+                        `/` resterait actif sur toutes les pages. */}
+                    <Link
+                      to={to}
+                      activeOptions={{ includeSearch: false, exact: to === "/" }}
+                      activeProps={{ "data-active": true, "aria-current": "page" }}
+                    >
+                      <Icone aria-hidden="true" />
+                      <span>{label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
-      {/* La déconnexion vit dans le Profil. */}
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              asChild
-              tooltip="Profil"
-              className="data-[active=true]:font-bold"
-            >
-              <Link to="/profil" activeProps={{ "data-active": true, "aria-current": "page" }}>
-                <Avatar className="size-7 rounded-full">
-                  <AvatarFallback className="rounded-full bg-(--surface-3) text-xs font-bold">
-                    {initiales(email)}
-                  </AvatarFallback>
-                </Avatar>
-                <span>Profil</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="border-t">
+        <NavUser email={email} />
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+/** Le pied de barre (D156) : le compte, et son menu Profil / Se déconnecter. */
+function NavUser({ email }: { email: string }) {
+  const seDeconnecter = useDeconnexion();
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
+              <Avatar className="size-7 rounded-full">
+                <AvatarFallback className="rounded-full bg-(--surface-3) text-xs font-bold">
+                  {initiales(email)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="min-w-0 flex-1 truncate font-semibold text-(--ink)">
+                {nomAffiche(email)}
+              </span>
+              <MoreHorizontal className="ml-auto" aria-hidden="true" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="start"
+            className="w-(--radix-dropdown-menu-trigger-width)"
+          >
+            <DropdownMenuLabel className="truncate font-normal text-(--ink-subtle)">
+              {email}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/profil">
+                <UserRound aria-hidden="true" />
+                Profil
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void seDeconnecter()}>
+              <LogOut aria-hidden="true" />
+              Se déconnecter
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }

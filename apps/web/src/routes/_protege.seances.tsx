@@ -80,6 +80,7 @@ function PageSeances() {
   // change alors son jeu de panneaux (et sa clé de persistance).
   return (
     <PageListeDetail
+      vers="/seances"
       titre="Séances"
       disposition="fil"
       liste={panneauListe()}

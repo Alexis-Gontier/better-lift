@@ -8,22 +8,28 @@ paths:
 ## Coquille (D69–D73, D81)
 
 Conception : [`2026-09-24-coquille-shadcn-design.md`](../../docs/superpowers/specs/2026-09-24-coquille-shadcn-design.md),
-refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2026-10-06-web-refonte-design.md) (D132–D144).
+refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2026-10-06-web-refonte-design.md) (D132–D144),
+nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/specs/2026-10-06-web-nettoyage-design.md) (D154–D160).
 
 - **Le web est le poste d'analyse (D132)** : on y regarde et on y prépare ; aucune entrée ne
   lance une séance.
 
-- `Sidebar variant="inset" collapsible="none"` de shadcn — **ni bouton de repli ni en-tête**
-  (demande de l'utilisateur). Non repliable, shadcn n'applique plus les marges de l'`inset` :
-  elles sont recopiées sur le `SidebarInset` dans `Coquille`. Barre de 220 px (D136) :
-  Tableau de bord, Séances, Routines, Exercices ; Profil en pied.
-- Liste et détail redimensionnables dans le `SidebarInset`, tailles persistées.
+- **Coquille plate (D154–D156)** : `Sidebar collapsible="none"` (sans variante : non repliable,
+  shadcn rend un simple bloc), filet `border-r` posé à la main, fond `--canvas` comme le contenu
+  — **rien de permanent ne flotte**. Barre de 220 px en groupes : Tableau de bord seul,
+  **Entraînement** (Séances, Routines), **Catalogue** (Exercices). Champ « Rechercher » (ouvre la
+  palette). Pied `NavUser` : nom tiré de l'adresse (`nom-compte.ts`), menu Profil / Se déconnecter.
+- **En-tête commun `EnTetePage` (D157)**, posé par les deux gabarits : 44 px, fil d'Ariane dont le
+  premier élément est le `h1` de la page (lien vers la liste quand un détail est ouvert), actions
+  à droite. Un détail s'y inscrit par `<DansEnTete titre="…">actions</DansEnTete>` : le titre par
+  l'état du contexte, les actions par un portail dans l'emplacement.
+- Liste et détail redimensionnables sous l'en-tête, tailles persistées.
 - **Le détail ouvert vit dans le CHEMIN** : `/exercices/$slug`, `/seances/$id`, `/routines/$id`,
   `/routines/nouvelle`. Les paramètres de recherche ne portent que ce qui filtre (`q`, `groupe`)
   ou force un état (`etat`), et suivent d'un détail à l'autre (`search: (s) => s`).
 - **Le gabarit est monté par la route de chaque écran, jamais par `__root.tsx`** :
-  `PageListeDetail` (liste / détail, titre en `sr-only`) ou `PageTableau` (titre visible,
-  `largeur` `pleine` ou `lecture`). Les deux posent `Coquille` (barre latérale + zone flottante).
+  `PageListeDetail` (liste / détail, prop `vers`) ou `PageTableau` (`largeur` `pleine` ou
+  `lecture`). Les deux posent `Coquille` et `EnTetePage`.
   `_protege.exercices.tsx`, `_protege.seances.tsx`, `_protege.routines.tsx` montent le gabarit
   et la liste ; le détail est une **route enfant** rendue par `<Outlet />`. La mise en page lit
   le paramètre de l'enfant par `useParams({ strict: false })` : la coquille change alors son jeu
@@ -80,10 +86,10 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
 
 ## Élévation et thème
 
-- **Le permanent est jointif, le passager flotte** (D71). Seule la zone de contenu
-  (`SidebarInset`) flotte : marge, coins arrondis, ombre légère. Liste et détail sont jointifs,
-  séparés par un filet de 1 px. Flou, ombre portée et voile sont réservés au momentané (palette,
-  menus, dialogues). Si ça flotte, ça se ferme — hormis cette zone.
+- **Rien de permanent ne flotte** (D154, révise D71). Liste et détail sont jointifs, séparés par
+  un filet de 1 px. Flou, ombre portée et voile sont réservés au momentané (palette, menus,
+  dialogues). Les cartes (`Card`, D158) se détachent par leur filet sur `--surface-1`
+  (`--color-card`), sans ombre, rayon `rounded-xl`.
 - Rôles `--sidebar-*` et `card` traduits dans `@theme inline` (D72). L'élément actif de la
   navigation est `--surface-3`, jamais le lime. La variante `dark:` suit `data-theme`, pas la
   préférence du système (`@custom-variant` dans `globals.css`).
