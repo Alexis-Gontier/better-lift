@@ -1,4 +1,4 @@
-import { deplacerExercice, type ExerciceEnCours } from "@better-lift/shared";
+import { deplacerExercice, type ExerciceEnCours, groupeDe } from "@better-lift/shared";
 import { useRouter } from "expo-router";
 import { GripVertical } from "lucide-react-native";
 import { Text, View } from "react-native";
@@ -29,6 +29,8 @@ export default function Reorganiser() {
   const router = useRouter();
   const { seance, modifier } = useSeance();
   if (!seance) return <SafeAreaView style={styles.ecran} />;
+  // La lettre du superset de chaque exercice (D151) ; le glisser suit D148.
+  const lettres = seance.exercices.map((_, i) => groupeDe(seance.exercices, i)?.lettre ?? null);
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top", "bottom"]}>
@@ -59,6 +61,11 @@ export default function Reorganiser() {
               disabled={isActive}
               style={[styles.ligne, isActive && styles.active]}
             >
+              {lettres[item.i] ? (
+                <Text style={styles.groupe} accessibilityLabel={`Superset ${lettres[item.i]}`}>
+                  {lettres[item.i]}
+                </Text>
+              ) : null}
               <Text style={styles.nom} numberOfLines={1}>
                 {item.e.nom}
               </Text>
@@ -121,5 +128,6 @@ const useStyles = creerStyles((couleurs) => ({
   active: { backgroundColor: couleurs.surface3, borderColor: couleurs.ligneForte },
   nom: { flex: 1, color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   series: { color: couleurs.encreTertiaire, fontSize: taille.petit },
+  groupe: { color: couleurs.superset, fontSize: taille.petit, fontWeight: "700", minWidth: 12 },
   poignee: { width: 44, height: 52, alignItems: "center", justifyContent: "center" },
 }));

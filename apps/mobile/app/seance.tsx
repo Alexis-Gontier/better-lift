@@ -8,20 +8,26 @@ import {
   bilanSeance,
   type ChampPave,
   chargeEnTexte,
+  defaireSuperset,
+  delierExercice,
   effacerSurPave,
   formaterCharge,
   formatHeure,
+  groupes,
+  lierExercices,
   lireCharge,
   lireReps,
   marquerReposSignale,
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  peutLierAuSuivant,
   prochaineSerie,
   remplacerExercice,
   reposRestant,
   retirerExercice,
   retirerSerie,
+  roleRepos,
   type SeanceEnCours,
   secondesEcoulees,
   toucherPave,
@@ -30,7 +36,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
-import { ChevronDown, Plus, Trash2 } from "lucide-react-native";
+import { ChevronDown, Plus, Trash2, Unlink2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -38,8 +44,9 @@ import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
 import { PaveNumerique } from "../components/seance/pave-numerique";
 import { Appuyable } from "../components/ui/appuyable";
+import { RepereSuperset } from "../components/ui/repere-superset";
 import { attendreChoix } from "../lib/choix-exercices";
-import { useConfirmer } from "../lib/confirmation";
+import { useConfirmer, useFeuille } from "../lib/confirmation";
 import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents, optionsPreferences } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
@@ -108,6 +115,7 @@ export default function Seance() {
   const defilementY = useRef(0);
   const hauteurVue = useRef(0);
   const confirmer = useConfirmer();
+  const feuille = useFeuille();
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
   // posé sur le banc ne doit pas se verrouiller entre deux séries.
   useKeepAwake();
@@ -271,6 +279,7 @@ export default function Seance() {
   const totalSeries = seance.exercices.reduce((n, e) => n + e.series.length, 0);
   const vide = seance.exercices.length === 0;
   const prochaine = prochaineSerie(seance);
+  const blocs = groupes(seance.exercices);
   // Replier la séance (D108) : retour aux onglets, où le bandeau la garde à un
   // geste (D107). Ouverte sans historique (reprise de l'app), on y va directement.
   const replier = () => (router.canGoBack() ? router.back() : router.replace("/"));
@@ -335,47 +344,73 @@ export default function Seance() {
         {seance.exercices.length === 0 ? (
           <Text style={styles.vide}>Ajoute un premier exercice pour commencer.</Text>
         ) : null}
-        {seance.exercices.map((e, iE) => (
-          <View
-            key={`${e.slug}-${iE}`}
-            onLayout={(ev) => {
-              positions.current.blocs[iE] = ev.nativeEvent.layout.y;
-            }}
-          >
-            <CarteExercice
-              exercice={e}
-              edition={
-                edition?.iE === iE
-                  ? {
-                      iS: edition.iS,
-                      champ: edition.champ,
-                      texte: edition.texte,
-                      invalide: Number.isNaN(valeurDe(edition)),
-                    }
-                  : null
-              }
-              onEditer={(iS, champ) => ouvrir(iE, iS, champ)}
-              onPositionLigne={(iS, y) => {
-                positions.current.lignes[`${iE}-${iS}`] = y;
+        {seance.exercices.map((e, iE) => {
+          const g = blocs.find((b) => b.debut <= iE && iE <= b.fin) ?? null;
+          return (
+            <View
+              key={`${e.slug}-${iE}`}
+              onLayout={(ev) => {
+                positions.current.blocs[iE] = ev.nativeEvent.layout.y;
               }}
-              prochaine={prochaine?.iE === iE ? prochaine.iS : null}
-              onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
-              onValiderSerie={(iS) => {
-                const deja = seance.exercices[iE]?.series[iS]?.faite;
-                const apres = validerSerie(seance, iE, iS, new Date(), reposDefaut);
-                modifier(apres);
-                if (!deja) suivre(apres);
-              }}
-              onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
-              onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
-              onNote={(note) => modifier(modifierNote(seance, iE, note))}
-              onRepos={(sec) => modifier(modifierReposExercice(seance, iE, sec))}
-              onReorganiser={() => router.push("/reorganiser")}
-              onRemplacer={() => remplacer(iE)}
-              onRetirer={() => modifier(retirerExercice(seance, iE))}
-            />
-          </View>
-        ))}
+            >
+              <RepereSuperset
+                groupe={g}
+                index={iE}
+                onEtiquette={() =>
+                  feuille({
+                    titre: `Superset ${g?.lettre ?? ""}`,
+                    options: [
+                      {
+                        libelle: "Défaire le superset",
+                        icone: Unlink2,
+                        onPress: () => modifier(defaireSuperset(seance, iE)),
+                      },
+                    ],
+                  })
+                }
+              >
+                <CarteExercice
+                  repos={roleRepos(seance.exercices, iE)}
+                  peutLier={peutLierAuSuivant(seance.exercices, iE)}
+                  dernier={iE === seance.exercices.length - 1}
+                  dansGroupe={g !== null}
+                  onLier={() => modifier(lierExercices(seance, iE))}
+                  onDelier={() => modifier(delierExercice(seance, iE))}
+                  exercice={e}
+                  edition={
+                    edition?.iE === iE
+                      ? {
+                          iS: edition.iS,
+                          champ: edition.champ,
+                          texte: edition.texte,
+                          invalide: Number.isNaN(valeurDe(edition)),
+                        }
+                      : null
+                  }
+                  onEditer={(iS, champ) => ouvrir(iE, iS, champ)}
+                  onPositionLigne={(iS, y) => {
+                    positions.current.lignes[`${iE}-${iS}`] = y;
+                  }}
+                  prochaine={prochaine?.iE === iE ? prochaine.iS : null}
+                  onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
+                  onValiderSerie={(iS) => {
+                    const deja = seance.exercices[iE]?.series[iS]?.faite;
+                    const apres = validerSerie(seance, iE, iS, new Date(), reposDefaut);
+                    modifier(apres);
+                    if (!deja) suivre(apres);
+                  }}
+                  onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
+                  onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
+                  onNote={(note) => modifier(modifierNote(seance, iE, note))}
+                  onRepos={(sec) => modifier(modifierReposExercice(seance, iE, sec))}
+                  onReorganiser={() => router.push("/reorganiser")}
+                  onRemplacer={() => remplacer(iE)}
+                  onRetirer={() => modifier(retirerExercice(seance, iE))}
+                />
+              </RepereSuperset>
+            </View>
+          );
+        })}
         <View style={styles.pied}>
           {/* Sans exercice, il n'y a pas de ✓ : ajouter devient l'aplat de l'écran (D105). */}
           <Appuyable
