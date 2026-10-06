@@ -1,6 +1,6 @@
 import { formaterCharge, LIBELLE_RECORD, type RecordRecent } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { BadgeRecord } from "@/features/exercices/badge-record";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
 import { Carte } from "./carte";
@@ -50,10 +50,7 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
                 </td>
                 <td>
                   {/* Le record est un CONTOUR : lime en texte sur fond teinté (CLAUDE.md). */}
-                  <span className="inline-flex items-center gap-1 rounded-full border border-accent-line bg-accent-wash px-2 py-0.5 text-[11px] font-bold text-accent-ink">
-                    <ArrowUpRight aria-hidden="true" className="size-3" />
-                    {r.types.map((t) => LIBELLE_RECORD[t]).join(" · ")}
-                  </span>
+                  <BadgeRecord libelle={r.types.map((t) => LIBELLE_RECORD[t]).join(" · ")} />
                 </td>
                 <td className="text-right text-(--ink-muted)">{DATE.format(new Date(r.date))}</td>
               </tr>

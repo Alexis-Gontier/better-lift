@@ -50,3 +50,18 @@ export function optionsExercice(slug: string) {
     },
   });
 }
+
+/**
+ * Les séances où figure l'exercice (D141), de la plus récente à la plus ancienne.
+ * Sous `["seances"]` : supprimer une séance l'invalide (D140).
+ */
+export function optionsHistorique(slug: string) {
+  return queryOptions({
+    queryKey: ["seances", "historique", slug],
+    queryFn: async () => {
+      const res = await api.exercices[":slug"].historique.$get({ param: { slug } });
+      if (!res.ok) throw new Error("L'historique de l'exercice n'a pas pu être chargé.");
+      return (await res.json()).seances;
+    },
+  });
+}
