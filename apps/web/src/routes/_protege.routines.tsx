@@ -6,7 +6,7 @@ import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { PageListeDetail } from "@/components/shell/page-liste-detail";
 import { ListeRoutines } from "@/features/routines/liste-routines";
-import { optionsRoutines } from "@/features/routines/requetes";
+import { optionsRoutines, useOrdonnerRoutines } from "@/features/routines/requetes";
 
 // La routine ouverte vit dans le CHEMIN (`/routines/$id`, `/routines/nouvelle`,
 // D81). Plus de paramètre `edition` : une routine ouverte est toujours modifiable.
@@ -27,6 +27,7 @@ function PageRoutines() {
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useQuery(optionsRoutines());
+  const ordonner = useOrdonnerRoutines();
 
   function panneauListe() {
     const force = etatForceRendu(etat, "Les routines n'ont pas pu être chargées.", () =>
@@ -48,6 +49,7 @@ function PageRoutines() {
         idSelectionne={id}
         onSelection={(rId) => navigate({ to: "/routines/$id", params: { id: rId } })}
         onCreer={() => navigate({ to: "/routines/nouvelle" })}
+        onOrdonner={(ids) => ordonner.mutate(ids)}
       />
     );
   }

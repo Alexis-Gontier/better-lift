@@ -1,4 +1,4 @@
-import type { RoutineSaisie } from "@better-lift/shared";
+import type { RoutineResume, RoutineSaisie } from "@better-lift/shared";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
@@ -95,6 +95,38 @@ export function useSupprimerRoutine() {
       client.removeQueries({ queryKey: [...RACINE, "detail", id] });
       return client.invalidateQueries({ queryKey: [...RACINE, "liste"] });
     },
+  });
+}
+
+/**
+ * L'ordre des routines (D142), celui que suit « À suivre » sur le mobile. La liste
+ * se réordonne AVANT la réponse : au glisser, attendre le serveur ferait sauter la
+ * carte à sa place d'avant. En échec, on revient à l'ordre d'avant.
+ */
+export function useOrdonnerRoutines() {
+  const client = useQueryClient();
+  const cle = [...RACINE, "liste"];
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const res = await joindre(() => api.routines.ordre.$put({ json: { ids } }));
+      if (!res.ok) return echec(res, "L'ordre des routines n'a pas pu être enregistré.");
+    },
+    onMutate: async (ids) => {
+      await client.cancelQueries({ queryKey: cle });
+      const avant = client.getQueryData<RoutineResume[]>(cle);
+      if (avant) {
+        const parId = new Map(avant.map((r) => [r.id, r]));
+        client.setQueryData(
+          cle,
+          ids.flatMap((id) => parId.get(id) ?? []),
+        );
+      }
+      return { avant };
+    },
+    onError: (_e, _ids, contexte) => {
+      if (contexte?.avant) client.setQueryData(cle, contexte.avant);
+    },
+    onSettled: () => client.invalidateQueries({ queryKey: cle }),
   });
 }
 
