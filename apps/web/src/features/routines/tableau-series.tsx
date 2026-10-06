@@ -22,7 +22,7 @@ import { SYSTEME_UNITES } from "@/lib/unites";
 const UNITE = SYSTEME_UNITES === "imperial" ? "lb" : "kg";
 
 /** Une case de saisie : chiffres centrés, grands, dans une boîte nette. */
-const CASE = "h-9 w-20 text-center font-mono text-sm tabular-nums";
+const CASE = "h-9 w-20 text-center text-sm tabular-nums";
 
 export function TableauSeries({
   nomExercice,
@@ -50,7 +50,7 @@ export function TableauSeries({
           colonne de retrait n'apparaît qu'au survol de sa ligne. */}
       <div
         aria-hidden="true"
-        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-(--line) px-4 py-2 font-mono text-[10.5px] tracking-wide text-(--ink-faint) uppercase"
+        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-(--line) px-4 py-2 text-[11px] font-bold tracking-[0.08em] text-(--ink-subtle) uppercase"
       >
         <span>Série</span>
         <span>Type</span>
@@ -69,7 +69,7 @@ export function TableauSeries({
               className="group/serie grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 px-4 py-1"
             >
               <span
-                className={`font-mono text-sm font-semibold ${
+                className={`text-sm font-semibold ${
                   s.type === "ECHAUFFEMENT" ? "text-(--ink-subtle)" : "text-(--ink)"
                 }`}
               >

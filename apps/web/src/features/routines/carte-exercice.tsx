@@ -58,7 +58,7 @@ export function CarteExercice({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       // Pendant le glisser, la carte FLOTTE : elle gagne l'ombre que la doctrine
       // réserve au passager, et la perd en se posant.
-      className={`relative flex overflow-hidden rounded-xl border border-(--line) bg-(--surface-2) ${
+      className={`relative flex overflow-hidden rounded-2xl bg-(--surface-2) ${
         isDragging ? "z-10 shadow-lg" : ""
       }`}
     >
@@ -85,14 +85,14 @@ export function CarteExercice({
               alt=""
               width={48}
               height={48}
-              className="size-12 shrink-0 rounded-lg bg-white object-contain"
+              className="size-12 shrink-0 rounded-[10px] bg-image-bg object-contain"
             />
           ) : (
-            <span aria-hidden="true" className="size-12 shrink-0 rounded-lg bg-(--surface-3)" />
+            <span aria-hidden="true" className="size-12 shrink-0 rounded-[10px] bg-(--surface-3)" />
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-(--ink)">{exercice.nom}</p>
-            <p className="mt-0.5 truncate font-mono text-[11.5px] text-(--ink-faint)">
+            <p className="mt-0.5 truncate text-[11.5px] text-(--ink-faint)">
               {fiche.data ? `${LIBELLE_GROUPE[fiche.data.groupe]} · ${fiche.data.equipement}` : " "}
               {derniere
                 ? ` · dernière fois : ${formaterSerie(derniere.chargeKg, derniere.reps)}`
@@ -105,7 +105,7 @@ export function CarteExercice({
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full font-mono text-xs"
+                className="rounded-full text-xs"
                 aria-label={`${libelleRepos(exercice.repos)}, modifier`}
               >
                 <Timer aria-hidden="true" />
@@ -122,7 +122,7 @@ export function CarteExercice({
                 onValueChange={(repos) => onChange({ ...exercice, repos })}
               >
                 {choix.map((r) => (
-                  <DropdownMenuRadioItem key={r} value={r} className="font-mono text-xs">
+                  <DropdownMenuRadioItem key={r} value={r} className="text-xs">
                     {r === "" ? "Sans repos" : enChrono(Number(r))}
                   </DropdownMenuRadioItem>
                 ))}

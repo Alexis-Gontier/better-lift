@@ -97,14 +97,14 @@ export function EditeurRoutine({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-(--line) px-6 py-3">
+      <div className="flex items-center gap-2 px-8 pt-6 pb-2">
         <input
           aria-label="Nom de la routine"
           placeholder="Nom de la routine"
           maxLength={120}
           value={brouillon.nom}
           onChange={(e) => setBrouillon({ ...brouillon, nom: e.target.value })}
-          className="-ml-2 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xl font-semibold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="-ml-2 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-[26px] font-extrabold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
         />
         {onSupprimer ? (
           <DropdownMenu>
@@ -133,7 +133,7 @@ export function EditeurRoutine({
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 px-6 py-6">
+        <div className="flex flex-col gap-4 px-8 pt-2 pb-6">
           {brouillon.exercices.length === 0 ? (
             <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.

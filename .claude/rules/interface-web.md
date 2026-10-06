@@ -37,7 +37,9 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   **toujours modifiable** à droite. La barre Annuler/Enregistrer n'apparaît qu'une fois la copie
   différente de la version enregistrée (`empreinte`). Cartes d'exercice à la Hevy : image,
   « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées É/1/2/3
-  (`etiquettesSeries`).
+  (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
+  Espace, flèches, Espace) par `useOrdonnerRoutines`, mutation OPTIMISTE sur
+  `["routines","liste"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
 - **`/` est le Tableau de bord**, protégé (D134) : `features/tableau/`, période dans l'URL
   (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
   calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
