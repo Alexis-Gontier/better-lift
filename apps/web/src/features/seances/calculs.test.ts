@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { grouperParMois, texteEcart } from "./calculs";
+import { filtrerSeances, grouperParMois, texteEcart } from "./calculs";
 
 describe("grouperParMois", () => {
   it("groupe par mois civil dans le fuseau, dans l'ordre reçu", () => {
@@ -28,5 +28,23 @@ describe("texteEcart", () => {
     expect(texteEcart({ genre: "reps", delta: -1 })).toBe("−1 rep");
     expect(texteEcart({ genre: "reps", delta: 2 })).toBe("+2 reps");
     expect(texteEcart({ genre: "egal" })).toBe("=");
+  });
+});
+
+describe("filtrerSeances", () => {
+  const seances = [
+    { id: "a", nom: "Push A", apercu: [{ nom: "Développé couché" }] },
+    { id: "b", nom: "Jambes", apercu: [{ nom: "Squat" }, { nom: "Presse à cuisses" }] },
+  ];
+
+  it("rend tout sans texte", () => {
+    expect(filtrerSeances(seances, "  ")).toEqual(seances);
+  });
+  it("cherche dans le nom, sans casse", () => {
+    expect(filtrerSeances(seances, "push").map((s) => s.id)).toEqual(["a"]);
+  });
+  it("cherche dans les exercices, sans accents", () => {
+    expect(filtrerSeances(seances, "developpe").map((s) => s.id)).toEqual(["a"]);
+    expect(filtrerSeances(seances, "PRESSE A").map((s) => s.id)).toEqual(["b"]);
   });
 });

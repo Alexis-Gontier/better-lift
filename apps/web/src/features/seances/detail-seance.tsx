@@ -11,6 +11,7 @@ import { MoreHorizontal, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { DansEnTete } from "@/components/shell/en-tete-page";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { BadgeRecord, formaterSerie } from "@/features/exercices/badge-record";
 import { BoutonFermer } from "@/features/routines/bouton-fermer";
 import { ConfirmerSuppression } from "@/features/routines/confirmer-suppression";
@@ -62,53 +71,46 @@ export function DetailSeance({
 
   return (
     <div className="flex h-full flex-col">
-      <DansEnTete titre={seance.nom} />
+      {/* Les actions du détail montent dans l'en-tête commun (D157). */}
+      <DansEnTete titre={seance.nom}>
+        {seance.routineId ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/routines/$id" params={{ id: seance.routineId }}>
+              Ouvrir la routine
+            </Link>
+          </Button>
+        ) : null}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="size-8" aria-label="Plus d'actions">
+              <MoreHorizontal aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onSelect={() => setConfirmer(true)}
+              className="text-destructive-ink focus:text-destructive-ink"
+            >
+              <Trash2 aria-hidden="true" className="text-destructive-ink" />
+              Supprimer la séance
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <BoutonFermer onFermer={onFermer} />
+      </DansEnTete>
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-5 px-8 py-6">
-          <header className="flex items-start gap-2">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-[26px] font-extrabold tracking-tight">{seance.nom}</h2>
-              <p className="text-[13px] text-(--ink-muted) first-letter:uppercase">
-                {JOUR.format(new Date(seance.debut))} · {heure(seance.debut)} → {heure(seance.fin)}
-              </p>
-            </div>
-            {seance.routineId ? (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/routines/$id" params={{ id: seance.routineId }}>
-                  Ouvrir la routine
-                </Link>
-              </Button>
-            ) : null}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8"
-                  aria-label="Plus d'actions"
-                >
-                  <MoreHorizontal aria-hidden="true" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() => setConfirmer(true)}
-                  className="text-destructive-ink focus:text-destructive-ink"
-                >
-                  <Trash2 aria-hidden="true" className="text-destructive-ink" />
-                  Supprimer la séance
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <BoutonFermer onFermer={onFermer} />
-          </header>
+        <div className="flex flex-col gap-4 px-6 py-5">
+          <p className="text-[13px] text-(--ink-muted) first-letter:uppercase">
+            {JOUR.format(new Date(seance.debut))} · {heure(seance.debut)} → {heure(seance.fin)}
+          </p>
 
-          <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
+          {/* Les chiffres en tuiles jointives (D160) : une carte, des filets. */}
+          <Card className="grid grid-cols-2 gap-0 divide-x py-0 xl:grid-cols-4">
             <Tuile titre="Durée">{dureeTexte(dureeMin(seance))}</Tuile>
             <Tuile titre="Volume">{formaterCharge(seance.volumeKg, SYSTEME_UNITES)}</Tuile>
             <Tuile titre="Séries">{seance.seriesFaites}</Tuile>
             <Tuile titre="Records">{nbRecords}</Tuile>
-          </div>
+          </Card>
 
           {/* La note de la séance (D130). */}
           {seance.note ? (
@@ -123,9 +125,7 @@ export function DetailSeance({
             if (iE !== g.debut) return null;
             return (
               <div key={`superset-${ex.slug}-${iE}`}>
-                <p className="mb-1.5 text-[11px] font-bold tracking-wider text-superset uppercase">
-                  Superset {g.lettre}
-                </p>
+                <p className="mb-1.5 text-xs font-bold text-superset">Superset {g.lettre}</p>
                 <div className="flex flex-col gap-3 border-l-[3px] border-superset pl-3">
                   {seance.exercices.slice(g.debut, g.fin + 1).map((m, k) => (
                     <Exercice key={`${m.slug}-${g.debut + k}`} exercice={m} />
@@ -153,10 +153,8 @@ export function DetailSeance({
 
 function Tuile({ titre, children }: { titre: string; children: ReactNode }) {
   return (
-    <div className="rounded-[14px] bg-(--surface-2) px-4 py-3">
-      <p className="text-[11px] font-bold tracking-[0.09em] text-(--ink-subtle) uppercase">
-        {titre}
-      </p>
+    <div className="px-4 py-3">
+      <p className="text-[13px] text-(--ink-subtle)">{titre}</p>
       <p className="chiffre mt-1 text-[30px]">{children}</p>
     </div>
   );
@@ -167,8 +165,8 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
   const faites = ex.series.filter((s) => s.faite).length;
 
   return (
-    <section className="rounded-2xl bg-(--surface-2) px-4 py-3.5">
-      <header className="mb-2 flex items-center gap-3">
+    <Card className="gap-2 py-4">
+      <CardHeader className="flex items-center gap-3">
         <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-image-bg">
           {ex.image ? <img src={ex.image} alt="" className="size-full object-contain" /> : null}
         </span>
@@ -183,72 +181,78 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
             Fiche
           </Link>
         </Button>
-      </header>
-      {/* La note prise en séance (D90). */}
-      {ex.note ? (
-        <p className="mb-2 text-[13px] whitespace-pre-line text-(--ink-muted)">{ex.note}</p>
-      ) : null}
+      </CardHeader>
+      <CardContent>
+        {/* La note prise en séance (D90). */}
+        {ex.note ? (
+          <p className="mb-2 text-[13px] whitespace-pre-line text-(--ink-muted)">{ex.note}</p>
+        ) : null}
 
-      {/* Largeurs fixes : les colonnes s'alignent d'un exercice à l'autre. */}
-      <table className="w-full table-fixed text-[13.5px] whitespace-nowrap">
-        <thead>
-          <tr className="text-left text-[11px] font-bold tracking-[0.08em] text-(--ink-subtle) uppercase">
-            <th className="w-16 py-1.5 font-bold">Série</th>
-            <th className="font-bold">Charge × reps</th>
-            <th className="font-bold">La fois d'avant</th>
-            <th className="font-bold">Écart</th>
-            <th className="w-[30%] text-right font-bold">Record</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ex.series.map((serie, i) => {
-            const precedente = ex.precedentes[i];
-            const ecart = serie.faite ? ecartSerie(serie, precedente) : null;
-            return (
-              <tr
-                key={i}
-                // Une série non faite reste visible — c'était prévu, pas fait — mais
-                // s'efface derrière celles qui comptent.
-                className={`border-t border-(--line) ${serie.faite ? "" : "opacity-45"}`}
-              >
-                <td className="py-2">
-                  <span
-                    className={`grid h-6 w-8 place-items-center rounded-[7px] bg-(--surface-3) text-xs font-bold ${
-                      serie.type === "ECHAUFFEMENT" ? "text-(--ink-subtle)" : ""
-                    }`}
-                  >
-                    {etiquettes[i]}
-                  </span>
-                </td>
-                <td className={serie.records.length > 0 ? "font-bold" : ""}>
-                  {formaterSerie(serie.chargeKg, serie.reps)}
-                </td>
-                <td className="text-(--ink-subtle)">
-                  {precedente ? formaterSerie(precedente.chargeKg, precedente.reps) : "—"}
-                </td>
-                <td
+        {/* Largeurs fixes : les colonnes s'alignent d'un exercice à l'autre. */}
+        <Table className="table-fixed text-[13.5px]">
+          <TableHeader>
+            <TableRow className="text-xs hover:bg-transparent">
+              <TableHead className="h-8 w-16 px-0 text-(--ink-subtle)">Série</TableHead>
+              <TableHead className="h-8 text-(--ink-subtle)">Charge × reps</TableHead>
+              <TableHead className="h-8 text-(--ink-subtle)">La fois d'avant</TableHead>
+              <TableHead className="h-8 text-(--ink-subtle)">Écart</TableHead>
+              <TableHead className="h-8 w-[30%] px-0 text-right text-(--ink-subtle)">
+                Record
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ex.series.map((serie, i) => {
+              const precedente = ex.precedentes[i];
+              const ecart = serie.faite ? ecartSerie(serie, precedente) : null;
+              return (
+                <TableRow
+                  key={i}
+                  // Une série non faite reste visible — c'était prévu, pas fait — mais
+                  // s'efface derrière celles qui comptent.
                   className={
-                    ecart &&
-                    ecart.genre !== "egal" &&
-                    (ecart.genre === "charge" ? ecart.deltaKg : ecart.delta) > 0
-                      ? "font-bold"
-                      : "text-(--ink-subtle)"
+                    serie.faite ? "hover:bg-transparent" : "opacity-45 hover:bg-transparent"
                   }
                 >
-                  {ecart ? texteEcart(ecart) : precedente ? "—" : "nouvelle"}
-                </td>
-                <td className="text-right">
-                  {serie.records.length > 0 ? (
-                    <BadgeRecord
-                      libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")}
-                    />
-                  ) : null}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </section>
+                  <TableCell className="px-0">
+                    <span
+                      className={`grid h-6 w-8 place-items-center rounded-[7px] bg-(--surface-3) text-xs font-bold ${
+                        serie.type === "ECHAUFFEMENT" ? "text-(--ink-subtle)" : ""
+                      }`}
+                    >
+                      {etiquettes[i]}
+                    </span>
+                  </TableCell>
+                  <TableCell className={serie.records.length > 0 ? "font-bold" : ""}>
+                    {formaterSerie(serie.chargeKg, serie.reps)}
+                  </TableCell>
+                  <TableCell className="text-(--ink-subtle)">
+                    {precedente ? formaterSerie(precedente.chargeKg, precedente.reps) : "—"}
+                  </TableCell>
+                  <TableCell
+                    className={
+                      ecart &&
+                      ecart.genre !== "egal" &&
+                      (ecart.genre === "charge" ? ecart.deltaKg : ecart.delta) > 0
+                        ? "font-bold"
+                        : "text-(--ink-subtle)"
+                    }
+                  >
+                    {ecart ? texteEcart(ecart) : precedente ? "—" : "nouvelle"}
+                  </TableCell>
+                  <TableCell className="px-0 text-right">
+                    {serie.records.length > 0 ? (
+                      <BadgeRecord
+                        libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")}
+                      />
+                    ) : null}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

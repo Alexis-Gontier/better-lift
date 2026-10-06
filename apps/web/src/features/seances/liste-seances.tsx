@@ -1,7 +1,10 @@
 import { formaterCharge, type SeanceFil } from "@better-lift/shared";
 import { cn } from "cn";
+import { Search } from "lucide-react";
 import { EtatVide } from "@/components/etats/etat-vide";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BadgeRecord } from "@/features/exercices/badge-record";
 import { dureeTexte } from "@/features/tableau/calculs";
@@ -10,8 +13,13 @@ import { SYSTEME_UNITES } from "@/lib/unites";
 import { grouperParMois } from "./calculs";
 
 type Props = {
+  /** Les séances chargées, déjà filtrées. */
   seances: SeanceFil[];
+  /** Combien de séances sont chargées, avant filtre. */
+  charges: number;
   total: number;
+  filtre: string;
+  onFiltre: (texte: string) => void;
   aSuite: boolean;
   chargeSuite: boolean;
   onSuite: () => void;
@@ -33,7 +41,10 @@ const JOUR = new Intl.DateTimeFormat("fr-FR", {
 /** Le fil des séances (D140) : groupé par mois, chaque entrée se relit sans l'ouvrir. */
 export function ListeSeances({
   seances,
+  charges,
   total,
+  filtre,
+  onFiltre,
   aSuite,
   chargeSuite,
   onSuite,
@@ -42,14 +53,32 @@ export function ListeSeances({
 }: Props) {
   return (
     <section aria-label="Séances" className="flex h-full flex-col">
-      <header className="px-5 pt-6 pb-2">
-        <h2 className="text-[22px] font-extrabold tracking-tight">Séances</h2>
-        <p className="text-[13px] text-(--ink-muted)">
-          {total} {total > 1 ? "séances" : "séance"}
-        </p>
+      {/* Le titre est dans l'en-tête commun (D157) ; ici, le filtre et le total (D160). */}
+      <header className="flex items-center gap-2 border-b px-3 py-2.5">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-(--ink-faint)"
+          />
+          <Input
+            value={filtre}
+            onChange={(e) => onFiltre(e.target.value)}
+            placeholder="Filtrer…"
+            aria-label="Filtrer les séances"
+            className="h-8 pl-8"
+          />
+        </div>
+        <Badge variant="outline" title={`${total} ${total > 1 ? "séances" : "séance"}`}>
+          {total}
+        </Badge>
       </header>
 
-      {seances.length === 0 ? (
+      {seances.length === 0 && filtre.trim() ? (
+        <EtatVide
+          titre="Aucun résultat"
+          message="Aucune séance chargée ne correspond à ce filtre."
+        />
+      ) : seances.length === 0 ? (
         <EtatVide
           titre="Aucune séance"
           message="Ton historique se remplira au fil de tes entraînements, sur ton téléphone."
@@ -60,10 +89,10 @@ export function ListeSeances({
         <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
           {grouperParMois(seances, FUSEAU).map((g) => (
             <div key={g.cle}>
-              <h3 className="px-5 pt-4 pb-1.5 text-[11px] font-bold tracking-[0.09em] text-(--ink-subtle) uppercase">
+              <h3 className="border-b px-4 pt-4 pb-1.5 text-xs font-medium text-(--ink-subtle)">
                 {g.libelle}
               </h3>
-              <ul className="flex flex-col gap-1 px-2.5">
+              <ul className="flex flex-col">
                 {g.seances.map((s) => (
                   <li key={s.id}>
                     <Entree
@@ -77,14 +106,14 @@ export function ListeSeances({
             </div>
           ))}
           {aSuite ? (
-            <div className="px-5 py-4">
+            <div className="px-4 py-4">
               <Button
                 variant="outline"
                 onClick={onSuite}
                 disabled={chargeSuite}
                 className="w-full text-(--ink-subtle)"
               >
-                {chargeSuite ? "Chargement…" : `Afficher plus — ${seances.length} sur ${total}`}
+                {chargeSuite ? "Chargement…" : `Afficher plus — ${charges} sur ${total}`}
               </Button>
             </div>
           ) : null}
@@ -114,8 +143,9 @@ function Entree({
         if (active) el?.scrollIntoView({ block: "nearest" });
       }}
       className={cn(
-        "flex w-full flex-col gap-0.5 rounded-xl px-3 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)",
-        active ? "bg-(--surface-3)" : "hover:bg-(--surface-2)",
+        "flex w-full flex-col gap-0.5 border-b px-4 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) focus-visible:ring-inset",
+        // La sélection est une surface et un liseré d'encre, jamais le lime (D160).
+        active ? "bg-(--surface-2) shadow-[inset_2px_0_0_var(--ink)]" : "hover:bg-(--surface-1)",
       )}
     >
       <span className="flex items-center justify-between gap-2">

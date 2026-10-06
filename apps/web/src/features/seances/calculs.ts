@@ -39,3 +39,25 @@ export function texteEcart(e: Ecart): string {
   }
   return `${signe(e.delta)}${Math.abs(e.delta)} rep${Math.abs(e.delta) > 1 ? "s" : ""}`;
 }
+
+/** Minuscules, sans accents : « Développé » → « developpe ». */
+const plier = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+/**
+ * Le filtre du fil (D160) : sur le nom et les exercices de l'aperçu, sans casse ni accents.
+ * Il porte sur les pages déjà chargées ; « Afficher plus » en apporte d'autres.
+ */
+export function filtrerSeances<T extends { nom: string; apercu: readonly { nom: string }[] }>(
+  seances: readonly T[],
+  texte: string,
+): T[] {
+  const cherche = plier(texte.trim());
+  if (!cherche) return [...seances];
+  return seances.filter((s) =>
+    [s.nom, ...s.apercu.map((e) => e.nom)].some((n) => plier(n).includes(cherche)),
+  );
+}

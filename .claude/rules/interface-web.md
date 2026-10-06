@@ -63,7 +63,10 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   clé des tuiles du Tableau de bord), thème (appareil, seul endroit où il se change), unités et
   fuseau (affichés), export CSV par un simple lien, déconnexion.
 - **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
-  fil groupé par mois (`grouperParMois`, fuseau), ↑ / ↓ d'une séance à l'autre ; détail = relevé
+  fil groupé par mois (`grouperParMois`, fuseau), filtré par `?q=` (`filtrerSeances` : nom et
+  aperçu, sans casse ni accents, sur les pages chargées ; le filtre garde le chemin du détail),
+  ↑ / ↓ d'une séance à l'autre DANS le fil filtré ; sélection en `--surface-2` + liseré d'encre ;
+  actions du détail dans l'en-tête (`DansEnTete`), chiffres en tuiles jointives, relevé en `Table` ; détail = relevé
   comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
   RETIRE le détail puis invalide `["seances"]`, `["stats"]`, `["records"]`.
   Un superset fait en séance se relit d'un bloc dans le relevé (D153) : étiquette texte
