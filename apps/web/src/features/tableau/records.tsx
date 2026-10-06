@@ -24,11 +24,11 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
       ) : (
         <table className="w-full text-[13.5px]">
           <thead>
-            <tr className="text-left text-[11px] font-bold tracking-[0.08em] text-(--ink-subtle) uppercase">
-              <th className="py-1.5 font-bold">Exercice</th>
-              <th className="font-bold">Série</th>
-              <th className="font-bold">Record</th>
-              <th className="text-right font-bold">Date</th>
+            <tr className="text-left text-xs text-(--ink-subtle)">
+              <th className="py-1.5 font-medium">Exercice</th>
+              <th className="font-medium">Série</th>
+              <th className="font-medium">Record</th>
+              <th className="text-right font-medium">Date</th>
             </tr>
           </thead>
           <tbody>
