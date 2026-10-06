@@ -236,6 +236,7 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   l'exercice (`precedentes`, rendues par `GET /seances/:id` ; `ecartSerie` de `shared`).
   « ⋯ » : refaire la routine d'origine, supprimer (`DELETE`, confirmé ; retire le détail du cache
   et invalide fil, stats, records). Non gardé hors ligne (D96), il dit « Hors ligne ».
+  Un superset s'y relit comme tel (D153) : `RepereSuperset` sans action, `ecart={espace.l}`.
 
 ## Profil (D128, D129)
 

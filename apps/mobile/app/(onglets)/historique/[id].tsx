@@ -4,6 +4,7 @@ import {
   ecartSerie,
   formaterCharge,
   formatJour,
+  groupes,
   LIBELLE_RECORD,
   type TypeSerie,
 } from "@better-lift/shared";
@@ -16,6 +17,7 @@ import { Appuyable } from "../../../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
+import { RepereSuperset } from "../../../components/ui/repere-superset";
 import { Vignette } from "../../../components/ui/vignette";
 import { useConfirmer, useFeuille } from "../../../lib/confirmation";
 import { useDemarrer } from "../../../lib/demarrer";
@@ -81,6 +83,7 @@ export default function DetailSeance() {
 
   const s = seance.data;
   const libelles = s.exercices.map((ex) => etiquettes(ex.series));
+  const blocs = groupes(s.exercices);
   const menu = () =>
     feuille({
       titre: s.nom,
@@ -140,38 +143,48 @@ export default function DetailSeance() {
         </View>
 
         {s.exercices.map((ex, iE) => (
-          <View key={`${ex.slug}-${iE}`} style={styles.exercice}>
-            {/* La fiche porte les records de l'exercice (D95). */}
-            <Appuyable
-              onPress={() => router.push(`/exercices/${ex.slug}`)}
-              style={styles.titreExercice}
-              accessibilityRole="link"
-              accessibilityHint="Ouvre la fiche de l'exercice"
-            >
-              <Vignette image={ex.image} taille={40} />
-              <Text style={styles.nomExercice} numberOfLines={2}>
-                {ex.nom}
-              </Text>
-              <ChevronRight size={20} color={couleurs.encreTertiaire} />
-            </Appuyable>
-            {/* La note prise en séance (D90). */}
-            {ex.note ? <Text style={styles.note}>{ex.note}</Text> : null}
-            {ex.series.map((serie, i) => (
-              <View
-                key={`${ex.slug}-${iE}-${i}`}
-                // Une série non faite reste visible — c'était prévu, pas fait —
-                // mais s'efface derrière celles qui comptent.
-                style={[styles.serie, !serie.faite && styles.nonFaite]}
+          // Un superset fait en séance se relit comme tel (D153) : lecture seule.
+          <RepereSuperset
+            key={`${ex.slug}-${iE}`}
+            groupe={blocs.find((b) => b.debut <= iE && iE <= b.fin) ?? null}
+            index={iE}
+            ecart={espace.l}
+          >
+            <View style={styles.exercice}>
+              {/* La fiche porte les records de l'exercice (D95). */}
+              <Appuyable
+                onPress={() => router.push(`/exercices/${ex.slug}`)}
+                style={styles.titreExercice}
+                accessibilityRole="link"
+                accessibilityHint="Ouvre la fiche de l'exercice"
               >
-                <Text style={styles.numero}>{libelles[iE]?.[i]}</Text>
-                <Text style={styles.valeur}>{formaterSerie(serie.chargeKg, serie.reps)}</Text>
-                {serie.records.length > 0 ? (
-                  <BadgeRecord libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")} />
-                ) : null}
-                <Ecarte ecart={ecartSerie(serie, ex.precedentes[i])} />
-              </View>
-            ))}
-          </View>
+                <Vignette image={ex.image} taille={40} />
+                <Text style={styles.nomExercice} numberOfLines={2}>
+                  {ex.nom}
+                </Text>
+                <ChevronRight size={20} color={couleurs.encreTertiaire} />
+              </Appuyable>
+              {/* La note prise en séance (D90). */}
+              {ex.note ? <Text style={styles.note}>{ex.note}</Text> : null}
+              {ex.series.map((serie, i) => (
+                <View
+                  key={`${ex.slug}-${iE}-${i}`}
+                  // Une série non faite reste visible — c'était prévu, pas fait —
+                  // mais s'efface derrière celles qui comptent.
+                  style={[styles.serie, !serie.faite && styles.nonFaite]}
+                >
+                  <Text style={styles.numero}>{libelles[iE]?.[i]}</Text>
+                  <Text style={styles.valeur}>{formaterSerie(serie.chargeKg, serie.reps)}</Text>
+                  {serie.records.length > 0 ? (
+                    <BadgeRecord
+                      libelle={serie.records.map((r) => LIBELLE_RECORD[r]).join(" · ")}
+                    />
+                  ) : null}
+                  <Ecarte ecart={ecartSerie(serie, ex.precedentes[i])} />
+                </View>
+              ))}
+            </View>
+          </RepereSuperset>
         ))}
       </ScrollView>
     </SafeAreaView>
