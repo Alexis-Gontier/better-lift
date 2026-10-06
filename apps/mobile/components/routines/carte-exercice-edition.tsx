@@ -28,6 +28,8 @@ type Props = {
   repos: RoleRepos;
   /** D152 : hors groupe ou au bout d'un groupe, et pas sur le dernier exercice. */
   peutLier: boolean;
+  /** Le dernier exercice de la liste : rien ne le suit. */
+  dernier: boolean;
   dansGroupe: boolean;
   onLier: () => void;
   onDelier: () => void;
@@ -46,6 +48,7 @@ export function CarteExerciceEdition({
   enGlissement,
   repos,
   peutLier,
+  dernier,
   dansGroupe,
   onLier,
   onDelier,
@@ -79,7 +82,7 @@ export function CarteExerciceEdition({
           icone: Link2,
           ...(peutLier
             ? { onPress: onLier }
-            : { inactive: dansGroupe ? "dans le groupe" : "dernier exercice" }),
+            : { inactive: dernier ? "dernier exercice" : "dans le groupe" }),
         },
         ...(dansGroupe
           ? [{ libelle: "Retirer du superset", icone: Unlink2, onPress: onDelier }]

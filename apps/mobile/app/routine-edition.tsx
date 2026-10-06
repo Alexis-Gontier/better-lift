@@ -264,6 +264,7 @@ function Editeur({ id, initiale }: { id: string | null; initiale: RoutineDetail 
                   onGlisser={drag}
                   repos={roleRepos(brouillon.exercices, i)}
                   peutLier={peutLierAuSuivant(brouillon.exercices, i)}
+                  dernier={i === brouillon.exercices.length - 1}
                   dansGroupe={g !== null}
                   onLier={() => modifier((xs) => lierAuSuivant(xs, i))}
                   onDelier={() => modifier((xs) => retirerDuGroupe(xs, i))}

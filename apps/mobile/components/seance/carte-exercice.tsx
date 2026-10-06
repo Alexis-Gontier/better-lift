@@ -4,6 +4,7 @@ import {
   type ChampPave,
   type ExerciceEnCours,
   LIBELLE_TYPE_SERIE,
+  type RoleRepos,
   type SerieEnCours,
   TYPES_SERIE,
   type TypeSerie,
@@ -21,6 +22,7 @@ import {
   Repeat,
   Timer,
   Trash2,
+  Unlink2,
 } from "lucide-react-native";
 import { useState } from "react";
 import { Text, TextInput, View } from "react-native";
@@ -79,8 +81,23 @@ export function CarteExercice({
   onReorganiser,
   onRemplacer,
   onRetirer,
+  repos,
+  peutLier,
+  dernier,
+  dansGroupe,
+  onLier,
+  onDelier,
 }: {
   exercice: ExerciceEnCours;
+  /** D149 : masqué sur un membre non dernier d'un superset. */
+  repos: RoleRepos;
+  /** D152 : hors groupe ou au bout d'un groupe, et pas sur le dernier exercice. */
+  peutLier: boolean;
+  /** Le dernier exercice de la liste : rien ne le suit. */
+  dernier: boolean;
+  dansGroupe: boolean;
+  onLier: () => void;
+  onDelier: () => void;
   /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D116). */
   prochaine: number | null;
   /** La case en cours de saisie au pavé, si elle est dans cet exercice (D109). */
@@ -128,8 +145,16 @@ export function CarteExercice({
       ? [
           { libelle: "Réorganiser les exercices", icone: ArrowUpDown, onPress: onReorganiser },
           { libelle: "Remplacer l'exercice", icone: Repeat, onPress: onRemplacer },
-          // Lot B : le superset attend son modèle de séance.
-          { libelle: "Ajouter à un superset", icone: Link2, inactive: "bientôt" },
+          {
+            libelle: "Superset avec le suivant",
+            icone: Link2,
+            ...(peutLier
+              ? { onPress: onLier }
+              : { inactive: dernier ? "dernier exercice" : "dans le groupe" }),
+          },
+          ...(dansGroupe
+            ? [{ libelle: "Retirer du superset", icone: Unlink2, onPress: onDelier }]
+            : []),
           { libelle: "Retirer l'exercice", icone: Trash2, danger: true, onPress: retirer },
         ]
       : feuille?.quoi === "repos"
@@ -216,21 +241,29 @@ export function CarteExercice({
       {/* Le repos et la note en deux puces (D108) : 44 dp gagnés par exercice.
           La note saisie remplace le mot « Note ». */}
       <View style={styles.puces}>
-        <Appuyable
-          onPress={() => setFeuille({ quoi: "repos" })}
-          hitSlop={HITSLOP_PUCE}
-          style={styles.puce}
-          accessibilityRole="button"
-          accessibilityLabel={`Repos : ${libelleRepos(exercice.reposSec)}`}
-        >
-          <Timer
-            size={14}
-            color={exercice.reposSec ? couleurs.encreSecondaire : couleurs.encreAttenuee}
-          />
-          <Text style={[styles.puceTexte, !exercice.reposSec && styles.puceEteinte]}>
-            {exercice.reposSec ? libelleRepos(exercice.reposSec) : "Sans repos"}
-          </Text>
-        </Appuyable>
+        {repos === "masque" ? null : (
+          <Appuyable
+            onPress={() => setFeuille({ quoi: "repos" })}
+            hitSlop={HITSLOP_PUCE}
+            style={styles.puce}
+            accessibilityRole="button"
+            accessibilityLabel={`${repos === "groupe" ? "Repos après le groupe" : "Repos"} : ${libelleRepos(exercice.reposSec)}`}
+          >
+            <Timer
+              size={14}
+              color={exercice.reposSec ? couleurs.encreSecondaire : couleurs.encreAttenuee}
+            />
+            <Text style={[styles.puceTexte, !exercice.reposSec && styles.puceEteinte]}>
+              {repos === "groupe"
+                ? exercice.reposSec
+                  ? `Après le groupe · ${libelleRepos(exercice.reposSec)}`
+                  : "Sans repos après le groupe"
+                : exercice.reposSec
+                  ? libelleRepos(exercice.reposSec)
+                  : "Sans repos"}
+            </Text>
+          </Appuyable>
+        )}
         <Appuyable
           onPress={() => setEditionNote(true)}
           hitSlop={HITSLOP_PUCE}

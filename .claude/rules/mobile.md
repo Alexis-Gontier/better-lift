@@ -160,7 +160,14 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   Un bloc par exercice (note, repos réglable, tableau `Série · Précédent · KG · Reps · ✓`), actions
   rares dans une feuille basse (`components/ui/feuille.tsx`), réorganisation `app/reorganiser.tsx`,
   ajout et remplacement par `choisir-exercices` (`?mode=remplacer`). Échelle compacte : cases de
-  36 px, cible tenue par `hitSlop`. Supersets : lot B, l'entrée du menu est inerte.
+  36 px, cible tenue par `hitSlop`.
+- **Supersets en séance (D149–D152)** : chaque bloc est enveloppé dans `RepereSuperset` (la `View`
+  à `onLayout` reste à l'extérieur : les positions de défilement comptent l'étiquette). Menu ⋯ :
+  « Superset avec le suivant » (inerte : « dernier exercice » ou « dans le groupe ») / « Retirer du
+  superset » ; l'étiquette ouvre « Défaire ». Puce de repos masquée sur les membres non derniers,
+  « Après le groupe · 1 min 30 » sur le dernier. Le reste vient de `shared` : repos au bout du tour
+  (`validerSerie`), prochaine série tour par tour (`prochaineSerie`), donc le défilement aussi. La
+  réorganisation montre la lettre du groupe.
 - **Direction « Carnet » (D108)** : en-tête compact (chevron qui replie vers les onglets, nom,
   « Démarrée à », chrono en `polices.condense`, volume, séries), « Terminer » en **secondaire**
   (D105). Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
