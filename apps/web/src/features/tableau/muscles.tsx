@@ -23,7 +23,7 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
                 className="grid grid-cols-[110px_1fr_32px] items-center gap-3 text-[13px]"
               >
                 <span>{LIBELLE_ZONE[z.zone]}</span>
-                <span className="h-2 overflow-hidden rounded-full bg-(--canvas)">
+                <span className="h-2 overflow-hidden rounded-full bg-(--surface-3)">
                   <span
                     className="block h-full rounded-full bg-(--ink-muted)"
                     style={{ width: `${(z.series / max) * 100}%` }}

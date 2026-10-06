@@ -55,8 +55,10 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
 - **`/` est le Tableau de bord**, protégé (D134) : `features/tableau/`, période dans l'URL
   (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
   calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
-  (testé). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
-  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur `--surface-2`). **Profil** (`/profil`, ex-`/parametres`, D143) :
+  (testé). Cartes : `Carte` enveloppe la `Card` shadcn (D158) ; tuiles à pastille d'écart en
+  contour (lime si hausse) ; période en `ToggleGroup` ; volume en `Chart` (Recharts 3.8.0,
+  animations coupées, `minPointSize` pour que la semaine en cours reste visible). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
+  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur une carte). **Profil** (`/profil`, ex-`/parametres`, D143) :
   bilan de toujours, objectif hebdo et repos par défaut (SUR LE COMPTE, `["preferences"]`, la
   clé des tuiles du Tableau de bord), thème (appareil, seul endroit où il se change), unités et
   fuseau (affichés), export CSV par un simple lien, déconnexion.

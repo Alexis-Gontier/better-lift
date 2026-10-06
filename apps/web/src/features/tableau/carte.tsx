@@ -1,7 +1,7 @@
-import { cn } from "cn";
 import type { ReactNode } from "react";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-/** Une carte du Tableau de bord (D135) : en-tête en petites capitales, détail à droite. */
+/** Une carte du Tableau de bord (D158) : la `Card` shadcn, titre en casse normale, détail à droite. */
 export function Carte({
   titre,
   detail,
@@ -14,14 +14,12 @@ export function Carte({
   children: ReactNode;
 }) {
   return (
-    <section className={cn("flex flex-col gap-3 rounded-2xl bg-(--surface-2) p-5", className)}>
-      <header className="flex items-baseline justify-between gap-4">
-        <h2 className="text-[11px] font-bold tracking-[0.09em] text-(--ink-subtle) uppercase">
-          {titre}
-        </h2>
-        {detail ? <p className="text-xs text-(--ink-muted)">{detail}</p> : null}
-      </header>
-      {children}
-    </section>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>{titre}</CardTitle>
+        {detail ? <CardAction className="text-xs text-(--ink-muted)">{detail}</CardAction> : null}
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">{children}</CardContent>
+    </Card>
   );
 }

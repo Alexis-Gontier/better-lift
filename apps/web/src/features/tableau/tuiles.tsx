@@ -1,8 +1,10 @@
 import { type StatsPeriode, semainesTenues } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
+import { cn } from "cn";
 import type { ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { dureeTexte, ecart } from "./calculs";
-import { Carte } from "./carte";
 
 /** Ligne 1 (D137) : trois chiffres comparés à la période d'avant, puis l'objectif. */
 export function Tuiles({ stats, objectif }: { stats: StatsPeriode; objectif: number | null }) {
@@ -11,14 +13,26 @@ export function Tuiles({ stats, objectif }: { stats: StatsPeriode; objectif: num
 
   return (
     <>
-      <Tuile titre="Séances" valeur={totaux.seances}>
-        {ecart(totaux.seances, precedents.seances, false)}
+      <Tuile
+        titre="Séances"
+        valeur={totaux.seances}
+        tendance={tendance(totaux.seances, precedents.seances, false)}
+      >
+        {avant(precedents.seances, String(precedents.seances))}
       </Tuile>
-      <Tuile titre="Séries" valeur={totaux.series}>
-        {ecart(totaux.series, precedents.series, true)}
+      <Tuile
+        titre="Séries"
+        valeur={totaux.series}
+        tendance={tendance(totaux.series, precedents.series, true)}
+      >
+        {avant(precedents.series, String(precedents.series))}
       </Tuile>
-      <Tuile titre="Durée" valeur={dureeTexte(totaux.dureeMin)}>
-        {ecart(totaux.dureeMin, precedents.dureeMin, true)}
+      <Tuile
+        titre="Durée"
+        valeur={dureeTexte(totaux.dureeMin)}
+        tendance={tendance(totaux.dureeMin, precedents.dureeMin, true)}
+      >
+        {avant(precedents.dureeMin, dureeTexte(precedents.dureeMin))}
       </Tuile>
       {objectif && tenues ? (
         <Tuile
@@ -43,19 +57,44 @@ export function Tuiles({ stats, objectif }: { stats: StatsPeriode; objectif: num
   );
 }
 
+/** L'écart à la période d'avant ; rien sans point de comparaison. */
+function tendance(valeur: number, precedent: number, enPourcent: boolean) {
+  if (precedent === 0) return null;
+  return { texte: ecart(valeur, precedent, enPourcent), hausse: valeur > precedent };
+}
+
+const avant = (precedent: number, texte: string) =>
+  precedent === 0 ? "rien sur la période d'avant" : `contre ${texte} sur la période d'avant`;
+
 function Tuile({
   titre,
   valeur,
+  tendance,
   children,
 }: {
   titre: string;
   valeur: ReactNode;
+  tendance?: { texte: string; hausse: boolean } | null;
   children: ReactNode;
 }) {
   return (
-    <Carte titre={titre} className="gap-2 lg:col-span-3">
-      <p className="chiffre text-[44px]">{valeur}</p>
-      <p className="text-[13px] text-(--ink-muted)">{children}</p>
-    </Carte>
+    <Card className="gap-3 lg:col-span-3">
+      <CardHeader>
+        <CardDescription>{titre}</CardDescription>
+        <p className="chiffre text-[40px]">{valeur}</p>
+        {tendance ? (
+          <CardAction>
+            {/* Un contour (D158) : lime quand ça monte, neutre sinon. */}
+            <Badge
+              variant="outline"
+              className={cn(tendance.hausse && "border-accent-line bg-accent-wash text-accent-ink")}
+            >
+              {tendance.texte}
+            </Badge>
+          </CardAction>
+        ) : null}
+      </CardHeader>
+      <CardFooter>{children}</CardFooter>
+    </Card>
   );
 }

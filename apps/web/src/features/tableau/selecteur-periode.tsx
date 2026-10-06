@@ -1,5 +1,5 @@
 import { PERIODES, type Periode } from "@better-lift/shared";
-import { cn } from "cn";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const LIBELLES: Record<Periode, string> = {
   semaine: "Semaine",
@@ -8,7 +8,7 @@ const LIBELLES: Record<Periode, string> = {
   annee: "Année",
 };
 
-/** Le sélecteur qui pilote toute la page (D137). La période vit dans l'URL. */
+/** Le sélecteur qui pilote toute la page (D137, D159). La période vit dans l'URL. */
 export function SelecteurPeriode({
   periode,
   onChange,
@@ -17,22 +17,22 @@ export function SelecteurPeriode({
   onChange: (p: Periode) => void;
 }) {
   return (
-    <fieldset className="flex rounded-xl bg-(--canvas) p-[3px]">
-      <legend className="sr-only">Période</legend>
+    <ToggleGroup
+      type="single"
+      variant="outline"
+      size="sm"
+      aria-label="Période"
+      value={periode}
+      // Recliquer la période active la désélectionnerait : une valeur vide est ignorée.
+      onValueChange={(v) => {
+        if (v) onChange(v as Periode);
+      }}
+    >
       {PERIODES.map((p) => (
-        <button
-          key={p}
-          type="button"
-          aria-pressed={p === periode}
-          onClick={() => onChange(p)}
-          className={cn(
-            "rounded-[9px] px-3.5 py-1.5 text-[13px] font-semibold text-(--ink-subtle) outline-none hover:text-(--ink) focus-visible:ring-2 focus-visible:ring-(--focus-ring)",
-            p === periode && "bg-(--surface-3) text-(--ink)",
-          )}
-        >
+        <ToggleGroupItem key={p} value={p} className="px-3">
           {LIBELLES[p]}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </fieldset>
+    </ToggleGroup>
   );
 }
