@@ -41,6 +41,7 @@
   --color-cal-2: var(--cal-2);
   --color-cal-3: var(--cal-3);
   --color-cal-4: var(--cal-4);
+  --color-superset: var(--superset);
 
   /* Archivo partout (D135) ; la police système ne sert que pendant le chargement. */
   --font-sans: "Archivo Variable", system-ui, sans-serif;
