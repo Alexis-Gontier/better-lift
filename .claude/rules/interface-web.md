@@ -38,7 +38,11 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   différente de la version enregistrée (`empreinte`). Cartes d'exercice à la Hevy : image,
   « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées É/1/2/3
   (`etiquettesSeries`).
-- **`/` est le Tableau de bord**, protégé (D134). **Profil** (`/profil`, ex-`/parametres`) :
+- **`/` est le Tableau de bord**, protégé (D134) : `features/tableau/`, période dans l'URL
+  (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
+  calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
+  (testé). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
+  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur `--surface-2`). **Profil** (`/profil`, ex-`/parametres`) :
   compte, thème (seul endroit où il se change), unités et fuseau.
 - **Liste des exercices** : image fixe (JPG ~6 Ko) déduite de `gifUrl` par `imageDe` — aucune
   colonne ni migration. Le GIF reste réservé aux fiches.
