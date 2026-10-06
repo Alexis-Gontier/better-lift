@@ -548,3 +548,62 @@ describe("supersets en séance (D145, D147, D148)", () => {
     ).toBe(true);
   });
 });
+
+describe("repos d'un superset (D149)", () => {
+  // a et b en superset, repos 60 sur a, 120 sur b (le dernier) ; c seul, 90.
+  const s0 = () =>
+    seanceAvec(exoEnCours("a", 1, 2, 60), exoEnCours("b", 1, 2, 120), exoEnCours("c", null, 1, 90));
+
+  it("cocher le premier du tour ne lance pas de repos", () => {
+    expect(validerSerie(s0(), 0, 0, T0).repos).toBeNull();
+  });
+  it("le tour complet lance le repos du DERNIER exercice du groupe", () => {
+    const s = validerSerie(validerSerie(s0(), 0, 0, T0), 1, 0, T0);
+    expect(s.repos?.fin).toBe(plus(120).toISOString());
+  });
+  it("dans le désordre aussi : b puis a", () => {
+    const s = validerSerie(validerSerie(s0(), 1, 0, T0), 0, 0, T0);
+    expect(s.repos?.fin).toBe(plus(120).toISOString());
+  });
+  it("un tour incomplet ne touche pas au repos en cours", () => {
+    const enRepos = { ...s0(), repos: { fin: plus(30).toISOString(), signale: false } };
+    expect(validerSerie(enRepos, 0, 1, T0).repos).toEqual(enRepos.repos);
+  });
+  it("nombres de séries inégaux : le tour sans b se complète avec a seul", () => {
+    const s = seanceAvec(exoEnCours("a", 1, 3, 60), exoEnCours("b", 1, 2, 120));
+    expect(validerSerie(s, 0, 2, T0).repos?.fin).toBe(plus(120).toISOString());
+  });
+  it("le dernier sans repos propre : repos par défaut du compte", () => {
+    const s = seanceAvec(exoEnCours("a", 1, 1, 60), exoEnCours("b", 1, 1, null));
+    const fait = validerSerie(validerSerie(s, 0, 0, T0, 45), 1, 0, T0, 45);
+    expect(fait.repos?.fin).toBe(plus(45).toISOString());
+  });
+  it("hors groupe, rien ne change", () => {
+    expect(validerSerie(s0(), 2, 0, T0).repos?.fin).toBe(plus(90).toISOString());
+  });
+});
+
+describe("prochaine série dans un superset (D150)", () => {
+  const parcours = (depart: SeanceEnCours) => {
+    let s = depart;
+    const ordre: string[] = [];
+    for (let p = prochaineSerie(s); p; p = prochaineSerie(s)) {
+      ordre.push(`${s.exercices[p.iE]?.slug}${p.iS + 1}`);
+      s = validerSerie(s, p.iE, p.iS, T0);
+    }
+    return ordre;
+  };
+  it("passe tour par tour : a1, b1, a2, b2, puis c", () => {
+    expect(
+      parcours(seanceAvec(exoEnCours("a", 1), exoEnCours("b", 1), exoEnCours("c", null, 1))),
+    ).toEqual(["a1", "b1", "a2", "b2", "c1"]);
+  });
+  it("saute l'exercice qui n'a plus de série à ce rang", () => {
+    expect(parcours(seanceAvec(exoEnCours("a", 1, 3), exoEnCours("b", 1, 1)))).toEqual([
+      "a1",
+      "b1",
+      "a2",
+      "a3",
+    ]);
+  });
+});

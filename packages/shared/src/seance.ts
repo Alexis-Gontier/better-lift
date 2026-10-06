@@ -3,6 +3,7 @@ import { type RoutineDetail, TYPES_SERIE, type TypeSerie } from "./routines.js";
 import {
   defaireGroupe,
   deplacerAvecGroupes,
+  groupeDe,
   lierAuSuivant,
   normaliserGroupes,
   retirerDuGroupe,
@@ -142,7 +143,14 @@ export function validerSerie(
   const apres = avecSerie(s, iE, iS, (x) => ({ ...x, faite: !x.faite }));
   if (etaitFaite) return apres;
 
-  const reposSec = s.exercices[iE]?.reposSec ?? reposDefautSec;
+  // D149 : dans un superset, le repos attend la fin du tour — toutes les séries
+  // de ce rang cochées, dans n'importe quel ordre — et prend celui du dernier.
+  const g = groupeDe(s.exercices, iE);
+  if (g) {
+    const membres = apres.exercices.slice(g.debut, g.fin + 1);
+    if (!membres.every((e) => e.series[iS]?.faite ?? true)) return apres;
+  }
+  const reposSec = s.exercices[g ? g.fin : iE]?.reposSec ?? reposDefautSec;
   if (!reposSec) return apres;
   return {
     ...apres,
@@ -295,14 +303,34 @@ export function reposRestant(s: SeanceEnCours, maintenant: Date): number | null 
 }
 
 /**
+ * L'ordre de passage des séries : exercice puis série, sauf dans un superset,
+ * qui se parcourt tour par tour (D150) — A1, B1, A2, B2 — en sautant
+ * l'exercice qui n'a plus de série à ce rang.
+ */
+function ordreDePassage(s: SeanceEnCours): { iE: number; iS: number; faite: boolean }[] {
+  const ordre: { iE: number; iS: number; faite: boolean }[] = [];
+  let iE = 0;
+  while (iE < s.exercices.length) {
+    const fin = groupeDe(s.exercices, iE)?.fin ?? iE;
+    const membres = s.exercices.slice(iE, fin + 1);
+    const tours = Math.max(0, ...membres.map((e) => e.series.length));
+    for (let iS = 0; iS < tours; iS++)
+      membres.forEach((e, k) => {
+        const x = e.series[iS];
+        if (x) ordre.push({ iE: iE + k, iS, faite: x.faite });
+      });
+    iE = fin + 1;
+  }
+  return ordre;
+}
+
+/**
  * La prochaine série à faire (D105) : la première pas encore faite, dans
- * l'ordre des exercices puis des séries. C'est la seule ✓ de l'écran en aplat
+ * l'ordre de passage (D150). C'est la seule ✓ de l'écran en aplat
  * lime ; une série sautée reste la prochaine tant qu'elle n'est pas faite.
  */
 export function prochaineSerie(s: SeanceEnCours): { iE: number; iS: number } | null {
-  const ordre = s.exercices.flatMap((e, iE) =>
-    e.series.map((x, iS) => ({ iE, iS, faite: x.faite })),
-  );
+  const ordre = ordreDePassage(s);
   let derniere = -1;
   ordre.forEach((p, i) => {
     if (p.faite) derniere = i;
