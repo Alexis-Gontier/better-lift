@@ -44,8 +44,10 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
   calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
   (testé). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
-  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur `--surface-2`). **Profil** (`/profil`, ex-`/parametres`) :
-  compte, thème (seul endroit où il se change), unités et fuseau.
+  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur `--surface-2`). **Profil** (`/profil`, ex-`/parametres`, D143) :
+  bilan de toujours, objectif hebdo et repos par défaut (SUR LE COMPTE, `["preferences"]`, la
+  clé des tuiles du Tableau de bord), thème (appareil, seul endroit où il se change), unités et
+  fuseau (affichés), export CSV par un simple lien, déconnexion.
 - **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
   fil groupé par mois (`grouperParMois`, fuseau), ↑ / ↓ d'une séance à l'autre ; détail = relevé
   comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
