@@ -50,7 +50,7 @@ export function EnTetePage({
                     </Link>
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage>{titre}</BreadcrumbPage>
+                  <BreadcrumbPage className="font-semibold">{titre}</BreadcrumbPage>
                 )}
               </h1>
             </BreadcrumbItem>
