@@ -88,8 +88,8 @@
   --color-card: var(--surface-2);
   --color-card-foreground: var(--ink);
 
-  /* La sidebar (D72). Même fond que le canevas : c'est la zone de contenu qui
-     flotte (variant `inset`, D71), pas la navigation. L'élément actif est une
+  /* La sidebar (D72, D154). Même fond que le canevas et le contenu : la coquille
+     est plate, un filet sépare la barre du contenu. L'élément actif est une
      SURFACE, jamais le lime — `sidebar-primary` n'est utilisé par aucun bloc
      rendu ici, mais il reste traduit pour qu'aucun rôle n'émette en silence. */
   --color-sidebar: var(--canvas);
