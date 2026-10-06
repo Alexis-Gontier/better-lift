@@ -2,6 +2,7 @@ import {
   ecartSerie,
   etiquettesSeries,
   formaterCharge,
+  groupes,
   LIBELLE_RECORD,
   type SeanceDetail,
 } from "@better-lift/shared";
@@ -52,6 +53,7 @@ export function DetailSeance({
   onSupprimer: () => void;
 }) {
   const [confirmer, setConfirmer] = useState(false);
+  const blocs = groupes(seance.exercices);
   const nbRecords = seance.exercices.reduce(
     (n, ex) => n + ex.series.filter((s) => s.records.length > 0).length,
     0,
@@ -111,9 +113,25 @@ export function DetailSeance({
             <p className="whitespace-pre-line text-(--ink-muted) italic">« {seance.note} »</p>
           ) : null}
 
-          {seance.exercices.map((ex, iE) => (
-            <Exercice key={`${ex.slug}-${iE}`} exercice={ex} />
-          ))}
+          {seance.exercices.map((ex, iE) => {
+            // Un superset fait en séance se relit d'un bloc (D153) : étiquette,
+            // puis ses exercices derrière le filet. Lecture seule.
+            const g = blocs.find((b) => b.debut <= iE && iE <= b.fin);
+            if (!g) return <Exercice key={`${ex.slug}-${iE}`} exercice={ex} />;
+            if (iE !== g.debut) return null;
+            return (
+              <div key={`superset-${ex.slug}-${iE}`}>
+                <p className="mb-1.5 text-[11px] font-bold tracking-wider text-superset uppercase">
+                  Superset {g.lettre}
+                </p>
+                <div className="flex flex-col gap-3 border-l-[3px] border-superset pl-3">
+                  {seance.exercices.slice(g.debut, g.fin + 1).map((m, k) => (
+                    <Exercice key={`${m.slug}-${g.debut + k}`} exercice={m} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </ScrollArea>
 

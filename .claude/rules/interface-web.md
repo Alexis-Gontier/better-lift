@@ -58,6 +58,8 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   fil groupé par mois (`grouperParMois`, fuseau), ↑ / ↓ d'une séance à l'autre ; détail = relevé
   comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
   RETIRE le détail puis invalide `["seances"]`, `["stats"]`, `["records"]`.
+  Un superset fait en séance se relit d'un bloc dans le relevé (D153) : étiquette texte
+  « SUPERSET A » et filet `border-superset`, en lecture seule (`groupes` de `shared`).
 - **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
 - **Exercices** en disposition `fil` : catalogue à gauche, **fiche en une page** (D141) — GIF,

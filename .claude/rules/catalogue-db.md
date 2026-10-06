@@ -8,6 +8,11 @@ paths:
 - **Prisma 7 : `migrate dev` ne régénère plus le client.** Après une migration, lancer
   `pnpm --filter @better-lift/db generate`, sinon le client rejette les nouvelles colonnes avec
   une `PrismaClientValidationError` qui ne dit pas pourquoi.
+- **Le client généré suit la DERNIÈRE branche installée, pas le schéma courant.** Il vit dans
+  `src/generated` (non versionné) ; le crochet de commit relance `pnpm install`, donc `generate`,
+  sur la branche du moment. Un commit sur une branche partie d'avant une migration rend un client
+  sans la colonne, et l'API de dev répond 500 (`PrismaClientValidationError`) sur toute lecture
+  qui la sélectionne. Après un changement de branche autour d'une migration : `pnpm db:generate`.
 - **Le catalogue porte deux noms.** `name` est l'anglais du dataset, `nomFr` le français affiché,
   `nomRecherche` les deux normalisés (recherche bilingue sans accents). Les noms français sont
   écrits dans `catalogue/noms-fr.json`, par id du dataset : corriger un nom, c'est modifier une
