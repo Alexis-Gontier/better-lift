@@ -13,9 +13,9 @@ export type ContexteRouteur = {
 };
 
 // La coquille n'est PAS montée ici : seule la route sait s'il y a un détail à
-// ouvrir, et `AppShell` change son jeu de panneaux — donc sa clé de persistance —
-// selon qu'il y en a un. Un `AppShell` racine obligerait chaque route à en
-// imbriquer un second, avec deux navigations et deux groupes de panneaux.
+// ouvrir, et `PageListeDetail` change son jeu de panneaux — donc sa clé de
+// persistance — selon qu'il y en a un. Chaque écran monte son gabarit
+// (`PageListeDetail` ou `PageTableau`), qui pose la `Coquille`.
 //
 // La garde d'authentification n'est pas ici non plus : la racine rend TOUJOURS,
 // quelle que soit la session. La frontière est `_protege.tsx`.

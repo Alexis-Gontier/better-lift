@@ -33,6 +33,17 @@
      par `primary` plus bas : la distinction par la forme vaut aussi pour les noms
      de classes, un registre par nom. */
   --color-accent-ink: var(--accent-ink);
+  --color-accent-line: var(--accent-line);
+  --color-accent-wash: var(--accent-wash);
+  --color-image-bg: var(--image-bg);
+  --color-cal-0: var(--cal-0);
+  --color-cal-1: var(--cal-1);
+  --color-cal-2: var(--cal-2);
+  --color-cal-3: var(--cal-3);
+  --color-cal-4: var(--cal-4);
+
+  /* Archivo partout (D135) ; la police système ne sert que pendant le chargement. */
+  --font-sans: "Archivo Variable", system-ui, sans-serif;
 
   /* Vocabulaire des primitives shadcn vendorisées. Elles ne connaissent que leurs
      propres noms de rôles, et un rôle absent d’ici n’émet AUCUNE règle, en silence :
@@ -103,7 +114,19 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  /* Tout chiffre s'aligne en colonne : charges, reps, durées, dates. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le chiffre héros (D103, D135) : tuiles, bilans. Sur le web, la coupe condensée
+   est un réglage de l'axe `wdth`, pas une police à part. */
+@utility chiffre {
+  font-stretch: 72%;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 /* Les animations pilotées en JavaScript échappent à cette règle : toute

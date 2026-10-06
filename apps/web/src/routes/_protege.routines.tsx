@@ -4,7 +4,7 @@ import { z } from "zod";
 import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
-import { AppShell } from "@/components/shell/app-shell";
+import { PageListeDetail } from "@/components/shell/page-liste-detail";
 import { ListeRoutines } from "@/features/routines/liste-routines";
 import { optionsRoutines } from "@/features/routines/requetes";
 
@@ -53,6 +53,11 @@ function PageRoutines() {
   }
 
   return (
-    <AppShell titre="Routines" disposition="colonne" liste={panneauListe()} detail={<Outlet />} />
+    <PageListeDetail
+      titre="Routines"
+      disposition="colonne"
+      liste={panneauListe()}
+      detail={<Outlet />}
+    />
   );
 }
