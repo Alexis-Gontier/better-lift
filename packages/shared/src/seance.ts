@@ -1,5 +1,12 @@
 import { z } from "zod";
 import { type RoutineDetail, TYPES_SERIE, type TypeSerie } from "./routines.js";
+import {
+  defaireGroupe,
+  deplacerAvecGroupes,
+  lierAuSuivant,
+  normaliserGroupes,
+  retirerDuGroupe,
+} from "./supersets.js";
 
 /**
  * La séance en cours — la logique, sans plateforme (D61).
@@ -33,6 +40,8 @@ export type ExerciceEnCours = {
   reposSec: number | null;
   /** La note libre de l'exercice (D90). Absente d'un brouillon antérieur : lue comme `null`. */
   note?: string | null;
+  /** Le groupe de superset (D145). Absent d'un brouillon antérieur : lu comme `null`. */
+  supersetGroupe?: number | null;
   series: SerieEnCours[];
   /**
    * Ce qui a été fait la dernière fois sur cet exercice (D67) — une INDICATION
@@ -67,17 +76,20 @@ export function demarrerDepuisRoutine(
     nom: r.nom,
     debut: maintenant.toISOString(),
     // D59 : les cibles de la routine pré-remplissent les séries.
-    exercices: r.exercices.map((e) => ({
-      slug: e.slug,
-      nom: e.nom,
-      reposSec: e.reposSec,
-      series: e.series.map((s) => ({
-        type: s.type,
-        reps: s.repsCible,
-        chargeKg: s.chargeCibleKg,
-        faite: false,
+    exercices: normaliserGroupes(
+      r.exercices.map((e) => ({
+        slug: e.slug,
+        nom: e.nom,
+        reposSec: e.reposSec,
+        supersetGroupe: e.supersetGroupe ?? null,
+        series: e.series.map((s) => ({
+          type: s.type,
+          reps: s.repsCible,
+          chargeKg: s.chargeCibleKg,
+          faite: false,
+        })),
       })),
-    })),
+    ),
     repos: null,
   };
 }
@@ -173,12 +185,15 @@ export function ajouterExercice(s: SeanceEnCours, slug: string, nom: string): Se
   const vide = (): SerieEnCours => ({ type: "NORMALE", reps: null, chargeKg: null, faite: false });
   return {
     ...s,
-    exercices: [...s.exercices, { slug, nom, reposSec: null, series: [vide(), vide(), vide()] }],
+    exercices: [
+      ...s.exercices,
+      { slug, nom, reposSec: null, supersetGroupe: null, series: [vide(), vide(), vide()] },
+    ],
   };
 }
 
 export function retirerExercice(s: SeanceEnCours, iE: number): SeanceEnCours {
-  return { ...s, exercices: s.exercices.filter((_, i) => i !== iE) };
+  return { ...s, exercices: normaliserGroupes(s.exercices.filter((_, i) => i !== iE)) };
 }
 
 /** D90 : une note faite d'espaces n'est pas une note. */
@@ -199,10 +214,22 @@ export function modifierReposExercice(
 export function deplacerExercice(s: SeanceEnCours, de: number, vers: number): SeanceEnCours {
   const n = s.exercices.length;
   if (de < 0 || de >= n || vers < 0 || vers >= n || de === vers) return s;
-  const exercices = [...s.exercices];
-  const [bouge] = exercices.splice(de, 1);
-  if (bouge) exercices.splice(vers, 0, bouge);
-  return { ...s, exercices };
+  // D148 : l'exercice déplacé quitte son groupe, ou rejoint celui où il tombe.
+  return { ...s, exercices: deplacerAvecGroupes(s.exercices, de, vers) };
+}
+
+/** D147 : superset avec l'exercice suivant. */
+export function lierExercices(s: SeanceEnCours, iE: number): SeanceEnCours {
+  return { ...s, exercices: lierAuSuivant(s.exercices, iE) };
+}
+
+/** D147 : retire l'exercice de son superset ; du milieu, il passe après le groupe. */
+export function delierExercice(s: SeanceEnCours, iE: number): SeanceEnCours {
+  return { ...s, exercices: retirerDuGroupe(s.exercices, iE) };
+}
+
+export function defaireSuperset(s: SeanceEnCours, iE: number): SeanceEnCours {
+  return { ...s, exercices: defaireGroupe(s.exercices, iE) };
 }
 
 /**
@@ -221,6 +248,7 @@ export function remplacerExercice(
     nom,
     reposSec: e.reposSec,
     note: null,
+    supersetGroupe: e.supersetGroupe ?? null,
     series: e.series.map((x) => ({ type: x.type, reps: null, chargeKg: null, faite: false })),
   }));
 }
@@ -323,6 +351,8 @@ const exerciceEnvoye = z.looseObject({
   reposSec: z.number().int().min(0).max(3600).nullable(),
   // Optionnelle : un mobile d'avant D90 ne l'envoie pas (D57).
   note: z.string().max(500).nullable().optional(),
+  // Facultatif (D145) : une séance en file d'avant les supersets ne l'a pas (D57).
+  supersetGroupe: z.number().int().min(1).max(100).nullable().optional(),
   series: z.array(serieEnvoyee).max(50),
 });
 
@@ -351,10 +381,11 @@ export function versEnvoi(s: SeanceEnCours, fin: Date): SeanceSaisie {
     fin: fin.toISOString(),
     // Une note vide n'est pas une note : elle ne part pas.
     ...(s.note?.trim() ? { note: s.note.trim() } : {}),
-    exercices: s.exercices.map((e) => ({
+    exercices: normaliserGroupes(s.exercices).map((e) => ({
       slug: e.slug,
       reposSec: e.reposSec,
       note: e.note ?? null,
+      supersetGroupe: e.supersetGroupe ?? null,
       series: e.series.map(({ type, reps, chargeKg, faite }) => ({ type, reps, chargeKg, faite })),
     })),
   };

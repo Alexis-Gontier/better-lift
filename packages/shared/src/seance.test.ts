@@ -7,9 +7,13 @@ import {
   arreterRepos,
   avecPrecedents,
   bilanSeance,
+  defaireSuperset,
+  delierExercice,
   demarrerDepuisRoutine,
   demarrerVide,
   deplacerExercice,
+  type ExerciceEnCours,
+  lierExercices,
   marquerReposSignale,
   modifierNote,
   modifierReposExercice,
@@ -19,6 +23,7 @@ import {
   reposRestant,
   retirerExercice,
   retirerSerie,
+  type SeanceEnCours,
   seanceSaisie,
   secondesEcoulees,
   validerSerie,
@@ -385,6 +390,7 @@ describe("la carte d'exercice (D89–D92)", () => {
       nom: "Développé couché haltères",
       reposSec: 120,
       note: null,
+      supersetGroupe: null,
       series: [
         { type: "ECHAUFFEMENT", reps: null, chargeKg: null, faite: false },
         { type: "NORMALE", reps: null, chargeKg: null, faite: false },
@@ -437,5 +443,108 @@ describe("prochaineSerie (D116)", () => {
     s = validerSerie(validerSerie(validerSerie(s, 0, 0, T0), 0, 1, T0), 1, 0, T0);
     expect(prochaineSerie(s)).toBeNull();
     expect(prochaineSerie(demarrerVide("s2", T0))).toBeNull();
+  });
+});
+
+// --- Supersets (D145–D150) ---------------------------------------------------
+
+const exoEnCours = (
+  slug: string,
+  g: number | null,
+  nbSeries = 2,
+  reposSec: number | null = null,
+): ExerciceEnCours => ({
+  slug,
+  nom: slug,
+  reposSec,
+  supersetGroupe: g,
+  series: Array.from({ length: nbSeries }, () => ({
+    type: "NORMALE" as const,
+    reps: 8,
+    chargeKg: 50,
+    faite: false,
+  })),
+});
+const seanceAvec = (...exercices: ExerciceEnCours[]): SeanceEnCours => ({
+  ...demarrerVide("s", T0),
+  exercices,
+});
+const groupesDe = (s: SeanceEnCours) => s.exercices.map((e) => e.supersetGroupe);
+
+describe("supersets en séance (D145, D147, D148)", () => {
+  it("demarrerDepuisRoutine recopie les groupes, absents = null", () => {
+    const r: RoutineDetail = {
+      id: "r",
+      nom: "R",
+      exercices: ["a", "b", "c"].map((slug, i) => ({
+        slug,
+        nom: slug,
+        image: null,
+        musclePrincipal: "Pectoraux",
+        musclesSecondaires: [],
+        reposSec: null,
+        ...(i < 2 ? { supersetGroupe: 4 } : {}),
+        series: [{ type: "NORMALE" as const, repsCible: 8, chargeCibleKg: null }],
+      })),
+    };
+    expect(groupesDe(demarrerDepuisRoutine(r, "s", T0))).toEqual([1, 1, null]);
+  });
+
+  it("lierExercices, delierExercice et defaireSuperset", () => {
+    const s = seanceAvec(exoEnCours("a", null), exoEnCours("b", null), exoEnCours("c", null));
+    const lie = lierExercices(lierExercices(s, 0), 1);
+    expect(groupesDe(lie)).toEqual([1, 1, 1]);
+    expect(delierExercice(lie, 1).exercices.map((e) => [e.slug, e.supersetGroupe])).toEqual([
+      ["a", 1],
+      ["c", 1],
+      ["b", null],
+    ]);
+    expect(groupesDe(defaireSuperset(lie, 0))).toEqual([null, null, null]);
+  });
+
+  it("retirer un exercice resserre le groupe ; à un seul, il disparaît", () => {
+    const s = seanceAvec(exoEnCours("a", 1), exoEnCours("b", 1), exoEnCours("c", null));
+    expect(groupesDe(retirerExercice(s, 0))).toEqual([null, null]);
+  });
+
+  it("remplacer garde la place et le groupe", () => {
+    const s = seanceAvec(exoEnCours("a", 1), exoEnCours("b", 1));
+    expect(remplacerExercice(s, 1, "z", "Z").exercices[1]?.supersetGroupe).toBe(1);
+  });
+
+  it("ajouter un exercice le met hors groupe", () => {
+    const s = seanceAvec(exoEnCours("a", 1), exoEnCours("b", 1));
+    expect(ajouterExercice(s, "c", "C").exercices[2]?.supersetGroupe).toBeNull();
+  });
+
+  it("deplacerExercice suit D148", () => {
+    const s = seanceAvec(exoEnCours("a", 1), exoEnCours("b", 1), exoEnCours("c", null));
+    expect(deplacerExercice(s, 2, 1).exercices.map((e) => [e.slug, e.supersetGroupe])).toEqual([
+      ["a", 1],
+      ["c", 1],
+      ["b", 1],
+    ]);
+  });
+
+  it("versEnvoi envoie les groupes normalisés", () => {
+    const s = seanceAvec(exoEnCours("a", 5), exoEnCours("b", 5), exoEnCours("c", 9));
+    expect(versEnvoi(s, plus(60)).exercices.map((e) => e.supersetGroupe)).toEqual([1, 1, null]);
+  });
+
+  it("un vieux brouillon sans le champ s'envoie avec null", () => {
+    const { supersetGroupe: _g, ...vieux } = exoEnCours("a", null);
+    expect(versEnvoi(seanceAvec(vieux), plus(60)).exercices[0]?.supersetGroupe).toBeNull();
+  });
+
+  it("seanceSaisie accepte le champ absent, null ou un entier", () => {
+    const envoi = versEnvoi(seanceAvec(exoEnCours("a", null)), plus(60));
+    const premier = envoi.exercices[0];
+    if (!premier) throw new Error("exercice manquant");
+    const { supersetGroupe: _g, ...sans } = premier;
+    expect(seanceSaisie.safeParse({ ...envoi, exercices: [sans] }).success).toBe(true);
+    expect(seanceSaisie.safeParse(envoi).success).toBe(true);
+    expect(
+      seanceSaisie.safeParse({ ...envoi, exercices: [{ ...sans, supersetGroupe: 2 }] }).success,
+    ).toBe(true);
   });
 });
