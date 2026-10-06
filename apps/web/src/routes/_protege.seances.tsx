@@ -6,12 +6,13 @@ import { EtatChargement } from "@/components/etats/etat-chargement";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { PageListeDetail } from "@/components/shell/page-liste-detail";
+import { filtrerSeances } from "@/features/seances/calculs";
 import { ListeSeances } from "@/features/seances/liste-seances";
 import { optionsSeances } from "@/features/seances/requetes";
 
 // La séance ouverte vit dans le CHEMIN (`/seances/$id`, D81) ; les paramètres de
 // recherche ne portent plus que ce qui filtre ou force un état.
-const recherche = z.object({ etat: champEtat });
+const recherche = z.object({ q: z.string().optional().catch(undefined), etat: champEtat });
 
 /**
  * La mise en page des séances : la coquille et la liste. Le détail est la route
@@ -24,11 +25,14 @@ export const Route = createFileRoute("/_protege/seances")({
 });
 
 function PageSeances() {
-  const { etat } = Route.useSearch();
+  const { q = "", etat } = Route.useSearch();
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useInfiniteQuery(optionsSeances());
-  const ids = liste.data?.pages.flatMap((p) => p.seances.map((x) => x.id)) ?? [];
+  const chargees = liste.data?.pages.flatMap((p) => p.seances) ?? [];
+  // ↑ / ↓ suivent le fil tel qu'il s'affiche : filtré (D160).
+  const visibles = filtrerSeances(chargees, q);
+  const ids = visibles.map((x) => x.id);
 
   // ↑ / ↓ passent d'une séance à l'autre (D140), sauf pendant une saisie.
   useEffect(() => {
@@ -63,7 +67,15 @@ function PageSeances() {
     const vide = estVideForce(etat);
     return (
       <ListeSeances
-        seances={vide ? [] : liste.data.pages.flatMap((p) => p.seances)}
+        seances={vide ? [] : visibles}
+        charges={chargees.length}
+        filtre={q}
+        onFiltre={(texte) => {
+          // Le filtre garde la séance ouverte : son chemin reste, seul `q` change.
+          const search = (s: { q?: string }) => ({ ...s, q: texte || undefined });
+          if (id) navigate({ to: "/seances/$id", params: { id }, search, replace: true });
+          else navigate({ search, replace: true });
+        }}
         total={vide ? 0 : (liste.data.pages[0]?.total ?? 0)}
         aSuite={!vide && liste.hasNextPage}
         chargeSuite={liste.isFetchingNextPage}
