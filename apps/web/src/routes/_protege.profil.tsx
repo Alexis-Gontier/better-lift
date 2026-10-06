@@ -74,7 +74,7 @@ function Profil() {
       </Section>
 
       <Section titre="Raccourcis clavier">
-        <Ligne libelle="Rechercher, lancer une action">
+        <Ligne libelle="Aller à une page">
           <kbd className="rounded border border-(--line) px-1.5 py-0.5 font-mono text-xs">
             Ctrl K
           </kbd>
