@@ -20,8 +20,8 @@ séance mobile, historique et records), plus, sur mobile, les routines (D82–D8
 Hevy (D86–D94) et le hors ligne avec l'Accueil en fil des séances (D95–D100). Le web a été
 repensé en **poste d'analyse** (D132–D144, `2026-10-06-web-refonte-design.md`) : Tableau de bord,
 Séances, Routines, Exercices, Profil — pas de séance en direct sur le web. **Supersets en
-cours** (D145–D153, `2026-10-06-supersets-design.md`) : lot 1 (données, `shared/supersets.ts`,
-API) fait ; restent l'éditeur de routine, la séance mobile et l'historique. **Prochaine
+cours** (D145–D153, `2026-10-06-supersets-design.md`) : lots 1 (données, `shared/supersets.ts`,
+API) et 2 (éditeur de routine web et mobile) faits ; restent la séance mobile et l'historique. **Prochaine
 étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
 

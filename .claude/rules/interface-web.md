@@ -40,6 +40,12 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
   Espace, flèches, Espace) par `useOrdonnerRoutines`, mutation OPTIMISTE sur
   `["routines","liste"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
+- **Supersets dans l'éditeur (D151, D152)** : un groupe se rend d'un bloc — `EtiquetteSuperset`
+  (« SUPERSET A », ouvre « Défaire le superset »), puis ses cartes derrière un filet de 3 px
+  `border-superset` ; le `SortableContext` garde la liste PLATE des clés. Toute retouche passe par
+  `modifier` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
+  `arrayMove`). Menu ⋯ : « Superset avec le suivant » (`peutLierAuSuivant`), « Retirer du
+  superset ». Repos masqué sur les membres non derniers (`roleRepos`).
 - **`/` est le Tableau de bord**, protégé (D134) : `features/tableau/`, période dans l'URL
   (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
   calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
@@ -89,6 +95,7 @@ refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2
   changer les deux. Police **Archivo** (`@fontsource-variable/archivo/wdth.css`), chiffres héros
   par l'utilitaire `chiffre` (`font-stretch: 72%`). Calendrier `--cal-0..4`, vignettes
   `--image-bg` (blanc dans les deux thèmes).
+- `--superset` (D151) : `#9a8cf0` / `#5a4bbf`, le repère d'un superset — ni lime ni danger.
 - `--accent-ink` passe à `#4d6a12` en clair (sur blanc, `#a8cf45` tombe sous 2:1).
   `--danger` = `#a83e39` : encre à 5,65:1, aplat détaché du fond à 3,24:1 — plus foncé, le
   bouton disparaît.

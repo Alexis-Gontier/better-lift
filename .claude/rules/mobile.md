@@ -62,6 +62,10 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   `GestureHandlerRootView`.
 - **Contraste** : tout texte tient 4,5:1 sur la surface où il se pose, dans les deux registres
   (`encreAttenuee` comprise). Un nouveau token se mesure avant d'entrer.
+- **Repère de superset (D151)** : rôle `superset` (`#9a8cf0` / `#5a4bbf`, 5,3:1 à 7,0:1 sur les
+  surfaces) et `components/ui/repere-superset.tsx` : barre de 3 px à gauche de chaque membre,
+  étiquette « SUPERSET A » au-dessus du premier. `marge` = marge du bas des éléments (la barre
+  s'arrête avant, au dernier), `ecart` = `gap` du conteneur (la barre le franchit).
 - **Fond des images d'exercice** : rôle `fondImage`, blanc dans les deux registres (les médias du
   catalogue sont détourés sur blanc).
 - **Thème choisi (D128)** : Système · Sombre · Clair, gardé sur le téléphone
@@ -136,6 +140,10 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   `react-native-draggable-flatlist`, `GestureHandlerRootView` à la racine, sortie avec
   changements confirmée (`beforeRemove`). Choix d'exercices par la modale
   `app/choisir-exercices.tsx`, qui rend sa sélection par `lib/choix-exercices.ts`.
+- **Supersets (D151, D152)** : l'éditeur et la page d'une routine enveloppent chaque exercice
+  dans `RepereSuperset` ; menu ⋯ « Superset avec le suivant » / « Retirer du superset »,
+  l'étiquette ouvre « Défaire le superset ». Glisser : `onDragEnd({ from, to })` →
+  `deplacerAvecGroupes`. Repos masqué sur les membres non derniers (`roleRepos`).
 - **Supprimer une routine retire son détail du cache (`removeQueries`)** : l'invalider referait
   la requête, 404, et les tentatives de TanStack Query bloqueraient l'écran plusieurs secondes.
 
