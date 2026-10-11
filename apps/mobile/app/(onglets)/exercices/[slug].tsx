@@ -27,7 +27,7 @@ import {
   optionsHistoriqueExercice,
   optionsRecords,
 } from "../../../lib/requetes";
-import { creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
+import { affiche, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 /**
@@ -218,7 +218,7 @@ const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
   contenu: { padding: espace.l, gap: espace.xl, paddingBottom: espace.xxl * 2 },
   tete: { gap: espace.xs },
-  nom: { color: couleurs.encre, fontSize: 30, lineHeight: 34, fontWeight: "700" },
+  nom: { ...affiche, color: couleurs.encre, fontSize: 34, lineHeight: 36 },
   sous: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
   cadre: { alignItems: "center", gap: espace.xs },
   // Fond blanc dans les deux thèmes : les images du dataset sont dessinées sur blanc.

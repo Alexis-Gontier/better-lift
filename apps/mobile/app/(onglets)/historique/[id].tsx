@@ -25,7 +25,7 @@ import { FUSEAU } from "../../../lib/fuseau";
 import { optionsSeance, useSupprimerSeance } from "../../../lib/requetes";
 import { useSeance } from "../../../lib/seance";
 import { dureeMin } from "../../../lib/temps";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, taille, useCouleurs } from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 /** Comme en séance (D92) : les normales se numérotent entre elles, les autres portent leur lettre. */
@@ -210,7 +210,7 @@ const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
   contenu: { padding: espace.l, gap: espace.l, paddingBottom: espace.xxl * 2 },
   tete: { gap: espace.xs },
-  nom: { color: couleurs.encre, fontSize: 30, lineHeight: 34, fontWeight: "700" },
+  nom: { ...affiche, color: couleurs.encre, fontSize: 34, lineHeight: 36 },
   date: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
   bilan: {
     flexDirection: "row",
