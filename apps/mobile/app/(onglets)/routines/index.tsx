@@ -2,34 +2,24 @@ import { routineASuivre } from "@better-lift/shared";
 import { useInfiniteQuery, useQueries, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
-import { useState } from "react";
 import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Catalogue } from "../../../components/exercices/catalogue";
 import { CarteRoutine } from "../../../components/routines/carte-routine";
 import { Appuyable } from "../../../components/ui/appuyable";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
-import { Segments } from "../../../components/ui/segments";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../../../lib/requetes";
 import { affiche, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 
-type Vue = "routines" | "exercices";
-
-const VUES = [
-  { valeur: "routines", libelle: "Mes routines" },
-  { valeur: "exercices", libelle: "Exercices" },
-] as const;
-
 /**
- * L'onglet Routines (D121) : « Mes routines » et la bibliothèque d'exercices,
- * chacune avec toute la page. « À suivre » marque la routine qui vient après la
+ * L'onglet Routines (D171) : une liste, sans onglet dans l'onglet — le catalogue
+ * complet ne vit plus que dans « Choisir des exercices ». La carte ouvre la
+ * routine ; le rond central lance. « À suivre » marque celle qui vient après la
  * dernière faite.
  */
 export default function Routines() {
   const styles = useStyles();
   const couleurs = useCouleurs();
   const router = useRouter();
-  const [vue, setVue] = useState<Vue>("routines");
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
@@ -39,21 +29,16 @@ export default function Routines() {
         </Text>
         {/* Le mobile crée ses routines sans le web (D82). Secondaire : l'aplat
             de l'écran est le rond central. */}
-        {vue === "routines" ? (
-          <Appuyable
-            onPress={() => router.push("/routine-edition")}
-            style={({ pressed }) => [styles.nouvelle, pressed && styles.appuye]}
-            accessibilityRole="button"
-          >
-            <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
-            <Text style={styles.nouvelleTexte}>Nouvelle</Text>
-          </Appuyable>
-        ) : null}
+        <Appuyable
+          onPress={() => router.push("/routine-edition")}
+          style={({ pressed }) => [styles.nouvelle, pressed && styles.appuye]}
+          accessibilityRole="button"
+        >
+          <Plus size={18} color={couleurs.encre} strokeWidth={2.4} />
+          <Text style={styles.nouvelleTexte}>Nouvelle</Text>
+        </Appuyable>
       </View>
-      <View style={styles.segments}>
-        <Segments options={VUES} valeur={vue} onChange={setVue} />
-      </View>
-      {vue === "routines" ? <MesRoutines /> : <Catalogue />}
+      <MesRoutines />
     </SafeAreaView>
   );
 }
@@ -136,6 +121,5 @@ const useStyles = creerStyles((couleurs) => ({
   },
   nouvelleTexte: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "700" },
   appuye: { backgroundColor: couleurs.surface2 },
-  segments: { paddingHorizontal: espace.l, paddingBottom: espace.m },
   liste: { paddingHorizontal: espace.l, paddingBottom: espace.xl },
 }));

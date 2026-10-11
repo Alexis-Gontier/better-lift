@@ -140,19 +140,18 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/specs/2026-09-25-mobile-routines-design.md).
 
 - Le mobile crée, modifie et supprime les routines, indépendamment du web.
-- **L'onglet (D121)** : `Segments` « Mes routines » | « Exercices ». Les cartes
-  (`components/routines/carte-routine.tsx`) tirent noms et durée des détails en cache
-  (`useQueries`) ; « Lancer » en contour. La vue Exercices (`components/exercices/catalogue.tsx`)
-  filtre le catalogue COMPLET sur le téléphone, puces de groupe comprises ; la pile `exercices`
-  ne garde que la fiche. Une rangée horizontale au-dessus d'une liste porte `flexShrink: 0`,
-  sinon la liste la rogne.
+- **L'onglet (D171)** : une liste, **sans segments** — le catalogue complet ne vit plus que dans
+  `app/choisir-exercices.tsx`. Les cartes (`components/routines/carte-routine.tsx`, nom en affiche)
+  tirent noms et durée des détails en cache (`useQueries`) ; **pas de « Lancer »** : le rond lance,
+  la carte ouvre la routine. La pile `exercices` ne garde que la fiche.
 - Page d'une routine (D122), qu'on lit avant de la modifier : résumé (`dureeEstimeeSec`), zones
   principales, « Lancer » en contour (plus d'aplat fixe : l'aplat de l'écran est le rond),
   exercices « 3 × 8 · 60 kg » (`resumeSeries`) avec « Dernière fois » (`meilleureSerie` sur
-  `optionsPrecedents`), chacun ouvrant sa fiche, puis la **carte des muscles** face/dos
+  `optionsPrecedents`), chacun ouvrant sa fiche, puis la ligne **« Carte du corps »** qui déplie
+  la carte des muscles face/dos (D172)
   (`react-native-body-highlighter`, `zonesTravaillees` de `shared/muscles.ts` — chaque muscle du
-  catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`) — après la liste : en tête, elle
-  prenait tout le premier écran. **Les muscles sont en orange** (D162) : exception bornée au
+  catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`) — repliée par défaut : elle prenait
+  un écran entier, et les zones sont déjà dites en tête. **Les muscles sont en orange** (D162) : exception bornée au
   dessin du corps, avec le calendrier.
 - Édition plein écran `app/routine-edition.tsx` (`?id=` pour modifier) :
   `react-native-draggable-flatlist`, `GestureHandlerRootView` à la racine, sortie avec
