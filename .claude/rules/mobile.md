@@ -34,21 +34,32 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   `appVersionSource: "remote"` : EAS tient le `versionCode`). Chaque profil lit l'environnement
   EAS du même nom : `EXPO_PUBLIC_API_URL` doit y exister, sinon l'app vise `10.0.2.2`.
 
-## Système (D101–D103)
+## Système (D101–D103, D161–D164, D176)
 
-Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
+Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md),
+puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-10-11-mobile-identite-design.md)
+(identité « Underground orange »).
 
-- **Couleurs par rôle, deux valeurs** (`lib/theme.ts`, type `Couleurs`). Le thème suit celui du
+- **Couleurs par rôle, deux valeurs** (`lib/palette.ts`, TypeScript pur, type `Couleurs` ;
+  `lib/theme.ts` les sert). **`lib/palette.test.ts` vérifie chaque texte à 4,5:1 sur le canevas,
+  les cartes et les feuilles, les aplats d'action et de danger, le badge record sur son fond
+  teinté, et l'absence de lime** : un token qui échoue se corrige par sa valeur, jamais par le
+  seuil. L'orange ne porte que l'action (aplat) et le record (contour) ; exceptions bornées
+  (D162) : la carte du corps, le calendrier, puis l'horloge de salle. Le thème suit celui du
   téléphone (`useColorScheme`, `userInterfaceStyle: "automatic"`). Jamais de couleur en dur dans
   un écran : un rôle manque, il s'ajoute au type, dans les deux registres.
 - **Styles** : `const useStyles = creerStyles((couleurs) => ({ … }))` au niveau du module, puis
   `const styles = useStyles()` dans le composant ; `useCouleurs()` pour une couleur passée en
   prop (icône, `placeholderTextColor`). **Jamais de `StyleSheet.create` au niveau du module** : il
   figerait les couleurs au chargement.
-- **Archivo** (`expo-font`, chargée à la racine, écran de démarrage tenu jusque-là).
-  `creerStyles` traduit `fontWeight` en famille Archivo de la bonne graisse : un style hors de la
-  fabrique (options d'Expo Router, `tabBarLabelStyle`) pose `fontFamily: polices.…` lui-même.
-  Chiffres héros : `polices.condense`, coupe générée par `scripts/polices/condenser-archivo.py`.
+- **Barlow et Barlow Condensed** (D163, `@expo-google-fonts`, chargées à la racine, écran de
+  démarrage tenu jusque-là). `creerStyles` traduit `fontWeight` en famille Barlow (plafond 700) :
+  un style hors de la fabrique (options d'Expo Router, `tabBarLabelStyle`) pose
+  `fontFamily: polices.…` lui-même. L'**affiche** (`affiche` de `lib/theme.ts` : Barlow Condensed
+  en capitales, à étaler dans un style) se pose explicitement, seulement sur titres de page, noms
+  en tête, chrono et valeurs de record — jamais sur un bouton, une étiquette ou un tableau.
+- **Rayons francs (D164)** : 6 pour cartes, boutons, cellules et bandeaux, 16 pour les feuilles,
+  la pilule pour les puces ; toujours par `rayon`, jamais en littéral (sauf un cercle).
 - **Tout élément appuyable passe par `Appuyable`** (`components/ui/appuyable.tsx`) : il pâlit
   sous le doigt. Un style en fonction (`({ pressed }) => …`) garde la main sur l'état appuyé.
   Seuls les voiles sous les feuilles restent des `Pressable` nus. Cible de 48 au minimum
@@ -61,7 +72,10 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   vers le bas (80 px ou 800 px/s) ; sous Android, le contenu d'un `Modal` porte sa propre
   `GestureHandlerRootView`.
 - **Contraste** : tout texte tient 4,5:1 sur la surface où il se pose, dans les deux registres
-  (`encreAttenuee` comprise). Un nouveau token se mesure avant d'entrer.
+  (`encreAttenuee` comprise). Un nouveau token entre dans `palette.test.ts` avant l'écran.
+- **États (D176)** : `Chargement` dessine un squelette de cartes qui pulse (immobile si les
+  animations sont réduites, `useReducedMotion`) ; une attente de moins d'une seconde (garde de
+  session) n'affiche rien.
 - **Repère de superset (D151)** : rôle `superset` (`#9a8cf0` / `#5a4bbf`, 5,3:1 à 7,0:1 sur les
   surfaces) et `components/ui/repere-superset.tsx` : barre de 3 px à gauche de chaque membre,
   étiquette « SUPERSET A » au-dessus du premier. `marge` = marge du bas des éléments (la barre
@@ -86,12 +100,12 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 
 Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
 
-- Quatre onglets **Accueil · Routines · Stats · Profil** et, au centre, un **rond lime**
+- Quatre onglets **Accueil · Routines · Stats · Profil** et, au centre, un **rond orange**
   « Démarrer » (la feuille `components/feuille-demarrer.tsx`, D120, ouverte par l'état du
   `_layout` des onglets ; logique dans `lib/demarrer.ts`) qui devient
   « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
-  en lime** (D115, remplace D106 à la demande de l'utilisateur) — token `ongletActif` : lime en
-  sombre, olive en clair, où le lime ne tient que 1,8:1 sur la barre. Icônes Lucide.
+  à l'encre** (token `ongletActif`) en attendant l'indicateur en pilule de Material 3 (D165,
+  lot 2 de l'identité). Icônes Lucide.
 - La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine et porte « Lancer »
   en contour (`BoutonContour`, D118). La page d'une routine aussi (D122).
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
@@ -134,8 +148,8 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   `optionsPrecedents`), chacun ouvrant sa fiche, puis la **carte des muscles** face/dos
   (`react-native-body-highlighter`, `zonesTravaillees` de `shared/muscles.ts` — chaque muscle du
   catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`) — après la liste : en tête, elle
-  prenait tout le premier écran. **Les muscles sont en vert** (D84 révisée) : seul usage du
-  lime hors action et record, borné au dessin du corps.
+  prenait tout le premier écran. **Les muscles sont en orange** (D162) : exception bornée au
+  dessin du corps, avec le calendrier.
 - Édition plein écran `app/routine-edition.tsx` (`?id=` pour modifier) :
   `react-native-draggable-flatlist`, `GestureHandlerRootView` à la racine, sortie avec
   changements confirmée (`beforeRemove`). Choix d'exercices par la modale
@@ -169,12 +183,12 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   (`validerSerie`), prochaine série tour par tour (`prochaineSerie`), donc le défilement aussi. La
   réorganisation montre la lettre du groupe.
 - **Direction « Carnet » (D108)** : en-tête compact (chevron qui replie vers les onglets, nom,
-  « Démarrée à », chrono en `polices.condense`, volume, séries), « Terminer » en **secondaire**
+  « Démarrée à », chrono en `polices.affiche`, volume, séries), « Terminer » en **secondaire**
   (D105). Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
   en trois états (`EtatSerie`), **comme une case à cocher (D116)** : faite (fond `ligneFaite`,
   ✓ pleine à l'encre) · **prochaine** (case vide au contour épais, liseré à gauche) · à venir
   (case vide, cibles en valeurs fantômes). **Aucune ✓ n'est dessinée sur une série à faire, et
-  pas de lime sur les lignes** : une ✓ colorée se lit « fait ». La prochaine (`prochaineSerie`
+  pas d'orange sur les lignes** : une ✓ colorée se lit « fait ». La prochaine (`prochaineSerie`
   de `shared`) suit la dernière série faite. Après une coche, l'écran défile vers elle si elle est
   cachée (hors de l'écran ou sous le bandeau de repos), sinon rien ne bouge. L'en-tête dit
   « 3 / 16 ». Décocher vibre (`selection`). Cases de 40, ligne de 52.
@@ -257,7 +271,7 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   pas des mois civils. L'écran le dit sous le sélecteur.
 - Page : `Segments` (Semaine · Mois · 3 mois · Année), tuiles comparées, **calendrier**
   (`components/stats/calendrier.tsx` : niveaux par quartile de volume, `niveauxCalendrier` ;
-  token `calendrier[0..4]`, D127 ; cases taillées sur la largeur, l'année défile en cases de 14
+  token `calendrier[0..4]`, orange depuis D162 ; cases taillées sur la largeur, l'année défile en cases de 14
   ouverte sur la semaine en cours ; jour à venir en contour ; toucher un jour ouvre sa séance),
   carte du corps puis séries par zone, volume, records de la période.
 - Persistées hors ligne (`gardeHorsLigne`, clé `["stats", "periode", …]`) ; l'écran dit leur
