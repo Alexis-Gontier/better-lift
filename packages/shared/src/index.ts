@@ -126,6 +126,8 @@ export {
   type Bilan,
   calculerPeriode,
   type JourEntraine,
+  type JourSemaine,
+  joursDeLaSemaine,
   niveauxCalendrier,
   PERIODES,
   type Periode,

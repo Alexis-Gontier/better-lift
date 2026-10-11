@@ -24,7 +24,7 @@ function monter() {
     },
     async lirePeriode(userId, _maintenant, fuseau, periode) {
       appels.push({ userId, fuseau, periode });
-      const totaux = { seances: 0, series: 0, dureeMin: 0 };
+      const totaux = { seances: 0, series: 0, dureeMin: 0, volumeKg: 0 };
       return {
         periode,
         nbSemaines: 4,

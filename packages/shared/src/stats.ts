@@ -122,7 +122,8 @@ export type SeancePeriode = {
   }[];
 };
 
-export type Totaux = { seances: number; series: number; dureeMin: number };
+/** Le volume ne compte pas l'échauffement, comme `SeancePeriode.volumeKg` (D5). */
+export type Totaux = { seances: number; series: number; dureeMin: number; volumeKg: number };
 
 /** Un jour entraîné : son volume et ses séances (le calendrier ouvre la première). */
 export type JourEntraine = { jour: string; volumeKg: number; seances: string[] };
@@ -162,7 +163,7 @@ export function calculerPeriode(
   const { lundiMs } = lundiCourant(maintenant, fuseau);
   const premierMs = lundiMs - (n - 1) * 7 * JOUR_MS;
   const precedentMs = premierMs - n * 7 * JOUR_MS;
-  const vide = (): Totaux => ({ seances: 0, series: 0, dureeMin: 0 });
+  const vide = (): Totaux => ({ seances: 0, series: 0, dureeMin: 0, volumeKg: 0 });
   const totaux = vide();
   const precedents = vide();
   const jours = new Map<string, JourEntraine>();
@@ -177,6 +178,7 @@ export function calculerPeriode(
     cible.seances++;
     cible.series += s.seriesFaites;
     cible.dureeMin += dureeMin(s);
+    cible.volumeKg = Math.round((cible.volumeKg + s.volumeKg) * 100) / 100;
     if (cible !== totaux) continue;
     courantes.push(s);
     const jour = jours.get(cle) ?? { jour: cle, volumeKg: 0, seances: [] };
@@ -209,6 +211,34 @@ export function calculerPeriode(
       })),
     ),
   };
+}
+
+/** Un jour de la semaine en cours, pour la bande de l'Accueil (D166). */
+export type JourSemaine = { jour: string; entraine: boolean; aujourdhui: boolean; avenir: boolean };
+
+/**
+ * Les sept jours de la semaine qui commence à `premierLundi` (jour civil), du
+ * lundi au dimanche : entraîné ou non, aujourd'hui, à venir. « Aujourd'hui » se
+ * lit dans le fuseau, jamais en UTC.
+ */
+export function joursDeLaSemaine(
+  premierLundi: string,
+  jours: readonly JourEntraine[],
+  maintenant: Date,
+  fuseau: string,
+): JourSemaine[] {
+  const entraines = new Set(jours.map((j) => j.jour));
+  const aujourdhui = cleJour(maintenant.toISOString(), fuseau);
+  const lundiMs = jourEnMs(premierLundi);
+  return Array.from({ length: 7 }, (_, i) => {
+    const jour = new Date(lundiMs + i * JOUR_MS).toISOString().slice(0, 10);
+    return {
+      jour,
+      entraine: entraines.has(jour),
+      aujourdhui: jour === aujourdhui,
+      avenir: jour > aujourdhui,
+    };
+  });
 }
 
 /**
