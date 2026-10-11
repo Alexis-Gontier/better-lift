@@ -1,7 +1,6 @@
 import type { ExerciceResume, Periode, Preferences, RoutineSaisie } from "@better-lift/shared";
 import {
   infiniteQueryOptions,
-  keepPreviousData,
   onlineManager,
   type QueryClient,
   queryOptions,
