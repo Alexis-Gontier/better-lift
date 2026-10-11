@@ -2,16 +2,17 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ASuivre } from "../../components/accueil/a-suivre";
-import { CarteSeance } from "../../components/accueil/carte-seance";
+import { CetteSemaine } from "../../components/accueil/cette-semaine";
+import { LigneSeance } from "../../components/accueil/ligne-seance";
 import { Chargement, Erreur, Vide } from "../../components/ui/etats";
 import { Section } from "../../components/ui/section";
 import { optionsRoutines, optionsSeances } from "../../lib/requetes";
 import { affiche, creerStyles, espace, taille } from "../../lib/theme";
 
 /**
- * L'Accueil, « journal en tête » (D117, D119) : la routine à suivre, puis le
- * fil de TOUTES les séances, chacune relisible sans l'ouvrir. Démarrer vit au
- * centre de la barre (D120) ; « Cette semaine » est dans les Stats.
+ * L'Accueil, tableau de la semaine (D166) : la prochaine séance, où j'en suis
+ * cette semaine, puis le journal — une ligne par séance, le détail à un appui.
+ * Démarrer vit au centre de la barre (D165).
  */
 export default function Accueil() {
   const styles = useStyles();
@@ -24,8 +25,7 @@ export default function Accueil() {
       <FlatList
         data={liste}
         keyExtractor={(s) => s.id}
-        renderItem={({ item }) => <CarteSeance seance={item} />}
-        ItemSeparatorComponent={Intervalle}
+        renderItem={({ item }) => <LigneSeance seance={item} />}
         // Tirer pour rafraîchir : une séance envoyée depuis un autre appareil.
         refreshing={seances.isRefetching && !seances.isFetchingNextPage}
         onRefresh={() => seances.refetch()}
@@ -38,7 +38,8 @@ export default function Accueil() {
               Accueil
             </Text>
             <ASuivre routines={routines.data ?? null} seances={liste} />
-            {liste.length > 0 ? <Section titre="Séances" style={styles.section} /> : null}
+            <CetteSemaine />
+            {liste.length > 0 ? <Section titre="Journal" style={styles.section} /> : null}
           </View>
         }
         ListEmptyComponent={
@@ -58,10 +59,6 @@ export default function Accueil() {
       />
     </SafeAreaView>
   );
-}
-
-function Intervalle() {
-  return <View style={{ height: espace.m }} />;
 }
 
 const useStyles = creerStyles((couleurs) => ({

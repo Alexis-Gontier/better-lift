@@ -9,7 +9,7 @@ import {
   Play,
   User,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { type ColorValue, type PressableProps, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BandeauSeance } from "../../components/bandeau-seance";
@@ -21,14 +21,21 @@ import { useSeance } from "../../lib/seance";
 import { creerStyles, polices, useCouleurs } from "../../lib/theme";
 
 /**
- * Icônes Lucide, comme le web. L'onglet actif s'épaissit : avec la couleur,
- * c'est la forme qui dit la position.
+ * Icônes Lucide, comme le web. L'onglet actif se pose dans une pilule (D165,
+ * Material 3) et s'épaissit : c'est la forme qui dit la position, pas la couleur.
  */
 const icone =
   (Icone: LucideIcon) =>
   ({ focused, color }: { focused: boolean; color: ColorValue }) => (
-    <Icone color={color as string} size={24} strokeWidth={focused ? 2.4 : 1.8} />
+    <PiluleOnglet active={focused}>
+      <Icone color={color as string} size={22} strokeWidth={focused ? 2.4 : 1.8} />
+    </PiluleOnglet>
   );
+
+function PiluleOnglet({ active, children }: { active: boolean; children: ReactNode }) {
+  const styles = useStyles();
+  return <View style={[styles.pilule, active && styles.piluleActive]}>{children}</View>;
+}
 
 /**
  * Les onglets (D74), façon opengym : deux liens de chaque côté, l'action au
@@ -154,6 +161,14 @@ export default function Onglets() {
 }
 
 const useStyles = creerStyles((couleurs) => ({
+  pilule: {
+    width: 56,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  piluleActive: { backgroundColor: couleurs.surface3 },
   // Posé en bas de la place, le libellé central s'aligne sur ceux des onglets.
   place: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
   central: {
