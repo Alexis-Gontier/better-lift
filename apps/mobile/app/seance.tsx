@@ -508,7 +508,7 @@ const useStyles = creerStyles((couleurs) => ({
     color: couleurs.encre,
     fontSize: taille.chrono,
     lineHeight: taille.chrono,
-    fontFamily: polices.condense,
+    fontFamily: polices.affiche,
     fontVariant: ["tabular-nums"],
   },
   chiffre: { gap: 1, paddingBottom: 4 },

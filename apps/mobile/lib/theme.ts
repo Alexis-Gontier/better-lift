@@ -8,37 +8,40 @@ export function useCouleurs(): Couleurs {
 }
 
 /**
- * Les polices (D103). Archivo, chargée par `expo-font` dans `app/_layout.tsx` ;
- * la coupe condensée est générée par `scripts/polices/condenser-archivo.py`.
- * Une police chargée ne se met pas en gras toute seule sous Android : chaque
- * graisse est une famille à part.
+ * Les polices (D163) : une famille, deux largeurs. Barlow pour toute
+ * l'interface ; Barlow Condensed (l'« affiche ») seulement pour les titres de
+ * page, les noms en tête, le chrono et les valeurs de record — jamais dans un
+ * bouton, une étiquette ni un tableau. Chargées par `expo-font` dans
+ * `app/_layout.tsx`. Une police chargée ne se met pas en gras toute seule sous
+ * Android : chaque graisse est une famille à part.
  */
 export const polices = {
-  moyen: "Archivo_500Medium",
-  demiGras: "Archivo_600SemiBold",
-  gras: "Archivo_700Bold",
-  extraGras: "Archivo_800ExtraBold",
-  /** Chiffres héros : chrono, bilans. */
-  condense: "ArchivoCondense-Bold",
+  regulier: "Barlow_400Regular",
+  moyen: "Barlow_500Medium",
+  demiGras: "Barlow_600SemiBold",
+  gras: "Barlow_700Bold",
+  affiche: "BarlowCondensed_800ExtraBold",
 } as const;
 
 function famillePour(graisse: TextStyle["fontWeight"]): string {
   switch (String(graisse ?? "500")) {
+    case "400":
+    case "normal":
+      return polices.regulier;
     case "600":
       return polices.demiGras;
     case "700":
     case "bold":
-      return polices.gras;
     case "800":
     case "900":
-      return polices.extraGras;
+      return polices.gras;
     default:
       return polices.moyen;
   }
 }
 
 /**
- * Pose la famille Archivo de la bonne graisse sur chaque style de texte, et
+ * Pose la famille Barlow de la bonne graisse sur chaque style de texte, et
  * retire `fontWeight`, qu'Android appliquerait par-dessus en faux gras.
  */
 function avecPolices<T extends object>(styles: T): T {

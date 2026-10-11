@@ -77,7 +77,7 @@ const useStyles = creerStyles((couleurs) => ({
   temps: {
     color: couleurs.encreSecondaire,
     fontSize: taille.petit + 1,
-    fontFamily: polices.condense,
+    fontFamily: polices.affiche,
     fontVariant: ["tabular-nums"],
   },
 }));

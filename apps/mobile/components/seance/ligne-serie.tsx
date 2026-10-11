@@ -14,7 +14,7 @@ import { vibrer } from "../../lib/vibrations";
 import { Appuyable } from "../ui/appuyable";
 
 /** Les largeurs des colonnes, partagées avec l'en-tête du tableau. */
-// 40 : « SÉRIE » en Archivo ne tient pas sur 34 (D103).
+// 40 : « SÉRIE » ne tient pas sur 34.
 export const COLONNES = { serie: 40, valider: 40 } as const;
 
 /**
