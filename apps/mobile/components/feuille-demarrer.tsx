@@ -4,7 +4,7 @@ import { Play, Plus } from "lucide-react-native";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useDemarrer } from "../lib/demarrer";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../lib/requetes";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 import { Appuyable } from "./ui/appuyable";
 import { FeuilleBasse } from "./ui/feuille-basse";
 import { Section } from "./ui/section";
@@ -143,7 +143,7 @@ const useStyles = creerStyles((couleurs) => ({
     borderRadius: rayon.carte,
     backgroundColor: couleurs.surface1,
   },
-  nomSuivante: { color: couleurs.encre, fontSize: 22, fontWeight: "800" },
+  nomSuivante: { ...affiche, color: couleurs.encre, fontSize: 24 },
   aplat: {
     minHeight: 52,
     marginTop: espace.m,

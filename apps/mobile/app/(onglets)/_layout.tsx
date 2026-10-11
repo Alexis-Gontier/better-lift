@@ -16,7 +16,6 @@ import { BandeauSeance } from "../../components/bandeau-seance";
 import { FeuilleDemarrer } from "../../components/feuille-demarrer";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Appuyable } from "../../components/ui/appuyable";
-import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
 import { creerStyles, polices, useCouleurs } from "../../lib/theme";
@@ -34,7 +33,7 @@ const icone =
 /**
  * Les onglets (D74), façon opengym : deux liens de chaque côté, l'action au
  * centre — rétablis à la demande de l'utilisateur, qui les préfère à la barre
- * sans lime de D106. Le bandeau de la séance en cours (D107) reste posé
+ * sans aplat de D106. Le bandeau de la séance en cours (D107) reste posé
  * au-dessus. La garde de session vit ici : tout ce qui est sous les onglets
  * exige un compte, et un seul endroit le vérifie.
  */
@@ -55,7 +54,10 @@ export default function Onglets() {
   const [demarrer, setDemarrer] = useState(false);
   const lancer = () => (seance ? router.push("/seance") : setDemarrer(true));
 
-  if (isPending || (error && cookieGarde === null)) return <Chargement />;
+  // Moins d'une seconde en général : rien plutôt qu'un squelette qui clignote (NN/g).
+  if (isPending || (error && cookieGarde === null)) {
+    return <View style={{ flex: 1, backgroundColor: couleurs.canevas }} />;
+  }
   // D100 : une erreur de lecture (hors ligne) ne renvoie pas à la connexion
   // QUAND un cookie de session est gardé sur le téléphone : la séance en cours
   // doit rester joignable en salle. Sans cookie, il n'y a jamais eu de compte
@@ -84,9 +86,8 @@ export default function Onglets() {
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: couleurs.canevas },
-          // L'onglet actif prend la couleur de l'application (choix de
-          // l'utilisateur, D115) ; les autres restent en encre faible. En clair,
-          // le lime ne tient pas sur la barre blanche : `ongletActif` passe à l'olive.
+          // L'onglet actif à l'encre, les autres en encre faible (D165) ;
+          // l'indicateur en pilule de Material 3 arrive au lot 2.
           tabBarActiveTintColor: couleurs.ongletActif,
           tabBarInactiveTintColor: couleurs.encreAttenuee,
           // Toute la largeur du bas, jusque sous les boutons du système : une marche
@@ -113,7 +114,7 @@ export default function Onglets() {
           name="routines"
           options={{ title: "Routines", tabBarIcon: icone(ListChecks) }}
         />
-        {/* Au centre, l'action du moment : un aplat lime (D28), plus grand que les
+        {/* Au centre, l'action du moment : un aplat orange (D28), plus grand que les
           onglets et qui déborde au-dessus de la barre. */}
         <Tabs.Screen
           name="lancer"
@@ -165,6 +166,6 @@ const useStyles = creerStyles((couleurs) => ({
     justifyContent: "center",
   },
   redresse: { transform: [{ rotate: "45deg" }] },
-  // En encre, pas en lime : le lime en texte est le registre du record (D28).
+  // En encre, pas en orange : l'orange en texte est le registre du record (D28).
   libelle: { color: couleurs.encre, fontSize: 11, fontWeight: "600", marginTop: 4 },
 }));

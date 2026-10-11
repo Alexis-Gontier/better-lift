@@ -4,13 +4,13 @@ import { ChevronUp } from "lucide-react-native";
 import { Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
-import { CIBLE, creerStyles, espace, polices, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
 import { Appuyable } from "./ui/appuyable";
 
 /**
  * La séance en cours, joignable en un geste depuis n'importe quel onglet (D107).
  *
- * NEUTRE, sans lime : l'écran garde son seul aplat (D105). Tout le bandeau est
+ * NEUTRE, sans orange : l'écran garde son seul aplat (D105). Tout le bandeau est
  * appuyable. Il dit le repos qui tourne s'il y en a un, le chrono sinon — les
  * deux se déduisent d'heures stockées, jamais d'un compteur (§ 8).
  */
@@ -66,7 +66,7 @@ const useStyles = creerStyles((couleurs) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: espace.m,
-    borderRadius: 18,
+    borderRadius: rayon.bandeau,
     backgroundColor: couleurs.surface3,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
@@ -77,7 +77,7 @@ const useStyles = creerStyles((couleurs) => ({
   temps: {
     color: couleurs.encreSecondaire,
     fontSize: taille.petit + 1,
-    fontFamily: polices.condense,
+    fontFamily: polices.affiche,
     fontVariant: ["tabular-nums"],
   },
 }));

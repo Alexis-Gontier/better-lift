@@ -23,7 +23,15 @@ import { Vignette } from "../../../components/ui/vignette";
 import { useDemarrer } from "../../../lib/demarrer";
 import { optionsPrecedents, optionsRoutine } from "../../../lib/requetes";
 import { useSeance } from "../../../lib/seance";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
+import {
+  affiche,
+  CIBLE,
+  creerStyles,
+  espace,
+  rayon,
+  taille,
+  useCouleurs,
+} from "../../../lib/theme";
 import { SYSTEME_UNITES } from "../../../lib/unites";
 
 /** « 90 s », « 2 min », « 2 min 30 » : ce qu'on lit d'un coup d'œil. */
@@ -194,7 +202,7 @@ const useStyles = creerStyles((couleurs) => ({
   },
   modifierTexte: { color: couleurs.encreSecondaire, fontSize: 15, fontWeight: "600" },
   contenu: { padding: espace.l, gap: espace.m, paddingBottom: espace.xl },
-  nomRoutine: { color: couleurs.encre, fontSize: 30, lineHeight: 34, fontWeight: "700" },
+  nomRoutine: { ...affiche, color: couleurs.encre, fontSize: 34, lineHeight: 36 },
   resume: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1, marginTop: -espace.s },
   section: {
     color: couleurs.encreAttenuee,

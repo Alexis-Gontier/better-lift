@@ -20,7 +20,7 @@ import { Segments } from "../../components/ui/segments";
 import { Tuile } from "../../components/ui/tuile";
 import { FUSEAU } from "../../lib/fuseau";
 import { optionsPreferences, optionsStatsPeriode } from "../../lib/requetes";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
 const CALCUL = new Intl.DateTimeFormat("fr-FR", {
@@ -246,7 +246,7 @@ const useStyles = creerStyles((couleurs) => ({
     paddingBottom: espace.m,
     gap: espace.m,
   },
-  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700" },
+  titre: { ...affiche, color: couleurs.encre, fontSize: taille.titre },
   etendue: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xxl, gap: espace.m },
   carte: {
@@ -271,9 +271,9 @@ const useStyles = creerStyles((couleurs) => ({
     fontVariant: ["tabular-nums"],
   },
   volume: {
+    ...affiche,
     color: couleurs.encre,
-    fontSize: 28,
-    fontWeight: "800",
+    fontSize: 30,
     fontVariant: ["tabular-nums"],
   },
   barres: { height: 96, flexDirection: "row", alignItems: "flex-end" },

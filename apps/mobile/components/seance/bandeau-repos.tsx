@@ -98,7 +98,7 @@ const useStyles = creerStyles((couleurs) => ({
     color: couleurs.encre,
     fontSize: 34,
     lineHeight: 36,
-    fontFamily: polices.condense,
+    fontFamily: polices.affiche,
     fontVariant: ["tabular-nums"],
   },
   tempsFini: { color: couleurs.encre },

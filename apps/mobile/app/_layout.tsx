@@ -1,10 +1,11 @@
 import {
-  Archivo_500Medium,
-  Archivo_600SemiBold,
-  Archivo_700Bold,
-  Archivo_800ExtraBold,
+  Barlow_400Regular,
+  Barlow_500Medium,
+  Barlow_600SemiBold,
+  Barlow_700Bold,
   useFonts,
-} from "@expo-google-fonts/archivo";
+} from "@expo-google-fonts/barlow";
+import { BarlowCondensed_800ExtraBold } from "@expo-google-fonts/barlow-condensed";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -20,7 +21,7 @@ import {
   UNE_SEMAINE,
 } from "../lib/hors-ligne";
 import { SeanceProvider } from "../lib/seance";
-import { polices, useCouleurs } from "../lib/theme";
+import { useCouleurs } from "../lib/theme";
 import { appliquerThemeGarde } from "../lib/theme-choix";
 
 // Le thème choisi dans le Profil (D128), appliqué dès le chargement : avant le
@@ -39,11 +40,11 @@ void SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const couleurs = useCouleurs();
   const [policesPretes, erreurPolices] = useFonts({
-    Archivo_500Medium,
-    Archivo_600SemiBold,
-    Archivo_700Bold,
-    Archivo_800ExtraBold,
-    [polices.condense]: require("../assets/polices/ArchivoCondense-Bold.ttf"),
+    Barlow_400Regular,
+    Barlow_500Medium,
+    Barlow_600SemiBold,
+    Barlow_700Bold,
+    BarlowCondensed_800ExtraBold,
   });
   // Une police qui ne charge pas ne doit pas bloquer l'app : elle s'affiche dans
   // la police système plutôt que de rester sur l'écran de démarrage.

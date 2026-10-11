@@ -19,7 +19,16 @@ import { FUSEAU } from "../lib/fuseau";
 import { optionsRecords, optionsSeances } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { dureeMin, formaterDuree } from "../lib/temps";
-import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
+import {
+  affiche,
+  CIBLE,
+  creerStyles,
+  espace,
+  polices,
+  rayon,
+  taille,
+  useCouleurs,
+} from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 import { vibrer } from "../lib/vibrations";
 
@@ -268,7 +277,7 @@ function Chiffre({
 
 const useStyles = creerStyles((couleurs) => ({
   vedette: { alignItems: "center", gap: espace.s, marginBottom: espace.s },
-  // Le record est un contour (D28) : lime en texte sur fond teinté.
+  // Le record est un contour (D28) : orange en texte sur fond teinté.
   medaille: {
     width: 72,
     height: 72,
@@ -281,7 +290,7 @@ const useStyles = creerStyles((couleurs) => ({
     justifyContent: "center",
     gap: 2,
   },
-  medailleTexte: { color: couleurs.recordEncre, fontSize: 26, fontWeight: "800" },
+  medailleTexte: { ...affiche, color: couleurs.recordEncre, fontSize: 28 },
   vedetteTitre: { color: couleurs.encre, fontSize: taille.grand + 2, fontWeight: "800" },
   ecartChiffre: {
     color: couleurs.encreSecondaire,
@@ -303,7 +312,7 @@ const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas, justifyContent: "space-between" },
   contenu: { padding: espace.xl, paddingTop: espace.xxl * 2, gap: espace.s },
   // Un seul usage de cette taille : la fin de séance (D103).
-  titre: { color: couleurs.encre, fontSize: 52, lineHeight: 56, fontWeight: "800" },
+  titre: { ...affiche, color: couleurs.encre, fontSize: 52, lineHeight: 52 },
   sous: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   texte: { color: couleurs.encreSecondaire, fontSize: taille.courant, marginTop: espace.l },
   note: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: espace.s },
@@ -321,7 +330,7 @@ const useStyles = creerStyles((couleurs) => ({
     color: couleurs.encre,
     fontSize: 34,
     lineHeight: 38,
-    fontFamily: polices.condense,
+    fontFamily: polices.affiche,
     fontVariant: ["tabular-nums"],
   },
   libelle: {

@@ -5,7 +5,7 @@ import { creerStyles, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 
 /**
- * Le record est un CONTOUR (D28) : lime en texte sur fond teinté, flèche
+ * Le record est un CONTOUR (D28) : orange en texte sur fond teinté, flèche
  * montante. L'aplat reste réservé à l'action.
  */
 export function BadgeRecord({ libelle }: { libelle: string }) {

@@ -6,7 +6,7 @@ import { CarteSeance } from "../../components/accueil/carte-seance";
 import { Chargement, Erreur, Vide } from "../../components/ui/etats";
 import { Section } from "../../components/ui/section";
 import { optionsRoutines, optionsSeances } from "../../lib/requetes";
-import { creerStyles, espace, taille } from "../../lib/theme";
+import { affiche, creerStyles, espace, taille } from "../../lib/theme";
 
 /**
  * L'Accueil, « journal en tête » (D117, D119) : la routine à suivre, puis le
@@ -69,9 +69,9 @@ const useStyles = creerStyles((couleurs) => ({
   contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xl },
   entete: { gap: espace.m, paddingBottom: espace.m },
   titre: {
+    ...affiche,
     color: couleurs.encre,
     fontSize: taille.titre,
-    fontWeight: "700",
     paddingTop: espace.l,
   },
   section: { marginTop: espace.m },

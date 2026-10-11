@@ -6,7 +6,7 @@ import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatli
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Appuyable } from "../components/ui/appuyable";
 import { useSeance } from "../lib/seance";
-import { creerStyles, espace, taille, useCouleurs } from "../lib/theme";
+import { creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 
 /** Une clé stable par exercice, même quand le même mouvement revient deux fois. */
 function avecCles(exercices: ExerciceEnCours[]) {
@@ -97,7 +97,7 @@ const useStyles = creerStyles((couleurs) => ({
     paddingVertical: espace.m,
   },
   titre: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
-  // L'action de l'écran : l'aplat lime (D28), compact (D88).
+  // L'action de l'écran : l'aplat orange (D28), compact (D88).
   ok: {
     height: 36,
     paddingHorizontal: espace.l,
@@ -120,7 +120,7 @@ const useStyles = creerStyles((couleurs) => ({
     gap: espace.m,
     paddingLeft: espace.m,
     marginBottom: espace.s,
-    borderRadius: 10,
+    borderRadius: rayon.carte,
     backgroundColor: couleurs.surface1,
     borderWidth: 1,
     borderColor: couleurs.ligne,

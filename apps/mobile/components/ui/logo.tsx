@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { creerStyles, useCouleurs } from "../../lib/theme";
 
 /**
- * Le logo : l'haltère Lucide redressée de 45°, en encre sur un aplat lime — le
+ * Le logo : l'haltère Lucide redressée de 45°, en encre sur un aplat orange — le
  * même dessin que l'icône de l'application.
  */
 export function Logo({ taille = 24 }: { taille?: number }) {

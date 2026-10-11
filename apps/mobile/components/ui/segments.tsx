@@ -5,7 +5,7 @@ import { Appuyable } from "./appuyable";
 /**
  * Un sélecteur à segments (D121) : deux ou trois vues d'un même écran, chacune
  * avec toute la page. Le segment actif se distingue par la surface et la graisse,
- * pas par le lime.
+ * pas par l'orange.
  */
 export function Segments<T extends string>({
   options,

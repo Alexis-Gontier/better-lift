@@ -195,7 +195,7 @@ const useStyles = creerStyles((couleurs) => ({
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface1,
   },
-  // La sélection se dit par le contour d'encre et la case, pas par le lime :
+  // La sélection se dit par le contour d'encre et la case, pas par l'orange :
   // cocher n'est ni l'action ni un record.
   ligneCochee: { borderColor: couleurs.encreSecondaire },
   // Fond blanc : les images du dataset sont dessinées sur blanc.

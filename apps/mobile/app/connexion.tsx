@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Appuyable } from "../components/ui/appuyable";
 import { Logo } from "../components/ui/logo";
 import { authClient } from "../lib/auth-client";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 
 // La création de compte reste sur le web : ici, on ne fait qu'entrer.
 type GenreRefus = "identifiants" | "reseau";
@@ -166,7 +166,7 @@ const useStyles = creerStyles((couleurs) => ({
     letterSpacing: -1.2,
   },
   formulaire: { gap: espace.s },
-  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "600" },
+  titre: { ...affiche, color: couleurs.encre, fontSize: taille.titre },
   sousTitre: { color: couleurs.encreTertiaire, fontSize: taille.courant, marginBottom: espace.m },
   libelle: { color: couleurs.encre, fontSize: 14, fontWeight: "500", marginTop: espace.s },
   champ: {

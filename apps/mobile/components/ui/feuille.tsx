@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react-native";
 import { Check } from "lucide-react-native";
 import { Text, View } from "react-native";
-import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { Appuyable } from "./appuyable";
 import { FeuilleBasse } from "./feuille-basse";
 
@@ -101,7 +101,7 @@ const useStyles = creerStyles((couleurs) => ({
     alignItems: "center",
     gap: espace.m,
     paddingHorizontal: espace.m,
-    borderRadius: 10,
+    borderRadius: rayon.cellule,
   },
   appuyee: { backgroundColor: couleurs.surface3 },
   libelle: { flex: 1, fontSize: taille.courant },

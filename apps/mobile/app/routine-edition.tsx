@@ -35,7 +35,7 @@ import {
   useRemplacerRoutine,
   useSupprimerRoutine,
 } from "../lib/requetes";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 
 /**
@@ -309,12 +309,12 @@ const useStyles = creerStyles((couleurs) => ({
     textAlign: "center",
   },
   icone: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
-  // L'action de l'écran : l'aplat lime (D28).
+  // L'action de l'écran : l'aplat orange.
   enregistrer: {
     minHeight: 40,
     minWidth: 112,
     paddingHorizontal: espace.m,
-    borderRadius: 10,
+    borderRadius: rayon.bouton,
     backgroundColor: couleurs.action,
     alignItems: "center",
     justifyContent: "center",
@@ -325,7 +325,7 @@ const useStyles = creerStyles((couleurs) => ({
   enTete: { gap: espace.s, marginBottom: espace.m },
   nom: {
     minHeight: CIBLE + 4,
-    borderRadius: 10,
+    borderRadius: rayon.cellule,
     borderWidth: 1,
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface1,
@@ -342,7 +342,7 @@ const useStyles = creerStyles((couleurs) => ({
     alignItems: "center",
     justifyContent: "center",
     gap: espace.s,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: couleurs.ligneForte,

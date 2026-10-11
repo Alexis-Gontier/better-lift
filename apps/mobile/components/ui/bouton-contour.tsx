@@ -5,7 +5,7 @@ import { Appuyable } from "./appuyable";
 
 /**
  * Une action secondaire, en contour (D118) : « Lancer » sur une carte. L'aplat
- * lime reste à la seule action principale de l'écran (D105).
+ * orange reste à la seule action principale de l'écran (D105).
  */
 export function BoutonContour({
   libelle,
