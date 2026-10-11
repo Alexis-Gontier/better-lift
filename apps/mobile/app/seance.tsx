@@ -12,7 +12,6 @@ import {
   delierExercice,
   effacerSurPave,
   formaterCharge,
-  formatHeure,
   groupes,
   lierExercices,
   lireCharge,
@@ -42,16 +41,17 @@ import { BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
 import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
+import { HorlogeRepos } from "../components/seance/horloge-repos";
 import { PaveNumerique } from "../components/seance/pave-numerique";
 import { Appuyable } from "../components/ui/appuyable";
+import { formaterSerie } from "../components/ui/badge-record";
 import { RepereSuperset } from "../components/ui/repere-superset";
 import { attendreChoix } from "../lib/choix-exercices";
 import { useConfirmer, useFeuille } from "../lib/confirmation";
-import { FUSEAU } from "../lib/fuseau";
 import { chargerPrecedents, optionsPreferences } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
-import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 import { vibrer } from "../lib/vibrations";
 
@@ -75,21 +75,21 @@ function valeurDe(e: Edition): number | null {
  * aucune touche n'a été frappée : ouvrir puis fermer le pavé ne fait pas d'une
  * cible une valeur saisie.
  */
+/** « Rowing buste penché · 70 kg × 8 » : la prochaine série, pour l'horloge (D168). */
+function libelleEnsuite(s: SeanceEnCours): string | null {
+  const p = prochaineSerie(s);
+  if (!p) return null;
+  const e = s.exercices[p.iE];
+  const serie = e?.series[p.iS];
+  if (!e || !serie) return null;
+  return `${e.nom} · ${formaterSerie(serie.chargeKg, serie.reps)}`;
+}
+
 function appliquer(s: SeanceEnCours, e: Edition): SeanceEnCours {
   if (e.neuf) return s;
   const v = valeurDe(e);
   if (Number.isNaN(v)) return s;
   return modifierSerie(s, e.iE, e.iS, e.champ === "charge" ? { chargeKg: v } : { reps: v });
-}
-
-function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
-  const styles = useStyles();
-  return (
-    <View style={styles.chiffre}>
-      <Text style={styles.chiffreLibelle}>{libelle}</Text>
-      <Text style={styles.chiffreValeur}>{valeur}</Text>
-    </View>
-  );
 }
 
 export default function Seance() {
@@ -100,6 +100,9 @@ export default function Seance() {
   const { pret, seance, modifier, abandonner: effacerSeance, recharger } = useSeance();
   const maintenant = useMaintenant();
   const [edition, setEdition] = useState<Edition | null>(null);
+  // L'horloge de salle (D168) : ouverte à chaque coche qui lance un repos, avec
+  // la durée de ce repos (le brouillon ne garde que sa fin) ; `null` = réduite.
+  const [horloge, setHorloge] = useState<{ total: number } | null>(null);
   const defilement = useRef<ScrollView>(null);
   // Les positions des blocs et de leurs lignes, pour amener la ligne saisie
   // au-dessus du pavé.
@@ -134,6 +137,11 @@ export default function Seance() {
   );
 
   const repos = seance ? reposRestant(seance, maintenant) : null;
+
+  // À zéro, l'horloge redescend d'elle-même (D168) : le bandeau dit « Repos terminé ».
+  useEffect(() => {
+    if (horloge && !repos) setHorloge(null);
+  }, [horloge, repos]);
 
   // La fin du repos vibre UNE fois : `signale` est écrit dans le brouillon, donc
   // un redémarrage ne refait pas vibrer un repos déjà annoncé.
@@ -258,7 +266,7 @@ export default function Seance() {
     const apres = deja ? s : validerSerie(s, edition.iE, edition.iS, new Date(), reposDefaut);
     modifier(apres);
     setEdition(null);
-    if (!deja) suivre(apres);
+    if (!deja) apresCoche(apres);
   };
 
   // Après une coche, la prochaine série reste sous les yeux : si elle est hors
@@ -273,6 +281,13 @@ export default function Seance() {
     const bas = haut + hauteurVue.current - RESERVE_BANDEAU;
     if (y >= haut && y + HAUTEUR_LIGNE <= bas) return;
     defilement.current?.scrollTo({ y: Math.max(0, y - hauteurVue.current * 0.3), animated: true });
+  };
+
+  // Après une coche : suivre la prochaine série, et monter l'horloge si un repos commence.
+  const apresCoche = (s: SeanceEnCours) => {
+    suivre(s);
+    const r = reposRestant(s, new Date());
+    if (r) setHorloge({ total: r });
   };
 
   const bilan = bilanSeance(seance);
@@ -301,7 +316,12 @@ export default function Seance() {
             <Text style={styles.nom} numberOfLines={1} accessibilityRole="header">
               {seance.nom}
             </Text>
-            <Text style={styles.sous}>Démarrée à {formatHeure(seance.debut, FUSEAU)}</Text>
+            {/* Une ligne au lieu de trois chiffres (D169) : l'en-tête laisse la place aux séries. */}
+            <Text style={styles.sous} numberOfLines={1}>
+              {bilan.seriesFaites} / {totalSeries} séries ·{" "}
+              {formaterDuree(secondesEcoulees(seance.debut, maintenant))} ·{" "}
+              {formaterCharge(bilan.volumeKg, SYSTEME_UNITES)}
+            </Text>
           </View>
           {/* Secondaire (D105) : terminer n'est pas l'action courante d'une séance. */}
           <Appuyable
@@ -313,17 +333,17 @@ export default function Seance() {
             <Text style={styles.terminerTexte}>Terminer</Text>
           </Appuyable>
         </View>
-        <View style={styles.chiffres}>
-          {/* Le libellé porte la valeur : seul, « Durée » la remplaçait à la lecture. */}
-          <Text
-            style={styles.chrono}
-            accessibilityLabel={`Durée ${formaterDuree(secondesEcoulees(seance.debut, maintenant))}`}
-          >
-            {formaterDuree(secondesEcoulees(seance.debut, maintenant))}
-          </Text>
-          <Chiffre libelle="Volume" valeur={formaterCharge(bilan.volumeKg, SYSTEME_UNITES)} />
-          {/* La progression, pas un simple compte : « 3 / 16 ». */}
-          <Chiffre libelle="Séries" valeur={`${bilan.seriesFaites} / ${totalSeries}`} />
+        {/* La progression de la séance (gradient d'objectif) : « 3 / 16 » en barre. */}
+        <View
+          style={styles.piste}
+          accessibilityLabel={`${bilan.seriesFaites} séries faites sur ${totalSeries}`}
+        >
+          <View
+            style={[
+              styles.fait,
+              { width: `${totalSeries ? (bilan.seriesFaites / totalSeries) * 100 : 0}%` },
+            ]}
+          />
         </View>
       </View>
 
@@ -397,7 +417,7 @@ export default function Seance() {
                     const deja = seance.exercices[iE]?.series[iS]?.faite;
                     const apres = validerSerie(seance, iE, iS, new Date(), reposDefaut);
                     modifier(apres);
-                    if (!deja) suivre(apres);
+                    if (!deja) apresCoche(apres);
                   }}
                   onAjouterSerie={() => modifier(ajouterSerie(seance, iE))}
                   onRetirerSerie={(iS) => modifier(retirerSerie(seance, iE, iS))}
@@ -455,6 +475,22 @@ export default function Seance() {
           onValider={validerDepuisPave}
           onFermer={fermer}
         />
+      ) : repos !== null && horloge ? (
+        <HorlogeRepos
+          restant={repos}
+          total={horloge.total}
+          ensuite={libelleEnsuite(seance)}
+          onPasser={() => {
+            setHorloge(null);
+            modifier(arreterRepos(seance));
+          }}
+          onAjuster={(delta) => {
+            vibrer.selection();
+            setHorloge({ total: Math.max(1, horloge.total + delta) });
+            modifier(ajusterRepos(seance, delta, new Date()));
+          }}
+          onReduire={() => setHorloge(null)}
+        />
       ) : repos !== null ? (
         <BandeauRepos
           restant={repos}
@@ -463,6 +499,7 @@ export default function Seance() {
             vibrer.selection();
             modifier(ajusterRepos(seance, delta, new Date()));
           }}
+          onAgrandir={repos > 0 ? () => setHorloge({ total: repos }) : undefined}
         />
       ) : null}
     </SafeAreaView>
@@ -490,7 +527,7 @@ const useStyles = creerStyles((couleurs) => ({
     justifyContent: "center",
   },
   titre: { flex: 1 },
-  nom: { color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
+  nom: { ...affiche, color: couleurs.encre, fontSize: taille.grand + 4 },
   sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
   terminer: {
     minHeight: 40,
@@ -502,29 +539,8 @@ const useStyles = creerStyles((couleurs) => ({
   },
   appuye: { backgroundColor: couleurs.surface2 },
   terminerTexte: { color: couleurs.encre, fontSize: 15, fontWeight: "700" },
-  chiffres: { flexDirection: "row", alignItems: "flex-end", gap: espace.xl },
-  // Le chiffre héros de l'écran (D103) : lisible téléphone posé sur le banc.
-  chrono: {
-    color: couleurs.encre,
-    fontSize: taille.chrono,
-    lineHeight: taille.chrono,
-    fontFamily: polices.affiche,
-    fontVariant: ["tabular-nums"],
-  },
-  chiffre: { gap: 1, paddingBottom: 4 },
-  chiffreLibelle: {
-    color: couleurs.encreAttenuee,
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-  },
-  chiffreValeur: {
-    color: couleurs.encre,
-    fontSize: taille.valeur,
-    fontWeight: "600",
-    fontVariant: ["tabular-nums"],
-  },
+  piste: { height: 4, borderRadius: 2, backgroundColor: couleurs.surface3, overflow: "hidden" },
+  fait: { height: 4, backgroundColor: couleurs.encre },
   vide: {
     color: couleurs.encreTertiaire,
     fontSize: taille.courant,

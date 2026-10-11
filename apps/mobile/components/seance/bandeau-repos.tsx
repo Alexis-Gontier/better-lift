@@ -12,11 +12,14 @@ export function BandeauRepos({
   restant,
   onPasser,
   onAjuster,
+  onAgrandir,
 }: {
   restant: number;
   onPasser: () => void;
   /** −15 s / +15 s (D79). */
   onAjuster: (deltaSec: number) => void;
+  /** Rouvre l'horloge de salle (D168) ; absent quand le repos est fini. */
+  onAgrandir?: () => void;
 }) {
   const styles = useStyles();
   const fini = restant === 0;
@@ -35,7 +38,13 @@ export function BandeauRepos({
         </Text>
       </Appuyable>
       {/* Lisible à bout de bras, téléphone posé sur le banc (D79). */}
-      <View style={styles.centre}>
+      <Appuyable
+        style={styles.centre}
+        onPress={onAgrandir}
+        disabled={!onAgrandir}
+        accessibilityRole="button"
+        accessibilityLabel="Agrandir le repos"
+      >
         {/* Seul le libellé est annoncé, une fois, quand le repos se termine : sur
             tout le bandeau, le lecteur d'écran lisait le décompte à chaque seconde. */}
         <Text
@@ -51,7 +60,7 @@ export function BandeauRepos({
         >
           {formaterDuree(restant)}
         </Text>
-      </View>
+      </Appuyable>
       <Appuyable
         onPress={() => onAjuster(15)}
         style={styles.bouton}
