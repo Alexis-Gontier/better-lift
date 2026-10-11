@@ -9,7 +9,8 @@ import {
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight, Pencil, Play } from "lucide-react-native";
+import { ChevronDown, ChevronRight, Pencil, Play } from "lucide-react-native";
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
@@ -56,6 +57,7 @@ export default function DetailRoutine() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const routine = useQuery(optionsRoutine(id));
+  const [corps, setCorps] = useState(false);
   const slugs = routine.data?.exercices.map((e) => e.slug) ?? [];
   // La dernière fois de chaque exercice : en cache dès qu'une séance l'a lue.
   const precedents = useQuery({ ...optionsPrecedents(slugs), enabled: slugs.length > 0 });
@@ -166,9 +168,24 @@ export default function DetailRoutine() {
           </RepereSuperset>
         ))}
 
-        {/* Après la liste : les exercices sont ce qu'on vient lire, la carte du
-            corps les résume. En tête, elle prenait tout le premier écran. */}
-        {r.exercices.length > 0 ? <CarteMuscles exercices={r.exercices} /> : null}
+        {/* La carte du corps se déplie à la demande (D172) : les zones sont déjà
+            dites en tête, et la carte prenait un écran entier. */}
+        {r.exercices.length > 0 ? (
+          <Appuyable
+            onPress={() => setCorps(!corps)}
+            style={styles.deplier}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: corps }}
+          >
+            <Text style={styles.deplierTexte}>Carte du corps</Text>
+            {corps ? (
+              <ChevronDown size={20} color={couleurs.encreTertiaire} />
+            ) : (
+              <ChevronRight size={20} color={couleurs.encreTertiaire} />
+            )}
+          </Appuyable>
+        ) : null}
+        {corps && r.exercices.length > 0 ? <CarteMuscles exercices={r.exercices} /> : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -193,6 +210,16 @@ const derniereFois = (
 
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
+  deplier: {
+    minHeight: CIBLE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: espace.m,
+    borderTopWidth: 1,
+    borderTopColor: couleurs.ligne,
+  },
+  deplierTexte: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
   modifier: {
     minHeight: CIBLE,
     flexDirection: "row",
