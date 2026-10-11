@@ -22,8 +22,10 @@ repensé en **poste d'analyse** (D132–D144, `2026-10-06-web-refonte-design.md`
 Séances, Routines, Exercices, Profil — pas de séance en direct sur le web. Les **supersets** sont
 livrés (D145–D153, `2026-10-06-supersets-design.md`) : éditeur de routine web et mobile, séance
 mobile, historique. Le web est **nettoyé** (D154–D160, `2026-10-06-web-nettoyage-design.md`) :
-coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. **Prochaine
-étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
+coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. Le mobile a une
+**nouvelle identité** (D161–D177, `2026-10-11-mobile-identite-design.md`, `DESIGN.md`) :
+« Underground orange », Barlow, Accueil tableau de la semaine, onglet Progrès, horloge de salle ;
+le web bascule ensuite (D177). **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
 
 Distant : `Alexis-Gontier/better-lift` (privé). Le code de la V1 reste sur la branche `v1` et le
@@ -77,13 +79,14 @@ que `tsconfig.base.json`).
 
 ## Interface (les deux surfaces)
 
-- **Une seule couleur pour l'action et le record : le lime sourd `#a8cf45`.** La distinction se
+- **Une seule couleur pour l'action et le record** : l'**orange** sur le mobile (D161,
+  `DESIGN.md`), encore le **lime sourd `#a8cf45`** sur le web jusqu'à sa bascule (D177). La distinction se
   fait par la forme : l'action est un **aplat** (fond lime, texte sombre), le record un
   **contour** (lime en texte sur fond teinté, flèche montante). Invariant.
 - **Le danger a sa propre couleur** (`--danger`, D36) et ne porte jamais l'action ni le record.
 - **Un token par rôle, deux valeurs par token** (sombre / clair). Jamais de couleur en dur
   réutilisée dans les deux registres.
-- **Logo** : l'haltère Lucide (`Dumbbell`) redressée de 45°, en encre sur aplat lime.
+- **Logo** : l'haltère Lucide (`Dumbbell`) redressée de 45°, en encre sur aplat de la couleur d'action (orange sur le mobile, lime sur le web).
 - **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et valide un écran avant de brancher ses

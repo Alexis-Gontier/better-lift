@@ -38,7 +38,7 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 
 Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md),
 puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-10-11-mobile-identite-design.md)
-(identité « Underground orange »).
+(identité « Underground orange »). Le système en une page : [`DESIGN.md`](../../DESIGN.md).
 
 - **Couleurs par rôle, deux valeurs** (`lib/palette.ts`, TypeScript pur, type `Couleurs` ;
   `lib/theme.ts` les sert). **`lib/palette.test.ts` vérifie chaque texte à 4,5:1 sur le canevas,
@@ -264,8 +264,10 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   et invalide fil, stats, records). Non gardé hors ligne (D96), il dit « Hors ligne ».
   Un superset s'y relit comme tel (D153) : `RepereSuperset` sans action, `ecart={espace.l}`.
 
-## Profil (D128, D129)
+## Profil (D128, D129, D175)
 
+- Ordre : le bilan de toujours, la file d'envoi **seulement si une séance attend** (sinon rien),
+  puis **Entraînement** (sur le compte) · **Ce téléphone** · **Données** · **Compte**.
 - En-tête : le bilan de toujours (`GET /stats/bilan`). Entraînement : objectif hebdomadaire et
   repos par défaut, **sur le compte** (`GET` / `PUT /preferences`, écrits de façon optimiste,
   gardés hors ligne). Le repos par défaut entre dans `validerSerie` pour l'exercice sans repos

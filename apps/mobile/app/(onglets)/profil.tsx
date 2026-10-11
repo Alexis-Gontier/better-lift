@@ -150,10 +150,14 @@ export default function Profil() {
           </View>
         </View>
 
+        {/* Une séance pas encore arrivée au serveur passe avant les réglages ; sans
+            rien en attente, la section n'existe pas (D175). */}
+        <FileEnvoi />
+
         <Section titre="Entraînement">
           <Ligne
             libelle="Objectif"
-            detail="Les Stats disent les semaines tenues."
+            detail="Progrès dit les semaines tenues."
             onPress={choisirObjectif}
             inactif={!preferences.data}
           >
@@ -172,7 +176,7 @@ export default function Profil() {
           </Ligne>
         </Section>
 
-        <Section titre="Réglages">
+        <Section titre="Ce téléphone">
           <Ligne libelle="Thème" detail="Ce téléphone seulement." onPress={choisirTheme}>
             <Text style={styles.valeur}>{THEMES[theme]}</Text>
           </Ligne>
@@ -214,17 +218,6 @@ export default function Profil() {
             <Text style={styles.valeur}>{Constants.expoConfig?.version ?? "—"}</Text>
           </Ligne>
         </Section>
-
-        <Section titre="Envoi">
-          <Ligne libelle="En attente" dernier>
-            <Text style={styles.valeur}>
-              {enAttente === 0 ? "Rien" : `${enAttente} séance${enAttente > 1 ? "s" : ""}`}
-            </Text>
-          </Ligne>
-        </Section>
-        {/* Les séances pas encore arrivées au serveur : réessayer, reprendre ou
-            supprimer une séance refusée. */}
-        <FileEnvoi />
 
         <Appuyable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
           <Text style={styles.dangerTexte}>Se déconnecter</Text>
