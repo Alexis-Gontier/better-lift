@@ -1,5 +1,13 @@
-import { ActivityIndicator, Text, View } from "react-native";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
+import { useEffect } from "react";
+import { Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+import { CIBLE, creerStyles, espace, rayon, taille } from "../../lib/theme";
 import { Appuyable } from "./appuyable";
 
 /**
@@ -7,13 +15,31 @@ import { Appuyable } from "./appuyable";
  * l'écran lui-même). Une seule implémentation : un écran qui les dessinerait à
  * sa façon finirait par en oublier un.
  */
+/**
+ * Le chargement d'une page (D176) : un squelette de cartes, pas un indicateur
+ * au milieu du contenu (NN/g : de 1 à 10 s, la forme de la page rassure). Il
+ * pulse doucement, immobile si le téléphone demande moins d'animations.
+ */
 export function Chargement() {
   const styles = useStyles();
-  const couleurs = useCouleurs();
+  const reduit = useReducedMotion();
+  const opacite = useSharedValue(1);
+  useEffect(() => {
+    if (reduit) return;
+    opacite.value = withRepeat(withTiming(0.5, { duration: 900 }), -1, true);
+  }, [reduit, opacite]);
+  const pulse = useAnimatedStyle(() => ({ opacity: opacite.value }));
   return (
-    <View style={styles.centre} accessibilityLabel="Chargement">
-      <ActivityIndicator color={couleurs.encreTertiaire} />
-    </View>
+    <Animated.View
+      style={[styles.squelette, pulse]}
+      accessible
+      accessibilityLabel="Chargement"
+      accessibilityRole="progressbar"
+    >
+      <View style={[styles.bloc, { height: 96 }]} />
+      <View style={[styles.bloc, { height: 64 }]} />
+      <View style={[styles.bloc, { height: 64 }]} />
+    </Animated.View>
   );
 }
 
@@ -42,6 +68,8 @@ export function Vide({ titre, message }: { titre: string; message: string }) {
 }
 
 const useStyles = creerStyles((couleurs) => ({
+  squelette: { flex: 1, gap: espace.m, padding: espace.l },
+  bloc: { borderRadius: rayon.carte, backgroundColor: couleurs.surface1 },
   centre: {
     flex: 1,
     alignItems: "center",

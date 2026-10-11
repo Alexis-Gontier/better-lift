@@ -16,7 +16,6 @@ import { BandeauSeance } from "../../components/bandeau-seance";
 import { FeuilleDemarrer } from "../../components/feuille-demarrer";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Appuyable } from "../../components/ui/appuyable";
-import { Chargement } from "../../components/ui/etats";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
 import { creerStyles, polices, useCouleurs } from "../../lib/theme";
@@ -55,7 +54,10 @@ export default function Onglets() {
   const [demarrer, setDemarrer] = useState(false);
   const lancer = () => (seance ? router.push("/seance") : setDemarrer(true));
 
-  if (isPending || (error && cookieGarde === null)) return <Chargement />;
+  // Moins d'une seconde en général : rien plutôt qu'un squelette qui clignote (NN/g).
+  if (isPending || (error && cookieGarde === null)) {
+    return <View style={{ flex: 1, backgroundColor: couleurs.canevas }} />;
+  }
   // D100 : une erreur de lecture (hors ligne) ne renvoie pas à la connexion
   // QUAND un cookie de session est gardé sur le téléphone : la séance en cours
   // doit rester joignable en salle. Sans cookie, il n'y a jamais eu de compte
