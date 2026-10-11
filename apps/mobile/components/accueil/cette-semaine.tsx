@@ -78,14 +78,18 @@ export function CetteSemaine() {
         ))}
       </View>
 
-      <View style={styles.chiffres}>
-        <Text style={styles.chiffre}>
-          {formaterCharge(totaux.volumeKg, SYSTEME_UNITES)}
-          {ecartVolume ? <Text style={styles.ecart}> {ecartVolume}</Text> : null}
-        </Text>
-        <Text style={styles.chiffre}>{pluriel(totaux.series, "série")}</Text>
-        <Text style={styles.chiffre}>{libelleMinutes(totaux.dureeMin)}</Text>
-      </View>
+      {totaux.seances === 0 ? (
+        <Text style={styles.vide}>Pas encore de séance cette semaine.</Text>
+      ) : (
+        <View style={styles.chiffres}>
+          <Text style={styles.chiffre}>
+            {formaterCharge(totaux.volumeKg, SYSTEME_UNITES)}
+            {ecartVolume ? <Text style={styles.ecart}> {ecartVolume}</Text> : null}
+          </Text>
+          <Text style={styles.chiffre}>{pluriel(totaux.series, "série")}</Text>
+          <Text style={styles.chiffre}>{libelleMinutes(totaux.dureeMin)}</Text>
+        </View>
+      )}
 
       {record ? (
         <Appuyable
@@ -131,6 +135,7 @@ const useStyles = creerStyles((couleurs) => ({
   lettreAujourdhui: { color: couleurs.encre },
   chiffres: { flexDirection: "row", justifyContent: "space-between", gap: espace.s },
   chiffre: { color: couleurs.encre, fontSize: taille.petit + 1, fontWeight: "700" },
+  vide: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1 },
   ecart: { color: couleurs.encreTertiaire, fontWeight: "500" },
   record: {
     minHeight: CIBLE,

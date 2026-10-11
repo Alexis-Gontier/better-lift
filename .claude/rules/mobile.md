@@ -104,21 +104,25 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
   « Démarrer » (la feuille `components/feuille-demarrer.tsx`, D120, ouverte par l'état du
   `_layout` des onglets ; logique dans `lib/demarrer.ts`) qui devient
   « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
-  à l'encre** (token `ongletActif`) en attendant l'indicateur en pilule de Material 3 (D165,
-  lot 2 de l'identité). Icônes Lucide.
-- La carte « À suivre » de l'Accueil n'a pas d'aplat : elle ouvre la routine et porte « Lancer »
-  en contour (`BoutonContour`, D118). La page d'une routine aussi (D122).
+  à l'encre, dans une pilule** `surface3` de 56 × 30 (D165, Material 3 : la forme dit la
+  position, pas la couleur). Icônes Lucide. La feuille Démarrer a un bouton Fermer visible en plus
+  du glisser (D167).
+- La carte « Prochaine séance » de l'Accueil n'a ni aplat ni bouton : elle ouvre la routine, le
+  rond lance (D166). La page d'une routine porte « Lancer » en contour (D122).
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
   onglets et leurs écrans empilés. Il se pose au-dessus du débord du rond (30), sinon le rond le
   recouvre. Repos restant s'il tourne, chrono sinon ; tout le bandeau
   ramène à la séance. Il ne dit pas « Reprendre » : le rond central le dit déjà.
-- **L'Accueil, journal en tête (D117, D119)** : « À suivre » (`components/accueil/a-suivre.tsx`,
-  `routineASuivre`, zones principales et durée tirées du détail en cache, masquée pendant une
-  séance), puis le fil de TOUTES les séances (`CarteSeance` : tuiles durée · volume · séries, les
-  trois premiers exercices et leur meilleure série — `SeanceFil.apercu`, calculé par l'API avec
-  `apercuExercices` de `shared`). « Cette semaine » vit dans les Stats. La file d'envoi vit dans
-  Profil (`components/file-envoi.tsx`). La pile `historique` ne garde que le détail (`[id]`).
+- **L'Accueil, tableau de la semaine (D166)** : « Prochaine séance »
+  (`components/accueil/a-suivre.tsx`, `routineASuivre`, nom en affiche, « Ta prochaine séance · ≈ N
+  min · n exercices », zones ; masquée pendant une séance), puis **« Cette semaine »**
+  (`components/accueil/cette-semaine.tsx`, `GET /stats/periode?periode=semaine` gardé hors ligne,
+  `joursDeLaSemaine` de `shared` dans le fuseau) : les sept jours (entraînés en orange, aujourd'hui
+  cerclé), l'objectif, volume et son écart (`Totaux.volumeKg`), séries, durée, le dernier record ;
+  sans donnée, le bloc se tait ; semaine vide, une phrase. Puis le **journal** : une ligne par
+  séance (`LigneSeance` : nom ; jour · durée · volume ; badge du nombre de records). La file d'envoi
+  vit dans Profil (`components/file-envoi.tsx`). La pile `historique` ne garde que le détail (`[id]`).
 - **Composants communs des pages (D118)** : `Section`, `Vignette` (fond `fondImage`, haltère sans
   image), `Tuile`, `BoutonContour`, `FeuilleBasse` (le conteneur glissable de toute feuille) dans
   `components/ui/`. Un composant naît dans le lot qui s'en sert (Knip).

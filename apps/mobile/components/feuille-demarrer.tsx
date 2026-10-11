@@ -1,6 +1,6 @@
 import { dureeEstimeeSec, routineASuivre } from "@better-lift/shared";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Play, Plus } from "lucide-react-native";
+import { Play, Plus, X } from "lucide-react-native";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useDemarrer } from "../lib/demarrer";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../lib/requetes";
@@ -41,18 +41,29 @@ export function FeuilleDemarrer({ visible, onFermer }: { visible: boolean; onFer
   return (
     <FeuilleBasse visible={visible} onFermer={onFermer}>
       <ScrollView style={styles.contenu} contentContainerStyle={styles.interieur}>
-        <Text style={styles.titre} accessibilityRole="header">
-          Démarrer
-        </Text>
+        <View style={styles.entete}>
+          <Text style={styles.titre} accessibilityRole="header">
+            Démarrer
+          </Text>
+          {/* Le glisser seul se rate (NN/g, D167) : un bouton visible ferme aussi. */}
+          <Appuyable
+            onPress={onFermer}
+            style={styles.fermer}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Fermer"
+          >
+            <X size={22} color={couleurs.encreSecondaire} />
+          </Appuyable>
+        </View>
 
         {suivante ? (
           <View style={styles.suivante}>
-            <Section titre="À suivre" />
             <Text style={styles.nomSuivante} numberOfLines={2}>
               {suivante.nom}
             </Text>
             <Text style={styles.pale}>
-              {pluriel(suivante.nbExercices, "exercice")}
+              Ta prochaine séance · {pluriel(suivante.nbExercices, "exercice")}
               {minutes ? ` · ≈ ${minutes} min` : ""}
             </Text>
             {/* L'aplat de la feuille : l'action la plus probable. */}
@@ -134,9 +145,16 @@ export function FeuilleDemarrer({ visible, onFermer }: { visible: boolean; onFer
 }
 
 const useStyles = creerStyles((couleurs) => ({
+  entete: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: espace.m,
+  },
+  fermer: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   contenu: { flexGrow: 0 },
   interieur: { paddingHorizontal: espace.s, paddingBottom: espace.s },
-  titre: { color: couleurs.encre, fontSize: 22, fontWeight: "700", marginBottom: espace.m },
+  titre: { color: couleurs.encre, fontSize: 22, fontWeight: "700" },
   suivante: {
     gap: espace.xs,
     padding: espace.l,
