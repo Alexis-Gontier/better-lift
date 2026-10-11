@@ -19,16 +19,7 @@ import { FUSEAU } from "../lib/fuseau";
 import { optionsRecords, optionsSeances } from "../lib/requetes";
 import { useSeance } from "../lib/seance";
 import { dureeMin, formaterDuree } from "../lib/temps";
-import {
-  affiche,
-  CIBLE,
-  creerStyles,
-  espace,
-  polices,
-  rayon,
-  taille,
-  useCouleurs,
-} from "../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 import { SYSTEME_UNITES } from "../lib/unites";
 import { vibrer } from "../lib/vibrations";
 
@@ -119,14 +110,15 @@ export default function Fin() {
     <SafeAreaView style={styles.ecran}>
       <ScrollView contentContainerStyle={styles.contenu}>
         <Text style={styles.titre} accessibilityRole="header">
-          Bien joué.
+          Séance terminée
         </Text>
         <Text style={styles.sous}>
           {seance.nom} · {formatJour(seance.debut, FUSEAU)}
         </Text>
 
         {chargement ? null : battus.length > 0 ? (
-          <View>
+          // Le bloc entier en contour record (D170) : la récompense d'abord, dans son registre.
+          <View style={styles.records}>
             {/* La récompense d'abord (D130) : le moment où l'app peut dire « tu progresses ». */}
             <View style={styles.vedette}>
               <View style={styles.medaille}>
@@ -268,9 +260,11 @@ function Chiffre({
   const styles = useStyles();
   return (
     <View style={styles.chiffre}>
-      <Text style={styles.valeur}>{valeur}</Text>
       <Text style={styles.libelle}>{libelle}</Text>
-      {ecart ? <Text style={styles.ecartChiffre}>{ecart}</Text> : null}
+      <Text style={styles.valeur}>
+        {valeur}
+        {ecart ? <Text style={styles.ecartChiffre}> {ecart}</Text> : null}
+      </Text>
     </View>
   );
 }
@@ -312,34 +306,37 @@ const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas, justifyContent: "space-between" },
   contenu: { padding: espace.xl, paddingTop: espace.xxl * 2, gap: espace.s },
   // Un seul usage de cette taille : la fin de séance (D103).
-  titre: { ...affiche, color: couleurs.encre, fontSize: 52, lineHeight: 52 },
+  titre: { ...affiche, color: couleurs.encre, fontSize: 48, lineHeight: 48 },
   sous: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   texte: { color: couleurs.encreSecondaire, fontSize: taille.courant, marginTop: espace.l },
   note: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: espace.s },
   chiffres: {
-    flexDirection: "row",
-    gap: espace.xl,
     marginTop: espace.xl,
-    paddingVertical: espace.l,
-    borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: couleurs.ligne,
+    borderBottomColor: couleurs.ligne,
   },
-  chiffre: { gap: 2 },
+  chiffre: {
+    minHeight: CIBLE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: couleurs.ligne,
+  },
+  records: {
+    padding: espace.l,
+    borderRadius: rayon.carte,
+    borderWidth: 1.5,
+    borderColor: couleurs.recordLigne,
+    backgroundColor: couleurs.recordFond,
+  },
   valeur: {
     color: couleurs.encre,
-    fontSize: 34,
-    lineHeight: 38,
-    fontFamily: polices.affiche,
+    fontSize: taille.courant,
+    fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
-  libelle: {
-    color: couleurs.encreAttenuee,
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-  },
+  libelle: { color: couleurs.encreSecondaire, fontSize: taille.courant },
   section: {
     color: couleurs.encreAttenuee,
     fontSize: 12,

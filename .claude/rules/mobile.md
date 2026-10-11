@@ -186,9 +186,17 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   « Après le groupe · 1 min 30 » sur le dernier. Le reste vient de `shared` : repos au bout du tour
   (`validerSerie`), prochaine série tour par tour (`prochaineSerie`), donc le défilement aussi. La
   réorganisation montre la lettre du groupe.
-- **Direction « Carnet » (D108)** : en-tête compact (chevron qui replie vers les onglets, nom,
-  « Démarrée à », chrono en `polices.affiche`, volume, séries), « Terminer » en **secondaire**
-  (D105). Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
+- **En-tête resserré (D169)** : chevron qui replie vers les onglets, nom en affiche, une ligne
+  « 3 / 15 séries · 0:42 · 1,2 t », « Terminer » en **secondaire** à droite (D105, loin du pouce
+  exprès), puis la barre de progression des séries. Noms d'exercice en affiche.
+- **L'horloge de salle (D168)** (`components/seance/horloge-repos.tsx`) : toute coche qui lance un
+  repos monte une feuille aux deux tiers de l'écran (non modale, `SlideInDown`, fondu si les
+  animations sont réduites) — décompte en affiche orange (troisième exception, D162), barre du
+  repos écoulé, « Ensuite » (`prochaineSerie`), −15 s · +15 s · Passer. Le brouillon ne garde que
+  la fin du repos : la durée totale vit dans l'état de l'écran (`horloge.total`, ajustée avec
+  ±15). Glissée vers le bas ou « Réduire », elle redevient `BandeauRepos`, dont le centre la
+  rouvre ; à zéro, elle se ferme et le bandeau dit « Repos terminé ».
+- **Direction « Carnet » (D108)** : Repos et note en deux **puces** ; la note s'édite au toucher de sa puce. Ligne de série
   en trois états (`EtatSerie`), **comme une case à cocher (D116)** : faite (fond `ligneFaite`,
   ✓ pleine à l'encre) · **prochaine** (case vide au contour épais, liseré à gauche) · à venir
   (case vide, cibles en valeurs fantômes). **Aucune ✓ n'est dessinée sur une série à faire, et
@@ -220,8 +228,8 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - **Une relecture du brouillon n'écrase jamais un changement survenu pendant qu'elle lisait**
   (`recharger` et le compteur d'écritures de `lib/seance.tsx`) : l'écran relit le disque à chaque
   retour, y compris au retour de la modale qui vient d'ajouter des exercices.
-- **Fin de séance, la récompense d'abord (D130)** : les records battus en vedette (médaille en
-  contour record) ou, sans record, la régularité ; puis durée, séries et volume, chacun avec son
+- **Fin de séance, la récompense d'abord (D130, D170)** : titre « Séance terminée » ; les records
+  battus dans un bloc entier en contour record (médaille comprise) ou, sans record, la régularité ; puis durée, séries et volume, chacun avec son
   écart avec la dernière séance de la même routine (lue dans le fil en cache ; une séance vide
   n'en a pas) ; puis la note de séance (`SeanceEnCours.note`, gardée au brouillon, envoyée rognée
   par `versEnvoi`, vide : absente). Le reste ci-dessous tient toujours.

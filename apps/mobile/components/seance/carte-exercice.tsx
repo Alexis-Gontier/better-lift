@@ -30,6 +30,7 @@ import { useConfirmer } from "../../lib/confirmation";
 import { optionsExercice } from "../../lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
 import {
+  affiche,
   CIBLE,
   creerStyles,
   espace,
@@ -390,7 +391,7 @@ const useStyles = creerStyles((couleurs) => ({
   // Fond blanc : les GIF du dataset sont dessinés sur blanc.
   vignette: { width: 40, height: 40, borderRadius: 20, backgroundColor: couleurs.fondImage },
   sansImage: { backgroundColor: couleurs.surface3, alignItems: "center", justifyContent: "center" },
-  nom: { flex: 1, color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "700" },
+  nom: { ...affiche, flex: 1, color: couleurs.encre, fontSize: taille.grand },
   menu: {
     width: 36,
     height: 36,
