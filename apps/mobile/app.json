@@ -22,7 +22,7 @@
         {
           "image": "./assets/splash.png",
           "imageWidth": 120,
-          "backgroundColor": "#08090a"
+          "backgroundColor": "#121412"
         }
       ],
       "expo-font",
@@ -30,7 +30,7 @@
         "expo-notifications",
         {
           "icon": "./assets/monochrome.png",
-          "color": "#a8cf45"
+          "color": "#f47a20"
         }
       ],
       "expo-sharing"
@@ -40,7 +40,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive.png",
         "monochromeImage": "./assets/monochrome.png",
-        "backgroundColor": "#a8cf45"
+        "backgroundColor": "#f47a20"
       }
     },
     "ios": {
