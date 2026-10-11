@@ -100,7 +100,7 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
 
 Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
 
-- Quatre onglets **Accueil · Routines · Stats · Profil** et, au centre, un **rond orange**
+- Quatre onglets **Accueil · Routines · Progrès · Profil** et, au centre, un **rond orange**
   « Démarrer » (la feuille `components/feuille-demarrer.tsx`, D120, ouverte par l'état du
   `_layout` des onglets ; logique dans `lib/demarrer.ts`) qui devient
   « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
@@ -247,7 +247,8 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 
 ## Fiche d'exercice et détail d'une séance
 
-- **Fiche (D124)**, une page qui défile : animation, nom, **1RM estimé** et sa courbe
+- **Fiche (D124, D174)**, une page qui défile : vignette et nom en tête (l'animation s'agrandit
+  au toucher de la vignette), **1RM estimé** et sa courbe
   (`courbeUnRm` de `shared` sur `GET /exercices/:slug/historique`, séries de 12 reps au plus
   comme le record ; `react-native-svg`, dernier point aux couleurs du record s'il est le plus haut),
   records, historique (chaque séance ouvre son détail), puis carte du corps et exécution. Hors ligne, elle s'appuie sur la
@@ -274,19 +275,24 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - Une ligne qui ouvre un choix est appuyable en entier, chevron au bout ; le choix se fait dans
   une feuille (`useFeuille`, option `choisie`).
 
-## Stats (D125–D127)
+## Progrès (D125–D127, D173)
 
+- L'onglet **Progrès** (route `stats`, `app/(onglets)/stats.tsx`) : `Segments` (Semaine · Mois ·
+  3 mois · Année) puis trois blocs — la **régularité** (`components/stats/calendrier.tsx` :
+  niveaux par quartile de volume, `niveauxCalendrier` ; token `calendrier[0..4]`, orange depuis
+  D162 ; cases taillées sur la largeur, l'année défile en cases de 14 ouverte sur la semaine en
+  cours ; jour à venir en contour ; toucher un jour ouvre sa séance), les **records** (trois,
+  « Tous les records » déplie le reste), **« Tes exercices »** (`components/stats/tes-exercices.tsx`,
+  `GET /stats/exercices` → `progresExercices` de `shared` : 1RM estimé au début et à la fin de la
+  période, six visibles). **« Détail de la période »** déplie tuiles comparées, carte du corps et
+  séries par zone, volume.
 - `GET /stats/periode?periode=&fuseau=` (`depotStats.lirePeriode`) ; `GET /stats` garde la forme
   D112 pour le web. Une période = 1, 4, 13 ou 52 **semaines glissantes** alignées sur le lundi
   dans le fuseau, comparées aux mêmes semaines juste avant (`calculerPeriode` de `shared`) —
   pas des mois civils. L'écran le dit sous le sélecteur.
-- Page : `Segments` (Semaine · Mois · 3 mois · Année), tuiles comparées, **calendrier**
-  (`components/stats/calendrier.tsx` : niveaux par quartile de volume, `niveauxCalendrier` ;
-  token `calendrier[0..4]`, orange depuis D162 ; cases taillées sur la largeur, l'année défile en cases de 14
-  ouverte sur la semaine en cours ; jour à venir en contour ; toucher un jour ouvre sa séance),
-  carte du corps puis séries par zone, volume, records de la période.
-- Persistées hors ligne (`gardeHorsLigne`, clé `["stats", "periode", …]`) ; l'écran dit leur
-  date de calcul (`dataUpdatedAt`). Sous deux séances, un état vide.
+- Persistées hors ligne (`gardeHorsLigne`, clés `["stats", "periode" | "exercices", …]`) ; l'écran
+  dit leur date de calcul (`dataUpdatedAt`). Sous deux séances, un état vide.
+- Le catalogue complet n'a plus d'onglet (D173) : il ne vit que dans « Choisir des exercices ».
 
 ## Hors ligne (D96–D100)
 

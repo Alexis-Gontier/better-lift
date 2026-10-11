@@ -17,9 +17,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { HistoriqueSeances } from "../../../components/exercices/historique-exercice";
 import { Progression } from "../../../components/exercices/progression";
 import { CarteMuscles } from "../../../components/routines/carte-muscles";
+import { Appuyable } from "../../../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../../../components/ui/badge-record";
 import { EnteteRetour } from "../../../components/ui/entete-retour";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
+import { Vignette } from "../../../components/ui/vignette";
 import { FUSEAU } from "../../../lib/fuseau";
 import {
   optionsCatalogueComplet,
@@ -41,6 +43,7 @@ export default function FicheExercice() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const client = useQueryClient();
   const exercice = useQuery(optionsExercice(slug));
+  const [animation, setAnimation] = useState(false);
   const records = useQuery(optionsRecords(slug));
   const historique = useQuery(optionsHistoriqueExercice(slug));
   // Lu dans le cache seulement : la fiche ne déclenche jamais le chargement du catalogue entier.
@@ -76,16 +79,26 @@ export default function FicheExercice() {
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <EnteteRetour titre="" />
       <ScrollView contentContainerStyle={styles.contenu}>
-        <Media gif={ex?.gif ?? null} image={resume?.image ?? null} nom={nom} />
-
-        <View style={styles.tete}>
-          <Text style={styles.nom}>{nom}</Text>
-          <Text style={styles.sous}>
-            {[ex?.nomAnglais, groupe ? LIBELLE_GROUPE[groupe] : null, equipement]
-              .filter(Boolean)
-              .join(" · ")}
-          </Text>
+        {/* Le nom d'abord (D174) : l'animation tient dans une vignette qui
+            s'agrandit au toucher, au lieu de prendre le premier écran. */}
+        <View style={styles.teteLigne}>
+          <Appuyable
+            onPress={() => setAnimation(!animation)}
+            accessibilityRole="button"
+            accessibilityLabel={animation ? "Réduire l'animation" : "Agrandir l'animation"}
+          >
+            <Vignette image={resume?.image ?? ex?.gif ?? null} taille={72} />
+          </Appuyable>
+          <View style={styles.tete}>
+            <Text style={styles.nom}>{nom}</Text>
+            <Text style={styles.sous}>
+              {[ex?.nomAnglais, groupe ? LIBELLE_GROUPE[groupe] : null, equipement]
+                .filter(Boolean)
+                .join(" · ")}
+            </Text>
+          </View>
         </View>
+        {animation ? <Media gif={ex?.gif ?? null} image={resume?.image ?? null} nom={nom} /> : null}
 
         {historique.data ? <Progression seances={historique.data} /> : null}
 
@@ -217,8 +230,9 @@ function Records({ etat }: { etat: UseQueryResult<RecordExercice[]> }) {
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
   contenu: { padding: espace.l, gap: espace.xl, paddingBottom: espace.xxl * 2 },
-  tete: { gap: espace.xs },
-  nom: { ...affiche, color: couleurs.encre, fontSize: 34, lineHeight: 36 },
+  teteLigne: { flexDirection: "row", alignItems: "center", gap: espace.m },
+  tete: { flex: 1, gap: espace.xs },
+  nom: { ...affiche, color: couleurs.encre, fontSize: 30, lineHeight: 32 },
   sous: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
   cadre: { alignItems: "center", gap: espace.xs },
   // Fond blanc dans les deux thèmes : les images du dataset sont dessinées sur blanc.

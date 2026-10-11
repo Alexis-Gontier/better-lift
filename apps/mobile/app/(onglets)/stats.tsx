@@ -8,11 +8,14 @@ import {
   type Totaux,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight } from "lucide-react-native";
 import { useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CarteMuscles } from "../../components/routines/carte-muscles";
 import { Calendrier } from "../../components/stats/calendrier";
+import { TesExercices } from "../../components/stats/tes-exercices";
+import { Appuyable } from "../../components/ui/appuyable";
 import { BadgeRecord, formaterSerie } from "../../components/ui/badge-record";
 import { Chargement, Erreur, Vide } from "../../components/ui/etats";
 import { Section } from "../../components/ui/section";
@@ -47,14 +50,16 @@ const ETENDUE: Record<Periode, string> = {
 };
 
 /**
- * Les stats (D125) : une période choisie pilote toute la page — séances, séries
- * et durée comparées à la période d'avant, le calendrier (D126), les muscles
- * travaillés, le volume, les records. Calculées par l'API, dans le fuseau.
+ * Progrès (D173, remplace les Stats) : une période pilote la page, en trois
+ * blocs — la régularité (calendrier, D126), les records, tes exercices et leur
+ * 1RM. Le reste (chiffres comparés, muscles, volume) se déplie sous « Détail de
+ * la période » : sept blocs sans priorité, c'était trop. Calculé par l'API.
  */
-export default function Stats() {
+export default function Progres() {
   const styles = useStyles();
   const couleurs = useCouleurs();
   const [periode, setPeriode] = useState<Periode>("mois");
+  const [detail, setDetail] = useState(false);
   const stats = useQuery(optionsStatsPeriode(periode));
   const objectif = useQuery(optionsPreferences()).data?.objectifHebdo ?? null;
 
@@ -76,7 +81,7 @@ export default function Stats() {
     <SafeAreaView style={styles.ecran} edges={["top"]}>
       <View style={styles.entete}>
         <Text style={styles.titre} accessibilityRole="header">
-          Stats
+          Progrès
         </Text>
         <Segments options={PERIODES} valeur={periode} onChange={setPeriode} />
         <Text style={styles.etendue}>{ETENDUE[periode]}</Text>
@@ -93,13 +98,31 @@ export default function Stats() {
               />
             }
           >
-            <Chiffres totaux={stats.data.totaux} precedents={stats.data.precedents} />
             <View style={styles.carte}>
               <Calendrier stats={stats.data} objectif={objectif} />
             </View>
-            <Muscles stats={stats.data} />
-            <Volume stats={stats.data} />
             <Records records={stats.data.records} />
+            <TesExercices periode={periode} />
+            <Appuyable
+              onPress={() => setDetail(!detail)}
+              style={styles.deplier}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: detail }}
+            >
+              <Text style={styles.deplierTexte}>Détail de la période</Text>
+              {detail ? (
+                <ChevronDown size={20} color={couleurs.encreTertiaire} />
+              ) : (
+                <ChevronRight size={20} color={couleurs.encreTertiaire} />
+              )}
+            </Appuyable>
+            {detail ? (
+              <>
+                <Chiffres totaux={stats.data.totaux} precedents={stats.data.precedents} />
+                <Muscles stats={stats.data} />
+                <Volume stats={stats.data} />
+              </>
+            ) : null}
             {/* Hors ligne, l'écran montre la dernière lecture : sa date le dit (D112). */}
             <Text style={styles.legende}>Calculées le {CALCUL.format(stats.dataUpdatedAt)}</Text>
           </ScrollView>
@@ -214,15 +237,18 @@ function Volume({ stats }: { stats: StatsPeriode }) {
   );
 }
 
+/** Les trois derniers records ; les autres se déplient. */
 function Records({ records }: { records: RecordRecent[] }) {
   const styles = useStyles();
+  const [tous, setTous] = useState(false);
+  const visibles = tous ? records : records.slice(0, 3);
   return (
     <View style={styles.carte}>
       <Section titre={`Records · ${records.length}`} />
       {records.length === 0 ? (
         <Text style={styles.legende}>Aucun record sur la période.</Text>
       ) : (
-        records.map((r) => (
+        visibles.map((r) => (
           <View key={`${r.slug}-${r.date}`} style={styles.record}>
             <View style={styles.recordGauche}>
               <Text style={styles.recordNom} numberOfLines={2}>
@@ -234,12 +260,31 @@ function Records({ records }: { records: RecordRecent[] }) {
           </View>
         ))
       )}
+      {records.length > 3 ? (
+        <Appuyable onPress={() => setTous(!tous)} style={styles.plus} accessibilityRole="button">
+          <Text style={styles.plusTexte}>
+            {tous ? "Moins de records" : `Tous les records (${records.length})`}
+          </Text>
+        </Appuyable>
+      ) : null}
     </View>
   );
 }
 
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
+  deplier: {
+    minHeight: CIBLE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: espace.l,
+    borderRadius: rayon.carte,
+    backgroundColor: couleurs.surface1,
+  },
+  deplierTexte: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
+  plus: { minHeight: CIBLE, justifyContent: "center" },
+  plusTexte: { color: couleurs.encre, fontSize: taille.petit + 1, fontWeight: "600" },
   entete: {
     paddingHorizontal: espace.l,
     paddingTop: espace.l,

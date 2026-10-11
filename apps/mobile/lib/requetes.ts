@@ -100,6 +100,18 @@ export function optionsStatsPeriode(periode: Periode) {
   });
 }
 
+/** « Tes exercices » de l'onglet Progrès (D173) : rangés sous `["stats"]`, gardés hors ligne. */
+export function optionsStatsExercices(periode: Periode) {
+  return queryOptions({
+    queryKey: ["stats", "exercices", periode, FUSEAU],
+    queryFn: async () => {
+      const res = await api.stats.exercices.$get({ query: { fuseau: FUSEAU, periode } });
+      if (!res.ok) throw new Error("Les exercices n'ont pas pu se lire.");
+      return res.json();
+    },
+  });
+}
+
 /** L'historique, antéchronologique, par pages (mêmes clés que le web). */
 export function optionsSeances() {
   return infiniteQueryOptions({

@@ -1,12 +1,12 @@
 import { Redirect, Tabs, useRouter } from "expo-router";
 import { BottomTabBar } from "expo-router/tabs";
 import {
-  ChartColumn,
   Dumbbell,
   House,
   ListChecks,
   type LucideIcon,
   Play,
+  TrendingUp,
   User,
 } from "lucide-react-native";
 import { type ReactNode, useEffect, useState } from "react";
@@ -149,7 +149,7 @@ export default function Onglets() {
             ),
           }}
         />
-        <Tabs.Screen name="stats" options={{ title: "Stats", tabBarIcon: icone(ChartColumn) }} />
+        <Tabs.Screen name="stats" options={{ title: "Progrès", tabBarIcon: icone(TrendingUp) }} />
         <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
         {/* La pile du détail d'une séance, ouvert depuis le fil de l'Accueil (D117). */}
         <Tabs.Screen name="historique" options={{ href: null }} />
