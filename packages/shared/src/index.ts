@@ -52,6 +52,7 @@ export {
   toucherPave,
 } from "./pave.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
+export { type ExerciceProgres, progresExercices, type SeanceProgres } from "./progres.js";
 export {
   filtrerCatalogue,
   normaliserRecherche,

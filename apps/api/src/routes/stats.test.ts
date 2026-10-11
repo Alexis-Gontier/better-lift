@@ -1,4 +1,4 @@
-import type { Stats, StatsPeriode } from "@better-lift/shared";
+import type { ExerciceProgres, Stats, StatsPeriode } from "@better-lift/shared";
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
 import type { LireSession } from "../middlewares/session.js";
@@ -38,6 +38,19 @@ function monter() {
         records: [],
         nbSeances: 3,
       } satisfies StatsPeriode;
+    },
+    async lireExercices(userId, _maintenant, fuseau, periode) {
+      appels.push({ userId, fuseau, periode });
+      return [
+        {
+          slug: "dc",
+          nom: "Développé couché",
+          image: null,
+          derniereFois: "2026-10-01T17:00:00.000Z",
+          unRm: 120,
+          unRmDebut: 116,
+        },
+      ] satisfies ExerciceProgres[];
     },
   };
   const app = new Hono().route("/stats", routesStats(depot, lireSession));
@@ -99,5 +112,23 @@ describe("GET /stats/bilan (D128)", () => {
       depuis: "2026-03-02T17:00:00.000Z",
     });
     expect(appels[0]?.userId).toBe("alice");
+  });
+});
+
+describe("GET /stats/exercices (D173)", () => {
+  it("exige une session", async () => {
+    expect((await monter().lire("/stats/exercices?periode=mois", null)).status).toBe(401);
+  });
+
+  it("lit les exercices de la période, dans le fuseau, pour l'utilisateur de la session", async () => {
+    const { lire, appels } = monter();
+    const res = await lire("/stats/exercices?periode=annee&fuseau=America/Montreal");
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as ExerciceProgres[])[0]?.slug).toBe("dc");
+    expect(appels).toEqual([{ userId: "alice", fuseau: "America/Montreal", periode: "annee" }]);
+  });
+
+  it("refuse une période inconnue", async () => {
+    expect((await monter().lire("/stats/exercices?periode=siecle")).status).toBe(400);
   });
 });
