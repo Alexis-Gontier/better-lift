@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "expo start",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .expo .turbo node_modules"
+    "clean": "rm -rf .expo .turbo node_modules",
+    "test": "vitest run"
   },
   "dependencies": {
     "@better-auth/expo": "1.7.5",
@@ -49,6 +50,7 @@
   },
   "devDependencies": {
     "@types/react": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
