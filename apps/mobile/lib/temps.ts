@@ -42,3 +42,9 @@ export function nouvelId(): string {
 /** La durée d'une séance en minutes, arrondie : on lit « 62 min », pas « 61,7 ». */
 export const dureeMin = (s: { debut: string; fin: string }) =>
   Math.round((Date.parse(s.fin) - Date.parse(s.debut)) / 60000);
+
+/** « 48 min », « 1 h 02 ». */
+export function libelleMinutes(min: number): string {
+  const h = Math.floor(min / 60);
+  return h > 0 ? `${h} h ${String(min % 60).padStart(2, "0")}` : `${min} min`;
+}

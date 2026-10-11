@@ -66,7 +66,7 @@ export default function RootLayout() {
         persistOptions={{
           persister,
           maxAge: UNE_SEMAINE,
-          buster: "2",
+          buster: "3",
           dehydrateOptions: { shouldDehydrateQuery: gardeHorsLigne },
         }}
       >
