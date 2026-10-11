@@ -181,7 +181,7 @@ export default function Profil() {
               value={vibrations}
               onValueChange={reglerVibrations}
               accessibilityLabel="Vibrations"
-              // Un état, ni une action ni un record : l'encre, pas le lime.
+              // Un état, ni une action ni un record : l'encre, pas l'orange.
               trackColor={{ true: couleurs.encre, false: couleurs.surface3 }}
               thumbColor={couleurs.surface1}
             />

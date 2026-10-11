@@ -42,8 +42,8 @@ type Props = {
 
 /**
  * « Muscles travaillés » (D83), face et dos, en vert comme sur opengym (D84,
- * révisée à la demande de l'utilisateur) : principal en lime plein, secondaire
- * en lime atténué, le reste du corps en surface.
+ * révisée à la demande de l'utilisateur) : principal en orange plein (D162), secondaire
+ * en orange atténué, le reste du corps en surface.
  */
 export function CarteMuscles({ exercices, titre = "Muscles travaillés" }: Props) {
   const styles = useStyles();

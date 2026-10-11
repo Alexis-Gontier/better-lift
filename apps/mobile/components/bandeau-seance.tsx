@@ -10,7 +10,7 @@ import { Appuyable } from "./ui/appuyable";
 /**
  * La séance en cours, joignable en un geste depuis n'importe quel onglet (D107).
  *
- * NEUTRE, sans lime : l'écran garde son seul aplat (D105). Tout le bandeau est
+ * NEUTRE, sans orange : l'écran garde son seul aplat (D105). Tout le bandeau est
  * appuyable. Il dit le repos qui tourne s'il y en a un, le chrono sinon — les
  * deux se déduisent d'heures stockées, jamais d'un compteur (§ 8).
  */

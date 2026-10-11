@@ -20,7 +20,7 @@ export const COLONNES = { serie: 40, valider: 40 } as const;
 /**
  * Les états d'une ligne (D116), comme une case à cocher : à faire, la case est
  * VIDE ; faite, elle porte la ✓ pleine à l'encre et la ligne se teinte. La
- * prochaine se repère par un liseré et un contour épais — pas de lime : une ✓
+ * prochaine se repère par un liseré et un contour épais — pas d'orange : une ✓
  * colorée se lit « fait », et l'ancienne ✓ lime de la prochaine série se lisait
  * cochée avant de l'être. Les cibles à venir restent en valeurs fantômes.
  */
@@ -218,7 +218,7 @@ const useStyles = creerStyles((couleurs) => ({
     paddingHorizontal: espace.xs,
     borderRadius: rayon.cellule,
   },
-  // Faite : la ligne se teinte nettement, sans lime — le lime reste à l'action.
+  // Faite : la ligne se teinte nettement, sans orange — l'orange reste à l'action.
   faite: { backgroundColor: couleurs.ligneFaite },
   etiquette: {
     width: COLONNES.serie,

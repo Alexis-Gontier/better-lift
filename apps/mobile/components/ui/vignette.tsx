@@ -5,7 +5,7 @@ import { creerStyles, useCouleurs } from "../../lib/theme";
 
 /**
  * L'image d'un exercice, en petit (D118) : elle donne sa couleur à la page sans
- * toucher au lime. Fond blanc (`fondImage`) : les médias sont détourés sur blanc.
+ * toucher à l'orange. Fond blanc (`fondImage`) : les médias sont détourés sur blanc.
  * Sans image, l'haltère.
  */
 export function Vignette({ image, taille = 36 }: { image: string | null; taille?: number }) {

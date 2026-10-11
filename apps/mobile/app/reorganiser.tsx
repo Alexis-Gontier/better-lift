@@ -97,7 +97,7 @@ const useStyles = creerStyles((couleurs) => ({
     paddingVertical: espace.m,
   },
   titre: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
-  // L'action de l'écran : l'aplat lime (D28), compact (D88).
+  // L'action de l'écran : l'aplat orange (D28), compact (D88).
   ok: {
     height: 36,
     paddingHorizontal: espace.l,

@@ -277,7 +277,7 @@ function Chiffre({
 
 const useStyles = creerStyles((couleurs) => ({
   vedette: { alignItems: "center", gap: espace.s, marginBottom: espace.s },
-  // Le record est un contour (D28) : lime en texte sur fond teinté.
+  // Le record est un contour (D28) : orange en texte sur fond teinté.
   medaille: {
     width: 72,
     height: 72,

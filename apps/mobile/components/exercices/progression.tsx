@@ -11,7 +11,7 @@ const HAUTEUR = 96;
 /**
  * La progression d'un exercice (D124) : le dernier 1RM estimé, son écart avec
  * le premier point, et la courbe séance par séance. Le dernier point est en
- * lime quand il est le plus haut : c'est un record (D28).
+ * orange quand il est le plus haut : c'est un record (D28).
  */
 export function Progression({ seances }: { seances: HistoriqueExercice }) {
   const styles = useStyles();
