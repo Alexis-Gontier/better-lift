@@ -2,7 +2,9 @@ import { prisma } from "@better-lift/db";
 import {
   type Bilan,
   calculerPeriode,
+  type ExerciceProgres,
   type Periode,
+  progresExercices,
   type RecordRecent,
   recordsDe,
   SEMAINES_PERIODE,
@@ -11,6 +13,7 @@ import {
   type StatsPeriode,
   semainesRecentes,
 } from "@better-lift/shared";
+import { imageDe } from "./exercices.js";
 import { historique, type LigneSeance, versResume } from "./seances.js";
 
 /**
@@ -74,6 +77,13 @@ export type DepotStats = {
     fuseau: string,
     periode: Periode,
   ): Promise<StatsPeriode>;
+  /** Les exercices faits sur la période et leur 1RM estimé, début et fin (D173). */
+  lireExercices(
+    userId: string,
+    maintenant: Date,
+    fuseau: string,
+    periode: Periode,
+  ): Promise<ExerciceProgres[]>;
 };
 
 export const depotStats: DepotStats = {
@@ -99,6 +109,42 @@ export const depotStats: DepotStats = {
       volumeKg: Math.round(volumeKg),
       depuis: agregat._min.debut?.toISOString() ?? null,
     };
+  },
+
+  async lireExercices(userId, maintenant, fuseau, periode) {
+    // Une semaine de marge : le découpage civil, dans le fuseau, se fait ensuite.
+    const debut = new Date(maintenant.getTime() - (SEMAINES_PERIODE[periode] + 1) * 7 * JOUR_MS);
+    const lignes = await prisma.seance.findMany({
+      where: { userId, debut: { gte: debut } },
+      select: {
+        debut: true,
+        exercices: {
+          select: {
+            exercise: { select: { slug: true, nomFr: true, gifUrl: true } },
+            series: { select: { type: true, reps: true, chargeKg: true, faite: true } },
+          },
+        },
+      },
+    });
+    return progresExercices(
+      lignes.map((l) => ({
+        debut: l.debut.toISOString(),
+        exercices: l.exercices.map((e) => ({
+          slug: e.exercise.slug,
+          nom: e.exercise.nomFr,
+          image: imageDe(e.exercise.gifUrl),
+          series: e.series.map((x) => ({
+            type: x.type,
+            reps: x.reps,
+            chargeKg: x.chargeKg === null ? null : Number(x.chargeKg),
+            faite: x.faite,
+          })),
+        })),
+      })),
+      maintenant,
+      fuseau,
+      periode,
+    );
   },
 
   async lirePeriode(userId, maintenant, fuseau, periode) {

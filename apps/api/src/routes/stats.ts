@@ -39,5 +39,10 @@ export function routesStats(depot: DepotStats, lireSession: LireSession) {
         const { fuseau, periode } = c.req.valid("query");
         return c.json(await depot.lirePeriode(c.get("userId"), new Date(), fuseau, periode));
       })
+      // « Tes exercices » de l'onglet Progrès (D173).
+      .get("/exercices", zValidator("query", requetePeriode), async (c) => {
+        const { fuseau, periode } = c.req.valid("query");
+        return c.json(await depot.lireExercices(c.get("userId"), new Date(), fuseau, periode));
+      })
   );
 }
