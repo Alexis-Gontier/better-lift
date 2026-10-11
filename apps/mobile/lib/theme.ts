@@ -103,12 +103,25 @@ export const taille = {
   courant: 16,
   valeur: 18,
   grand: 20,
-  titre: 26,
+  /** Titre de page, en affiche : le condensé se lit plus petit à taille égale. */
+  titre: 32,
   chrono: 48,
 } as const;
 
 /** Espacements en base 4 (D104). */
 export const espace = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 } as const;
 
-/** Les rayons par rôle (D104). */
-export const rayon = { cellule: 10, bouton: 14, bandeau: 18, carte: 20, feuille: 24 } as const;
+/** Les rayons par rôle (D164) : francs, comme On Air, sans être tranchants. */
+export const rayon = { cellule: 6, bouton: 6, bandeau: 6, carte: 6, feuille: 16 } as const;
+
+/**
+ * L'affiche (D163) : Barlow Condensed en capitales, pour les titres de page, le
+ * nom en tête d'une routine ou d'un exercice, le chrono, les valeurs de record.
+ * `fontFamily` posée ici, `creerStyles` la respecte. À étaler dans un style :
+ * `{ ...affiche, color, fontSize }`.
+ */
+export const affiche = {
+  fontFamily: polices.affiche,
+  textTransform: "uppercase",
+  letterSpacing: 0.3,
+} as const;

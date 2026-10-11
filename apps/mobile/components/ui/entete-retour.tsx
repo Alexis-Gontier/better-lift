@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { affiche, CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { Appuyable } from "./appuyable";
 
 /**
@@ -42,5 +42,5 @@ const useStyles = creerStyles((couleurs) => ({
     borderBottomColor: couleurs.ligne,
   },
   retour: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
-  titre: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
+  titre: { ...affiche, flex: 1, color: couleurs.encre, fontSize: taille.grand + 4 },
 }));

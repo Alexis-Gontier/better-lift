@@ -4,7 +4,7 @@ import { ChevronUp } from "lucide-react-native";
 import { Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
-import { CIBLE, creerStyles, espace, polices, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
 import { Appuyable } from "./ui/appuyable";
 
 /**
@@ -66,7 +66,7 @@ const useStyles = creerStyles((couleurs) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: espace.m,
-    borderRadius: 18,
+    borderRadius: rayon.bandeau,
     backgroundColor: couleurs.surface3,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,

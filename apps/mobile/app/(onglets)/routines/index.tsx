@@ -11,7 +11,7 @@ import { Appuyable } from "../../../components/ui/appuyable";
 import { Chargement, Erreur, Vide } from "../../../components/ui/etats";
 import { Segments } from "../../../components/ui/segments";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "../../../lib/requetes";
-import { creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
+import { affiche, creerStyles, espace, rayon, taille, useCouleurs } from "../../../lib/theme";
 
 type Vue = "routines" | "exercices";
 
@@ -123,7 +123,7 @@ const useStyles = creerStyles((couleurs) => ({
     paddingHorizontal: espace.l,
     paddingTop: espace.s,
   },
-  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "700" },
+  titre: { ...affiche, color: couleurs.encre, fontSize: taille.titre },
   nouvelle: {
     minHeight: 40,
     flexDirection: "row",

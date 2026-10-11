@@ -12,7 +12,7 @@ import {
 import { Ellipsis, GripVertical, Link2, Plus, Trash2, Unlink2, X } from "lucide-react-native";
 import { Text, TextInput, View } from "react-native";
 import { useConfirmer, useFeuille } from "../../lib/confirmation";
-import { CIBLE, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES, UNITE } from "../../lib/unites";
 import { Appuyable } from "../ui/appuyable";
 import { Vignette } from "../ui/vignette";
@@ -223,7 +223,7 @@ export function CarteExerciceEdition({
 
 const useStyles = creerStyles((couleurs) => ({
   carte: {
-    borderRadius: 12,
+    borderRadius: rayon.carte,
     borderWidth: 1,
     borderColor: couleurs.ligne,
     backgroundColor: couleurs.surface1,

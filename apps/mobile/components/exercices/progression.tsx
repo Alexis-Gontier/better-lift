@@ -2,7 +2,7 @@ import { courbeUnRm, formaterCharge, type HistoriqueExercice } from "@better-lif
 import { useState } from "react";
 import { Text, View } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
-import { creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
+import { affiche, creerStyles, espace, taille, useCouleurs } from "../../lib/theme";
 import { SYSTEME_UNITES } from "../../lib/unites";
 import { Section } from "../ui/section";
 
@@ -83,9 +83,9 @@ const useStyles = creerStyles((couleurs) => ({
   bloc: { gap: espace.s },
   ligne: { flexDirection: "row", alignItems: "baseline", gap: espace.s, flexWrap: "wrap" },
   valeur: {
+    ...affiche,
     color: couleurs.encre,
-    fontSize: 32,
-    fontWeight: "800",
+    fontSize: 36,
     fontVariant: ["tabular-nums"],
   },
   ecart: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },

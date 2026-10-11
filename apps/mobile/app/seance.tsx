@@ -546,7 +546,7 @@ const useStyles = creerStyles((couleurs) => ({
   ajouterTexteAplat: { color: couleurs.surAction, fontWeight: "700" },
   secondaire: {
     minHeight: CIBLE,
-    borderRadius: 12,
+    borderRadius: rayon.bouton,
     borderWidth: 1,
     borderColor: couleurs.ligneForte,
     alignItems: "center",
