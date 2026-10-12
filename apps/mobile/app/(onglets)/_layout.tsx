@@ -1,14 +1,6 @@
 import { Redirect, Tabs, useRouter } from "expo-router";
 import { BottomTabBar } from "expo-router/tabs";
-import {
-  Dumbbell,
-  House,
-  ListChecks,
-  type LucideIcon,
-  Play,
-  TrendingUp,
-  User,
-} from "lucide-react-native";
+import { Dumbbell, ListChecks, type LucideIcon, Play, User } from "lucide-react-native";
 import { type ReactNode, useEffect, useState } from "react";
 import { type ColorValue, type PressableProps, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -38,9 +30,8 @@ function PiluleOnglet({ active, children }: { active: boolean; children: ReactNo
 }
 
 /**
- * Les onglets (D74), façon opengym : deux liens de chaque côté, l'action au
- * centre — rétablis à la demande de l'utilisateur, qui les préfère à la barre
- * sans aplat de D106. Le bandeau de la séance en cours (D107) reste posé
+ * Les onglets (D74, D178) : Routines, l'action au centre, Profil — l'Accueil
+ * et Progrès sont retirés pour le MVP. Le bandeau de la séance en cours (D107) reste posé
  * au-dessus. La garde de session vit ici : tout ce qui est sous les onglets
  * exige un compte, et un seul endroit le vérifie.
  */
@@ -80,7 +71,7 @@ export default function Onglets() {
       <FeuilleDemarrer visible={demarrer} onFermer={() => setDemarrer(false)} />
       <Tabs
         // Le retour suit le chemin parcouru : la fiche d'un exercice ouverte depuis
-        // le détail d'une séance y ramène, et non à l'Accueil (D95).
+        // une routine y ramène (D95).
         backBehavior="history"
         // Le bandeau de la séance en cours se pose AU-DESSUS de la barre, sur
         // tous les onglets et leurs écrans empilés (D107).
@@ -116,7 +107,8 @@ export default function Onglets() {
           ),
         }}
       >
-        <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: icone(House) }} />
+        {/* `/` redirige vers Routines, l'écran d'arrivée (D178). */}
+        <Tabs.Screen name="index" options={{ href: null }} />
         <Tabs.Screen
           name="routines"
           options={{ title: "Routines", tabBarIcon: icone(ListChecks) }}
@@ -149,10 +141,7 @@ export default function Onglets() {
             ),
           }}
         />
-        <Tabs.Screen name="stats" options={{ title: "Progrès", tabBarIcon: icone(TrendingUp) }} />
         <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
-        {/* La pile du détail d'une séance, ouvert depuis le fil de l'Accueil (D117). */}
-        <Tabs.Screen name="historique" options={{ href: null }} />
         {/* La pile de la fiche d'un exercice ; la bibliothèque est une vue de Routines (D121). */}
         <Tabs.Screen name="exercices" options={{ href: null }} />
       </Tabs>
