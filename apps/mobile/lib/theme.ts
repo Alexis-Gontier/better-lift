@@ -1,26 +1,31 @@
 import { StyleSheet, type TextStyle, useColorScheme } from "react-native";
 
-import { type Couleurs, clair, sombre } from "./palette";
+import type { Couleurs } from "../themes/type";
+import { themeActif } from "./theme-actif";
 
-/** Les couleurs du thème courant, qui suit celui du téléphone (D102). */
+export type { Couleurs };
+
+/**
+ * Les couleurs du thème actif (D182), dans le registre qui suit celui du
+ * téléphone (D102).
+ */
 export function useCouleurs(): Couleurs {
-  return useColorScheme() === "light" ? clair : sombre;
+  return useColorScheme() === "light" ? themeActif.couleurs.clair : themeActif.couleurs.sombre;
 }
 
 /**
- * Les polices (D163) : une famille, deux largeurs. Barlow pour toute
- * l'interface ; Barlow Condensed (l'« affiche ») seulement pour les titres de
- * page, les noms en tête, le chrono et les valeurs de record — jamais dans un
- * bouton, une étiquette ni un tableau. Chargées par `expo-font` dans
- * `app/_layout.tsx`. Une police chargée ne se met pas en gras toute seule sous
- * Android : chaque graisse est une famille à part.
+ * Les polices du thème actif (D163, D182) : une famille pour l'interface, une
+ * affiche pour les titres de page, les noms en tête, le chrono et les valeurs de
+ * record — jamais dans un bouton, une étiquette ni un tableau. Chargées par
+ * `expo-font` dans `app/_layout.tsx`. Une police chargée ne se met pas en gras
+ * toute seule sous Android : chaque graisse est une famille à part.
  */
 export const polices = {
-  regulier: "Barlow_400Regular",
-  moyen: "Barlow_500Medium",
-  demiGras: "Barlow_600SemiBold",
-  gras: "Barlow_700Bold",
-  affiche: "BarlowCondensed_800ExtraBold",
+  regulier: themeActif.polices.regulier,
+  moyen: themeActif.polices.moyen,
+  demiGras: themeActif.polices.demiGras,
+  gras: themeActif.polices.gras,
+  affiche: themeActif.polices.affiche,
 } as const;
 
 function famillePour(graisse: TextStyle["fontWeight"]): string {
@@ -41,7 +46,7 @@ function famillePour(graisse: TextStyle["fontWeight"]): string {
 }
 
 /**
- * Pose la famille Barlow de la bonne graisse sur chaque style de texte, et
+ * Pose la famille de la bonne graisse sur chaque style de texte, et
  * retire `fontWeight`, qu'Android appliquerait par-dessus en faux gras.
  */
 function avecPolices<T extends object>(styles: T): T {
@@ -111,17 +116,13 @@ export const taille = {
 /** Espacements en base 4 (D104). */
 export const espace = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 } as const;
 
-/** Les rayons par rôle (D164) : francs, comme On Air, sans être tranchants. */
-export const rayon = { cellule: 6, bouton: 6, bandeau: 6, carte: 6, feuille: 16 } as const;
+/** Les rayons par rôle (D164), fixés par le thème actif (D182). */
+export const rayon = themeActif.rayon;
 
 /**
- * L'affiche (D163) : Barlow Condensed en capitales, pour les titres de page, le
+ * L'affiche (D163) : la police d'affiche du thème, pour les titres de page, le
  * nom en tête d'une routine ou d'un exercice, le chrono, les valeurs de record.
  * `fontFamily` posée ici, `creerStyles` la respecte. À étaler dans un style :
  * `{ ...affiche, color, fontSize }`.
  */
-export const affiche = {
-  fontFamily: polices.affiche,
-  textTransform: "uppercase",
-  letterSpacing: 0.3,
-} as const;
+export const affiche = { fontFamily: polices.affiche, ...themeActif.affiche };

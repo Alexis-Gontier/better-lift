@@ -27,7 +27,12 @@
     },
     "apps/mobile": {
       "entry": "app/**/*.{ts,tsx}",
-      "project": ["app/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"]
+      "project": [
+        "app/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "components/**/*.{ts,tsx}",
+        "themes/**/*.ts"
+      ]
     }
   }
 }

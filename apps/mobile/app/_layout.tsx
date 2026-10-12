@@ -1,12 +1,5 @@
-import {
-  Barlow_400Regular,
-  Barlow_500Medium,
-  Barlow_600SemiBold,
-  Barlow_700Bold,
-  useFonts,
-} from "@expo-google-fonts/barlow";
-import { BarlowCondensed_800ExtraBold } from "@expo-google-fonts/barlow-condensed";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -22,6 +15,7 @@ import {
 } from "../lib/hors-ligne";
 import { SeanceProvider } from "../lib/seance";
 import { useCouleurs } from "../lib/theme";
+import { themeActif } from "../lib/theme-actif";
 import { appliquerThemeGarde } from "../lib/theme-choix";
 
 // Le thème choisi dans le Profil (D128), appliqué dès le chargement : avant le
@@ -39,13 +33,8 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const couleurs = useCouleurs();
-  const [policesPretes, erreurPolices] = useFonts({
-    Barlow_400Regular,
-    Barlow_500Medium,
-    Barlow_600SemiBold,
-    Barlow_700Bold,
-    BarlowCondensed_800ExtraBold,
-  });
+  // Les polices du thème actif (D182).
+  const [policesPretes, erreurPolices] = useFonts(themeActif.polices.fichiers);
   // Une police qui ne charge pas ne doit pas bloquer l'app : elle s'affiche dans
   // la police système plutôt que de rester sur l'écran de démarrage.
   const pret = policesPretes || erreurPolices !== null;

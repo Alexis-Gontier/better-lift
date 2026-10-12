@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type Couleurs, clair, sombre } from "./palette";
+import { couleursDesThemes } from "../themes/couleurs";
+import type { Couleurs } from "../themes/type";
 
 type Rgba = [number, number, number, number];
 
@@ -46,10 +47,14 @@ const TEXTES = [
   "ongletActif",
 ] as const satisfies readonly (keyof Couleurs)[];
 
-describe.each([
-  ["sombre", sombre],
-  ["clair", clair],
-] as const)("la palette %s", (_nom, c) => {
+// Chaque registre de chaque thème (D182) : un thème qui échoue se corrige par
+// ses valeurs, jamais par le seuil.
+const PALETTES = Object.entries(couleursDesThemes).flatMap(([theme, { sombre, clair }]) => [
+  [`${theme} sombre`, sombre] as const,
+  [`${theme} clair`, clair] as const,
+]);
+
+describe.each(PALETTES)("la palette %s", (_nom, c: Couleurs) => {
   // Le canevas, les cartes, les feuilles : là où du texte se pose.
   const surfaces = [c.canevas, c.surface1, c.surface2];
 
