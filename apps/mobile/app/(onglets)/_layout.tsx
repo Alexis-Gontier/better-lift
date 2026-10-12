@@ -1,42 +1,76 @@
-import { Redirect, Tabs, useRouter } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { BottomTabBar } from "expo-router/tabs";
-import { Dumbbell, ListChecks, type LucideIcon, Play, User } from "lucide-react-native";
-import { type ReactNode, useEffect, useState } from "react";
-import { type ColorValue, type PressableProps, Text, View } from "react-native";
+import { Dumbbell, type LucideIcon, User } from "lucide-react-native";
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { type ColorValue, type PressableProps, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BandeauSeance } from "../../components/bandeau-seance";
-import { FeuilleDemarrer } from "../../components/feuille-demarrer";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Appuyable } from "../../components/ui/appuyable";
 import { authClient } from "../../lib/auth-client";
-import { useSeance } from "../../lib/seance";
 import { creerStyles, polices, useCouleurs } from "../../lib/theme";
+
+/** L'onglet est-il sous le doigt ? Posé par le bouton, lu par sa pilule. */
+const Appuye = createContext(false);
 
 /**
  * Icônes Lucide, comme le web. L'onglet actif se pose dans une pilule (D165,
  * Material 3) et s'épaissit : c'est la forme qui dit la position, pas la couleur.
+ * L'haltère est redressée de 45°, comme le logo.
  */
 const icone =
-  (Icone: LucideIcon) =>
+  (Icone: LucideIcon, redresser = false) =>
   ({ focused, color }: { focused: boolean; color: ColorValue }) => (
     <PiluleOnglet active={focused}>
-      <Icone color={color as string} size={22} strokeWidth={focused ? 2.4 : 1.8} />
+      <View style={redresser ? { transform: [{ rotate: "45deg" }] } : undefined}>
+        <Icone color={color as string} size={22} strokeWidth={focused ? 2.4 : 1.8} />
+      </View>
     </PiluleOnglet>
   );
 
+/**
+ * Sous le doigt, une couche d'état teinte la pilule (D179, Material 3) : l'encre
+ * à 10 % par-dessus son fond. L'icône et le libellé restent nets — pâlir tout
+ * l'onglet délavait la pilule active.
+ */
 function PiluleOnglet({ active, children }: { active: boolean; children: ReactNode }) {
   const styles = useStyles();
-  return <View style={[styles.pilule, active && styles.piluleActive]}>{children}</View>;
+  const appuye = useContext(Appuye);
+  return (
+    <View style={[styles.pilule, active && styles.piluleActive]}>
+      {appuye ? <View style={styles.coucheEtat} /> : null}
+      {children}
+    </View>
+  );
+}
+
+/** Le bouton d'un onglet : il dit à sa pilule qu'il est appuyé, sans pâlir lui-même. */
+function BoutonOnglet({
+  ref: _ref,
+  children,
+  style,
+  ...props
+}: PressableProps & { ref?: unknown }) {
+  return (
+    // Un style en fonction : `Appuyable` laisse l'état appuyé à la pilule.
+    <Appuyable
+      {...props}
+      style={typeof style === "function" ? style : () => style}
+      android_ripple={null}
+    >
+      {({ pressed }) => <Appuye.Provider value={pressed}>{children as ReactNode}</Appuye.Provider>}
+    </Appuyable>
+  );
 }
 
 /**
- * Les onglets (D74, D178) : Routines, l'action au centre, Profil — l'Accueil
- * et Progrès sont retirés pour le MVP. Le bandeau de la séance en cours (D107) reste posé
- * au-dessus. La garde de session vit ici : tout ce qui est sous les onglets
- * exige un compte, et un seul endroit le vérifie.
+ * Les onglets (D179), façon Hevy : Entraînement (démarrer et les routines) et
+ * Profil — des destinations seulement, plus d'action au centre. Le bandeau de la
+ * séance en cours (D107) reste posé au-dessus et ramène à la séance. La garde de
+ * session vit ici : tout ce qui est sous les onglets exige un compte, et un seul
+ * endroit le vérifie.
  */
 export default function Onglets() {
-  const styles = useStyles();
   const couleurs = useCouleurs();
   const { data: session, isPending, error } = authClient.useSession();
   // Un cookie de session est-il gardé sur le téléphone ? `null` tant que le
@@ -45,12 +79,7 @@ export default function Onglets() {
   useEffect(() => {
     void authClient.getCookie().then((c) => setCookieGarde(Boolean(c)));
   }, []);
-  const router = useRouter();
   const { bottom } = useSafeAreaInsets();
-  const { seance } = useSeance();
-  // Le bouton central : reprendre la séance en cours, sinon choisir comment démarrer.
-  const [demarrer, setDemarrer] = useState(false);
-  const lancer = () => (seance ? router.push("/seance") : setDemarrer(true));
 
   // Moins d'une seconde en général : rien plutôt qu'un squelette qui clignote (NN/g).
   if (isPending || (error && cookieGarde === null)) {
@@ -62,13 +91,10 @@ export default function Onglets() {
   // ici — une installation neuve ouverte hors ligne va à la connexion.
   if (!session && !(error && cookieGarde)) return <Redirect href="/connexion" />;
 
-  const Centrale = seance ? Play : Dumbbell;
-
   return (
     <>
       {/* Hors ligne (D96) : remplir le cache tant qu'il y a du réseau. */}
       <PreparerHorsLigne />
-      <FeuilleDemarrer visible={demarrer} onFermer={() => setDemarrer(false)} />
       <Tabs
         // Le retour suit le chemin parcouru : la fiche d'un exercice ouverte depuis
         // une routine y ramène (D95).
@@ -84,8 +110,7 @@ export default function Onglets() {
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: couleurs.canevas },
-          // L'onglet actif à l'encre, les autres en encre faible (D165) ;
-          // l'indicateur en pilule de Material 3 arrive au lot 2.
+          // L'onglet actif à l'encre, les autres en encre faible (D165).
           tabBarActiveTintColor: couleurs.ongletActif,
           tabBarInactiveTintColor: couleurs.encreAttenuee,
           // Toute la largeur du bas, jusque sous les boutons du système : une marche
@@ -100,49 +125,17 @@ export default function Onglets() {
             paddingTop: 8,
           },
           tabBarLabelStyle: { fontSize: 11, fontFamily: polices.demiGras, marginTop: 2 },
-          // L'appui pâlit l'onglet (Appuyable), sans ondulation Android qui
-          // déborderait de la barre.
-          tabBarButton: ({ ref: _ref, ...props }) => (
-            <Appuyable {...(props as PressableProps)} android_ripple={null} />
-          ),
+          tabBarButton: (props) => <BoutonOnglet {...(props as PressableProps)} />,
         }}
       >
-        {/* `/` redirige vers Routines, l'écran d'arrivée (D178). */}
+        {/* `/` redirige vers l'Entraînement, l'écran d'arrivée (D178). */}
         <Tabs.Screen name="index" options={{ href: null }} />
         <Tabs.Screen
           name="routines"
-          options={{ title: "Routines", tabBarIcon: icone(ListChecks) }}
-        />
-        {/* Au centre, l'action du moment : un aplat orange (D28), plus grand que les
-          onglets et qui déborde au-dessus de la barre. */}
-        <Tabs.Screen
-          name="lancer"
-          options={{
-            tabBarButton: () => (
-              <Appuyable
-                onPress={lancer}
-                style={styles.place}
-                accessibilityRole="button"
-                accessibilityLabel={seance ? "Reprendre la séance" : "Démarrer une séance"}
-              >
-                {() => (
-                  <>
-                    <View style={styles.central}>
-                      {/* L'haltère de Lucide est dessinée en diagonale : redressée de
-                        45° pour se lire à l'horizontale, comme une barre posée. */}
-                      <View style={seance ? undefined : styles.redresse}>
-                        <Centrale color={couleurs.surAction} size={26} strokeWidth={2.4} />
-                      </View>
-                    </View>
-                    <Text style={styles.libelle}>{seance ? "Reprendre" : "Démarrer"}</Text>
-                  </>
-                )}
-              </Appuyable>
-            ),
-          }}
+          options={{ title: "Entraînement", tabBarIcon: icone(Dumbbell, true) }}
         />
         <Tabs.Screen name="profil" options={{ title: "Profil", tabBarIcon: icone(User) }} />
-        {/* La pile de la fiche d'un exercice ; la bibliothèque est une vue de Routines (D121). */}
+        {/* La pile de la fiche d'un exercice. */}
         <Tabs.Screen name="exercices" options={{ href: null }} />
       </Tabs>
     </>
@@ -156,20 +149,16 @@ const useStyles = creerStyles((couleurs) => ({
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
   piluleActive: { backgroundColor: couleurs.surface3 },
-  // Posé en bas de la place, le libellé central s'aligne sur ceux des onglets.
-  place: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
-  central: {
-    width: 60,
-    height: 60,
-    marginTop: -30,
-    borderRadius: 30,
-    backgroundColor: couleurs.action,
-    alignItems: "center",
-    justifyContent: "center",
+  coucheEtat: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: couleurs.encre,
+    opacity: 0.1,
   },
-  redresse: { transform: [{ rotate: "45deg" }] },
-  // En encre, pas en orange : l'orange en texte est le registre du record (D28).
-  libelle: { color: couleurs.encre, fontSize: 11, fontWeight: "600", marginTop: 4 },
 }));

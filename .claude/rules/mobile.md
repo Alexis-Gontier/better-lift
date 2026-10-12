@@ -96,38 +96,30 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
 - **Carte du corps** : la bibliothèque peint chaque partie d'une couleur codée en dur qui
   l'emporte sur `defaultFill` — chaque partie non travaillée reçoit `styles.fill` du thème.
 
-## Navigation (D115 : barre D74 rétablie, bandeau D107)
+## Navigation (D178, D179 : MVP, barre façon Hevy, bandeau D107)
 
-Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md).
+Conception : [`2026-10-13-mobile-mvp-retrait-design.md`](../../docs/superpowers/specs/2026-10-13-mobile-mvp-retrait-design.md).
 
-- Quatre onglets **Accueil · Routines · Progrès · Profil** et, au centre, un **rond orange**
-  « Démarrer » (la feuille `components/feuille-demarrer.tsx`, D120, ouverte par l'état du
-  `_layout` des onglets ; logique dans `lib/demarrer.ts`) qui devient
-  « Reprendre » pendant une séance (`lancer.tsx` ne fait que réserver sa place). **Onglet actif
-  à l'encre, dans une pilule** `surface3` de 56 × 30 (D165, Material 3 : la forme dit la
-  position, pas la couleur). Icônes Lucide. La feuille Démarrer a un bouton Fermer visible en plus
-  du glisser (D167).
-- La carte « Prochaine séance » de l'Accueil n'a ni aplat ni bouton : elle ouvre la routine, le
-  rond lance (D166). La page d'une routine porte « Lancer » en contour (D122).
+- **Deux onglets, Entraînement · Profil** (D179) : des destinations seulement, pas d'action au
+  centre. Accueil, Progrès et détail d'une séance sont retirés (D178) ; l'historique se lit sur le
+  web. `index.tsx` redirige vers `/routines` (la route garde son nom, le titre est
+  « Entraînement ») pour que `/` reste valide.
+- **Onglet actif à l'encre, dans une pilule** `surface3` de 56 × 30 (D165). **À l'appui, une
+  couche d'état** (encre à 10 %) teinte la pilule, actif ou non ; l'icône et le libellé ne
+  pâlissent pas. Le bouton d'onglet passe l'état appuyé à sa pilule par un contexte
+  (`BoutonOnglet` dans `_layout`). Icônes Lucide, l'haltère redressée de 45°.
+- **Démarrer vit en tête de l'onglet Entraînement** (D179, reprend la feuille D120) : la routine
+  à suivre (`routineASuivre`) et son aplat « Commencer … », puis « Séance vide » ; pendant une
+  séance, un aplat « Reprendre la séance » à la place. Puis « Mes routines » et « + Nouvelle ».
+  Logique de démarrage dans `lib/demarrer.ts`.
 - **Bandeau « séance en cours »** (`components/bandeau-seance.tsx`, D107) : neutre, posé au-dessus
   de la barre par `tabBar` (avec `BottomTabBar` de `expo-router/tabs`), donc présent sur tous les
-  onglets et leurs écrans empilés. Il se pose au-dessus du débord du rond (30), sinon le rond le
-  recouvre. Repos restant s'il tourne, chrono sinon ; tout le bandeau
-  ramène à la séance. Il ne dit pas « Reprendre » : le rond central le dit déjà.
-- **L'Accueil, tableau de la semaine (D166)** : « Prochaine séance »
-  (`components/accueil/a-suivre.tsx`, `routineASuivre`, nom en affiche, « Ta prochaine séance · ≈ N
-  min · n exercices », zones ; masquée pendant une séance), puis **« Cette semaine »**
-  (`components/accueil/cette-semaine.tsx`, `GET /stats/periode?periode=semaine` gardé hors ligne,
-  `joursDeLaSemaine` de `shared` dans le fuseau) : les sept jours (entraînés en orange, aujourd'hui
-  cerclé), l'objectif, volume et son écart (`Totaux.volumeKg`), séries, durée, le dernier record ;
-  sans donnée, le bloc se tait ; semaine vide, une phrase. Puis le **journal** : une ligne par
-  séance (`LigneSeance` : nom ; jour · durée · volume ; badge du nombre de records). La file d'envoi
-  vit dans Profil (`components/file-envoi.tsx`). La pile `historique` ne garde que le détail (`[id]`).
+  onglets et leurs écrans empilés. Repos restant s'il tourne, chrono sinon ; tout le bandeau
+  ramène à la séance.
 - **Composants communs des pages (D118)** : `Section`, `Vignette` (fond `fondImage`, haltère sans
   image), `Tuile`, `BoutonContour`, `FeuilleBasse` (le conteneur glissable de toute feuille) dans
   `components/ui/`. Un composant naît dans le lot qui s'en sert (Knip).
-- Les onglets reviennent en arrière **par l'historique** (`backBehavior="history"`) : sans lui, le
-  retour depuis un écran d'un onglet masqué ramène à l'Accueil.
+- Les onglets reviennent en arrière **par l'historique** (`backBehavior="history"`).
 - **Piège** : une pile qui déclare ses écrans prend le premier pour route initiale —
   `(onglets)` est déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 - Le `_layout` de `app/(onglets)/` porte la garde de session. `seance` et `fin` restent hors des
@@ -140,12 +132,13 @@ Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/spec
 Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/specs/2026-09-25-mobile-routines-design.md).
 
 - Le mobile crée, modifie et supprime les routines, indépendamment du web.
-- **L'onglet (D171)** : une liste, **sans segments** — le catalogue complet ne vit plus que dans
-  `app/choisir-exercices.tsx`. Les cartes (`components/routines/carte-routine.tsx`, nom en affiche)
-  tirent noms et durée des détails en cache (`useQueries`) ; **pas de « Lancer »** : le rond lance,
-  la carte ouvre la routine. La pile `exercices` ne garde que la fiche.
+- **L'onglet Entraînement (D171, D179)** : Démarrer en tête, puis la liste, **sans segments** —
+  le catalogue complet ne vit que dans `app/choisir-exercices.tsx`. Les cartes
+  (`components/routines/carte-routine.tsx`, nom en affiche) tirent noms et durée des détails en
+  cache (`useQueries`) ; **pas de « Lancer »** sur la carte, qui ouvre la routine. La pile
+  `exercices` ne garde que la fiche.
 - Page d'une routine (D122), qu'on lit avant de la modifier : résumé (`dureeEstimeeSec`), zones
-  principales, « Lancer » en contour (plus d'aplat fixe : l'aplat de l'écran est le rond),
+  principales, « Lancer » en contour,
   exercices « 3 × 8 · 60 kg » (`resumeSeries`) avec « Dernière fois » (`meilleureSerie` sur
   `optionsPrecedents`), chacun ouvrant sa fiche, puis la ligne **« Carte du corps »** qui déplie
   la carte des muscles face/dos (D172)
@@ -239,30 +232,22 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   le dit au-dessus d'« Enregistrer » ; un échauffement fait : l'écran rappelle qu'il ne compte pas
   dans le volume (D5). Hors ligne : un encart pointillé, pas une
   alerte.
-- **Démarrer (D120)** est une `FeuilleBasse` : « À suivre » et son aplat « Commencer … », la
-  séance vide, puis les autres routines. Chaque choix ferme la feuille AVANT de lancer : un `Modal`
-  resterait au-dessus de la séance. Séance vide : « Ajouter un exercice » devient l'aplat, faute
-  de ✓.
+- **Démarrer (D179)** vit en tête de l'onglet Entraînement (voir Navigation). Séance vide :
+  « Ajouter un exercice » devient l'aplat, faute de ✓.
 - Une séance envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
 
-## Fiche d'exercice et détail d'une séance
+## Fiche d'exercice
 
 - **Fiche (D124, D174)**, une page qui défile : vignette et nom en tête (l'animation s'agrandit
   au toucher de la vignette), **1RM estimé** et sa courbe
   (`courbeUnRm` de `shared` sur `GET /exercices/:slug/historique`, séries de 12 reps au plus
   comme le record ; `react-native-svg`, dernier point aux couleurs du record s'il est le plus haut),
-  records, historique (chaque séance ouvre son détail), puis carte du corps et exécution. Hors ligne, elle s'appuie sur la
-  ligne du catalogue complet (lue par `getQueryData`, jamais chargée par la fiche) et sur les
-  records en cache, et dit ce qui manque.
+  records, historique (en lecture seule depuis D178), puis carte du corps et exécution. Hors
+  ligne, elle s'appuie sur la ligne du catalogue complet (lue par `getQueryData`, jamais chargée
+  par la fiche) et sur les records en cache, et dit ce qui manque.
 - **`expo-image` dans un écran réutilisé** (même route, autre paramètre) : `recyclingKey={source}`,
   sinon l'image du précédent reste affichée tant que la nouvelle ne charge pas — hors ligne, pour
   toujours. Un `onError` rabat sur l'haltère.
-- **Détail d'une séance (D123)** : étiquettes de séries comme en séance (D92), vignettes, et
-  l'écart de chaque série avec la même position de la dernière occurrence antérieure de
-  l'exercice (`precedentes`, rendues par `GET /seances/:id` ; `ecartSerie` de `shared`).
-  « ⋯ » : refaire la routine d'origine, supprimer (`DELETE`, confirmé ; retire le détail du cache
-  et invalide fil, stats, records). Non gardé hors ligne (D96), il dit « Hors ligne ».
-  Un superset s'y relit comme tel (D153) : `RepereSuperset` sans action, `ecart={espace.l}`.
 
 ## Profil (D128, D129, D175)
 
@@ -271,30 +256,11 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
 - En-tête : le bilan de toujours (`GET /stats/bilan`). Entraînement : objectif hebdomadaire et
   repos par défaut, **sur le compte** (`GET` / `PUT /preferences`, écrits de façon optimiste,
   gardés hors ligne). Le repos par défaut entre dans `validerSerie` pour l'exercice sans repos
-  propre ; l'objectif donne « Objectif tenu x / y semaines » au calendrier (`semainesTenues`).
+  propre.
 - Réglages du téléphone : thème, vibrations. Export : `GET /export/seances.csv` (`versCsv`),
   écrit dans le cache (`expo-file-system`, `File` / `Paths`) puis `expo-sharing`.
 - Une ligne qui ouvre un choix est appuyable en entier, chevron au bout ; le choix se fait dans
   une feuille (`useFeuille`, option `choisie`).
-
-## Progrès (D125–D127, D173)
-
-- L'onglet **Progrès** (route `stats`, `app/(onglets)/stats.tsx`) : `Segments` (Semaine · Mois ·
-  3 mois · Année) puis trois blocs — la **régularité** (`components/stats/calendrier.tsx` :
-  niveaux par quartile de volume, `niveauxCalendrier` ; token `calendrier[0..4]`, orange depuis
-  D162 ; cases taillées sur la largeur, l'année défile en cases de 14 ouverte sur la semaine en
-  cours ; jour à venir en contour ; toucher un jour ouvre sa séance), les **records** (trois,
-  « Tous les records » déplie le reste), **« Tes exercices »** (`components/stats/tes-exercices.tsx`,
-  `GET /stats/exercices` → `progresExercices` de `shared` : 1RM estimé au début et à la fin de la
-  période, six visibles). **« Détail de la période »** déplie tuiles comparées, carte du corps et
-  séries par zone, volume.
-- `GET /stats/periode?periode=&fuseau=` (`depotStats.lirePeriode`) ; `GET /stats` garde la forme
-  D112 pour le web. Une période = 1, 4, 13 ou 52 **semaines glissantes** alignées sur le lundi
-  dans le fuseau, comparées aux mêmes semaines juste avant (`calculerPeriode` de `shared`) —
-  pas des mois civils. L'écran le dit sous le sélecteur.
-- Persistées hors ligne (`gardeHorsLigne`, clés `["stats", "periode" | "exercices", …]`) ; l'écran
-  dit leur date de calcul (`dataUpdatedAt`). Sous deux séances, un état vide.
-- Le catalogue complet n'a plus d'onglet (D173) : il ne vit que dans « Choisir des exercices ».
 
 ## Hors ligne (D96–D100)
 
