@@ -6,10 +6,19 @@ settings:
 
 catalogs:
   default:
+    '@biomejs/biome':
+      specifier: 2.5.14
+      version: 2.5.14
     '@types/react':
       specifier: 19.2.4
       version: 19.2.4
+    '@types/react-dom':
+      specifier: 19.2.4
+      version: 19.2.4
     react:
+      specifier: 19.2.3
+      version: 19.2.3
+    react-dom:
       specifier: 19.2.3
       version: 19.2.3
     typescript:
@@ -99,6 +108,12 @@ importers:
       '@better-lift/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@expo-google-fonts/archivo':
+        specifier: ^0.4.2
+        version: 0.4.2
+      '@expo-google-fonts/archivo-black':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@expo-google-fonts/barlow':
         specifier: ^0.4.1
         version: 0.4.1
@@ -1202,6 +1217,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@expo-google-fonts/archivo-black@0.4.1':
+    resolution: {integrity: sha512-Zi4M9NPyKBllCd8TobvYRRAAm/dbhnrYTywbkfGVOJ7cThEetli+jYBh/deAjzOEqYMTrlSM89uEiherIPjkpQ==}
+
+  '@expo-google-fonts/archivo@0.4.2':
+    resolution: {integrity: sha512-FLhI4/ZVIFSHHxx15Z7Rr4QX/4ZrJozEebBEFSdHSRRwULGCuSIpbb3dz56Hslux6LZEnJ1mVpZ6CyVpUzLwIg==}
 
   '@expo-google-fonts/barlow-condensed@0.4.1':
     resolution: {integrity: sha512-9yuXU1MpI4Dw/8rR4pj2EXcT4/31H5+DrrT47auF8IzD9r7SZPRoNVq8clRq7zxOTh7v1gJk3pBhydDVf2x/dA==}
@@ -6891,6 +6912,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.2':
     optional: true
+
+  '@expo-google-fonts/archivo-black@0.4.1': {}
+
+  '@expo-google-fonts/archivo@0.4.2': {}
 
   '@expo-google-fonts/barlow-condensed@0.4.1': {}
 

@@ -1,3 +1,4 @@
+import * as basicFit from "./basic-fit/couleurs";
 import * as underground from "./underground/couleurs";
 
 /**
@@ -5,4 +6,4 @@ import * as underground from "./underground/couleurs";
  * tests sous Node (`lib/themes.test.ts`). Un nouveau thème s'ajoute ici et dans
  * `themes/index.ts`.
  */
-export const couleursDesThemes = { underground };
+export const couleursDesThemes = { underground, basicFit };
