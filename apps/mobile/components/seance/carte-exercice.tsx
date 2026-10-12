@@ -1,7 +1,7 @@
 import {
   ABREGE_TYPE_SERIE,
   ATTRIBUTION_MEDIAS,
-  type ChampPave,
+  type ChampSaisie,
   type ExerciceEnCours,
   LIBELLE_TYPE_SERIE,
   type RoleRepos,
@@ -48,7 +48,7 @@ import { COLONNES, type EtatSerie, LigneSerie } from "./ligne-serie";
  * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
  * autres portent leur lettre — l'échauffement ne décale pas « série 1 ».
  */
-export function etiquettes(series: SerieEnCours[]): string[] {
+function etiquettes(series: SerieEnCours[]): string[] {
   let n = 0;
   return series.map((s) => (s.type === "NORMALE" ? String(++n) : ABREGE_TYPE_SERIE[s.type]));
 }
@@ -72,6 +72,8 @@ export function CarteExercice({
   prochaine,
   edition,
   onEditer,
+  onTexte,
+  onFermer,
   onPositionLigne,
   onModifierSerie,
   onValiderSerie,
@@ -101,10 +103,12 @@ export function CarteExercice({
   onDelier: () => void;
   /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D116). */
   prochaine: number | null;
-  /** La case en cours de saisie au pavé, si elle est dans cet exercice (D109). */
-  edition: { iS: number; champ: ChampPave; texte: string; invalide: boolean } | null;
-  onEditer: (iS: number, champ: ChampPave) => void;
-  /** La position d'une ligne dans le bloc : l'écran la fait défiler au-dessus du pavé. */
+  /** La case en cours de saisie, si elle est dans cet exercice (D184). */
+  edition: { iS: number; champ: ChampSaisie; texte: string; invalide: boolean } | null;
+  onEditer: (iS: number, champ: ChampSaisie) => void;
+  onTexte: (texte: string) => void;
+  onFermer: () => void;
+  /** La position d'une ligne dans le bloc : l'écran la fait défiler au-dessus du clavier. */
   onPositionLigne: (iS: number, y: number) => void;
   onModifierSerie: (
     iS: number,
@@ -354,6 +358,8 @@ export function CarteExercice({
             onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
             edition={edition?.iS === i ? edition : null}
             onEditer={(champ) => onEditer(i, champ)}
+            onTexte={onTexte}
+            onFermer={onFermer}
           />
         </View>
       ))}

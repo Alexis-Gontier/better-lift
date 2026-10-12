@@ -1,6 +1,7 @@
-import { type ChampPave, chargeEnTexte, type SerieEnCours } from "@better-lift/shared";
+import { type ChampSaisie, chargeEnTexte, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
-import { Text, View } from "react-native";
+import { type Ref, useRef } from "react";
+import { Text, TextInput, View } from "react-native";
 import {
   creerStyles,
   espace,
@@ -35,8 +36,9 @@ function textePrecedent(p?: { reps: number | null; chargeKg: number | null; fait
 
 /**
  * Une série sur UNE ligne (D87) : étiquette · précédent · charge · reps · ✓.
- * Les cases ne sont pas des champs : un appui ouvre le pavé de la séance (D109),
- * qui écrit dans la case cerclée d'encre. L'écran tient le texte en cours.
+ * Les cases sont des champs au clavier du téléphone (D184) : « Suivant » passe
+ * de la charge aux reps, la fin de saisie écrit dans la séance. L'écran tient le
+ * texte en cours.
  */
 export function LigneSerie({
   numero,
@@ -47,6 +49,8 @@ export function LigneSerie({
   precedent,
   edition,
   onEditer,
+  onTexte,
+  onFermer,
   onChange,
   onValider,
   onEtiquette,
@@ -59,9 +63,14 @@ export function LigneSerie({
   etat: EtatSerie;
   /** Ce qui a été fait la dernière fois à cette position (D67). */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
-  /** La case en cours de saisie au pavé, et son texte. */
-  edition: { champ: ChampPave; texte: string; invalide: boolean } | null;
-  onEditer: (champ: ChampPave) => void;
+  /** La case en cours de saisie, et son texte. */
+  edition: { champ: ChampSaisie; texte: string; invalide: boolean } | null;
+  /** Une case prend le focus : la saisie commence. */
+  onEditer: (champ: ChampSaisie) => void;
+  /** Le texte tapé, à chaque touche. */
+  onTexte: (texte: string) => void;
+  /** La case perd le focus : la saisie s'écrit dans la séance. */
+  onFermer: () => void;
   onChange: (patch: { reps?: number | null; chargeKg?: number | null }) => void;
   onValider: () => void;
   /** L'appui sur l'étiquette : type de série, suppression (D92). */
@@ -69,6 +78,7 @@ export function LigneSerie({
 }) {
   const styles = useStyles();
   const couleurs = useCouleurs();
+  const champReps = useRef<TextInput>(null);
 
   // Recopier la dernière fois dans la séance, d'un seul appui.
   const recopier = () => {
@@ -138,7 +148,12 @@ export function LigneSerie({
         invalide={edition?.champ === "charge" && edition.invalide}
         fantome={aVenir && !serie.saisi?.chargeKg}
         faite={faite}
-        onPress={() => onEditer("charge")}
+        clavier="decimal-pad"
+        onFocus={() => onEditer("charge")}
+        onChangeText={onTexte}
+        onBlur={onFermer}
+        // « Suivant » : la charge passe aux reps, le clavier reste ouvert.
+        onSuivant={() => champReps.current?.focus()}
       />
       <Case
         libelle={`Série ${numero}, répétitions`}
@@ -149,7 +164,11 @@ export function LigneSerie({
         invalide={edition?.champ === "reps" && edition.invalide}
         fantome={aVenir && !serie.saisi?.reps}
         faite={faite}
-        onPress={() => onEditer("reps")}
+        clavier="number-pad"
+        ref={champReps}
+        onFocus={() => onEditer("reps")}
+        onChangeText={onTexte}
+        onBlur={onFermer}
       />
       <Appuyable
         accessibilityRole="checkbox"
@@ -165,7 +184,11 @@ export function LigneSerie({
   );
 }
 
-/** Une case kg ou reps : un appui ouvre le pavé ; en saisie, elle est cerclée d'encre. */
+/**
+ * Une case kg ou reps, au clavier du téléphone (D184). Au focus, tout le texte
+ * est sélectionné : la première touche remplace la valeur, comme le pavé de
+ * D109. En saisie, elle est cerclée d'encre ; invalide, de rouge.
+ */
 function Case({
   libelle,
   texte,
@@ -173,7 +196,12 @@ function Case({
   invalide,
   fantome,
   faite,
-  onPress,
+  clavier,
+  ref,
+  onFocus,
+  onChangeText,
+  onBlur,
+  onSuivant,
 }: {
   libelle: string;
   texte: string;
@@ -181,30 +209,43 @@ function Case({
   invalide: boolean;
   fantome: boolean;
   faite: boolean;
-  onPress: () => void;
+  clavier: "decimal-pad" | "number-pad";
+  ref?: Ref<TextInput>;
+  onFocus: () => void;
+  onChangeText: (texte: string) => void;
+  onBlur: () => void;
+  /** Absent : la touche du clavier ferme la saisie. */
+  onSuivant?: () => void;
 }) {
   const styles = useStyles();
+  const couleurs = useCouleurs();
   return (
-    <Appuyable
-      onPress={onPress}
-      hitSlop={4}
+    <TextInput
+      ref={ref}
+      value={texte}
+      placeholder="—"
+      placeholderTextColor={couleurs.encreTertiaire}
+      keyboardType={clavier}
+      returnKeyType={onSuivant ? "next" : "done"}
+      submitBehavior={onSuivant ? "submit" : "blurAndSubmit"}
+      onSubmitEditing={onSuivant}
+      selectTextOnFocus
+      onFocus={onFocus}
+      onChangeText={onChangeText}
+      onBlur={onBlur}
+      maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+      numberOfLines={1}
+      accessibilityLabel={libelle}
+      // Une case a toujours son fond : on la voit comme un champ, même faite.
       style={[
         styles.case,
+        styles.caseTexte,
+        fantome && !editee && styles.caseFantome,
         faite && styles.caseFaite,
         editee && styles.caseEditee,
         invalide && styles.caseKo,
       ]}
-      accessibilityRole="button"
-      accessibilityLabel={`${libelle} : ${texte || "vide"}`}
-    >
-      <Text
-        maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-        style={[styles.caseTexte, fantome && !editee && styles.caseFantome]}
-        numberOfLines={1}
-      >
-        {texte || "—"}
-      </Text>
-    </Appuyable>
+    />
   );
 }
 
@@ -236,10 +277,11 @@ const useStyles = creerStyles((couleurs) => ({
   case: {
     flex: 1,
     height: 40,
+    paddingVertical: 0,
+    paddingHorizontal: espace.xs,
     borderRadius: rayon.cellule,
     backgroundColor: couleurs.surface2,
-    alignItems: "center",
-    justifyContent: "center",
+    textAlign: "center",
   },
   caseTexte: {
     color: couleurs.encre,
@@ -247,7 +289,7 @@ const useStyles = creerStyles((couleurs) => ({
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
   },
-  // En saisie au pavé : cerclée d'encre (D108).
+  // En saisie : cerclée d'encre (D108).
   caseEditee: { borderWidth: 2, borderColor: couleurs.encre },
   // À venir : les cibles se lisent, en retrait, jusqu'à ce qu'on y arrive.
   caseFantome: { color: couleurs.encreTertiaire },

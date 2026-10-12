@@ -2,15 +2,13 @@ import {
   ajouterExercice,
   ajouterSerie,
   ajusterRepos,
-  ajusterSurPave,
   arreterRepos,
   avecPrecedents,
   bilanSeance,
-  type ChampPave,
+  type ChampSaisie,
   chargeEnTexte,
   defaireSuperset,
   delierExercice,
-  effacerSurPave,
   formaterCharge,
   groupes,
   lierExercices,
@@ -29,7 +27,6 @@ import {
   roleRepos,
   type SeanceEnCours,
   secondesEcoulees,
-  toucherPave,
   validerSerie,
 } from "@better-lift/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,12 +34,11 @@ import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
 import { ChevronDown, Plus, Trash2, Unlink2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BackHandler, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Keyboard, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BandeauRepos } from "../components/seance/bandeau-repos";
-import { CarteExercice, etiquettes } from "../components/seance/carte-exercice";
+import { CarteExercice } from "../components/seance/carte-exercice";
 import { HorlogeRepos } from "../components/seance/horloge-repos";
-import { PaveNumerique } from "../components/seance/pave-numerique";
 import { Appuyable } from "../components/ui/appuyable";
 import { formaterSerie } from "../components/ui/badge-record";
 import { RepereSuperset } from "../components/ui/repere-superset";
@@ -62,8 +58,8 @@ export { EcranErreurSeance as ErrorBoundary } from "../components/ui/ecran-erreu
 const HAUTEUR_LIGNE = 52;
 const RESERVE_BANDEAU = 140;
 
-/** La case en cours de saisie au pavé (D109) : l'écran tient le texte tapé. */
-type Edition = { iE: number; iS: number; champ: ChampPave; texte: string; neuf: boolean };
+/** La case en cours de saisie au clavier (D184) : l'écran tient le texte tapé. */
+type Edition = { iE: number; iS: number; champ: ChampSaisie; texte: string; neuf: boolean };
 
 /** Le texte tapé, lu en valeur ; `NaN` signale une saisie à corriger. */
 function valeurDe(e: Edition): number | null {
@@ -71,10 +67,6 @@ function valeurDe(e: Edition): number | null {
 }
 
 /**
- * La saisie écrite dans la séance — inchangée si elle est invalide, ou si
- * aucune touche n'a été frappée : ouvrir puis fermer le pavé ne fait pas d'une
- * cible une valeur saisie.
- */
 /** « Rowing buste penché · 70 kg × 8 » : la prochaine série, pour l'horloge (D168). */
 function libelleEnsuite(s: SeanceEnCours): string | null {
   const p = prochaineSerie(s);
@@ -85,6 +77,11 @@ function libelleEnsuite(s: SeanceEnCours): string | null {
   return `${e.nom} · ${formaterSerie(serie.chargeKg, serie.reps)}`;
 }
 
+/**
+ * La saisie écrite dans la séance — inchangée si elle est invalide, ou si
+ * aucune touche n'a été frappée : entrer puis sortir d'une case ne fait pas
+ * d'une cible une valeur saisie.
+ */
 function appliquer(s: SeanceEnCours, e: Edition): SeanceEnCours {
   if (e.neuf) return s;
   const v = valeurDe(e);
@@ -105,7 +102,7 @@ export default function Seance() {
   const [horloge, setHorloge] = useState<{ total: number } | null>(null);
   const defilement = useRef<ScrollView>(null);
   // Les positions des blocs et de leurs lignes, pour amener la ligne saisie
-  // au-dessus du pavé.
+  // au-dessus du clavier.
   const positions = useRef<{ blocs: number[]; lignes: Record<string, number> }>({
     blocs: [],
     lignes: {},
@@ -152,19 +149,15 @@ export default function Seance() {
     }
   }, [repos, seance, modifier]);
 
-  // Le retour d'Android ferme d'abord le pavé, comme une feuille, en gardant la
-  // saisie : sans lui, il quittait la séance et perdait la valeur tapée.
-  // `fermerPave` se lit au moment du retour, jamais figé à l'abonnement.
-  const fermerPave = useRef<() => void>(() => {});
-  const paveOuvert = edition !== null;
+  // Le retour d'Android ferme le clavier SANS ôter le focus de la case : la
+  // saisie ne s'écrirait pas, et un nouvel appui sur la case ne la rouvrirait
+  // pas. Clavier fermé, on ôte le focus — la case écrit alors sa saisie.
+  const enSaisie = edition !== null;
   useEffect(() => {
-    if (!paveOuvert) return;
-    const abonnement = BackHandler.addEventListener("hardwareBackPress", () => {
-      fermerPave.current();
-      return true;
-    });
+    if (!enSaisie) return;
+    const abonnement = Keyboard.addListener("keyboardDidHide", () => Keyboard.dismiss());
     return () => abonnement.remove();
-  }, [paveOuvert]);
+  }, [enSaisie]);
 
   if (!pret) return <SafeAreaView style={styles.ecran} />;
 
@@ -218,8 +211,10 @@ export default function Seance() {
     router.push("/choisir-exercices?mode=remplacer");
   };
 
-  // --- Le pavé (D109) ----------------------------------------------------------
-  const ouvrir = (iE: number, iS: number, champ: ChampPave) => {
+  // --- La saisie au clavier (D184) --------------------------------------------
+  // Une case prend le focus. Venue d'une autre case (« Suivant »), la saisie
+  // précédente s'écrit d'abord.
+  const ouvrir = (iE: number, iS: number, champ: ChampSaisie) => {
     const s = edition ? appliquer(seance, edition) : seance;
     if (edition) modifier(s);
     const serie = s.exercices[iE]?.series[iS];
@@ -235,38 +230,21 @@ export default function Seance() {
           : champ === "charge"
             ? chargeEnTexte(valeur, SYSTEME_UNITES)
             : String(valeur),
-      // La première touche remplace la valeur affichée.
+      // Le texte est sélectionné : la première touche remplace la valeur.
       neuf: true,
     });
-    // La ligne passe dans le quart haut de l'écran : le pavé occupe le bas.
+    // La ligne passe dans le quart haut de l'écran : le clavier occupe le bas.
     const y = (positions.current.blocs[iE] ?? 0) + (positions.current.lignes[`${iE}-${iS}`] ?? 0);
     defilement.current?.scrollTo({ y: Math.max(0, y - hauteurEcran * 0.25), animated: true });
   };
+  const taper = (texte: string) => {
+    if (edition) setEdition({ ...edition, texte, neuf: false });
+  };
+  // La case perd le focus : la saisie s'écrit. Une case quittée pour la
+  // suivante s'est déjà écrite dans `ouvrir`.
   const fermer = () => {
     if (edition) modifier(appliquer(seance, edition));
     setEdition(null);
-  };
-  fermerPave.current = fermer;
-  const suivant = () => {
-    if (!edition) return;
-    modifier(appliquer(seance, edition));
-    const serie = seance.exercices[edition.iE]?.series[edition.iS];
-    setEdition({
-      ...edition,
-      champ: "reps",
-      texte: serie?.reps == null ? "" : String(serie.reps),
-      neuf: true,
-    });
-  };
-  const validerDepuisPave = () => {
-    if (!edition) return;
-    const s = appliquer(seance, edition);
-    const deja = s.exercices[edition.iE]?.series[edition.iS]?.faite;
-    if (!deja) vibrer.valider();
-    const apres = deja ? s : validerSerie(s, edition.iE, edition.iS, new Date(), reposDefaut);
-    modifier(apres);
-    setEdition(null);
-    if (!deja) apresCoche(apres);
   };
 
   // Après une coche, la prochaine série reste sous les yeux : si elle est hors
@@ -350,8 +328,8 @@ export default function Seance() {
       {/* De la marge en bas : le bandeau de repos ne doit jamais cacher la dernière série. */}
       <ScrollView
         ref={defilement}
-        // Assez de place sous la dernière série pour la remonter au-dessus du pavé.
-        contentContainerStyle={{ paddingBottom: edition ? hauteurEcran * 0.6 : 200 }}
+        // Assez de place sous la dernière série pour la remonter au-dessus du clavier.
+        contentContainerStyle={{ paddingBottom: edition ? hauteurEcran * 0.5 : 200 }}
         keyboardShouldPersistTaps="handled"
         onScroll={(e) => {
           defilementY.current = e.nativeEvent.contentOffset.y;
@@ -408,14 +386,22 @@ export default function Seance() {
                       : null
                   }
                   onEditer={(iS, champ) => ouvrir(iE, iS, champ)}
+                  onTexte={taper}
+                  onFermer={fermer}
                   onPositionLigne={(iS, y) => {
                     positions.current.lignes[`${iE}-${iS}`] = y;
                   }}
                   prochaine={prochaine?.iE === iE ? prochaine.iS : null}
                   onModifierSerie={(iS, patch) => modifier(modifierSerie(seance, iE, iS, patch))}
                   onValiderSerie={(iS) => {
-                    const deja = seance.exercices[iE]?.series[iS]?.faite;
-                    const apres = validerSerie(seance, iE, iS, new Date(), reposDefaut);
+                    // Clavier ouvert, la saisie en cours compte avant la coche.
+                    const base = edition ? appliquer(seance, edition) : seance;
+                    if (edition) {
+                      setEdition(null);
+                      Keyboard.dismiss();
+                    }
+                    const deja = base.exercices[iE]?.series[iS]?.faite;
+                    const apres = validerSerie(base, iE, iS, new Date(), reposDefaut);
                     modifier(apres);
                     if (!deja) apresCoche(apres);
                   }}
@@ -449,33 +435,7 @@ export default function Seance() {
         </View>
       </ScrollView>
 
-      {edition ? (
-        <PaveNumerique
-          champ={edition.champ}
-          serie={
-            etiquettes(seance.exercices[edition.iE]?.series ?? [])[edition.iS] ??
-            String(edition.iS + 1)
-          }
-          texte={edition.texte}
-          invalide={Number.isNaN(valeurDe(edition))}
-          onTouche={(t) =>
-            setEdition({ ...edition, texte: toucherPave(edition.texte, t, edition), neuf: false })
-          }
-          onEffacer={() =>
-            setEdition({
-              ...edition,
-              texte: effacerSurPave(edition.neuf ? "" : edition.texte),
-              neuf: false,
-            })
-          }
-          onAjuster={(pas) =>
-            setEdition({ ...edition, texte: ajusterSurPave(edition.texte, pas), neuf: false })
-          }
-          onSuivant={suivant}
-          onValider={validerDepuisPave}
-          onFermer={fermer}
-        />
-      ) : repos !== null && horloge ? (
+      {repos !== null && horloge && !edition ? (
         <HorlogeRepos
           restant={repos}
           total={horloge.total}
@@ -491,7 +451,7 @@ export default function Seance() {
           }}
           onReduire={() => setHorloge(null)}
         />
-      ) : repos !== null ? (
+      ) : repos !== null && !edition ? (
         <BandeauRepos
           restant={repos}
           onPasser={() => modifier(arreterRepos(seance))}

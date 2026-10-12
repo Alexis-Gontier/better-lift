@@ -43,14 +43,6 @@ export {
   zoneDuMuscle,
   zonesTravaillees,
 } from "./muscles.js";
-export {
-  ajusterSurPave,
-  type ChampPave,
-  effacerSurPave,
-  lireReps,
-  type TouchePave,
-  toucherPave,
-} from "./pave.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { type ExerciceProgres, progresExercices, type SeanceProgres } from "./progres.js";
 export {
@@ -92,6 +84,7 @@ export {
   TYPES_SERIE,
   type TypeSerie,
 } from "./routines.js";
+export { type ChampSaisie, lireReps } from "./saisie.js";
 export {
   ajouterExercice,
   ajouterSerie,
