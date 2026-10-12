@@ -54,6 +54,16 @@ n'avait plus de raison d'être.
   couche d'état, l'encre à 10 %, teinte la pilule (Material 3) ; icône et libellé restent nets.
 - Le bandeau de la séance en cours (D107) reste au-dessus de la barre.
 
+## D180 — Onglet actif en orange, halo d'appui
+
+La couche d'état grise de D179 était jugée laide. À la demande de l'utilisateur :
+
+- **L'onglet actif est une pilule orange** (`action`), icône `surAction`, libellé à l'encre.
+  **Exception bornée** à la règle « l'orange porte l'action et le record », comme la carte du
+  corps, le calendrier et l'horloge de salle (D162, D168).
+- **À l'appui, un halo orange** naît autour de la pilule, s'élargit et s'efface en 900 ms, façon
+  Basic-Fit. Animations réduites : il s'efface sans s'élargir. Plus de couche d'état grise.
+
 ## Vérification
 
 `/verif` (build, typecheck, test, lint, knip) — Knip confirme qu'aucun export orphelin ne reste.

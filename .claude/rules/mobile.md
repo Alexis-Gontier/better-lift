@@ -45,7 +45,8 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
   les cartes et les feuilles, les aplats d'action et de danger, le badge record sur son fond
   teinté, et l'absence de lime** : un token qui échoue se corrige par sa valeur, jamais par le
   seuil. L'orange ne porte que l'action (aplat) et le record (contour) ; exceptions bornées
-  (D162) : la carte du corps, le calendrier, puis l'horloge de salle. Le thème suit celui du
+  (D162) : la carte du corps, le calendrier, puis l'horloge de salle et l'onglet actif avec
+  son halo (D180). Le thème suit celui du
   téléphone (`useColorScheme`, `userInterfaceStyle: "automatic"`). Jamais de couleur en dur dans
   un écran : un rôle manque, il s'ajoute au type, dans les deux registres.
 - **Styles** : `const useStyles = creerStyles((couleurs) => ({ … }))` au niveau du module, puis
@@ -104,10 +105,12 @@ Conception : [`2026-10-13-mobile-mvp-retrait-design.md`](../../docs/superpowers/
   centre. Accueil, Progrès et détail d'une séance sont retirés (D178) ; l'historique se lit sur le
   web. `index.tsx` redirige vers `/routines` (la route garde son nom, le titre est
   « Entraînement ») pour que `/` reste valide.
-- **Onglet actif à l'encre, dans une pilule** `surface3` de 56 × 30 (D165). **À l'appui, une
-  couche d'état** (encre à 10 %) teinte la pilule, actif ou non ; l'icône et le libellé ne
-  pâlissent pas. Le bouton d'onglet passe l'état appuyé à sa pilule par un contexte
-  (`BoutonOnglet` dans `_layout`). Icônes Lucide, l'haltère redressée de 45°.
+- **Onglet actif dans une pilule orange** de 56 × 30, icône `surAction`, libellé à l'encre
+  (D180, exception bornée à la règle de l'orange, voulue par l'utilisateur). **À l'appui, un
+  halo orange** (rond de 56, opacité 0,35 → 0, échelle 0,9 → 1,7 en 900 ms ; sans élargissement
+  si les animations sont réduites) naît autour de la pilule et s'efface lentement, façon
+  Basic-Fit ; l'onglet ne pâlit pas. Le bouton d'onglet passe l'état appuyé à sa pilule par un
+  contexte (`BoutonOnglet` dans `_layout`). Icônes Lucide, l'haltère redressée de 45°.
 - **Démarrer vit en tête de l'onglet Entraînement** (D179, reprend la feuille D120) : la routine
   à suivre (`routineASuivre`) et son aplat « Commencer … », puis « Séance vide » ; pendant une
   séance, un aplat « Reprendre la séance » à la place. Puis « Mes routines » et « + Nouvelle ».

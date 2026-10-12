@@ -3,6 +3,13 @@ import { BottomTabBar } from "expo-router/tabs";
 import { Dumbbell, type LucideIcon, User } from "lucide-react-native";
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 import { type ColorValue, type PressableProps, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BandeauSeance } from "../../components/bandeau-seance";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
@@ -14,32 +21,67 @@ import { creerStyles, polices, useCouleurs } from "../../lib/theme";
 const Appuye = createContext(false);
 
 /**
- * Icônes Lucide, comme le web. L'onglet actif se pose dans une pilule (D165,
- * Material 3) et s'épaissit : c'est la forme qui dit la position, pas la couleur.
- * L'haltère est redressée de 45°, comme le logo.
+ * Icônes Lucide, comme le web. L'onglet actif se pose dans une pilule orange
+ * (D180), icône à l'encre sur l'aplat, et s'épaissit. L'haltère est redressée de
+ * 45°, comme le logo.
  */
 const icone =
   (Icone: LucideIcon, redresser = false) =>
   ({ focused, color }: { focused: boolean; color: ColorValue }) => (
     <PiluleOnglet active={focused}>
-      <View style={redresser ? { transform: [{ rotate: "45deg" }] } : undefined}>
-        <Icone color={color as string} size={22} strokeWidth={focused ? 2.4 : 1.8} />
-      </View>
+      {(encre) => (
+        <View style={redresser ? { transform: [{ rotate: "45deg" }] } : undefined}>
+          <Icone
+            color={focused ? encre : (color as string)}
+            size={22}
+            strokeWidth={focused ? 2.4 : 1.8}
+          />
+        </View>
+      )}
     </PiluleOnglet>
   );
 
+/** Le halo d'un appui : visible d'emblée, il s'élargit et s'efface lentement. */
+const DUREE_HALO = 900;
+
 /**
- * Sous le doigt, une couche d'état teinte la pilule (D179, Material 3) : l'encre
- * à 10 % par-dessus son fond. L'icône et le libellé restent nets — pâlir tout
- * l'onglet délavait la pilule active.
+ * La pilule d'un onglet (D180). Actif : un aplat orange — exception bornée à la
+ * règle « l'orange porte l'action et le record », voulue par l'utilisateur.
+ * Sous le doigt, un halo naît autour de la pilule puis s'efface lentement, façon
+ * Basic-Fit ; animations réduites, il s'efface sans s'élargir.
  */
-function PiluleOnglet({ active, children }: { active: boolean; children: ReactNode }) {
+function PiluleOnglet({
+  active,
+  children,
+}: {
+  active: boolean;
+  children: (encre: string) => ReactNode;
+}) {
   const styles = useStyles();
+  const couleurs = useCouleurs();
   const appuye = useContext(Appuye);
+  const reduit = useReducedMotion();
+  const opacite = useSharedValue(0);
+  const echelle = useSharedValue(1);
+  useEffect(() => {
+    if (!appuye) return;
+    opacite.value = 0.35;
+    opacite.value = withTiming(0, { duration: DUREE_HALO, easing: Easing.out(Easing.quad) });
+    echelle.value = 0.9;
+    if (!reduit) {
+      echelle.value = withTiming(1.7, { duration: DUREE_HALO, easing: Easing.out(Easing.cubic) });
+    }
+  }, [appuye, reduit, opacite, echelle]);
+  const halo = useAnimatedStyle(() => ({
+    opacity: opacite.value,
+    transform: [{ scale: echelle.value }],
+  }));
   return (
-    <View style={[styles.pilule, active && styles.piluleActive]}>
-      {appuye ? <View style={styles.coucheEtat} /> : null}
-      {children}
+    <View style={styles.place}>
+      <Animated.View pointerEvents="none" style={[styles.halo, halo]} />
+      <View style={[styles.pilule, active && styles.piluleActive]}>
+        {children(couleurs.surAction)}
+      </View>
     </View>
   );
 }
@@ -143,22 +185,20 @@ export default function Onglets() {
 }
 
 const useStyles = creerStyles((couleurs) => ({
+  place: { width: 56, height: 30, alignItems: "center", justifyContent: "center" },
+  halo: {
+    position: "absolute",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: couleurs.action,
+  },
   pilule: {
     width: 56,
     height: 30,
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
   },
-  piluleActive: { backgroundColor: couleurs.surface3 },
-  coucheEtat: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: couleurs.encre,
-    opacity: 0.1,
-  },
+  piluleActive: { backgroundColor: couleurs.action },
 }));

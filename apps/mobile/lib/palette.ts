@@ -6,7 +6,8 @@
  *
  * L'orange ne porte que deux rôles, distingués par la forme : l'action en aplat
  * (`action` / `surAction`), le record en contour (`record*`). Exceptions bornées
- * (D162) : la carte du corps (`corps*`) et le calendrier. Le danger a sa propre
+ * (D162) : la carte du corps (`corps*`), le calendrier, l'horloge de salle, et la
+ * pilule de l'onglet actif avec le halo d'appui (D180). Le danger a sa propre
  * couleur.
  */
 export type Couleurs = {
