@@ -27,7 +27,10 @@ coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. Le mo
 « Underground orange », Barlow, Accueil tableau de la semaine, onglet Progrès, horloge de salle ;
 le web bascule ensuite (D177). Le mobile est ensuite **resserré pour le MVP** (D178,
 `2026-10-13-mobile-mvp-retrait-design.md`) : Accueil, Progrès et détail de séance retirés, la barre
-est Entraînement · Profil, façon Hevy (D179) ; les pages gardées sont revues une à une. **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
+est Entraînement · Profil, façon Hevy (D179, D181). L'interface mobile se change **par fichier de
+thème** (D182, `apps/mobile/themes/`, `lib/theme-actif.ts`) ; thème actif **Basic-Fit** (D183). En
+séance, kg et reps se saisissent au **clavier du téléphone** (D184,
+`2026-10-13-mobile-themes-design.md`) ; les pages gardées sont revues une à une. **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
 
 Distant : `Alexis-Gontier/better-lift` (privé). Le code de la V1 reste sur la branche `v1` et le

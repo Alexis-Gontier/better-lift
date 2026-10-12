@@ -38,10 +38,22 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 
 Conception : [`2026-10-03-mobile-refonte-design.md`](../../docs/superpowers/specs/2026-10-03-mobile-refonte-design.md),
 puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-10-11-mobile-identite-design.md)
-(identité « Underground orange »). Le système en une page : [`DESIGN.md`](../../DESIGN.md).
+(identité « Underground orange »), puis [`2026-10-13-mobile-themes-design.md`](../../docs/superpowers/specs/2026-10-13-mobile-themes-design.md)
+(thèmes interchangeables, Basic-Fit). Le système en une page : [`DESIGN.md`](../../DESIGN.md).
 
-- **Couleurs par rôle, deux valeurs** (`lib/palette.ts`, TypeScript pur, type `Couleurs` ;
-  `lib/theme.ts` les sert). **`lib/palette.test.ts` vérifie chaque texte à 4,5:1 sur le canevas,
+- **Un fichier par thème (D182)** : `themes/<nom>/couleurs.ts` (TypeScript pur, `sombre` et
+  `clair` de type `Couleurs`) et `themes/<nom>/index.ts` (type `Theme` : couleurs, polices et
+  leurs fichiers, rayons, style d'affiche). `themes/index.ts` et `themes/couleurs.ts` les
+  recensent ; **`lib/theme-actif.ts` choisit le thème en une ligne** (actif : **Basic-Fit**,
+  D183 ; Underground orange reste pour revenir en arrière). `lib/theme.ts` garde son API
+  (`useCouleurs`, `creerStyles`, `polices`, `rayon`, `affiche`) et lit le thème actif ;
+  `app/_layout.tsx` charge ses polices. Espacements, tailles, `CIBLE` restent communs. Nouveau
+  thème : un dossier, une entrée dans les deux registres, polices par `npx expo install`, Metro
+  relancé en `--clear`.
+- **`lib/couleurs-en-dur.test.ts`** échoue sur toute couleur littérale (`"#…"`, `rgba(`) dans
+  `app/`, `components/` ou `lib/` : les couleurs ne vivent que dans `themes/`.
+- **Couleurs par rôle, deux valeurs.** **`lib/themes.test.ts` vérifie, pour chaque thème,
+  chaque texte à 4,5:1 sur le canevas,
   les cartes et les feuilles, les aplats d'action et de danger, le badge record sur son fond
   teinté, et l'absence de lime** : un token qui échoue se corrige par sa valeur, jamais par le
   seuil. L'orange ne porte que l'action (aplat) et le record (contour) ; exceptions bornées
@@ -53,13 +65,15 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
   `const styles = useStyles()` dans le composant ; `useCouleurs()` pour une couleur passée en
   prop (icône, `placeholderTextColor`). **Jamais de `StyleSheet.create` au niveau du module** : il
   figerait les couleurs au chargement.
-- **Barlow et Barlow Condensed** (D163, `@expo-google-fonts`, chargées à la racine, écran de
-  démarrage tenu jusque-là). `creerStyles` traduit `fontWeight` en famille Barlow (plafond 700) :
-  un style hors de la fabrique (options d'Expo Router, `tabBarLabelStyle`) pose
-  `fontFamily: polices.…` lui-même. L'**affiche** (`affiche` de `lib/theme.ts` : Barlow Condensed
-  en capitales, à étaler dans un style) se pose explicitement, seulement sur titres de page, noms
+- **Polices du thème** (D163, D182 ; Basic-Fit : Archivo et Archivo Black, Underground : Barlow
+  et Barlow Condensed ; `@expo-google-fonts`, chargées à la racine, écran de démarrage tenu
+  jusque-là). `creerStyles` traduit `fontWeight` en famille de la bonne graisse (plafond 700) :
+  un style hors de la fabrique (options d'Expo Router) pose `fontFamily: polices.…` lui-même.
+  L'**affiche** (`affiche` de `lib/theme.ts` : la police d'affiche du thème en capitales, à
+  étaler dans un style) se pose explicitement, seulement sur titres de page, noms
   en tête, chrono et valeurs de record — jamais sur un bouton, une étiquette ou un tableau.
-- **Rayons francs (D164)** : 6 pour cartes, boutons, cellules et bandeaux, 16 pour les feuilles,
+- **Rayons du thème (D164, D182)** — Basic-Fit : 12 pour les cartes, 8 pour boutons, cellules et
+  bandeaux ; Underground : 6 partout ; 16 pour les feuilles,
   la pilule pour les puces ; toujours par `rayon`, jamais en littéral (sauf un cercle).
 - **Tout élément appuyable passe par `Appuyable`** (`components/ui/appuyable.tsx`) : il pâlit
   sous le doigt. Un style en fonction (`({ pressed }) => …`) garde la main sur l'état appuyé.
@@ -73,7 +87,7 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
   vers le bas (80 px ou 800 px/s) ; sous Android, le contenu d'un `Modal` porte sa propre
   `GestureHandlerRootView`.
 - **Contraste** : tout texte tient 4,5:1 sur la surface où il se pose, dans les deux registres
-  (`encreAttenuee` comprise). Un nouveau token entre dans `palette.test.ts` avant l'écran.
+  (`encreAttenuee` comprise). Un nouveau token entre dans `themes.test.ts` avant l'écran.
 - **États (D176)** : `Chargement` dessine un squelette de cartes qui pulse (immobile si les
   animations sont réduites, `useReducedMotion`) ; une attente de moins d'une seconde (garde de
   session) n'affiche rien.
@@ -88,7 +102,7 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
   que `useColorScheme` — donc `useCouleurs` — suit partout. Lu dès le chargement de
   `app/_layout.tsx`, avant le premier écran.
 - **Taille du texte du système** : suivie partout, sauf dans les éléments de hauteur fixe de la
-  séance (lignes de série, en-têtes de colonnes, pavé, bandeau de repos), plafonnés par
+  séance (lignes de série, en-têtes de colonnes, bandeau de repos), plafonnés par
   `maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}` (1,3). Un nouvel élément de hauteur fixe le
   reçoit ; une colonne étroite ajoute `numberOfLines={1} adjustsFontSizeToFit`.
 - **Écran de secours** : `ErrorBoundary` exporté par `app/_layout.tsx` (toutes les routes) et par
@@ -202,14 +216,19 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   « 3 / 16 ». Décocher vibre (`selection`). Cases de 40, ligne de 52.
 - **Cible ou saisie** : `saisi` (`shared`, par champ : `chargeKg`, `reps`) marque ce qui a été
   tapé pendant la séance. Une case à venir non saisie montre sa cible en fantôme ; saisie, elle
-  passe à l'encre. Ouvrir puis fermer le pavé sans toucher ne saisit rien (`Edition.neuf`).
+  passe à l'encre. Entrer puis sortir d'une case sans taper ne saisit rien (`Edition.neuf`).
   Local au téléphone : `versEnvoi` ne l'envoie pas.
-- **Pavé intégré (D109)** : les cases kg / reps ne sont pas des `TextInput` ; un appui ouvre
-  `components/seance/pave-numerique.tsx`, et l'écran de séance tient la saisie (`Edition` dans
-  `app/seance.tsx`). La logique des touches (`toucherPave`, `ajusterSurPave`, `lireReps`) vit
-  dans `shared/pave.ts`. Le retour Android ferme le pavé en gardant la saisie (`BackHandler`),
-  au lieu de quitter la séance. Une saisie invalide n'est jamais écrite ; la ligne saisie défile au
-  quart haut de l'écran (positions des blocs et des lignes par `onLayout`).
+- **Clavier du téléphone (D184, révise le pavé D109)** : les cases kg / reps sont des
+  `TextInput` (`decimal-pad`, lu par `lireCharge` qui accepte « , » et « . » ; `number-pad`, lu
+  par `lireReps` de `shared/saisie.ts`), texte sélectionné au focus. L'écran de séance tient la
+  saisie (`Edition` dans `app/seance.tsx`) : `ouvrir` au focus, `taper` à chaque touche, `fermer`
+  à la perte du focus. « Suivant » passe de kg à reps (`submitBehavior="submit"`), « Terminé »
+  ferme. Le retour Android ferme le clavier SANS ôter le focus : `keyboardDidHide` appelle
+  `Keyboard.dismiss()` pour que la case écrive sa saisie. Cocher ✓ clavier ouvert applique
+  d'abord la saisie en cours. Une saisie invalide n'est jamais écrite (contour `dangerEncre`) ;
+  la ligne saisie défile au quart haut de l'écran ; horloge et bandeau de repos se masquent
+  pendant la saisie. **Émulateur** : `hw.keyboard=yes` n'affiche qu'une barre flottante ;
+  `adb shell settings put secure show_ime_with_hard_keyboard 1` montre le clavier à l'écran.
 - **Fin du repos app fermée** : notification locale programmée à `repos.fin`
   (`lib/notification-repos.ts`, appelée par le `SeanceProvider`), dérivée de l'état : tout
   changement de `repos.fin` reprogramme ou annule, en file. Masquée au premier plan (l'écran vibre

@@ -1,8 +1,17 @@
-# better-lift — système visuel « Underground orange »
+# better-lift — système visuel du mobile
+
+> **Thèmes interchangeables (D182).** Le mobile change d'interface par fichier de thème
+> (`apps/mobile/themes/<nom>/`), choisi en une ligne dans `apps/mobile/lib/theme-actif.ts`. **Thème
+> actif : Basic-Fit (D183)** — orange `#eb6800` sur fond quasi noir (sable `#fbf7f0` en clair),
+> Archivo et Archivo Black, rayons 12 (cartes) et 8 ; voir
+> [`2026-10-13-mobile-themes-design.md`](docs/superpowers/specs/2026-10-13-mobile-themes-design.md).
+> Les **rôles** et les **règles de forme** ci-dessous valent pour tout thème ; les **valeurs**
+> chiffrées décrivent Underground orange, le thème précédent, gardé dans `themes/underground/`.
+> Le code fait foi pour les valeurs de chaque thème.
 
 Ce que voit et touche l'utilisateur de l'app mobile, en un seul endroit. La décision et ses raisons
 sont dans [`docs/superpowers/specs/2026-10-11-mobile-identite-design.md`](docs/superpowers/specs/2026-10-11-mobile-identite-design.md)
-(D161–D177) ; le code fait foi pour les valeurs (`apps/mobile/lib/palette.ts`, `lib/theme.ts`).
+(D161–D177).
 **Le web garde encore le lime** : il bascule dans un chantier à part (D177).
 
 ## Thèse
@@ -14,7 +23,7 @@ muscu (Hevy, Strong).
 
 ## Couleur
 
-Un token par rôle, deux valeurs (sombre / clair). `lib/palette.test.ts` vérifie chaque contraste.
+Un token par rôle, deux valeurs (sombre / clair). `apps/mobile/lib/themes.test.ts` vérifie chaque contraste, pour chaque thème.
 
 | Rôle | Sombre | Clair | Usage |
 |---|---|---|---|
