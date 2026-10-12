@@ -64,6 +64,23 @@ La couche d'état grise de D179 était jugée laide. À la demande de l'utilisat
 - **À l'appui, un halo orange** naît autour de la pilule, s'élargit et s'efface en 900 ms, façon
   Basic-Fit. Animations réduites : il s'efface sans s'élargir. Plus de couche d'état grise.
 
+## D181 — Barre d'onglets classique, refaite de zéro
+
+D180 (pilule orange, halo qui débordait) est **remplacée**. L'utilisateur veut une barre mobile
+classique. iOS (`tintColor` de l'élément choisi) et Android disent l'onglet courant par la
+**teinte de l'icône et du libellé**, sans indicateur ; le retour d'appui d'Android est une
+ondulation **bornée** à l'élément.
+
+- **Composant propre** `components/barre-onglets.tsx`, passé en `tabBar` : icône 24 + libellé 12
+  par onglet, onglets de 60, filet en haut, marge du bas du système en dessous.
+- **Actif : icône et libellé en `ongletActif`**, l'orange de l'app en sombre (6,1:1) et un orange
+  brûlé `#b04c00` en clair (l'orange vif n'y tient que 2,8:1) ; testé dans `palette.test.ts`.
+  Inactifs : `encreAttenuee`. Exception bornée à la règle de l'orange, comme la carte du corps,
+  le calendrier et l'horloge.
+- **Halo d'appui** : un disque orange naît au centre de l'onglet, s'élargit et s'efface en
+  800 ms, **rogné par l'onglet** — il ne sort jamais de la barre. Animations réduites : il
+  s'efface sans s'élargir.
+
 ## Vérification
 
 `/verif` (build, typecheck, test, lint, knip) — Knip confirme qu'aucun export orphelin ne reste.

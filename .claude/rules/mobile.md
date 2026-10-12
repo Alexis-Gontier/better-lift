@@ -46,7 +46,7 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
   teinté, et l'absence de lime** : un token qui échoue se corrige par sa valeur, jamais par le
   seuil. L'orange ne porte que l'action (aplat) et le record (contour) ; exceptions bornées
   (D162) : la carte du corps, le calendrier, puis l'horloge de salle et l'onglet actif avec
-  son halo (D180). Le thème suit celui du
+  son halo (D181). Le thème suit celui du
   téléphone (`useColorScheme`, `userInterfaceStyle: "automatic"`). Jamais de couleur en dur dans
   un écran : un rôle manque, il s'ajoute au type, dans les deux registres.
 - **Styles** : `const useStyles = creerStyles((couleurs) => ({ … }))` au niveau du module, puis
@@ -105,12 +105,14 @@ Conception : [`2026-10-13-mobile-mvp-retrait-design.md`](../../docs/superpowers/
   centre. Accueil, Progrès et détail d'une séance sont retirés (D178) ; l'historique se lit sur le
   web. `index.tsx` redirige vers `/routines` (la route garde son nom, le titre est
   « Entraînement ») pour que `/` reste valide.
-- **Onglet actif dans une pilule orange** de 56 × 30, icône `surAction`, libellé à l'encre
-  (D180, exception bornée à la règle de l'orange, voulue par l'utilisateur). **À l'appui, un
-  halo orange** (rond de 56, opacité 0,35 → 0, échelle 0,9 → 1,7 en 900 ms ; sans élargissement
-  si les animations sont réduites) naît autour de la pilule et s'efface lentement, façon
-  Basic-Fit ; l'onglet ne pâlit pas. Le bouton d'onglet passe l'état appuyé à sa pilule par un
-  contexte (`BoutonOnglet` dans `_layout`). Icônes Lucide, l'haltère redressée de 45°.
+- **Barre classique** (D181, `components/barre-onglets.tsx`, passée en `tabBar` sous le bandeau) :
+  une icône et son libellé par onglet, sans pilule. **L'actif est teinté `ongletActif`**
+  (l'orange de l'app ; en clair un orange brûlé `#b04c00`, 4,5:1), les autres en
+  `encreAttenuee`. **À l'appui, un halo orange** (opacité 0,22 → 0, échelle 0,3 → 1 en 800 ms ;
+  sans élargissement si les animations sont réduites) naît au centre de l'onglet et s'efface,
+  **rogné par l'onglet** (`overflow: "hidden"`) : il ne sort jamais de la barre. L'onglet ne
+  pâlit pas. Seuls les écrans qui déclarent `tabBarIcon` y figurent. Icônes Lucide, l'haltère
+  redressée de 45°.
 - **Démarrer vit en tête de l'onglet Entraînement** (D179, reprend la feuille D120) : la routine
   à suivre (`routineASuivre`) et son aplat « Commencer … », puis « Séance vide » ; pendant une
   séance, un aplat « Reprendre la séance » à la place. Puis « Mes routines » et « + Nouvelle ».
@@ -127,8 +129,7 @@ Conception : [`2026-10-13-mobile-mvp-retrait-design.md`](../../docs/superpowers/
   `(onglets)` est déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 - Le `_layout` de `app/(onglets)/` porte la garde de session. `seance` et `fin` restent hors des
   onglets, en plein écran.
-- Hauteur de la barre d'onglets : `49 + 8 + bottom` (`useSafeAreaInsets`). Expo Router la fixe à
-  49 + la marge du bas ; un `paddingTop` non compté pousse les libellés sous les boutons d'Android.
+- Hauteur de la barre : onglets de 60, plus la marge du bas (`useSafeAreaInsets`) en `paddingBottom`.
 
 ## Routines (D82–D85)
 

@@ -6,8 +6,8 @@
  *
  * L'orange ne porte que deux rôles, distingués par la forme : l'action en aplat
  * (`action` / `surAction`), le record en contour (`record*`). Exceptions bornées
- * (D162) : la carte du corps (`corps*`), le calendrier, l'horloge de salle, et la
- * pilule de l'onglet actif avec le halo d'appui (D180). Le danger a sa propre
+ * (D162) : la carte du corps (`corps*`), le calendrier, l'horloge de salle, et
+ * l'onglet actif avec son halo d'appui (D181). Le danger a sa propre
  * couleur.
  */
 export type Couleurs = {
@@ -41,8 +41,8 @@ export type Couleurs = {
   /** Texte et icône posés sur l'aplat. */
   surAction: string;
   /**
-   * Icône et libellé de l'onglet actif. À l'encre (D165) : la couleur ne dit
-   * plus la position, l'indicateur en pilule de Material 3 s'en charge.
+   * Icône et libellé de l'onglet actif (D181) : l'orange de l'app, en texte. En
+   * clair, l'orange vif ne se lit pas (2,8:1) : un orange brûlé qui tient 4,5:1.
    */
   ongletActif: string;
   /** Texte et flèche du badge record. */
@@ -100,8 +100,7 @@ export const sombre: Couleurs = {
   encreAttenuee: "#939a93",
   action: ORANGE,
   surAction: "#121412",
-  // D165 : l'onglet actif n'est plus coloré ; l'indicateur en pilule arrive au lot 2.
-  ongletActif: "#f3f4f1",
+  ongletActif: ORANGE,
   recordEncre: ORANGE,
   recordFond: "rgba(244, 122, 32, 0.14)",
   recordLigne: "rgba(244, 122, 32, 0.4)",
@@ -138,7 +137,7 @@ export const clair: Couleurs = {
   encreAttenuee: "#626862",
   action: ORANGE_CLAIR,
   surAction: "#121412",
-  ongletActif: "#121412",
+  ongletActif: "#b04c00",
   // L'orange en texte ne se lit pas sur fond clair : le record passe à l'orange brûlé.
   recordEncre: "#a84800",
   recordFond: "rgba(254, 112, 0, 0.1)",

@@ -1,116 +1,31 @@
 import { Redirect, Tabs } from "expo-router";
-import { BottomTabBar } from "expo-router/tabs";
 import { Dumbbell, type LucideIcon, User } from "lucide-react-native";
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import { type ColorValue, type PressableProps, View } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
+import { type ColorValue, View } from "react-native";
 import { BandeauSeance } from "../../components/bandeau-seance";
+import { BarreOnglets } from "../../components/barre-onglets";
 import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
-import { Appuyable } from "../../components/ui/appuyable";
 import { authClient } from "../../lib/auth-client";
-import { creerStyles, polices, useCouleurs } from "../../lib/theme";
-
-/** L'onglet est-il sous le doigt ? Posé par le bouton, lu par sa pilule. */
-const Appuye = createContext(false);
+import { useCouleurs } from "../../lib/theme";
 
 /**
- * Icônes Lucide, comme le web. L'onglet actif se pose dans une pilule orange
- * (D180), icône à l'encre sur l'aplat, et s'épaissit. L'haltère est redressée de
- * 45°, comme le logo.
+ * Icônes Lucide, comme le web ; l'actif s'épaissit. L'haltère est redressée de
+ * 45°, comme le logo (la rotation se pose sur une `View` : Lucide ignore `style`).
  */
 const icone =
   (Icone: LucideIcon, redresser = false) =>
-  ({ focused, color }: { focused: boolean; color: ColorValue }) => (
-    <PiluleOnglet active={focused}>
-      {(encre) => (
-        <View style={redresser ? { transform: [{ rotate: "45deg" }] } : undefined}>
-          <Icone
-            color={focused ? encre : (color as string)}
-            size={22}
-            strokeWidth={focused ? 2.4 : 1.8}
-          />
-        </View>
-      )}
-    </PiluleOnglet>
-  );
-
-/** Le halo d'un appui : visible d'emblée, il s'élargit et s'efface lentement. */
-const DUREE_HALO = 900;
-
-/**
- * La pilule d'un onglet (D180). Actif : un aplat orange — exception bornée à la
- * règle « l'orange porte l'action et le record », voulue par l'utilisateur.
- * Sous le doigt, un halo naît autour de la pilule puis s'efface lentement, façon
- * Basic-Fit ; animations réduites, il s'efface sans s'élargir.
- */
-function PiluleOnglet({
-  active,
-  children,
-}: {
-  active: boolean;
-  children: (encre: string) => ReactNode;
-}) {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
-  const appuye = useContext(Appuye);
-  const reduit = useReducedMotion();
-  const opacite = useSharedValue(0);
-  const echelle = useSharedValue(1);
-  useEffect(() => {
-    if (!appuye) return;
-    opacite.value = 0.35;
-    opacite.value = withTiming(0, { duration: DUREE_HALO, easing: Easing.out(Easing.quad) });
-    echelle.value = 0.9;
-    if (!reduit) {
-      echelle.value = withTiming(1.7, { duration: DUREE_HALO, easing: Easing.out(Easing.cubic) });
-    }
-  }, [appuye, reduit, opacite, echelle]);
-  const halo = useAnimatedStyle(() => ({
-    opacity: opacite.value,
-    transform: [{ scale: echelle.value }],
-  }));
-  return (
-    <View style={styles.place}>
-      <Animated.View pointerEvents="none" style={[styles.halo, halo]} />
-      <View style={[styles.pilule, active && styles.piluleActive]}>
-        {children(couleurs.surAction)}
-      </View>
+  ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
+    <View style={redresser ? { transform: [{ rotate: "45deg" }] } : undefined}>
+      <Icone color={color as string} size={size} strokeWidth={focused ? 2.4 : 1.8} />
     </View>
   );
-}
-
-/** Le bouton d'un onglet : il dit à sa pilule qu'il est appuyé, sans pâlir lui-même. */
-function BoutonOnglet({
-  ref: _ref,
-  children,
-  style,
-  ...props
-}: PressableProps & { ref?: unknown }) {
-  return (
-    // Un style en fonction : `Appuyable` laisse l'état appuyé à la pilule.
-    <Appuyable
-      {...props}
-      style={typeof style === "function" ? style : () => style}
-      android_ripple={null}
-    >
-      {({ pressed }) => <Appuye.Provider value={pressed}>{children as ReactNode}</Appuye.Provider>}
-    </Appuyable>
-  );
-}
 
 /**
- * Les onglets (D179), façon Hevy : Entraînement (démarrer et les routines) et
- * Profil — des destinations seulement, plus d'action au centre. Le bandeau de la
- * séance en cours (D107) reste posé au-dessus et ramène à la séance. La garde de
- * session vit ici : tout ce qui est sous les onglets exige un compte, et un seul
- * endroit le vérifie.
+ * Les onglets (D179, D181), façon Hevy : Entraînement (démarrer et les routines)
+ * et Profil, dans une barre classique (`BarreOnglets`). Le bandeau de la séance
+ * en cours (D107) se pose au-dessus et ramène à la séance. La garde de session
+ * vit ici : tout ce qui est sous les onglets exige un compte, et un seul endroit
+ * le vérifie.
  */
 export default function Onglets() {
   const couleurs = useCouleurs();
@@ -121,7 +36,6 @@ export default function Onglets() {
   useEffect(() => {
     void authClient.getCookie().then((c) => setCookieGarde(Boolean(c)));
   }, []);
-  const { bottom } = useSafeAreaInsets();
 
   // Moins d'une seconde en général : rien plutôt qu'un squelette qui clignote (NN/g).
   if (isPending || (error && cookieGarde === null)) {
@@ -146,29 +60,10 @@ export default function Onglets() {
         tabBar={(props) => (
           <>
             <BandeauSeance />
-            <BottomTabBar {...props} />
+            <BarreOnglets {...props} />
           </>
         )}
-        screenOptions={{
-          headerShown: false,
-          sceneStyle: { backgroundColor: couleurs.canevas },
-          // L'onglet actif à l'encre, les autres en encre faible (D165).
-          tabBarActiveTintColor: couleurs.ongletActif,
-          tabBarInactiveTintColor: couleurs.encreAttenuee,
-          // Toute la largeur du bas, jusque sous les boutons du système : une marche
-          // au-dessus du canevas, séparée par un filet. Expo Router fixe la hauteur
-          // à 49 + la marge du bas : sans l'ajouter ici, le `paddingTop` serait pris
-          // sur les 49 et les libellés glisseraient sous les boutons d'Android.
-          tabBarStyle: {
-            height: 49 + 8 + bottom,
-            backgroundColor: couleurs.surface1,
-            borderTopWidth: 1,
-            borderTopColor: couleurs.ligne,
-            paddingTop: 8,
-          },
-          tabBarLabelStyle: { fontSize: 11, fontFamily: polices.demiGras, marginTop: 2 },
-          tabBarButton: (props) => <BoutonOnglet {...(props as PressableProps)} />,
-        }}
+        screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: couleurs.canevas } }}
       >
         {/* `/` redirige vers l'Entraînement, l'écran d'arrivée (D178). */}
         <Tabs.Screen name="index" options={{ href: null }} />
@@ -183,22 +78,3 @@ export default function Onglets() {
     </>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  place: { width: 56, height: 30, alignItems: "center", justifyContent: "center" },
-  halo: {
-    position: "absolute",
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: couleurs.action,
-  },
-  pilule: {
-    width: 56,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  piluleActive: { backgroundColor: couleurs.action },
-}));

@@ -43,6 +43,7 @@ const TEXTES = [
   "encreAttenuee",
   "dangerEncre",
   "superset",
+  "ongletActif",
 ] as const satisfies readonly (keyof Couleurs)[];
 
 describe.each([
