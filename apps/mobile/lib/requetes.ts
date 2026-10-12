@@ -1,4 +1,4 @@
-import type { ExerciceResume, Periode, Preferences, RoutineSaisie } from "@better-lift/shared";
+import type { ExerciceResume, Preferences, RoutineSaisie } from "@better-lift/shared";
 import {
   infiniteQueryOptions,
   onlineManager,
@@ -8,7 +8,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { api } from "./api";
-import { FUSEAU } from "./fuseau";
 import { avantDelai, UNE_SEMAINE } from "./hors-ligne";
 
 /**
@@ -85,33 +84,6 @@ export function optionsRecords(slug: string) {
   });
 }
 
-/**
- * Les statistiques (D112), calculées par l'API dans le fuseau du téléphone.
- * Rangées sous leur propre clé : l'envoi d'une séance invalide `["stats"]`.
- */
-export function optionsStatsPeriode(periode: Periode) {
-  return queryOptions({
-    queryKey: ["stats", "periode", periode, FUSEAU],
-    queryFn: async () => {
-      const res = await api.stats.periode.$get({ query: { fuseau: FUSEAU, periode } });
-      if (!res.ok) throw new Error("Les stats n'ont pas pu se calculer.");
-      return res.json();
-    },
-  });
-}
-
-/** « Tes exercices » de l'onglet Progrès (D173) : rangés sous `["stats"]`, gardés hors ligne. */
-export function optionsStatsExercices(periode: Periode) {
-  return queryOptions({
-    queryKey: ["stats", "exercices", periode, FUSEAU],
-    queryFn: async () => {
-      const res = await api.stats.exercices.$get({ query: { fuseau: FUSEAU, periode } });
-      if (!res.ok) throw new Error("Les exercices n'ont pas pu se lire.");
-      return res.json();
-    },
-  });
-}
-
 /** L'historique, antéchronologique, par pages (mêmes clés que le web). */
 export function optionsSeances() {
   return infiniteQueryOptions({
@@ -123,17 +95,6 @@ export function optionsSeances() {
     },
     initialPageParam: 1,
     getNextPageParam: (d) => (d.page * d.taille < d.total ? d.page + 1 : undefined),
-  });
-}
-
-export function optionsSeance(id: string) {
-  return queryOptions({
-    queryKey: ["seances", "detail", id],
-    queryFn: async () => {
-      const res = await api.seances[":id"].$get({ param: { id } });
-      if (!res.ok) throw new Error("Cette séance n'a pas pu être chargée.");
-      return res.json();
-    },
   });
 }
 
@@ -278,26 +239,6 @@ export function useSupprimerRoutine() {
     onSuccess: (_, id) => {
       client.removeQueries({ queryKey: ["routines", "detail", id] });
       return client.invalidateQueries({ queryKey: ["routines", "liste"] });
-    },
-  });
-}
-
-export function useSupprimerSeance() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const res = await joindre(() => api.seances[":id"].$delete({ param: { id } }));
-      if (!res.ok) return echec(res, "La séance n'a pas pu être supprimée.");
-    },
-    // Le détail se RETIRE du cache (comme une routine supprimée) ; le fil, les
-    // stats et les records en dépendaient (D123).
-    onSuccess: (_, id) => {
-      client.removeQueries({ queryKey: ["seances", "detail", id] });
-      return Promise.all(
-        [["seances", "liste"], ["stats"], ["records"]].map((queryKey) =>
-          client.invalidateQueries({ queryKey }),
-        ),
-      );
     },
   });
 }
