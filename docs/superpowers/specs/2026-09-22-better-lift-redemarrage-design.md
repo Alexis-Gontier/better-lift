@@ -61,6 +61,8 @@ Distinction structurante : **une routine est un gabarit, une séance est un inst
 
 ### Périmètre du premier jalon
 
+> **Historique.** Ce périmètre et la liste « hors périmètre » ci-dessous datent du redémarrage. Plusieurs points écartés ici sont livrés depuis (tableau de bord, calendrier d'activité, supersets, courbes) : ils ne ferment aucune porte. L'état présent est dans `CLAUDE.md`.
+
 Le strict nécessaire pour abandonner Hevy :
 
 - Catalogue d'exercices en français : recherche, filtres, fiche détaillée
@@ -329,6 +331,8 @@ Pas de `.mcp.json` : Neon et Context7 viennent des plugins déjà configurés su
 | D26 | **Dépôt `Alexis-Gontier/better-lift` réinitialisé** le 22 septembre 2026 plutôt que recréé. L'historique de la V1 est conservé sur la branche `v1` et le tag `v1-final` (`b5f0a39`). Le ruleset « main protégée » est **désactivé** : ses trois checks requis désignent l'ancienne CI, le réactiver tel quel bloquerait toute PR. À remettre au lot 0, avec les noms à jour |
 
 ## 11. Découpage en lots
+
+> **Historique.** Les lots 0 à 7 sont livrés. Chaque chantier suivant a sa spec et un plan par lot dans `docs/superpowers/`.
 
 **L'interface passe avant la logique** (D25) : on dessine un écran et on le valide avant de lui brancher des données. Le découpage suit ce principe — l'interface d'un domaine précède son API, et la coquille, qui est transversale, précède tout le reste.
 

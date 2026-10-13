@@ -57,7 +57,7 @@ puis [`2026-10-11-mobile-identite-design.md`](../../docs/superpowers/specs/2026-
   les cartes et les feuilles, les aplats d'action et de danger, le badge record sur son fond
   teinté, et l'absence de lime** : un token qui échoue se corrige par sa valeur, jamais par le
   seuil. L'orange ne porte que l'action (aplat) et le record (contour) ; exceptions bornées
-  (D162) : la carte du corps, le calendrier, puis l'horloge de salle et l'onglet actif avec
+  (D162) : la carte du corps, puis l'horloge de salle et l'onglet actif avec
   son halo (D181). Le thème suit celui du
   téléphone (`useColorScheme`, `userInterfaceStyle: "automatic"`). Jamais de couleur en dur dans
   un écran : un rôle manque, il s'ajoute au type, dans les deux registres.
@@ -163,7 +163,7 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   (`react-native-body-highlighter`, `zonesTravaillees` de `shared/muscles.ts` — chaque muscle du
   catalogue a une zone ou figure dans `MUSCLES_SANS_ZONE`) — repliée par défaut : elle prenait
   un écran entier, et les zones sont déjà dites en tête. **Les muscles sont en orange** (D162) : exception bornée au
-  dessin du corps, avec le calendrier.
+  dessin du corps.
 - Édition plein écran `app/routine-edition.tsx` (`?id=` pour modifier) :
   `react-native-draggable-flatlist`, `GestureHandlerRootView` à la racine, sortie avec
   changements confirmée (`beforeRemove`). Choix d'exercices par la modale
@@ -245,8 +245,9 @@ Conception : [`2026-09-25-mobile-routines-design.md`](../../docs/superpowers/spe
   retour, y compris au retour de la modale qui vient d'ajouter des exercices.
 - **Fin de séance, la récompense d'abord (D130, D170)** : titre « Séance terminée » ; les records
   battus dans un bloc entier en contour record (médaille comprise) ou, sans record, la régularité ; puis durée, séries et volume, chacun avec son
-  écart avec la dernière séance de la même routine (lue dans le fil en cache ; une séance vide
-  n'en a pas) ; puis la note de séance (`SeanceEnCours.note`, gardée au brouillon, envoyée rognée
+  écart avec la dernière séance de la même routine (`optionsSeances`, lu par l'écran de fin
+  lui-même depuis le retrait du fil, D178 ; hors ligne, absente si rien n'est en cache ; une séance
+  vide n'en a pas) ; puis la note de séance (`SeanceEnCours.note`, gardée au brouillon, envoyée rognée
   par `versEnvoi`, vide : absente). Le reste ci-dessous tient toujours.
 - **Fin de séance (D111)** : records battus calculés sur le téléphone (`recordsBattus` de
   `shared`) contre les records en cache (`["records", slug]`, persistés et préchargés pour les
