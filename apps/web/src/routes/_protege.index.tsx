@@ -1,11 +1,12 @@
 import { PERIODES } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { EtatErreur } from "@/components/etats/etat-erreur";
 import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
 import { EtatVide } from "@/components/etats/etat-vide";
 import { PageTableau } from "@/components/shell/page-tableau";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendrier } from "@/features/tableau/calendrier";
 import { Muscles } from "@/features/tableau/muscles";
@@ -53,18 +54,25 @@ function TableauDeBord() {
     }
     if (estVideForce(etat) || stats.data.nbSeances === 0) {
       return (
-        <div className="h-80">
-          <EtatVide
-            titre="Pas encore de séance."
-            message="Les statistiques apparaissent après ta première séance sur le téléphone."
-          />
+        <div className={GRILLE}>
+          <Tuiles stats={null} preferences={preferences.data ?? null} />
+          <div className="h-72 lg:col-span-12">
+            <EtatVide
+              titre="Ta première séance remplira ce tableau."
+              message="Crée une routine ici, puis note la séance sur le téléphone."
+              action={
+                <Button asChild>
+                  <Link to="/routines/nouvelle">Créer une routine</Link>
+                </Button>
+              }
+            />
+          </div>
         </div>
       );
     }
     return (
       <div className={GRILLE}>
-        {/* Sans préférences lisibles, la tuile invite à fixer l'objectif : rien ne bloque. */}
-        <Tuiles stats={stats.data} objectif={preferences.data?.objectifHebdo ?? null} />
+        <Tuiles stats={stats.data} preferences={preferences.data ?? null} />
         <Calendrier
           annee={annee.data}
           debutPeriode={stats.data.premierLundi}
