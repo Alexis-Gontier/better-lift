@@ -10,12 +10,20 @@ paths:
 Aucune dépendance native hors SDK : le mobile tourne dans **Expo Go** (d'où AsyncStorage, D55).
 
 ```
-npx expo start                      # depuis apps/mobile
+emulator -avd better-lift           # en arrière-plan
+pnpm dev                            # en arrière-plan, depuis la racine : API :3001, web :3000, Metro :8081
+# attendre : `adb shell getprop sys.boot_completed` rend 1, et 8081 et 3001 écoutent
 adb reverse tcp:8081 tcp:8081
 adb reverse tcp:3001 tcp:3001
 adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.exp.exponent
 ```
 
+- **Attendre avant `adb reverse`** : posé avant la fin du démarrage de l'émulateur, il échoue ou
+  ne tient pas, et l'app affiche « API injoignable ». `npx expo start` (depuis `apps/mobile`) ne
+  sert que pour Metro seul, sans l'API.
+- **Capture d'écran** : `adb shell screencap -p /sdcard/x.png` puis `adb pull` (une redirection
+  `exec-out … >` corrompt le PNG sous Windows). Sous Git Bash, préfixer `MSYS_NO_PATHCONV=1`
+  sur `adb` seulement : exporté, il casse pnpm.
 - Par l'IP du réseau local, Expo Go affiche un ancien bundle en cache (« Cannot connect to Expo
   CLI »). En `CI=1`, Metro ne surveille pas les fichiers : le relancer après chaque modification.
 - `expo run:android` est bloqué sur cette machine (chemins pnpm trop longs pour CMake) : les
