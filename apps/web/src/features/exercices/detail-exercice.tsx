@@ -73,14 +73,14 @@ export function DetailExercice({
           />
           <div className="min-w-0 flex-1">
             {/* Le nom est dans le fil d'Ariane (D157) ; ici, ce qui le complète. */}
-            <p className="text-[13px] text-(--ink-subtle)">{exercice.nomAnglais}</p>
-            <p className="mt-2 text-[13px] text-(--ink-muted)">
+            <p className="text-[13px] text-muted-foreground">{exercice.nomAnglais}</p>
+            <p className="mt-2 text-[13px] text-muted-foreground">
               {LIBELLE_GROUPE[exercice.groupe]} · {exercice.equipement}
             </p>
             <p className="mt-1 text-sm">
               {exercice.cible}
               {exercice.secondaires.length > 0 ? (
-                <span className="text-(--ink-subtle)"> · {exercice.secondaires.join(", ")}</span>
+                <span className="text-muted-foreground"> · {exercice.secondaires.join(", ")}</span>
               ) : null}
             </p>
           </div>
@@ -88,11 +88,11 @@ export function DetailExercice({
 
         {historique === undefined ? (
           <Bloc titre="1RM estimé">
-            <p className="text-sm text-(--ink-subtle)">Chargement…</p>
+            <p className="text-sm text-muted-foreground">Chargement…</p>
           </Bloc>
         ) : historique === null ? (
           <Bloc titre="1RM estimé">
-            <p className="text-sm text-(--ink-subtle)">La progression n'a pas pu être chargée.</p>
+            <p className="text-sm text-muted-foreground">La progression n'a pas pu être chargée.</p>
           </Bloc>
         ) : (
           <Progression historique={historique} />
@@ -106,7 +106,7 @@ export function DetailExercice({
             <ol className="flex flex-col gap-2">
               {exercice.instructions.map((etape, i) => (
                 <li key={etape} className="flex gap-3 text-sm leading-relaxed">
-                  <span className="w-4 shrink-0 text-right font-bold text-(--ink-subtle)">
+                  <span className="w-4 shrink-0 text-right font-bold text-muted-foreground">
                     {i + 1}
                   </span>
                   <span>{etape}</span>
@@ -133,7 +133,9 @@ function Bloc({
     <Card>
       <CardHeader>
         <CardTitle>{titre}</CardTitle>
-        {detail ? <CardAction className="text-xs text-(--ink-muted)">{detail}</CardAction> : null}
+        {detail ? (
+          <CardAction className="text-xs text-muted-foreground">{detail}</CardAction>
+        ) : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">{children}</CardContent>
     </Card>
@@ -143,7 +145,7 @@ function Bloc({
 const CONFIG = { valeur: { label: "1RM estimé" } } satisfies ChartConfig;
 
 /**
- * Le 1RM estimé et sa courbe, séance par séance (D141, D159). Le dernier point en lime s'il
+ * Le 1RM estimé et sa courbe, séance par séance (D141, D159). Le dernier point en `primary` s'il
  * est record. `courbe()` ne sert plus qu'aux chiffres (min, max, écart, record) : le tracé
  * est celui de Recharts.
  */
@@ -156,7 +158,7 @@ function Progression({ historique }: { historique: HistoriqueExercice }) {
   if (!c || !dernier || !premier) {
     return (
       <Bloc titre="1RM estimé">
-        <p className="text-sm text-(--ink-subtle)">
+        <p className="text-sm text-muted-foreground">
           Pas encore de série avec charge : la courbe apparaîtra après ta première séance.
         </p>
       </Bloc>
@@ -171,7 +173,7 @@ function Progression({ historique }: { historique: HistoriqueExercice }) {
       <div className="flex items-baseline gap-3">
         <p className="chiffre text-[44px]">{kg(dernier.valeur)}</p>
         {points.length > 1 ? (
-          <p className="text-[13px] text-(--ink-muted)">
+          <p className="text-[13px] text-muted-foreground">
             {c.ecartKg === 0
               ? "stable depuis le début"
               : `${c.ecartKg > 0 ? "↗ +" : "↘ −"}${kg(Math.abs(c.ecartKg))} depuis le ${formatJour(premier.date, FUSEAU)}`}
@@ -202,7 +204,7 @@ function Progression({ historique }: { historique: HistoriqueExercice }) {
           <Line
             dataKey="valeur"
             type="linear"
-            stroke="var(--ink-muted)"
+            stroke="var(--muted-foreground)"
             strokeWidth={2}
             isAnimationActive={false}
             dot={({ cx, cy, index }: { cx?: number; cy?: number; index?: number }) => {
@@ -213,14 +215,14 @@ function Progression({ historique }: { historique: HistoriqueExercice }) {
                   cx={cx}
                   cy={cy}
                   r={fin ? 5 : 3}
-                  fill={fin && c.record ? "var(--accent)" : "var(--ink-muted)"}
+                  fill={fin && c.record ? "var(--primary)" : "var(--muted-foreground)"}
                 />
               );
             }}
           />
         </LineChart>
       </ChartContainer>
-      <div className="flex justify-between text-[11px] text-(--ink-subtle)">
+      <div className="flex justify-between text-[11px] text-muted-foreground">
         <span>{DATE_COURTE.format(new Date(premier.date))}</span>
         <span>
           min {kg(c.min)} · max {kg(c.max)}
@@ -235,16 +237,16 @@ function Records({ records }: { records: RecordExercice[] | null | undefined }) 
   return (
     <Bloc titre="Records">
       {records === undefined ? (
-        <p className="text-sm text-(--ink-subtle)">Chargement…</p>
+        <p className="text-sm text-muted-foreground">Chargement…</p>
       ) : records === null ? (
-        <p className="text-sm text-(--ink-subtle)">Les records n'ont pas pu être chargés.</p>
+        <p className="text-sm text-muted-foreground">Les records n'ont pas pu être chargés.</p>
       ) : records.length === 0 ? (
-        <p className="text-sm text-(--ink-subtle)">Aucun record pour l'instant.</p>
+        <p className="text-sm text-muted-foreground">Aucun record pour l'instant.</p>
       ) : (
         <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {records.map((r) => (
             <li key={r.type} className="rounded-lg border px-4 py-3">
-              {/* Le record est un CONTOUR (D28) : lime en texte sur fond teinté. */}
+              {/* Le record est un CONTOUR (D28). */}
               <BadgeRecord libelle={LIBELLE_RECORD[r.type]} />
               <p className="chiffre mt-2 text-[26px]">
                 {/* 1RM et volume sont DÉRIVÉS : la valeur, puis la série qui l'a donnée. */}
@@ -252,7 +254,7 @@ function Records({ records }: { records: RecordExercice[] | null | undefined }) 
                   ? kg(r.valeur)
                   : formaterSerie(r.chargeKg, r.reps)}
               </p>
-              <p className="mt-1 text-xs text-(--ink-subtle)">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {r.type === "UN_RM" || r.type === "VOLUME"
                   ? `${formaterSerie(r.chargeKg, r.reps)} · `
                   : ""}
@@ -276,10 +278,10 @@ function Historique({ historique }: { historique: HistoriqueExercice }) {
       <Table className="text-[13.5px]">
         <TableHeader>
           <TableRow className="text-xs hover:bg-transparent">
-            <TableHead className="h-8 w-32 px-0 text-(--ink-subtle)">Date</TableHead>
-            <TableHead className="h-8 text-(--ink-subtle)">Séance</TableHead>
-            <TableHead className="h-8 text-(--ink-subtle)">Séries faites</TableHead>
-            <TableHead className="h-8 px-0 text-right text-(--ink-subtle)">1RM estimé</TableHead>
+            <TableHead className="h-8 w-32 px-0 text-muted-foreground">Date</TableHead>
+            <TableHead className="h-8 text-muted-foreground">Séance</TableHead>
+            <TableHead className="h-8 text-muted-foreground">Séries faites</TableHead>
+            <TableHead className="h-8 px-0 text-right text-muted-foreground">1RM estimé</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -288,7 +290,7 @@ function Historique({ historique }: { historique: HistoriqueExercice }) {
             const faites = s.series.filter((x) => x.faite && x.type !== "ECHAUFFEMENT");
             return (
               <TableRow key={s.id} className="align-top hover:bg-transparent">
-                <TableCell className="px-0 text-(--ink-muted)">
+                <TableCell className="px-0 text-muted-foreground">
                   {DATE_COURTE.format(new Date(s.debut))}
                 </TableCell>
                 <TableCell>
@@ -300,7 +302,7 @@ function Historique({ historique }: { historique: HistoriqueExercice }) {
                     {s.nom}
                   </Link>
                 </TableCell>
-                <TableCell className="whitespace-normal text-(--ink-muted)">
+                <TableCell className="whitespace-normal text-muted-foreground">
                   {faites.length > 0
                     ? faites.map((x) => formaterSerie(x.chargeKg, x.reps)).join(" · ")
                     : "—"}

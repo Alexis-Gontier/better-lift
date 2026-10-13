@@ -29,7 +29,7 @@ export function AnimationExercice({ gif, nom }: { gif: string | null; nom: strin
         onError={() => setEchec(true)}
         className="size-45 rounded-md bg-white object-contain"
       />
-      <figcaption className="text-[11px] text-(--ink-faint)">{ATTRIBUTION_MEDIAS}</figcaption>
+      <figcaption className="text-[11px] text-muted-foreground">{ATTRIBUTION_MEDIAS}</figcaption>
     </figure>
   );
 }

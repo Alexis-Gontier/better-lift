@@ -2,9 +2,8 @@ import { cn } from "cn";
 import { Dumbbell } from "lucide-react";
 
 /**
- * Le logo : l'haltère Lucide redressée de 45°, en encre sur un aplat lime — le
- * même dessin que le bouton central du mobile. C'est l'unique pastille lime
- * permanente. Décoratif : le nom « better-lift » l'accompagne toujours.
+ * Le logo : l'haltère Lucide redressée de 45°, sur l'aplat `primary` du thème
+ * (D192) — le même dessin que sur le mobile. Décoratif : le nom « better-lift » l'accompagne toujours.
  */
 export function Logo({ className }: { className?: string }) {
   return (

@@ -30,7 +30,7 @@ const TEXTES = {
   },
 } as const;
 
-const CHAMP = "h-10 rounded-[10px] bg-(--surface-1)";
+const CHAMP = "h-10 rounded-[10px] bg-card";
 
 export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
   const [mode, setMode] = useState<"connexion" | "creation">("connexion");
@@ -72,7 +72,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
   return (
     <form onSubmit={soumettre} className="flex w-full flex-col">
       <h1 className="text-2xl font-extrabold tracking-tight">{t.titre}</h1>
-      <p className="mt-1.5 text-sm text-(--ink-subtle)">{t.sousTitre}</p>
+      <p className="mt-1.5 text-sm text-muted-foreground">{t.sousTitre}</p>
 
       <label htmlFor="email" className="mt-8 text-sm font-medium">
         Adresse e-mail
@@ -109,7 +109,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
           aria-pressed={visible}
-          className="absolute inset-y-0 right-0 grid w-10 place-items-center rounded-r-md text-(--ink-subtle) outline-none hover:text-(--ink) focus-visible:text-(--ink) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="absolute inset-y-0 right-0 grid w-10 place-items-center rounded-r-md text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
@@ -118,7 +118,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
       {/* La couleur ne fait que rendre l'erreur trouvable : elle se dit aussi en
           toutes lettres, et `role="alert"` la porte pour les lecteurs d'écran. */}
       {refus ? (
-        <p role="alert" className="mt-4 text-sm text-(--danger-ink)">
+        <p role="alert" className="mt-4 text-sm text-destructive">
           {MESSAGES[refus]}
         </p>
       ) : null}
@@ -127,7 +127,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
         {enCours ? "…" : t.action}
       </Button>
 
-      <p className="mt-6 text-center text-sm text-(--ink-subtle)">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         {t.bascule[0]}{" "}
         <button
           type="button"
@@ -135,7 +135,7 @@ export function FormulaireConnexion({ onSucces }: { onSucces: () => void }) {
             setMode(mode === "connexion" ? "creation" : "connexion");
             setRefus(null);
           }}
-          className="font-medium text-(--ink) underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="font-medium text-foreground underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           {t.bascule[1]}
         </button>

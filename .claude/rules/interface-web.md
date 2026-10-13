@@ -15,7 +15,7 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   lance une séance.
 
 - **Coquille plate (D154–D156)** : `Sidebar collapsible="none"` (sans variante : non repliable,
-  shadcn rend un simple bloc), filet `border-r` posé à la main, fond `--canvas` comme le contenu
+  shadcn rend un simple bloc), filet `border-r` posé à la main, même fond que le contenu
   — **rien de permanent ne flotte**. Barre de 220 px en groupes : Tableau de bord seul,
   **Entraînement** (Séances, Routines), **Catalogue** (Exercices). Champ « Rechercher » (ouvre la
   palette). Pied `NavUser` : nom tiré de l'adresse (`nom-compte.ts`), menu Profil / Se déconnecter.
@@ -50,7 +50,7 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   `["routines","liste"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
 - **Supersets dans l'éditeur (D151, D152)** : un groupe se rend d'un bloc — `EtiquetteSuperset`
   (« Superset A », casse normale, ouvre « Défaire le superset »), puis ses cartes derrière un filet de 3 px
-  `border-superset` ; le `SortableContext` garde la liste PLATE des clés. Toute retouche passe par
+  `border-chart-2` ; le `SortableContext` garde la liste PLATE des clés. Toute retouche passe par
   `modifier` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
   `arrayMove`). Menu ⋯ : « Superset avec le suivant » (`peutLierAuSuivant`), « Retirer du
   superset ». Repos masqué sur les membres non derniers (`roleRepos`).
@@ -58,9 +58,9 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
   calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
   (testé). Cartes : `Carte` enveloppe la `Card` shadcn (D158) ; tuiles à pastille d'écart en
-  contour (lime si hausse) ; période en `ToggleGroup` ; volume en `Chart` (Recharts 3.8.0,
+  contour sans couleur ; période en `ToggleGroup` ; volume en `Chart` (Recharts 3.8.0,
   animations coupées, `minPointSize` pour que la semaine en cours reste visible). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
-  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur une carte). **Profil** (`/profil`, ex-`/parametres`, D143) :
+  à ne pas modifier à la main. **Profil** (`/profil`, ex-`/parametres`, D143) :
   bilan de toujours, objectif hebdo et repos par défaut (SUR LE COMPTE, `["preferences"]`, la
   clé des tuiles du Tableau de bord), thème (appareil, seul endroit où il se change), unités et
   fuseau (affichés), export CSV par un simple lien, déconnexion (aussi au menu du pied de
@@ -69,17 +69,17 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
 - **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
   fil groupé par mois (`grouperParMois`, fuseau), filtré par `?q=` (`filtrerSeances` : nom et
   aperçu, sans casse ni accents, sur les pages chargées ; le filtre garde le chemin du détail),
-  ↑ / ↓ d'une séance à l'autre DANS le fil filtré ; sélection en `--surface-2` + liseré d'encre ;
+  ↑ / ↓ d'une séance à l'autre DANS le fil filtré ; sélection en `bg-muted` + liseré d'encre ;
   actions du détail dans l'en-tête (`DansEnTete`), chiffres en tuiles jointives, relevé en `Table` ; détail = relevé
   comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
   RETIRE le détail puis invalide `["seances"]`, `["stats"]`, `["records"]`.
   Un superset fait en séance se relit d'un bloc dans le relevé (D153) : étiquette texte
-  « SUPERSET A » et filet `border-superset`, en lecture seule (`groupes` de `shared`).
+  « SUPERSET A » et filet `border-chart-2`, en lecture seule (`groupes` de `shared`).
 - **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
 - **Exercices** en disposition `fil` : catalogue à gauche, **fiche en une page** (D141) — GIF,
   1RM estimé et sa courbe en `Chart` (Recharts, tracé `linear`, animations coupées ; `courbe`
-  de `calculs.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en lime s'il est record),
+  de `calculs.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en `primary` s'il est record),
   blocs en `Card`, historique en `Table`, nom dans le fil d'Ariane et nom anglais en sous-titre, records, historique (`["seances","historique",slug]`, invalidé par la
   suppression d'une séance), consignes.
 - **`BadgeRecord`** (`features/exercices/badge-record.tsx`) est la SEULE pastille record du web :
@@ -94,29 +94,21 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
 - **Les quatre états par l'URL** : `?etat=chargement|erreur|vide`, derrière
   `import.meta.env.DEV`. `vide` vide le jeu de données plutôt que de substituer un composant.
 
-## Élévation et thème
+## Thème (D192)
 
-- **Rien de permanent ne flotte** (D154, révise D71). Liste et détail sont jointifs, séparés par
-  un filet de 1 px. Flou, ombre portée et voile sont réservés au momentané (palette, menus,
-  dialogues). Les cartes (`Card`, D158) se détachent par leur filet sur `--surface-1`
-  (`--color-card`), sans ombre, rayon `rounded-xl`.
-- Rôles `--sidebar-*` et `card` traduits dans `@theme inline` (D72). L'élément actif de la
-  navigation est `--surface-3`, jamais le lime. La variante `dark:` suit `data-theme`, pas la
-  préférence du système (`@custom-variant` dans `globals.css`).
-- Sombre par défaut, clair accessible. Hiérarchie par échelle de surfaces et quatre niveaux
-  d'encre. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
-- **Les primitives shadcn parlent leur propre vocabulaire**, traduit dans `@theme inline`.
-  Un rôle non déclaré n'émet aucune règle, en silence. L'aplat est `bg-primary` /
-  `text-primary-foreground`. `accent` désigne chez shadcn la **surface de survol** et pointe vers
-  `--surface-3` : ne jamais rendre `bg-accent` au lime, chaque survol deviendrait un aplat.
-- **Les valeurs des tokens suivent `apps/mobile/lib/theme.ts`** (D135) : en changer une, c'est
-  changer les deux. Police **Archivo** (`@fontsource-variable/archivo/wdth.css`), chiffres héros
-  par l'utilitaire `chiffre` (`font-stretch: 72%`). Calendrier `--cal-0..4`, vignettes
-  `--image-bg` (blanc dans les deux thèmes).
-- `--superset` (D151) : `#9a8cf0` / `#5a4bbf`, le repère d'un superset — ni lime ni danger.
-- `--accent-ink` passe à `#4d6a12` en clair (sur blanc, `#a8cf45` tombe sous 2:1).
-  `--danger` = `#a83e39` : encre à 5,65:1, aplat détaché du fond à 3,24:1 — plus foncé, le
-  bouton disparaît.
+- **Thème par défaut de shadcn, Neutral**, tel que la doc le donne (`globals.css`) : variables,
+  rayons, police par défaut de Tailwind, `tw-animate-css`. **Classes canoniques seulement**
+  (`text-foreground`, `text-muted-foreground`, `bg-muted`, `bg-card`, `border-border`,
+  `bg-primary`, `text-destructive`, `chart-1..5`), aucun token maison, aucune couleur en dur —
+  exception : `bg-white` derrière les images d'exercice, détourées sur blanc. Les primitives de
+  `components/ui/` ne sont pas retouchées.
+- L'action est l'aplat `primary` ; le record, `BadgeRecord` (`Badge variant="outline"` +
+  `TrendingUp`) ; le danger, `destructive`. Intensités (calendrier, carte du corps) : `primary`
+  en opacités. Superset : `chart-2`.
+- Le sombre suit `data-theme` (posé avant le rendu par `index.html`), pas une classe `.dark` :
+  `@custom-variant dark` dans `globals.css`, `THEMES` de `components/ui/chart.tsx`.
+- **Rien de permanent ne flotte** (D154) : liste et détail jointifs, séparés par un filet. Les
+  cartes se détachent par leur filet.
 
 ## Pièges
 

@@ -8,15 +8,17 @@ const VUES = [
 ] as const;
 
 /**
- * Silhouettes face et dos (D139) : principal en `--cal-4`, secondaire en `--cal-2` —
- * une intensité, comme le calendrier (D84, D127) —, le reste du corps en surface.
+ * Silhouettes face et dos (D139) : principal en `primary`, secondaire en
+ * `primary` atténué — une intensité, comme le calendrier (D192) —, le reste du corps en surface.
  */
 export function CarteCorps({ zones }: { zones: readonly ZoneTravaillee[] }) {
   const teinte = (slug: string) => {
-    if (slug === "head" || slug === "hair") return "var(--line-strong)";
+    if (slug === "head" || slug === "hair") return "var(--input)";
     const z = zones.find((x) => x.zone === slug);
-    if (!z) return "var(--surface-3)";
-    return z.niveau === "principal" ? "var(--cal-4)" : "var(--cal-2)";
+    if (!z) return "var(--muted)";
+    return z.niveau === "principal"
+      ? "var(--primary)"
+      : "color-mix(in oklch, var(--primary) 45%, transparent)";
   };
 
   return (

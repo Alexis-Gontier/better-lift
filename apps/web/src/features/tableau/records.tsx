@@ -20,11 +20,13 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
       className="lg:col-span-12"
     >
       {records.length === 0 ? (
-        <p className="py-6 text-center text-sm text-(--ink-subtle)">Aucun record sur la période.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          Aucun record sur la période.
+        </p>
       ) : (
         <table className="w-full text-[13.5px]">
           <thead>
-            <tr className="text-left text-xs text-(--ink-subtle)">
+            <tr className="text-left text-xs text-muted-foreground">
               <th className="py-1.5 font-medium">Exercice</th>
               <th className="font-medium">Série</th>
               <th className="font-medium">Record</th>
@@ -33,7 +35,7 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
           </thead>
           <tbody>
             {records.map((r) => (
-              <tr key={`${r.slug}-${r.date}`} className="border-t border-(--line)">
+              <tr key={`${r.slug}-${r.date}`} className="border-t border-border">
                 <td className="py-2.5">
                   <Link
                     to="/exercices/$slug"
@@ -49,10 +51,12 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
                     : `${formaterCharge(r.chargeKg, SYSTEME_UNITES)} × ${r.reps}`}
                 </td>
                 <td>
-                  {/* Le record est un CONTOUR : lime en texte sur fond teinté (CLAUDE.md). */}
+                  {/* Le record est un CONTOUR (CLAUDE.md). */}
                   <BadgeRecord libelle={r.types.map((t) => LIBELLE_RECORD[t]).join(" · ")} />
                 </td>
-                <td className="text-right text-(--ink-muted)">{DATE.format(new Date(r.date))}</td>
+                <td className="text-right text-muted-foreground">
+                  {DATE.format(new Date(r.date))}
+                </td>
               </tr>
             ))}
           </tbody>

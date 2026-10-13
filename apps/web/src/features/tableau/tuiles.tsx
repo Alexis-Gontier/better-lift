@@ -1,6 +1,5 @@
 import { type StatsPeriode, semainesTenues } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
-import { cn } from "cn";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
@@ -40,7 +39,7 @@ export function Tuiles({ stats, objectif }: { stats: StatsPeriode; objectif: num
           valeur={
             <>
               {tenues.tenues}
-              <span className="text-2xl text-(--ink-muted)"> / {tenues.sur}</span>
+              <span className="text-2xl text-muted-foreground"> / {tenues.sur}</span>
             </>
           }
         >
@@ -48,7 +47,7 @@ export function Tuiles({ stats, objectif }: { stats: StatsPeriode; objectif: num
         </Tuile>
       ) : (
         <Tuile titre="Objectif" valeur="—">
-          <Link to="/profil" className="underline underline-offset-4 hover:text-(--ink)">
+          <Link to="/profil" className="underline underline-offset-4 hover:text-foreground">
             Fixer un objectif hebdomadaire
           </Link>
         </Tuile>
@@ -84,13 +83,8 @@ function Tuile({
         <p className="chiffre text-[40px]">{valeur}</p>
         {tendance ? (
           <CardAction>
-            {/* Un contour (D158) : lime quand ça monte, neutre sinon. */}
-            <Badge
-              variant="outline"
-              className={cn(tendance.hausse && "border-accent-line bg-accent-wash text-accent-ink")}
-            >
-              {tendance.texte}
-            </Badge>
+            {/* Un contour sans couleur (D192) : la flèche et le signe disent le sens. */}
+            <Badge variant="outline">{tendance.texte}</Badge>
           </CardAction>
         ) : null}
       </CardHeader>

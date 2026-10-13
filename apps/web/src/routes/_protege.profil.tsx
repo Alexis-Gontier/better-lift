@@ -67,12 +67,12 @@ function Profil() {
     <PageTableau titre="Profil" largeur="lecture">
       {/* Le bilan de toujours (D128). */}
       <Card className="flex-row items-center gap-4 px-5">
-        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-(--surface-3) text-lg font-extrabold">
+        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-muted text-lg font-extrabold">
           {initiales(email)}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold">{nomAffiche(email)}</p>
-          <p className="text-[13px] text-(--ink-muted)">
+          <p className="text-[13px] text-muted-foreground">
             {bilan.data?.depuis
               ? `Depuis ${MOIS_ANNEE.format(new Date(bilan.data.depuis))}`
               : bilan.isPending
@@ -117,7 +117,7 @@ function Profil() {
           />
         </Ligne>
         {ecrire.isError ? (
-          <p role="alert" className="pt-3 text-sm text-destructive-ink">
+          <p role="alert" className="pt-3 text-sm text-destructive">
             {ecrire.error.message}
           </p>
         ) : null}
@@ -169,10 +169,10 @@ function Profil() {
       <Section titre="Compte">
         <Ligne libelle="Adresse e-mail">{email}</Ligne>
         <Ligne libelle="Rechercher, aller à une page">
-          <kbd className="rounded border border-(--line) px-1.5 py-0.5 text-xs">Ctrl K</kbd>
+          <kbd className="rounded border border-border px-1.5 py-0.5 text-xs">Ctrl K</kbd>
         </Ligne>
         <div className="pt-3">
-          <Button variant="outline" onClick={seDeconnecter} className="text-destructive-ink">
+          <Button variant="outline" onClick={seDeconnecter} className="text-destructive">
             <LogOut aria-hidden="true" />
             Se déconnecter
           </Button>
@@ -186,7 +186,7 @@ function Chiffre({ libelle, children }: { libelle: string; children: ReactNode }
   return (
     <div className="text-right">
       <p className="chiffre text-[28px]">{children}</p>
-      <p className="text-xs text-(--ink-subtle)">{libelle}</p>
+      <p className="text-xs text-muted-foreground">{libelle}</p>
     </div>
   );
 }
@@ -227,9 +227,9 @@ function Ligne({
     <div className="flex items-center justify-between gap-4 py-3 text-sm last:pb-0">
       <div>
         <p>{libelle}</p>
-        {detail ? <p className="text-xs text-(--ink-subtle)">{detail}</p> : null}
+        {detail ? <p className="text-xs text-muted-foreground">{detail}</p> : null}
       </div>
-      <div className="shrink-0 text-(--ink-muted)">{children}</div>
+      <div className="shrink-0 text-muted-foreground">{children}</div>
     </div>
   );
 }

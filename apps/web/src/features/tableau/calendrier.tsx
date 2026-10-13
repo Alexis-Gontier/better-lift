@@ -4,8 +4,15 @@ import { FUSEAU } from "@/lib/fuseau";
 import { grilleAnnee } from "./calculs";
 import { Carte } from "./carte";
 
-// Des classes écrites en toutes lettres : Tailwind ne voit pas `bg-cal-${n}`.
-const NIVEAUX = ["bg-cal-0", "bg-cal-1", "bg-cal-2", "bg-cal-3", "bg-cal-4"] as const;
+// Des classes écrites en toutes lettres (Tailwind ne voit pas une classe calculée) :
+// `primary` en opacités, une intensité (D192).
+const NIVEAUX = [
+  "bg-muted",
+  "bg-primary/25",
+  "bg-primary/50",
+  "bg-primary/75",
+  "bg-primary",
+] as const;
 const JOURS = ["L", "", "M", "", "V", "", "D"];
 const COLONNES = { gridTemplateColumns: "repeat(52, minmax(0, 1fr))" };
 
@@ -34,14 +41,14 @@ export function Calendrier({
     >
       <div className="grid grid-cols-[16px_1fr] gap-x-2 gap-y-1.5">
         <span />
-        <div className="grid text-[11px] text-(--ink-subtle)" style={COLONNES}>
+        <div className="grid text-[11px] text-muted-foreground" style={COLONNES}>
           {mois.map((m) => (
             <span key={m.colonne} style={{ gridColumnStart: m.colonne + 1 }}>
               {m.libelle}
             </span>
           ))}
         </div>
-        <div className="grid grid-rows-7 gap-[3px] text-[10px] text-(--ink-faint)">
+        <div className="grid grid-rows-7 gap-[3px] text-[10px] text-muted-foreground">
           {JOURS.map((j, i) => (
             <span key={i} className="flex items-center">
               {j}
@@ -58,7 +65,7 @@ export function Calendrier({
               NIVEAUX[c.niveau],
               !c.dansPeriode && "opacity-35",
               c.futur && "invisible",
-              c.aujourdhui && "outline-[1.5px] outline-(--ink) outline-solid",
+              c.aujourdhui && "outline-[1.5px] outline-foreground outline-solid",
             );
             const libelle = `${formatJour(`${c.jour}T12:00:00Z`, "UTC")}${
               c.seances.length
@@ -75,7 +82,7 @@ export function Calendrier({
                 onClick={() => onOuvrir(premiere)}
                 className={cn(
                   classes,
-                  "outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring)",
+                  "outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
                 )}
               />
             ) : (
@@ -84,7 +91,7 @@ export function Calendrier({
           })}
         </div>
       </div>
-      <p className="flex items-center justify-end gap-1 text-[11px] text-(--ink-subtle)">
+      <p className="flex items-center justify-end gap-1 text-[11px] text-muted-foreground">
         Moins
         {NIVEAUX.map((n) => (
           <span key={n} className={cn("size-[11px] rounded-[3px]", n)} />

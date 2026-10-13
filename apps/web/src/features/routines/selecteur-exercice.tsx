@@ -72,7 +72,7 @@ export function SelecteurExercice({
 
   return (
     <Dialog open={ouvert} onOpenChange={(o) => !o && fermer()}>
-      <DialogContent className="flex h-[80vh] flex-col gap-4 bg-(--surface-1) p-5 sm:max-w-4xl">
+      <DialogContent className="flex h-[80vh] flex-col gap-4 bg-card p-5 sm:max-w-4xl">
         <DialogTitle className="text-base">Ajouter des exercices</DialogTitle>
         <DialogDescription className="sr-only">
           Cherche dans le catalogue, en français ou en anglais, coche un ou plusieurs exercices,
@@ -85,7 +85,7 @@ export function SelecteurExercice({
           <div className="relative flex-1">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-(--ink-faint)"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               autoFocus
@@ -122,13 +122,15 @@ export function SelecteurExercice({
         <ScrollArea className="-mx-5 -my-4 min-h-0 flex-1">
           <div className="py-4">
             {catalogue.isPending ? (
-              <p className="px-5 py-3 text-sm text-(--ink-faint)">Chargement…</p>
+              <p className="px-5 py-3 text-sm text-muted-foreground">Chargement…</p>
             ) : catalogue.isError ? (
-              <p className="px-5 py-3 text-sm text-destructive-ink">
+              <p className="px-5 py-3 text-sm text-destructive">
                 Le catalogue n'a pas pu être chargé.
               </p>
             ) : exercices.length === 0 ? (
-              <p className="px-5 py-3 text-sm text-(--ink-faint)">Aucun exercice ne correspond.</p>
+              <p className="px-5 py-3 text-sm text-muted-foreground">
+                Aucun exercice ne correspond.
+              </p>
             ) : (
               <>
                 <ul className="grid grid-cols-1 gap-2 px-5 sm:grid-cols-2">
@@ -141,8 +143,8 @@ export function SelecteurExercice({
                           htmlFor={`choix-${ex.slug}`}
                           className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2.5 transition-colors ${
                             coche
-                              ? "border-(--ink) bg-(--surface-2)"
-                              : "border-(--line) hover:border-(--line-strong) hover:bg-(--surface-2)"
+                              ? "border-foreground bg-muted"
+                              : "border-border hover:border-input hover:bg-muted"
                           }`}
                         >
                           {ex.image ? (
@@ -159,16 +161,16 @@ export function SelecteurExercice({
                             // Sans image, l'initiale — comme la capture de référence.
                             <span
                               aria-hidden="true"
-                              className="grid size-12 shrink-0 place-items-center rounded-md bg-(--surface-3) font-semibold text-(--ink-subtle)"
+                              className="grid size-12 shrink-0 place-items-center rounded-md bg-muted font-semibold text-muted-foreground"
                             >
                               {ex.nom.charAt(0).toUpperCase()}
                             </span>
                           )}
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-semibold text-(--ink)">
+                            <span className="block truncate text-sm font-semibold text-foreground">
                               {ex.nom}
                             </span>
-                            <span className="mt-0.5 block truncate text-xs text-(--ink-faint)">
+                            <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                               {LIBELLE_GROUPE[ex.groupe]} · {ex.equipement}
                             </span>
                           </span>
@@ -190,7 +192,7 @@ export function SelecteurExercice({
                       variant="outline"
                       onClick={() => catalogue.fetchNextPage()}
                       disabled={catalogue.isFetchingNextPage}
-                      className="w-full text-(--ink-subtle)"
+                      className="w-full text-muted-foreground"
                     >
                       {catalogue.isFetchingNextPage ? "Chargement…" : "Afficher plus"}
                     </Button>
@@ -203,7 +205,7 @@ export function SelecteurExercice({
 
         <Separator className="-mx-5 w-auto!" />
         <DialogFooter className="items-center gap-2 sm:justify-between">
-          <span className="text-sm text-(--ink-subtle)">
+          <span className="text-sm text-muted-foreground">
             {choisis.length === 0
               ? "Coche un ou plusieurs exercices."
               : `${choisis.length} exercice${choisis.length > 1 ? "s" : ""} sélectionné${choisis.length > 1 ? "s" : ""}`}

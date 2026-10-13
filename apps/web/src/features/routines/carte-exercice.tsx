@@ -87,7 +87,7 @@ export function CarteExercice({
         {...attributes}
         {...listeners}
         aria-label={`Déplacer ${exercice.nom}`}
-        className="grid w-7 shrink-0 cursor-grab place-items-center border-r border-(--line) text-(--ink-faint) hover:bg-(--surface-3) hover:text-(--ink) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--focus-ring) active:cursor-grabbing"
+        className="grid w-7 shrink-0 cursor-grab place-items-center border-r border-border text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring/50 active:cursor-grabbing"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
@@ -101,14 +101,14 @@ export function CarteExercice({
               alt=""
               width={48}
               height={48}
-              className="size-12 shrink-0 rounded-[10px] bg-image-bg object-contain"
+              className="size-12 shrink-0 rounded-[10px] bg-white object-contain"
             />
           ) : (
-            <span aria-hidden="true" className="size-12 shrink-0 rounded-[10px] bg-(--surface-3)" />
+            <span aria-hidden="true" className="size-12 shrink-0 rounded-[10px] bg-muted" />
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-(--ink)">{exercice.nom}</p>
-            <p className="mt-0.5 truncate text-[11.5px] text-(--ink-faint)">
+            <p className="truncate text-sm font-semibold text-foreground">{exercice.nom}</p>
+            <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
               {fiche.data ? `${LIBELLE_GROUPE[fiche.data.groupe]} · ${fiche.data.equipement}` : " "}
               {derniere
                 ? ` · dernière fois : ${formaterSerie(derniere.chargeKg, derniere.reps)}`
@@ -130,7 +130,7 @@ export function CarteExercice({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-40">
-                <DropdownMenuLabel className="text-(--ink-subtle)">
+                <DropdownMenuLabel className="text-muted-foreground">
                   Repos entre les séries
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -153,7 +153,7 @@ export function CarteExercice({
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-8 text-(--ink-subtle)"
+                className="size-8 text-muted-foreground"
                 aria-label={`Actions pour ${exercice.nom}`}
               >
                 <Ellipsis aria-hidden="true" />
@@ -171,7 +171,7 @@ export function CarteExercice({
                 </DropdownMenuItem>
               ) : null}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={onRetirer} className="text-destructive-ink">
+              <DropdownMenuItem onSelect={onRetirer} className="text-destructive">
                 <Trash2 aria-hidden="true" />
                 Retirer l'exercice
               </DropdownMenuItem>

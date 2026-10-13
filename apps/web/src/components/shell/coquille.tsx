@@ -12,7 +12,7 @@ export function Coquille({ children }: { children: ReactNode }) {
     // 220 px (D136) : shadcn lit la largeur dans `--sidebar-width`.
     <SidebarProvider className="h-svh" style={{ "--sidebar-width": "220px" } as CSSProperties}>
       <NavLaterale />
-      <SidebarInset className="min-h-0 overflow-hidden bg-(--canvas)">{children}</SidebarInset>
+      <SidebarInset className="min-h-0 overflow-hidden bg-background">{children}</SidebarInset>
     </SidebarProvider>
   );
 }

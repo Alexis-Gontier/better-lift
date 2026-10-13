@@ -1,6 +1,3 @@
-// Les axes graisse ET largeur (D135) : la coupe condensée des chiffres héros est un
-// simple `font-stretch`, là où le mobile doit générer un TTF.
-import "@fontsource-variable/archivo/wdth.css";
 import "./styles/globals.css";
 
 import { createRouter, RouterProvider } from "@tanstack/react-router";

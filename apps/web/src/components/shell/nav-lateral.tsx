@@ -57,19 +57,19 @@ export function NavLaterale() {
       <SidebarHeader className="gap-3">
         <Link to="/" className="flex items-center gap-2 px-2 pt-1.5">
           <Logo />
-          <span className="text-base font-extrabold tracking-tight text-(--ink)">better-lift</span>
+          <span className="text-base font-extrabold tracking-tight text-foreground">
+            better-lift
+          </span>
         </Link>
         {/* Un champ en apparence (D155), un bouton en fait : il ouvre la palette. */}
         <button
           type="button"
           onClick={() => document.dispatchEvent(new Event(OUVRIR_PALETTE))}
-          className="flex h-8 items-center gap-2 rounded-md border border-(--line-strong) bg-(--surface-1) px-2.5 text-[13px] text-(--ink-faint) outline-none hover:text-(--ink-muted) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="flex h-8 items-center gap-2 rounded-md border border-input bg-card px-2.5 text-[13px] text-muted-foreground outline-none hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <Search className="size-3.5" aria-hidden="true" />
           Rechercher
-          <kbd className="ml-auto rounded border border-(--line-strong) px-1 text-[11px]">
-            Ctrl K
-          </kbd>
+          <kbd className="ml-auto rounded border border-input px-1 text-[11px]">Ctrl K</kbd>
         </button>
       </SidebarHeader>
 
@@ -118,11 +118,11 @@ function NavUser({ email }: { email: string }) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
               <Avatar className="size-7 rounded-full">
-                <AvatarFallback className="rounded-full bg-(--surface-3) text-xs font-bold">
+                <AvatarFallback className="rounded-full bg-muted text-xs font-bold">
                   {initiales(email)}
                 </AvatarFallback>
               </Avatar>
-              <span className="min-w-0 flex-1 truncate font-semibold text-(--ink)">
+              <span className="min-w-0 flex-1 truncate font-semibold text-foreground">
                 {nomAffiche(email)}
               </span>
               <MoreHorizontal className="ml-auto" aria-hidden="true" />
@@ -133,7 +133,7 @@ function NavUser({ email }: { email: string }) {
             align="start"
             className="w-(--radix-dropdown-menu-trigger-width)"
           >
-            <DropdownMenuLabel className="truncate font-normal text-(--ink-subtle)">
+            <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
               {email}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

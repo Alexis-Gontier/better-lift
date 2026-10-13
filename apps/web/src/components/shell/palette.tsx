@@ -48,13 +48,6 @@ export function Palette() {
       onOpenChange={setOuverte}
       title="Palette de commandes"
       description="Aller à une page"
-      // Seul élément élevé de l'interface (D27) : flou, filet et ombre portée du
-      // registre flottant, jamais utilisés par les panneaux permanents. --scrim,
-      // --float-bg, --float-line et --float-shadow ne sont pas exposés à Tailwind
-      // (@theme inline de globals.css ne couvre que surfaces/filets/encre/accent),
-      // d'où la syntaxe `(--var)` plutôt que des classes bg-float-bg inexistantes.
-      className="border-(--float-line) bg-(--float-bg) shadow-(--float-shadow) backdrop-blur-[20px]"
-      overlayClassName="bg-(--scrim)"
     >
       <CommandInput placeholder="Aller à…" />
       <CommandList>

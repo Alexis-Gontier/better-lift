@@ -13,7 +13,7 @@ import { Carte } from "./carte";
 const CONFIG = { volumeKg: { label: "Volume" } } satisfies ChartConfig;
 const kg = (v: number) => formaterCharge(Math.round(v), SYSTEME_UNITES);
 
-/** Le volume par semaine, par mois en Année (D137, D159). La barre courante en encre, jamais en lime. */
+/** Le volume par semaine, par mois en Année (D137, D159). La barre courante en encre. */
 export function Volume({ stats }: { stats: StatsPeriode }) {
   const barres = volumesAffiches(stats.volumes, stats.periode);
   const total = barres.reduce((s, b) => s + b.volumeKg, 0);
@@ -41,7 +41,7 @@ export function Volume({ stats }: { stats: StatsPeriode }) {
           {/* Les animations de Recharts échappent à `prefers-reduced-motion` : coupées. */}
           <Bar dataKey="volumeKg" radius={4} minPointSize={2} isAnimationActive={false}>
             {barres.map((b) => (
-              <Cell key={b.cle} fill={b.courante ? "var(--ink-muted)" : "var(--line-strong)"} />
+              <Cell key={b.cle} fill={b.courante ? "var(--muted-foreground)" : "var(--input)"} />
             ))}
           </Bar>
         </BarChart>

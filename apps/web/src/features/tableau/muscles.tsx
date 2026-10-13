@@ -10,7 +10,7 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
   return (
     <Carte titre="Muscles travaillés · séries" className="lg:col-span-7">
       {zones.length === 0 ? (
-        <p className="py-8 text-center text-sm text-(--ink-subtle)">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           Aucune série comptée sur la période.
         </p>
       ) : (
@@ -23,13 +23,13 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
                 className="grid grid-cols-[110px_1fr_32px] items-center gap-3 text-[13px]"
               >
                 <span>{LIBELLE_ZONE[z.zone]}</span>
-                <span className="h-2 overflow-hidden rounded-full bg-(--surface-3)">
+                <span className="h-2 overflow-hidden rounded-full bg-muted">
                   <span
-                    className="block h-full rounded-full bg-(--ink-muted)"
+                    className="block h-full rounded-full bg-muted-foreground"
                     style={{ width: `${(z.series / max) * 100}%` }}
                   />
                 </span>
-                <span className="text-right text-(--ink-muted)">{z.series}</span>
+                <span className="text-right text-muted-foreground">{z.series}</span>
               </li>
             ))}
           </ul>

@@ -17,7 +17,9 @@ export function Carte({
     <Card className={className}>
       <CardHeader>
         <CardTitle>{titre}</CardTitle>
-        {detail ? <CardAction className="text-xs text-(--ink-muted)">{detail}</CardAction> : null}
+        {detail ? (
+          <CardAction className="text-xs text-muted-foreground">{detail}</CardAction>
+        ) : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">{children}</CardContent>
     </Card>

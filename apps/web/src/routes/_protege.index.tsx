@@ -108,7 +108,7 @@ function Squelette() {
       {SQUELETTE.map((n, i) => (
         <Skeleton
           key={i}
-          className={`${SPAN[n]} ${n === 3 ? "h-32" : "h-56"} rounded-xl bg-(--surface-1)`}
+          className={`${SPAN[n]} ${n === 3 ? "h-32" : "h-56"} rounded-xl bg-card`}
         />
       ))}
     </div>
