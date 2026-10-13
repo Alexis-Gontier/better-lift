@@ -11,6 +11,7 @@ import {
   type SerieHisto,
   type Stats,
   type StatsPeriode,
+  semainesALire,
   semainesRecentes,
 } from "@better-lift/shared";
 import { imageDe } from "./exercices.js";
@@ -148,8 +149,8 @@ export const depotStats: DepotStats = {
   },
 
   async lirePeriode(userId, maintenant, fuseau, periode) {
-    // Deux périodes et une semaine de marge : le découpage civil se fait ensuite.
-    const semaines = 2 * SEMAINES_PERIODE[periode] + 1;
+    // La période, la précédente, la référence des muscles et le graphique (D185–D188).
+    const semaines = semainesALire(periode);
     const debut = new Date(maintenant.getTime() - semaines * 7 * JOUR_MS);
     const [nbSeances, lignes] = await Promise.all([
       prisma.seance.count({ where: { userId } }),
