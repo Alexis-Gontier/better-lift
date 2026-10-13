@@ -25,7 +25,8 @@ mobile, historique. Le web est **nettoyé** (D154–D160, `2026-10-06-web-nettoy
 coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. Le mobile a une
 **nouvelle identité** (D161–D177, `2026-10-11-mobile-identite-design.md`, `DESIGN.md`) :
 « Underground orange », Barlow, Accueil tableau de la semaine, onglet Progrès, horloge de salle ;
-le web, lui, prend le thème par défaut de shadcn (D192, révise D177). Le mobile est ensuite **resserré pour le MVP** (D178,
+le web, lui, prend le thème par défaut de shadcn et un Tableau de bord façon 2a (D185–D192,
+`2026-10-13-web-tableau-de-bord-design.md` ; révise D177). Le mobile est ensuite **resserré pour le MVP** (D178,
 `2026-10-13-mobile-mvp-retrait-design.md`) : Accueil, Progrès et détail de séance retirés, la barre
 est Routines · Démarrer · Profil ; les pages gardées sont revues une à une. **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
