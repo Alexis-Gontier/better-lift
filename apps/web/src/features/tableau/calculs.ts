@@ -1,4 +1,9 @@
-import { type JourEntraine, niveauxCalendrier, type Periode } from "@better-lift/shared";
+import {
+  type JourEntraine,
+  niveauxCalendrier,
+  type Periode,
+  type SemaineVolume,
+} from "@better-lift/shared";
 
 /** « ↗ +3 », « ↘ −12 % », « = avant » : l'écart avec la période d'avant (D125). */
 export function ecart(valeur: number, avant: number, enPourcent: boolean): string {
@@ -81,38 +86,37 @@ export function grilleAnnee(
   return { colonnes, mois };
 }
 
-// --- Volume -------------------------------------------------------------------
+// --- Graphique (D187) ---------------------------------------------------------
 
-export type BarreVolume = { cle: string; libelle: string; volumeKg: number; courante: boolean };
+export type Mesure = "volume" | "series";
+export type Barre = { cle: string; libelle: string; valeur: number; dansPeriode: boolean };
 
-/** Une barre par semaine ; en Année, une par mois (D137), d'après le mois du lundi. */
-export function volumesAffiches(
-  volumes: readonly { lundi: string; volumeKg: number }[],
+/** Une barre par semaine ; en Année, une par mois, d'après le mois du lundi. */
+export function barresGraphique(
+  volumes: readonly SemaineVolume[],
   periode: Periode,
-): BarreVolume[] {
-  const barres: BarreVolume[] =
-    periode === "annee"
-      ? [
-          ...volumes
-            .reduce((m, v) => {
-              const cle = v.lundi.slice(0, 7);
-              m.set(cle, (m.get(cle) ?? 0) + v.volumeKg);
-              return m;
-            }, new Map<string, number>())
-            .entries(),
-        ].map(([cle, volumeKg]) => ({
-          cle,
-          libelle: MOIS.format(enDate(`${cle}-01`)),
-          volumeKg,
-          courante: false,
-        }))
-      : volumes.map((v) => ({
-          cle: v.lundi,
-          libelle: JOUR_MOIS.format(enDate(v.lundi)),
-          volumeKg: v.volumeKg,
-          courante: false,
-        }));
-  const derniere = barres.at(-1);
-  if (derniere) derniere.courante = true;
-  return barres;
+  mesure: Mesure,
+): Barre[] {
+  const valeur = (v: SemaineVolume) => (mesure === "volume" ? v.volumeKg : v.series);
+  if (periode !== "annee") {
+    return volumes.map((v) => ({
+      cle: v.lundi,
+      libelle: JOUR_MOIS.format(enDate(v.lundi)),
+      valeur: valeur(v),
+      dansPeriode: v.dansPeriode,
+    }));
+  }
+  const parMois = new Map<string, Barre>();
+  for (const v of volumes) {
+    const cle = v.lundi.slice(0, 7);
+    const barre = parMois.get(cle) ?? {
+      cle,
+      libelle: MOIS.format(enDate(`${cle}-01`)),
+      valeur: 0,
+      dansPeriode: true,
+    };
+    barre.valeur = Math.round((barre.valeur + valeur(v)) * 100) / 100;
+    parMois.set(cle, barre);
+  }
+  return [...parMois.values()];
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dureeTexte, ecart, grilleAnnee, volumesAffiches } from "./calculs";
+import { barresGraphique, dureeTexte, ecart, grilleAnnee } from "./calculs";
 
 describe("ecart", () => {
   it("dit l'égalité, l'absence de référence, la hausse et la baisse", () => {
@@ -58,25 +58,38 @@ describe("grilleAnnee (D138)", () => {
   });
 });
 
-describe("volumesAffiches", () => {
+describe("barresGraphique (D187)", () => {
+  const s = (lundi: string, volumeKg: number, series: number, dansPeriode: boolean) => ({
+    lundi,
+    volumeKg,
+    seances: 1,
+    series,
+    dansPeriode,
+  });
   const volumes = [
-    { lundi: "2026-08-24", volumeKg: 1000, seances: 1 },
-    { lundi: "2026-08-31", volumeKg: 2000, seances: 2 },
-    { lundi: "2026-09-07", volumeKg: 3000, seances: 2 },
+    s("2026-08-24", 1000, 10, false),
+    s("2026-08-31", 2000, 12, false),
+    s("2026-09-07", 3000, 15, true),
   ];
 
-  it("garde une barre par semaine, la dernière est la courante", () => {
-    const v = volumesAffiches(volumes, "mois");
-    expect(v.map((x) => x.libelle)).toEqual(["24 août", "31 août", "7 sept."]);
-    expect(v.map((x) => x.courante)).toEqual([false, false, true]);
+  it("garde une barre par semaine et marque celles de la période", () => {
+    const b = barresGraphique(volumes, "mois", "volume");
+    expect(b.map((x) => x.libelle)).toEqual(["24 août", "31 août", "7 sept."]);
+    expect(b.map((x) => x.dansPeriode)).toEqual([false, false, true]);
+    expect(b.map((x) => x.valeur)).toEqual([1000, 2000, 3000]);
+  });
+
+  it("compte les séries de travail quand on bascule la mesure", () => {
+    expect(barresGraphique(volumes, "semaine", "series").map((x) => x.valeur)).toEqual([
+      10, 12, 15,
+    ]);
   });
 
   it("regroupe par mois en Année, d'après le mois du lundi", () => {
-    const v = volumesAffiches(volumes, "annee");
-    expect(v.map((x) => [x.libelle, x.volumeKg])).toEqual([
+    const b = barresGraphique(volumes, "annee", "volume");
+    expect(b.map((x) => [x.libelle, x.valeur])).toEqual([
       ["août", 3000],
       ["sept.", 3000],
     ]);
-    expect(v.at(-1)?.courante).toBe(true);
   });
 });
