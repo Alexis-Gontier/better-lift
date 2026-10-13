@@ -1,6 +1,6 @@
 # Tableau de bord web, d'après les wireframes 2a — conception
 
-> Date : 2026-10-13. Décisions D185–D191. Source : wireframes Claude Design « better-lift —
+> Date : 2026-10-13. Décisions D185–D192. Un seul lot, une seule PR. Source : wireframes Claude Design « better-lift —
 > wireframes du MVP », tour 2 (web en shadcn/ui, disposition **2a** recommandée).
 
 ## Point de départ
@@ -80,6 +80,22 @@ semaines ; les records sont bornés à la fin de la période. Le décalage est d
 ⌘K liste, en plus des pages, les routines (ouvrir l'éditeur) et une action « Nouvelle
 routine ». Les exercices restent cherchés dans leur page : 1 300 entrées n'ont rien à faire dans
 une liste chargée d'avance.
+
+## D192 — Le web prend le thème par défaut de shadcn
+
+Révise D135 (palette et Archivo partagées avec le mobile), D177 (bascule du web vers la couleur du
+mobile), D27 (élévation de la palette), D126/D127 (couleurs du calendrier) et D151 (couleur du
+superset) pour le web. Le web adopte le thème **Neutral** de shadcn tel quel : ses variables, son
+rayon, la police par défaut de Tailwind, et des primitives non retouchées. Plus aucun token maison :
+les classes canoniques (`text-muted-foreground`, `bg-muted`, `bg-primary`…).
+
+- L'action reste un aplat : `primary` (quasi noir en clair, quasi blanc en sombre).
+- Le record reste un contour : `Badge variant="outline"` avec la flèche `TrendingUp`, sans couleur.
+- Le danger : `destructive`. Le calendrier : `primary` en opacités. Le superset : `chart-2`.
+- Seule exception : `bg-white` derrière les GIF, détourés sur blanc.
+- Le sombre suit toujours `data-theme`, posé avant le rendu par `index.html`.
+
+Le mobile garde ses thèmes par fichier (D182) ; les deux surfaces ne partagent plus de palette.
 
 ## Questions laissées ouvertes
 

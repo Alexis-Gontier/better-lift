@@ -2,31 +2,277 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Faire évoluer le Tableau de bord web existant vers la disposition 2a : comparaison au même moment, tuiles Séances · Séries de travail · Volume · Objectif, graphique sur douze semaines, muscles comparés à une référence, dernières séances, palette qui ouvre les routines, navigation dans le temps.
+**Goal:** Passer le web au thème par défaut de shadcn (Neutral), puis faire évoluer le Tableau de bord vers la disposition 2a : comparaison au même moment, tuiles Séances · Séries de travail · Volume · Objectif, graphique sur douze semaines, muscles comparés à une référence, dernières séances, palette qui ouvre les routines, navigation dans le temps.
 
-**Architecture:** Le calcul vit dans `packages/shared/src/stats.ts` (`calculerPeriode`, pur, testé) ; l'API (`services/stats.ts`) ne fait que lire la bonne fenêtre et passer le résultat. Le web (`apps/web/src/features/tableau/`) affiche, avec les composants shadcn déjà vendorisés. Aucune migration.
+**Architecture:** Le thème : `globals.css` porte les variables Neutral de shadcn et le `@theme inline` canonique ; plus aucun token maison, les classes canoniques partout (`text-muted-foreground`, `bg-muted`…). Le calcul vit dans `packages/shared/src/stats.ts` (`calculerPeriode`, pur, testé) ; l'API (`services/stats.ts`) ne fait que lire la bonne fenêtre et passer le résultat. Le web (`apps/web/src/features/tableau/`) affiche, avec les composants shadcn déjà vendorisés. Aucune migration.
 
 **Tech Stack:** TypeScript, Vitest, Hono + Prisma (API), Vite + React 19 + TanStack Router/Query + shadcn/ui + Recharts (web).
 
-**Spec:** [`docs/superpowers/specs/2026-10-13-web-tableau-de-bord-design.md`](../specs/2026-10-13-web-tableau-de-bord-design.md) (D185–D191)
+**Spec:** [`docs/superpowers/specs/2026-10-13-web-tableau-de-bord-design.md`](../specs/2026-10-13-web-tableau-de-bord-design.md) (D185–D192)
 
 ## Global Constraints
 
-- Quatre lots, une branche et une PR par lot, partant de `main` à jour : `feat/web-tableau-lot1` … `feat/web-tableau-lot4`. Le lot N+1 démarre après la fusion du lot N.
+- **Un seul lot** : la branche `feat/web-tableau-de-bord` (partie de `main`), un commit par tâche, **une seule PR** à la fin (Task 9).
 - Commits en Conventional Commits, en français, sujet en minuscule, ≤ 100 caractères.
 - Dates découpées dans le fuseau, jamais en UTC ; l'arithmétique civile reste dans `shared`.
 - Toute charge affichée passe par `formaterCharge(kg, SYSTEME_UNITES)`.
-- Aucune couleur en dur : les tokens `var(--ink-muted)`, `var(--line-strong)`, etc. La couleur d'action ne colore jamais une barre de graphique ni un écart.
+- **Style par défaut de shadcn** (D192) : variables du thème Neutral, classes canoniques (`text-foreground`, `text-muted-foreground`, `bg-muted`, `bg-card`, `border-border`, `bg-primary`, `text-destructive`…). Aucun token maison (`--ink`, `--surface-*`, `--line`, `--accent-*`, `--cal-*`…), aucune couleur en dur — seule exception : `bg-white` derrière les GIF détourés sur blanc. Pas de retouche de style sur les primitives de `components/ui/`.
 - Toute donnée de la clé de lecture est dans la clé d'écriture (piège TanStack de CLAUDE.md).
 - Les quatre états de la page restent atteignables par `?etat=chargement|vide|erreur`.
 - `packages/shared` n'importe ni React, ni Prisma, ni API de plateforme.
-- Fin de chaque lot : `/verif` vert (build, typecheck, test, lint, knip), puis vérification visuelle sur `http://localhost:3000` avec le compte `controle@better-lift.local`.
+- Fin du lot : `/verif` vert (build, typecheck, test, lint, knip), puis vérification visuelle, en clair et en sombre, sur `http://localhost:3000` avec le compte `controle@better-lift.local`.
 
 ---
 
-## Lot 1 — Les données (shared + API)
+### Task 0: Le thème par défaut de shadcn (D192)
 
-Branche `feat/web-tableau-lot1`. Le premier commit porte la spec et ce plan.
+**Files:**
+- Modify: `apps/web/src/styles/globals.css` (réécrit)
+- Delete: `apps/web/src/styles/tokens.css`
+- Modify: `apps/web/src/main.tsx` (retirer `import "@fontsource-variable/archivo/wdth.css"`)
+- Modify: `apps/web/package.json` (`pnpm --filter @better-lift/web remove @fontsource-variable/archivo`)
+- Modify: `apps/web/src/components/ui/chart.tsx` (`THEMES`)
+- Modify: tous les fichiers de `apps/web/src` hors `components/ui/` qui emploient un token maison (une quarantaine ; la commande du Step 4 les liste)
+- Modify: `apps/web/src/features/exercices/badge-record.tsx`, `apps/web/src/components/shell/palette.tsx`
+- Modify: `.claude/rules/interface-web.md` (sections sur les tokens), `CLAUDE.md` (sections Interface et État)
+
+**Interfaces:**
+- Produces: les classes canoniques shadcn, seules autorisées dans les tâches suivantes.
+
+- [ ] **Step 1: Réécrire `globals.css`**
+
+`index.html` pose toujours `data-theme` (`light` ou `dark`) avant le rendu : le sombre se déclare sur `[data-theme="dark"]` plutôt que sur `.dark`. Valeurs du thème **Neutral** de shadcn (Tailwind v4) ; les **contrôler contre la doc** (Context7, bibliothèque shadcn/ui, page « Theming », thème Neutral) avant de commiter, et suivre la doc en cas d'écart.
+
+```css
+@import "tailwindcss";
+
+/* Le thème Neutral par défaut de shadcn (D192). `index.html` pose `data-theme`
+   avant le rendu : le sombre suit cet attribut, pas une classe `.dark`. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+[data-theme="dark"] {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Tout chiffre s'aligne en colonne : charges, reps, durées, dates. */
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* react-resizable-panels fixe `height: 100%` en style inline sur le groupe : sans
+   cette chaîne, il s'effondre à la hauteur de son contenu. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Le chiffre héros des tuiles et bilans. */
+@utility chiffre {
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: la réduction de mouvement doit primer sur toute animation déclarée ailleurs. */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: même raison, pour les transitions. */
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+Supprimer `tokens.css`. Retirer la police Archivo (`main.tsx`, `package.json`) : la police est celle de Tailwind par défaut.
+
+- [ ] **Step 2: `chart.tsx` suit `data-theme`**
+
+Dans `components/ui/chart.tsx`, remplacer la constante des thèmes :
+
+```ts
+const THEMES = { light: "", dark: '[data-theme="dark"]' } as const;
+```
+
+- [ ] **Step 3: Remplacer les tokens maison, fichier par fichier**
+
+Table de correspondance, à appliquer sur toutes les formes (`text-(--x)`, `bg-(--x)`, `border-(--x)`, `ring-(--x)`, `var(--x)`, `text-x`…) :
+
+| Maison | Canonique |
+|---|---|
+| `--ink` | `foreground` |
+| `--ink-muted`, `--ink-subtle`, `--ink-faint` | `muted-foreground` |
+| `--canvas` | `background` |
+| `--surface-1` | `card` |
+| `--surface-2`, `--surface-3`, `--nav-active` | `muted` |
+| `--line` | `border` (souvent : retirer la couleur, `border` suffit) |
+| `--line-strong` | `input` |
+| `--focus-ring` | `ring` (`ring-ring/50`) |
+| `--danger`, `--danger-ink` | `destructive` ; le texte sur aplat rouge : comme `Button variant="destructive"` |
+| `--accent` (aplat d'action) | `primary` / `primary-foreground` |
+| `accent-ink`, `accent-line`, `accent-wash` (contour du record) | voir `BadgeRecord` ci-dessous |
+| `--cal-0` … `--cal-4` | `bg-muted`, `bg-primary/25`, `bg-primary/50`, `bg-primary/75`, `bg-primary` |
+| `--superset` | `chart-2` (`text-chart-2`, `border-chart-2`) |
+| `--image-bg` | `bg-white` |
+| `--float-*`, `--scrim` | supprimer : la primitive par défaut |
+
+- `features/exercices/badge-record.tsx` : le record reste un **contour**, sans couleur de marque. Lire le fichier, garder sa signature, ne changer que l'apparence :
+
+```tsx
+import { TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+/** Le record (CLAUDE.md) : un contour, jamais un aplat. Thème par défaut (D192). */
+export function BadgeRecord({ libelle }: { libelle: string }) {
+  return (
+    <Badge variant="outline" className="gap-1 font-semibold">
+      <TrendingUp aria-hidden="true" />
+      {libelle}
+    </Badge>
+  );
+}
+```
+
+- `features/tableau/tuiles.tsx` : le badge d'écart devient `Badge variant="outline"` sans classe de couleur (hausse ou baisse : flèche et signe, pas de couleur).
+- `components/shell/palette.tsx` : retirer `className` et `overlayClassName` du `CommandDialog`, et leur commentaire.
+- Les commentaires qui justifiaient l'ancien vocabulaire (lime, Archivo, D27, D135…) sont retirés ou réduits à une ligne.
+
+- [ ] **Step 4: Plus aucun token maison**
+
+Run: `grep -rnE "\(--(ink|surface|line|canvas|accent|danger|cal|superset|image|float|scrim|focus|nav)|(text|bg|border|fill)-(ink|surface-|line|canvas|accent-(ink|line|wash)|cal-|superset|image-bg)" apps/web/src`
+Expected: aucune ligne.
+
+Run: `pnpm --filter @better-lift/web typecheck && pnpm --filter @better-lift/web build && pnpm lint && pnpm knip`
+Expected: PASS.
+
+- [ ] **Step 5: Les consignes**
+
+- `.claude/rules/interface-web.md` : remplacer tout ce qui décrit les tokens maison, le lime, Archivo, l'élévation de la palette et la traduction du vocabulaire shadcn par une section :
+  « **Thème par défaut de shadcn, Neutral (D192)** : classes canoniques seulement (`text-muted-foreground`, `bg-muted`, `bg-primary`…), aucun token maison, aucune couleur en dur (exception : `bg-white` derrière les GIF). Les primitives de `components/ui/` ne sont pas retouchées. L'action est `primary` en aplat ; le record est un `Badge variant="outline"` avec `TrendingUp` ; le danger est `destructive`. Le sombre suit `data-theme`. »
+- `CLAUDE.md` : section Interface, première puce — « …celle du thème (orange sur le mobile ; sur le web, `primary` du thème Neutral de shadcn, D192)… » ; section État, puce Web — remplacer « Encore au lime ; sa bascule… n'est pas tranché » par « thème par défaut de shadcn (D192) ».
+
+- [ ] **Step 6: Vérifier à l'œil, puis commit**
+
+`pnpm dev`, parcourir Tableau de bord, Séances (liste et détail), Routines (liste et éditeur, superset compris), Exercices (liste et fiche), Profil, Connexion, palette Ctrl+K — en clair et en sombre (bascule du Profil). Rien d'illisible ; aucun aplat hors des boutons d'action.
+
+```bash
+git add -A apps/web .claude/rules/interface-web.md CLAUDE.md pnpm-lock.yaml
+git commit -m "feat(web): thème par défaut de shadcn, sans tokens maison (D192)"
+```
+
+
+## Les données (shared + API)
 
 ### Task 1: `calculerPeriode` — même moment, séries de travail, douze semaines, référence des muscles
 
@@ -358,7 +604,7 @@ Expected: PASS. Si `semainesRecentes` n'a plus d'appelant hors de `Stats` (`lire
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/shared/src/stats.ts packages/shared/src/stats.test.ts packages/shared/src/index.ts docs/superpowers/specs/2026-10-13-web-tableau-de-bord-design.md docs/superpowers/plans/2026-10-13-web-tableau-de-bord.md
+git add packages/shared/src/stats.ts packages/shared/src/stats.test.ts packages/shared/src/index.ts
 git commit -m "feat(shared): stats de période au même moment, sur douze semaines, muscles comparés (D185–D188)"
 ```
 
@@ -400,20 +646,16 @@ Expected: PASS. Le dépôt factice de `routes/stats.test.ts` rend `volumes: []` 
 Run: `pnpm --filter @better-lift/web typecheck`
 Expected: PASS. `volumesAffiches` lit `lundi`, `volumeKg` : toujours présents. Le graphique montre désormais douze barres, la dernière en encre : transition acceptée jusqu'au lot 2.
 
-- [ ] **Step 4: Commit, vérification, PR**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add apps/api/src/services/stats.ts
 git commit -m "feat(api): la période lit la fenêtre du graphique et de la référence (D187, D188)"
 ```
 
-Lancer `/verif`, pousser `feat/web-tableau-lot1`, ouvrir la PR vers `main`, fusionner en squash une fois le check `Qualité · typecheck · test · build` vert.
-
 ---
 
-## Lot 2 — L'écran
-
-Branche `feat/web-tableau-lot2`, depuis `main` après la fusion du lot 1.
+## L'écran
 
 ### Task 3: Tuiles Séances · Séries de travail · Volume · Objectif, et l'accueil d'un compte vide
 
@@ -590,7 +832,7 @@ function TuileObjectif({
   const regler = (libelle: string) =>
     preferences ? (
       <DialogueObjectif preferences={preferences}>
-        <button type="button" className="underline underline-offset-4 hover:text-(--ink)">
+        <button type="button" className="underline underline-offset-4 hover:text-foreground">
           {libelle}
         </button>
       </DialogueObjectif>
@@ -611,14 +853,14 @@ function TuileObjectif({
       valeur={
         <>
           {cetteSemaine}
-          <span className="text-2xl text-(--ink-muted)"> / {objectif}</span>
+          <span className="text-2xl text-muted-foreground"> / {objectif}</span>
         </>
       }
     >
       <div className="flex w-full flex-col gap-2">
-        <span className="h-1.5 overflow-hidden rounded-full bg-(--surface-3)">
+        <span className="h-1.5 overflow-hidden rounded-full bg-muted">
           <span
-            className="block h-full rounded-full bg-(--ink-muted)"
+            className="block h-full rounded-full bg-primary"
             style={{ width: `${Math.min(100, (cetteSemaine / objectif) * 100)}%` }}
           />
         </span>
@@ -792,7 +1034,7 @@ const kg = (v: number) => formaterCharge(Math.round(v), SYSTEME_UNITES);
 
 /**
  * Au moins douze semaines (D187), par mois en Année. Les barres de la période en
- * encre atténuée, les autres en filet — jamais la couleur d'action.
+ * `primary`, les autres atténuées (D187, D192).
  */
 export function Volume({ stats }: { stats: StatsPeriode }) {
   const [mesure, setMesure] = useState<Mesure>("volume");
@@ -836,7 +1078,11 @@ export function Volume({ stats }: { stats: StatsPeriode }) {
           {/* Les animations de Recharts échappent à `prefers-reduced-motion` : coupées. */}
           <Bar dataKey="valeur" radius={4} minPointSize={2} isAnimationActive={false}>
             {barres.map((b) => (
-              <Cell key={b.cle} fill={b.dansPeriode ? "var(--ink-muted)" : "var(--line-strong)"} />
+              <Cell
+                key={b.cle}
+                fill={b.dansPeriode ? "var(--primary)" : "var(--muted-foreground)"}
+                fillOpacity={b.dansPeriode ? 1 : 0.3}
+              />
             ))}
           </Bar>
         </BarChart>
@@ -887,7 +1133,7 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
       className="lg:col-span-7"
     >
       {zones.length === 0 ? (
-        <p className="py-8 text-center text-sm text-(--ink-subtle)">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           Aucune série comptée sur la période.
         </p>
       ) : (
@@ -900,22 +1146,22 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
                 className="grid grid-cols-[110px_1fr_64px] items-center gap-3 text-[13px]"
               >
                 <span>{LIBELLE_ZONE[z.zone]}</span>
-                <span className="relative h-2 rounded-full bg-(--surface-3)">
+                <span className="relative h-2 rounded-full bg-muted">
                   <span
-                    className="block h-full rounded-full bg-(--ink-muted)"
+                    className="block h-full rounded-full bg-primary"
                     style={{ width: `${(z.series / max) * 100}%` }}
                   />
                   {z.reference > 0 ? (
                     <span
                       aria-hidden="true"
-                      className="absolute -top-1 h-4 w-0.5 rounded bg-(--ink)"
+                      className="absolute -top-1 h-4 w-0.5 rounded bg-foreground"
                       style={{ left: `${(z.reference / max) * 100}%` }}
                     />
                   ) : null}
                 </span>
-                <span className="text-right text-(--ink-muted)">
+                <span className="text-right text-muted-foreground">
                   {z.series}
-                  <span className="text-ink-faint"> / {z.reference}</span>
+                  <span className="text-muted-foreground/70"> / {z.reference}</span>
                 </span>
               </li>
             ))}
@@ -942,13 +1188,13 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
       className="lg:col-span-4"
     >
       {affiches.length === 0 ? (
-        <p className="py-6 text-center text-sm text-(--ink-subtle)">Aucun record sur la période.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">Aucun record sur la période.</p>
       ) : (
         <ul className="flex flex-col">
           {affiches.map((r) => (
             <li
               key={`${r.slug}-${r.date}`}
-              className="flex items-start justify-between gap-3 border-t border-(--line) py-2.5 first:border-t-0"
+              className="flex items-start justify-between gap-3 border-t border-border py-2.5 first:border-t-0"
             >
               <div className="min-w-0">
                 <Link
@@ -958,7 +1204,7 @@ export function Records({ records }: { records: readonly RecordRecent[] }) {
                 >
                   {r.nom}
                 </Link>
-                <span className="text-xs text-(--ink-muted)">{DATE.format(new Date(r.date))}</span>
+                <span className="text-xs text-muted-foreground">{DATE.format(new Date(r.date))}</span>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1 text-[13.5px]">
                 <span>
@@ -1024,7 +1270,7 @@ export function DernieresSeances() {
       {requete.isPending ? (
         <div className="flex flex-col gap-2" aria-busy="true">
           {[0, 1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-9 rounded-md bg-(--surface-2)" />
+            <Skeleton key={i} className="h-9 rounded-md bg-muted" />
           ))}
         </div>
       ) : requete.isError ? (
@@ -1035,21 +1281,21 @@ export function DernieresSeances() {
           </Button>
         </div>
       ) : seances.length === 0 ? (
-        <p className="py-6 text-center text-sm text-(--ink-subtle)">Aucune séance.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">Aucune séance.</p>
       ) : (
         <ul className="flex flex-col">
           {seances.map((s) => (
-            <li key={s.id} className="border-t border-(--line) first:border-t-0">
+            <li key={s.id} className="border-t border-border first:border-t-0">
               <Link
                 to="/seances/$id"
                 params={{ id: s.id }}
-                className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-2.5 text-[13.5px] hover:bg-(--surface-2)"
+                className="grid grid-cols-[1fr_auto] items-center gap-x-3 py-2.5 text-[13.5px] hover:bg-muted"
               >
                 <span className="min-w-0 truncate font-semibold">{s.nom}</span>
                 <span className="text-right">
                   {formaterCharge(Math.round(s.volumeKg), SYSTEME_UNITES)}
                 </span>
-                <span className="text-xs text-(--ink-muted)">
+                <span className="text-xs text-muted-foreground">
                   {DATE.format(new Date(s.debut))} · {dureeTexte(minutes(s))} · {s.seriesFaites} séries
                 </span>
                 <span className="justify-self-end">
@@ -1107,20 +1353,16 @@ const SPAN: Record<number, string> = {
 Run: `pnpm --filter @better-lift/web typecheck && pnpm --filter @better-lift/web test && pnpm lint`
 Expected: PASS. Puis dans le navigateur : `/`, `/?periode=semaine`, `/?periode=annee`, `/?etat=chargement`, `/?etat=erreur`, `/?etat=vide`, en sombre et en clair ; à 1024 px de large la grille passe sur une colonne sans débordement.
 
-- [ ] **Step 6: Commit, vérification, PR**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/features/tableau/muscles.tsx apps/web/src/features/tableau/records.tsx apps/web/src/features/tableau/dernieres-seances.tsx apps/web/src/routes/_protege.index.tsx
 git commit -m "feat(web): muscles comparés, records resserrés et dernières séances (D188, D189)"
 ```
 
-`/verif`, pousser `feat/web-tableau-lot2`, PR vers `main`, squash une fois vert.
-
 ---
 
-## Lot 3 — La palette ouvre les routines
-
-Branche `feat/web-tableau-lot3`.
+## La palette
 
 ### Task 6: Routines et « Nouvelle routine » dans ⌘K
 
@@ -1158,7 +1400,7 @@ Sous le groupe « Pages », dans `CommandList` :
                 }}
               >
                 {r.nom}
-                <span className="ml-auto text-xs text-(--ink-muted)">
+                <span className="ml-auto text-xs text-muted-foreground">
                   {r.nbExercices} exercices
                 </span>
               </CommandItem>
@@ -1174,20 +1416,16 @@ En tête du composant : `const routines = useQuery({ ...optionsRoutines(), enabl
 Run: `pnpm --filter @better-lift/web typecheck && pnpm lint`
 Expected: PASS. Dans le navigateur : Ctrl+K, taper « pu » → Push A, Entrée ouvre l'éditeur ; « nouv » → Nouvelle routine.
 
-- [ ] **Step 3: Commit, PR**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add apps/web/src/components/shell/palette.tsx
 git commit -m "feat(web): la palette ouvre les routines et crée une routine (D191)"
 ```
 
-`/verif`, pousser, PR vers `main`, squash une fois vert.
-
 ---
 
-## Lot 4 — Reculer dans le temps
-
-Branche `feat/web-tableau-lot4`.
+## Reculer dans le temps
 
 ### Task 7: `decalage` dans le calcul et l'API
 
@@ -1385,11 +1623,31 @@ Dans `TuileObjectif`, recevoir `decalage` : à 0, inchangé ; au-delà, titre «
 Run: `pnpm --filter @better-lift/web test && pnpm --filter @better-lift/web typecheck && pnpm lint`
 Expected: PASS. Dans le navigateur : ‹ recule, l'URL porte `?decalage=1`, › revient et se désactive à 0, changer de période remet à 0, le bouton Précédent du navigateur revient à l'état d'avant.
 
-- [ ] **Step 6: Commit, PR**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/features/tableau apps/web/src/routes/_protege.index.tsx
 git commit -m "feat(web): reculer d'une période sur le tableau de bord (D190)"
 ```
 
-`/verif`, pousser `feat/web-tableau-lot4`, PR vers `main`, squash une fois vert. Mettre à jour la section État de `CLAUDE.md` (« Tableau de bord 2a, D185–D191 ») dans ce dernier lot.
+---
+
+### Task 9: Vérification et PR
+
+- [ ] **Step 1: Tout vérifier**
+
+`/verif` (build, typecheck, test, lint, knip) vert. Puis, avec `pnpm dev` et le compte `controle@better-lift.local` : chaque page du web en clair et en sombre, le Tableau de bord sur les quatre périodes, ‹ › et le retour arrière du navigateur, `?etat=chargement|vide|erreur`, Ctrl+K.
+
+- [ ] **Step 2: Les consignes**
+
+Dans `CLAUDE.md`, section État, puce Web : ajouter « Tableau de bord 2a (D185–D191) ».
+
+```bash
+git add CLAUDE.md
+git commit -m "docs: état du web après le tableau de bord 2a et le thème shadcn"
+```
+
+- [ ] **Step 3: La PR**
+
+Pousser `feat/web-tableau-de-bord`, ouvrir **une** PR vers `main` (titre : « feat(web): thème shadcn par défaut et tableau de bord 2a (D185–D192) »), fusionner en squash une fois le check `Qualité · typecheck · test · build` vert. La fusion déploie la production.
+
