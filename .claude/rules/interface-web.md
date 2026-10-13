@@ -109,8 +109,10 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   Un rôle non déclaré n'émet aucune règle, en silence. L'aplat est `bg-primary` /
   `text-primary-foreground`. `accent` désigne chez shadcn la **surface de survol** et pointe vers
   `--surface-3` : ne jamais rendre `bg-accent` au lime, chaque survol deviendrait un aplat.
-- **Les valeurs des tokens suivent `apps/mobile/lib/theme.ts`** (D135) : en changer une, c'est
-  changer les deux. Police **Archivo** (`@fontsource-variable/archivo/wdth.css`), chiffres héros
+- **Les valeurs des tokens ont été reprises du mobile** (D135), à l'époque où il était au lime.
+  Depuis, le mobile est passé à l'orange (D161) : le web ne suit plus
+  automatiquement. Comment il basculera (D177 : thème fixe, ou thème actif du mobile)
+  reste ouvert. Police **Archivo** (`@fontsource-variable/archivo/wdth.css`), chiffres héros
   par l'utilitaire `chiffre` (`font-stretch: 72%`). Calendrier `--cal-0..4`, vignettes
   `--image-bg` (blanc dans les deux thèmes).
 - `--superset` (D151) : `#9a8cf0` / `#5a4bbf`, le repère d'un superset — ni lime ni danger.
@@ -125,7 +127,7 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   changement de branche avec un `git diff` vide. Arrêter le serveur avant de fusionner, et
   vérifier que le port 3000 est libre (`TaskStop` ne tue pas toujours le Vite enfant).
 - `SYSTEME_UNITES` (`src/lib/unites.ts`) et le fuseau (`src/lib/fuseau.ts`, Europe/Paris) sont
-  fixés à un seul endroit chacun, tant qu'aucun profil n'existe.
+  fixés à un seul endroit chacun, tant que le Profil ne permet pas de les changer.
 - Logo : `src/components/logo.tsx`, source vectorielle `public/favicon.svg`.
 - Le lien `/` de la barre latérale porte `exact` : sans lui, il reste actif sur toutes les pages.
 - Biome lit aussi `.superpowers/` (maquettes non versionnées) : ses erreurs y sont sans effet
