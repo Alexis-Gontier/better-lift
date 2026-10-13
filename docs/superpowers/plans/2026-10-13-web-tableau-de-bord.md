@@ -493,7 +493,7 @@ export function DialogueObjectif({
           </SelectContent>
         </Select>
         {ecrire.isError ? (
-          <p role="alert" className="text-sm text-(--danger)">
+          <p role="alert" className="text-sm text-destructive">
             {ecrire.error.message}
           </p>
         ) : null}
@@ -516,7 +516,6 @@ export function DialogueObjectif({
 }
 ```
 
-Vérifier dans `apps/web/src/styles/globals.css` le nom exact du token de danger exposé (`--danger` ou `text-danger`) et l'employer.
 
 - [ ] **Step 2: Réécrire `Tuiles`**
 
@@ -916,7 +915,7 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
                 </span>
                 <span className="text-right text-(--ink-muted)">
                   {z.series}
-                  <span className="text-(--ink-faint)"> / {z.reference}</span>
+                  <span className="text-ink-faint"> / {z.reference}</span>
                 </span>
               </li>
             ))}
