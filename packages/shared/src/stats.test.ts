@@ -4,6 +4,7 @@ import {
   joursDeLaSemaine,
   niveauxCalendrier,
   type SeancePeriode,
+  semainesALire,
   semainesRecentes,
   semainesTenues,
 } from "./stats.js";
@@ -54,7 +55,7 @@ describe("semainesRecentes (D112)", () => {
   });
 });
 
-describe("calculerPeriode (D125)", () => {
+describe("calculerPeriode (D125, D185–D188)", () => {
   // Samedi 3 octobre 2026 : la semaine en cours commence le lundi 28 septembre ;
   // « mois » = 4 semaines depuis le lundi 7 septembre, comparées aux 4 d'avant.
   const seance = (id: string, debut: string, volumeKg = 1000): SeancePeriode => ({
@@ -69,7 +70,7 @@ describe("calculerPeriode (D125)", () => {
     ],
   });
 
-  it("compte la période et la période précédente, et ignore le reste", () => {
+  it("compte la période, la précédente au même moment, et ignore le reste", () => {
     const p = calculerPeriode(
       [
         seance("a", "2026-10-01T17:00:00.000Z"),
@@ -82,8 +83,22 @@ describe("calculerPeriode (D125)", () => {
     );
     expect(p.nbSemaines).toBe(4);
     expect(p.premierLundi).toBe("2026-09-07");
-    expect(p.totaux).toEqual({ seances: 1, series: 10, dureeMin: 45, volumeKg: 1000 });
-    expect(p.precedents).toEqual({ seances: 1, series: 10, dureeMin: 45, volumeKg: 1000 });
+    // Séries de travail : 4 + 3, l'échauffement n'y est pas (D186).
+    expect(p.totaux).toEqual({ seances: 1, series: 7, dureeMin: 45, volumeKg: 1000 });
+    expect(p.precedents).toEqual({ seances: 1, series: 7, dureeMin: 45, volumeKg: 1000 });
+  });
+
+  it("compare au même moment : le dimanche d'avant ne compte pas un samedi (D185)", () => {
+    const p = calculerPeriode(
+      [
+        seance("sam", "2026-09-26T08:00:00.000Z"), // samedi 26 : même rang qu'aujourd'hui
+        seance("dim", "2026-09-27T08:00:00.000Z"), // dimanche 27 : après ce rang
+      ],
+      maintenant,
+      PARIS,
+      "semaine",
+    );
+    expect(p.precedents.seances).toBe(1);
   });
 
   it("découpe dans le fuseau : le dimanche 23 h 30 à Paris reste dans la semaine d'avant", () => {
@@ -97,7 +112,8 @@ describe("calculerPeriode (D125)", () => {
       "mois",
     );
     expect(p.totaux.seances).toBe(1);
-    expect(p.precedents.seances).toBe(1);
+    // Dimanche 6 est le dernier jour de la précédente : après le même moment (D185).
+    expect(p.precedents.seances).toBe(0);
     expect(p.jours.map((j) => j.jour)).toEqual(["2026-09-07"]);
   });
 
@@ -110,10 +126,65 @@ describe("calculerPeriode (D125)", () => {
     );
     expect(p.jours).toEqual([{ jour: "2026-10-01", volumeKg: 1200, seances: ["a", "b"] }]);
     expect(p.zones).toEqual([
-      { zone: "chest", series: 8 },
-      { zone: "triceps", series: 6 },
+      { zone: "chest", series: 8, reference: 0 },
+      { zone: "triceps", series: 6, reference: 0 },
     ]);
-    expect(p.volumes).toEqual([{ lundi: "2026-09-28", volumeKg: 1200, seances: 2 }]);
+  });
+
+  it("rend au moins douze semaines au graphique, la période marquée (D187)", () => {
+    const p = calculerPeriode(
+      [seance("a", "2026-10-01T08:00:00.000Z", 500), seance("v", "2026-08-12T08:00:00.000Z", 900)],
+      maintenant,
+      PARIS,
+      "semaine",
+    );
+    expect(p.volumes).toHaveLength(12);
+    expect(p.volumes[0]?.lundi).toBe("2026-07-13");
+    expect(p.volumes.at(-1)).toEqual({
+      lundi: "2026-09-28",
+      volumeKg: 500,
+      seances: 1,
+      series: 7,
+      dansPeriode: true,
+    });
+    expect(p.volumes.filter((v) => v.dansPeriode)).toHaveLength(1);
+    // Mercredi 12 août : la semaine du lundi 10, hors période mais dans le graphique.
+    expect(p.volumes.find((v) => v.lundi === "2026-08-10")?.volumeKg).toBe(900);
+    expect(calculerPeriode([], maintenant, PARIS, "annee").volumes).toHaveLength(52);
+  });
+
+  it("compare chaque zone à la moyenne des huit semaines d'avant (D188)", () => {
+    // Deux séances dans les 8 semaines avant le lundi 28 septembre, aucune pendant.
+    const p = calculerPeriode(
+      [seance("x", "2026-09-15T08:00:00.000Z"), seance("y", "2026-08-20T08:00:00.000Z")],
+      maintenant,
+      PARIS,
+      "semaine",
+    );
+    // Pectoraux : 2 × 4 = 8 séries sur 8 semaines → 1 par semaine ; triceps : 2 × 3 / 8 → 1.
+    expect(p.zones).toEqual([
+      { zone: "chest", series: 0, reference: 1 },
+      { zone: "triceps", series: 0, reference: 1 },
+    ]);
+  });
+
+  it("ignore une séance après la fin de la période", () => {
+    const p = calculerPeriode(
+      [seance("f", "2026-10-06T08:00:00.000Z")],
+      maintenant,
+      PARIS,
+      "semaine",
+    );
+    expect(p.totaux.seances).toBe(0);
+  });
+});
+
+describe("semainesALire (D187, D188)", () => {
+  it("couvre la période d'avant, la référence et le graphique, plus une de marge", () => {
+    expect(semainesALire("semaine")).toBe(13);
+    expect(semainesALire("mois")).toBe(13);
+    expect(semainesALire("trimestre")).toBe(27);
+    expect(semainesALire("annee")).toBe(105);
   });
 });
 

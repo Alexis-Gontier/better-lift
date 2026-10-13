@@ -107,6 +107,21 @@ export const SEMAINES_PERIODE: Record<Periode, number> = {
   annee: 52,
 };
 
+/** Le graphique montre au moins douze semaines, toute la période au-delà (D187). */
+export const SEMAINES_GRAPHIQUE = 12;
+/** Les semaines d'avant la période qui servent de référence aux muscles (D188). */
+export const SEMAINES_REFERENCE = 8;
+
+/**
+ * Combien de semaines l'API lit pour une période : la plus longue des trois
+ * fenêtres (période + précédente, référence, graphique), plus une de marge pour
+ * le découpage civil, qui se fait ensuite dans le fuseau.
+ */
+export function semainesALire(periode: Periode): number {
+  const n = SEMAINES_PERIODE[periode];
+  return Math.max(2 * n, n + SEMAINES_REFERENCE, SEMAINES_GRAPHIQUE) + 1;
+}
+
 /** Une séance, réduite à ce que les stats d'une période en lisent. */
 export type SeancePeriode = {
   id: string;
@@ -122,8 +137,22 @@ export type SeancePeriode = {
   }[];
 };
 
-/** Le volume ne compte pas l'échauffement, comme `SeancePeriode.volumeKg` (D5). */
+/** `series` : les séries de travail, hors échauffement, comme le volume (D5, D186). */
 export type Totaux = { seances: number; series: number; dureeMin: number; volumeKg: number };
+
+/** Une semaine du graphique (D187). */
+export type SemaineVolume = {
+  lundi: string;
+  volumeKg: number;
+  seances: number;
+  /** Les séries de travail. */
+  series: number;
+  /** La semaine appartient à la période choisie. */
+  dansPeriode: boolean;
+};
+
+/** Les séries d'une zone, et sa référence : la moyenne des 8 semaines d'avant × n (D188). */
+export type ZonePeriode = { zone: Zone; series: number; reference: number };
 
 /** Un jour entraîné : son volume et ses séances (le calendrier ouvre la première). */
 export type JourEntraine = { jour: string; volumeKg: number; seances: string[] };
@@ -137,10 +166,10 @@ export type StatsPeriode = {
   /** Les mêmes chiffres sur les semaines d'avant, pour comparer. */
   precedents: Totaux;
   jours: JourEntraine[];
-  /** Le volume et les séances de chaque semaine de la période, de la plus ancienne à la courante. */
-  volumes: { lundi: string; volumeKg: number; seances: number }[];
-  /** Les séries par zone principale, de la plus travaillée à la moins travaillée. */
-  zones: { zone: Zone; series: number }[];
+  /** Les `max(12, n)` dernières semaines, de la plus ancienne à la courante (D187). */
+  volumes: SemaineVolume[];
+  /** Les zones travaillées pendant la période ou la référence, de la plus travaillée à la moins. */
+  zones: ZonePeriode[];
   /** Les exercices de la période, pour la carte du corps. */
   muscles: { musclePrincipal: string; musclesSecondaires: string[] }[];
   /** Les records établis pendant la période, du plus récent au plus ancien. */
@@ -152,6 +181,17 @@ export type StatsPeriode = {
 const dureeMin = (s: { debut: string; fin: string }) =>
   Math.round((Date.parse(s.fin) - Date.parse(s.debut)) / 60_000);
 
+const arrondi = (n: number) => Math.round(n * 100) / 100;
+const seriesDeTravail = (s: SeancePeriode) =>
+  s.exercices.reduce((total, e) => total + e.seriesComptees, 0);
+
+function ajouterZones(zones: Map<Zone, number>, s: SeancePeriode) {
+  for (const e of s.exercices) {
+    const z = zoneDuMuscle(e.musclePrincipal);
+    if (z && e.seriesComptees > 0) zones.set(z, (zones.get(z) ?? 0) + e.seriesComptees);
+  }
+}
+
 /** Tout ce qui se calcule sans l'historique : les records s'ajoutent à part (D64). */
 export function calculerPeriode(
   seances: readonly SeancePeriode[],
@@ -160,37 +200,71 @@ export function calculerPeriode(
   periode: Periode,
 ): Omit<StatsPeriode, "records" | "nbSeances"> {
   const n = SEMAINES_PERIODE[periode];
-  const { lundiMs } = lundiCourant(maintenant, fuseau);
-  const premierMs = lundiMs - (n - 1) * 7 * JOUR_MS;
-  const precedentMs = premierMs - n * 7 * JOUR_MS;
+  const SEMAINE_MS = 7 * JOUR_MS;
+  const { lundiMs, rang } = lundiCourant(maintenant, fuseau);
+  const premierMs = lundiMs - (n - 1) * SEMAINE_MS;
+  const finMs = lundiMs + SEMAINE_MS;
+  const precedentMs = premierMs - n * SEMAINE_MS;
+  // D185 : la période en cours se compare au même moment de la précédente.
+  const joursEcoules = (n - 1) * 7 + rang;
+  const referenceMs = premierMs - SEMAINES_REFERENCE * SEMAINE_MS;
+  const nbBarres = Math.max(SEMAINES_GRAPHIQUE, n);
+  const graphiqueMs = lundiMs - (nbBarres - 1) * SEMAINE_MS;
+
   const vide = (): Totaux => ({ seances: 0, series: 0, dureeMin: 0, volumeKg: 0 });
   const totaux = vide();
   const precedents = vide();
   const jours = new Map<string, JourEntraine>();
   const zones = new Map<Zone, number>();
+  const zonesReference = new Map<Zone, number>();
   const courantes: SeancePeriode[] = [];
+  const volumes: SemaineVolume[] = Array.from({ length: nbBarres }, (_, i) => {
+    const ms = graphiqueMs + i * SEMAINE_MS;
+    return {
+      lundi: new Date(ms).toISOString().slice(0, 10),
+      volumeKg: 0,
+      seances: 0,
+      series: 0,
+      dansPeriode: ms >= premierMs,
+    };
+  });
+
+  const ajouter = (t: Totaux, s: SeancePeriode, series: number) => {
+    t.seances++;
+    t.series += series;
+    t.dureeMin += dureeMin(s);
+    t.volumeKg = arrondi(t.volumeKg + s.volumeKg);
+  };
 
   for (const s of seances) {
     const cle = cleJour(s.debut, fuseau);
     const ms = jourEnMs(cle);
-    const cible = ms >= premierMs ? totaux : ms >= precedentMs ? precedents : null;
-    if (!cible) continue;
-    cible.seances++;
-    cible.series += s.seriesFaites;
-    cible.dureeMin += dureeMin(s);
-    cible.volumeKg = Math.round((cible.volumeKg + s.volumeKg) * 100) / 100;
-    if (cible !== totaux) continue;
-    courantes.push(s);
-    const jour = jours.get(cle) ?? { jour: cle, volumeKg: 0, seances: [] };
-    jour.volumeKg = Math.round((jour.volumeKg + s.volumeKg) * 100) / 100;
-    jour.seances.push(s.id);
-    jours.set(cle, jour);
-    for (const e of s.exercices) {
-      const z = zoneDuMuscle(e.musclePrincipal);
-      if (z && e.seriesComptees > 0) zones.set(z, (zones.get(z) ?? 0) + e.seriesComptees);
+    if (ms >= finMs) continue;
+    const series = seriesDeTravail(s);
+
+    const semaine =
+      ms >= graphiqueMs ? volumes[Math.floor((ms - graphiqueMs) / SEMAINE_MS)] : undefined;
+    if (semaine) {
+      semaine.seances++;
+      semaine.series += series;
+      semaine.volumeKg = arrondi(semaine.volumeKg + s.volumeKg);
+    }
+    if (ms >= referenceMs && ms < premierMs) ajouterZones(zonesReference, s);
+
+    if (ms >= premierMs) {
+      ajouter(totaux, s, series);
+      courantes.push(s);
+      const jour = jours.get(cle) ?? { jour: cle, volumeKg: 0, seances: [] };
+      jour.volumeKg = arrondi(jour.volumeKg + s.volumeKg);
+      jour.seances.push(s.id);
+      jours.set(cle, jour);
+      ajouterZones(zones, s);
+    } else if (ms >= precedentMs && (ms - precedentMs) / JOUR_MS <= joursEcoules) {
+      ajouter(precedents, s, series);
     }
   }
 
+  const toutesZones = new Set<Zone>([...zones.keys(), ...zonesReference.keys()]);
   return {
     periode,
     nbSemaines: n,
@@ -198,12 +272,14 @@ export function calculerPeriode(
     totaux,
     precedents,
     jours: [...jours.values()].sort((a, b) => a.jour.localeCompare(b.jour)),
-    volumes: semainesRecentes(courantes, maintenant, fuseau, n).map((s) => ({
-      lundi: s.lundi,
-      volumeKg: s.volumeKg,
-      seances: s.seances,
-    })),
-    zones: [...zones].sort((a, b) => b[1] - a[1]).map(([zone, series]) => ({ zone, series })),
+    volumes,
+    zones: [...toutesZones]
+      .map((zone) => ({
+        zone,
+        series: zones.get(zone) ?? 0,
+        reference: Math.round(((zonesReference.get(zone) ?? 0) / SEMAINES_REFERENCE) * n),
+      }))
+      .sort((a, b) => b.series - a.series || b.reference - a.reference),
     muscles: courantes.flatMap((s) =>
       s.exercices.map((e) => ({
         musclePrincipal: e.musclePrincipal,
