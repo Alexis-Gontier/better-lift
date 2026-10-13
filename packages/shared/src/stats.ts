@@ -198,10 +198,15 @@ export function calculerPeriode(
   maintenant: Date,
   fuseau: string,
   periode: Periode,
+  /** D190 : combien de périodes en arrière ; 0, la période en cours. */
+  decalage = 0,
 ): Omit<StatsPeriode, "records" | "nbSeances"> {
   const n = SEMAINES_PERIODE[periode];
   const SEMAINE_MS = 7 * JOUR_MS;
-  const { lundiMs, rang } = lundiCourant(maintenant, fuseau);
+  const courant = lundiCourant(maintenant, fuseau);
+  // D190 : reculer de `decalage` périodes. Une période passée est complète.
+  const lundiMs = courant.lundiMs - decalage * n * SEMAINE_MS;
+  const rang = decalage > 0 ? 6 : courant.rang;
   const premierMs = lundiMs - (n - 1) * SEMAINE_MS;
   const finMs = lundiMs + SEMAINE_MS;
   const precedentMs = premierMs - n * SEMAINE_MS;

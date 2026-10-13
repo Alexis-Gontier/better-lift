@@ -77,6 +77,8 @@ export type DepotStats = {
     maintenant: Date,
     fuseau: string,
     periode: Periode,
+    /** D190 : combien de périodes en arrière ; 0, la période en cours. */
+    decalage: number,
   ): Promise<StatsPeriode>;
   /** Les exercices faits sur la période et leur 1RM estimé, début et fin (D173). */
   lireExercices(
@@ -148,14 +150,17 @@ export const depotStats: DepotStats = {
     );
   },
 
-  async lirePeriode(userId, maintenant, fuseau, periode) {
-    // La période, la précédente, la référence des muscles et le graphique (D185–D188).
-    const semaines = semainesALire(periode);
-    const debut = new Date(maintenant.getTime() - semaines * 7 * JOUR_MS);
+  async lirePeriode(userId, maintenant, fuseau, periode, decalage) {
+    // La période, la précédente, la référence des muscles et le graphique (D185–D188),
+    // reculés de `decalage` périodes (D190). Une semaine de marge de chaque côté.
+    const SEMAINE_MS = 7 * JOUR_MS;
+    const finMs =
+      maintenant.getTime() - decalage * SEMAINES_PERIODE[periode] * SEMAINE_MS + SEMAINE_MS;
+    const debut = new Date(finMs - (semainesALire(periode) + 1) * SEMAINE_MS);
     const [nbSeances, lignes] = await Promise.all([
       prisma.seance.count({ where: { userId } }),
       prisma.seance.findMany({
-        where: { userId, debut: { gte: debut } },
+        where: { userId, debut: { gte: debut, lt: new Date(finMs) } },
         select: {
           id: true,
           nom: true,
@@ -197,6 +202,7 @@ export const depotStats: DepotStats = {
       maintenant,
       fuseau,
       periode,
+      decalage,
     );
 
     // Les records de la période : chaque série se juge contre TOUT ce qui la
@@ -213,11 +219,18 @@ export const depotStats: DepotStats = {
       Math.min(...courantes.map((l) => l.debut.getTime()), maintenant.getTime()),
     );
     const h = await historique(userId, [...exercices.keys()]);
+    // Une période passée ne montre pas les records établis après elle : on lit
+    // large, on coupe au lundi qui suit la période (minuit UTC, écart accepté), on
+    // garde 10.
+    const lundiSuivant =
+      Date.parse(`${p.volumes.at(-1)?.lundi ?? p.premierLundi}T00:00:00Z`) + SEMAINE_MS;
     const records = recordsRecents(
       [...exercices].map(([id, e]) => ({ ...e, historique: h.get(id) ?? [] })),
       depuis,
-      10,
-    );
+      50,
+    )
+      .filter((r) => Date.parse(r.date) < lundiSuivant)
+      .slice(0, 10);
     return { ...p, records, nbSeances };
   },
 

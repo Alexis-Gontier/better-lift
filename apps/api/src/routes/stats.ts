@@ -20,6 +20,10 @@ const requete = z.object({
 });
 
 const requetePeriode = requete.extend({ periode: z.enum(PERIODES) });
+// D190 : combien de périodes en arrière (0, la période en cours ; dix ans au plus).
+const requeteTableau = requetePeriode.extend({
+  decalage: z.coerce.number().int().min(0).max(520).default(0),
+});
 
 /**
  * Les statistiques (D112), derrière une session. Le découpage en semaines se fait
@@ -35,9 +39,11 @@ export function routesStats(depot: DepotStats, lireSession: LireSession) {
       // Le bilan de toujours (D128), pour l'en-tête du Profil.
       .get("/bilan", async (c) => c.json(await depot.bilan(c.get("userId"))))
       // Par période (D125) : une route à part, `GET /stats` garde sa forme pour le web.
-      .get("/periode", zValidator("query", requetePeriode), async (c) => {
-        const { fuseau, periode } = c.req.valid("query");
-        return c.json(await depot.lirePeriode(c.get("userId"), new Date(), fuseau, periode));
+      .get("/periode", zValidator("query", requeteTableau), async (c) => {
+        const { fuseau, periode, decalage } = c.req.valid("query");
+        return c.json(
+          await depot.lirePeriode(c.get("userId"), new Date(), fuseau, periode, decalage),
+        );
       })
       // « Tes exercices » de l'onglet Progrès (D173).
       .get("/exercices", zValidator("query", requetePeriode), async (c) => {

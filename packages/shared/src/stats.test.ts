@@ -168,6 +168,24 @@ describe("calculerPeriode (D125, D185–D188)", () => {
     ]);
   });
 
+  it("recule d'une période entière, comparée entière à la précédente (D190)", () => {
+    const p = calculerPeriode(
+      [
+        seance("cour", "2026-09-22T08:00:00.000Z"), // mardi 22 : semaine du 21
+        seance("prec", "2026-09-20T08:00:00.000Z"), // dimanche 20 : semaine du 14, fin de semaine
+      ],
+      maintenant,
+      PARIS,
+      "semaine",
+      1,
+    );
+    expect(p.premierLundi).toBe("2026-09-21");
+    expect(p.totaux.seances).toBe(1);
+    // Période passée : la précédente compte entière, dimanche compris.
+    expect(p.precedents.seances).toBe(1);
+    expect(p.volumes.at(-1)?.lundi).toBe("2026-09-21");
+  });
+
   it("ignore une séance après la fin de la période", () => {
     const p = calculerPeriode(
       [seance("f", "2026-10-06T08:00:00.000Z")],
