@@ -5,6 +5,7 @@ import {
   type StatsPeriode,
   semainesTenues,
 } from "@better-lift/shared";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
@@ -21,9 +22,12 @@ const kg = (v: number) => formaterCharge(Math.round(v), SYSTEME_UNITES);
 export function Tuiles({
   stats,
   preferences,
+  decalage = 0,
 }: {
   stats: StatsPeriode | null;
   preferences: Preferences | null;
+  /** D190 : une période passée n'a pas de « cette semaine ». */
+  decalage?: number;
 }) {
   if (!stats) {
     return (
@@ -49,23 +53,23 @@ export function Tuiles({
         valeur={totaux.seances}
         tendance={tendance(totaux.seances, precedents.seances, false)}
       >
-        {avant(precedents.seances, String(precedents.seances))}
+        {avant(precedents.seances, String(precedents.seances), decalage > 0)}
       </Tuile>
       <Tuile
         titre="Séries de travail"
         valeur={totaux.series}
         tendance={tendance(totaux.series, precedents.series, true)}
       >
-        {avant(precedents.series, String(precedents.series))}
+        {avant(precedents.series, String(precedents.series), decalage > 0)}
       </Tuile>
       <Tuile
         titre="Volume"
         valeur={kg(totaux.volumeKg)}
         tendance={tendance(totaux.volumeKg, precedents.volumeKg, true)}
       >
-        {avant(precedents.volumeKg, kg(precedents.volumeKg))}
+        {avant(precedents.volumeKg, kg(precedents.volumeKg), decalage > 0)}
       </Tuile>
-      <TuileObjectif stats={stats} preferences={preferences} />
+      <TuileObjectif stats={stats} preferences={preferences} decalage={decalage} />
     </>
   );
 }
@@ -74,9 +78,11 @@ export function Tuiles({
 function TuileObjectif({
   stats,
   preferences,
+  decalage = 0,
 }: {
   stats: StatsPeriode | null;
   preferences: Preferences | null;
+  decalage?: number;
 }) {
   const objectif = preferences?.objectifHebdo ?? null;
   const regler = (libelle: string) =>
@@ -92,6 +98,28 @@ function TuileObjectif({
     return (
       <Tuile titre="Objectif" valeur="—">
         {regler("Fixer un objectif hebdomadaire")}
+      </Tuile>
+    );
+  }
+  if (stats && decalage > 0) {
+    // Une période passée : les semaines tenues pendant la période, sans barre (D190).
+    // Toutes ses semaines sont finies : chacune compte, tenue ou non.
+    const semaines = stats.volumes.filter((v) => v.dansPeriode);
+    const t = {
+      tenues: semaines.filter((v) => v.seances >= objectif).length,
+      sur: semaines.length,
+    };
+    return (
+      <Tuile
+        titre={`Objectif · ${objectif} / sem.`}
+        valeur={
+          <>
+            {t.tenues}
+            <span className="text-2xl text-muted-foreground"> / {t.sur}</span>
+          </>
+        }
+      >
+        {t.sur > 1 ? "semaines tenues" : "semaine tenue"}
       </Tuile>
     );
   }
@@ -128,12 +156,16 @@ function TuileObjectif({
 /** L'écart à la période d'avant ; rien sans point de comparaison. */
 function tendance(valeur: number, precedent: number, enPourcent: boolean) {
   if (precedent === 0) return null;
-  return { texte: ecart(valeur, precedent, enPourcent), hausse: valeur > precedent };
+  const sens = valeur > precedent ? "hausse" : valeur < precedent ? "baisse" : "egal";
+  return { texte: ecart(valeur, precedent, enPourcent), sens } as const;
 }
 
-// D185 : la comparaison se fait au même moment de la période d'avant.
-const avant = (precedent: number, texte: string) =>
-  precedent === 0 ? "rien au même moment avant" : `contre ${texte} au même moment avant`;
+// D185 : la période en cours se compare au même moment de la précédente ; une
+// période passée (D190), à la précédente entière.
+const avant = (precedent: number, texte: string, passee: boolean) => {
+  const quand = passee ? "sur la période d'avant" : "au même moment avant";
+  return precedent === 0 ? `rien ${quand}` : `contre ${texte} ${quand}`;
+};
 
 function Tuile({
   titre,
@@ -143,7 +175,7 @@ function Tuile({
 }: {
   titre: string;
   valeur: ReactNode;
-  tendance?: { texte: string; hausse: boolean } | null;
+  tendance?: { texte: string; sens: "hausse" | "baisse" | "egal" } | null;
   children: ReactNode;
 }) {
   return (
@@ -154,7 +186,11 @@ function Tuile({
         {tendance ? (
           <CardAction>
             {/* Un contour sans couleur (D192) : la flèche et le signe disent le sens. */}
-            <Badge variant="outline">{tendance.texte}</Badge>
+            <Badge variant="outline">
+              {tendance.sens === "hausse" ? <TrendingUp aria-hidden="true" /> : null}
+              {tendance.sens === "baisse" ? <TrendingDown aria-hidden="true" /> : null}
+              {tendance.texte}
+            </Badge>
           </CardAction>
         ) : null}
       </CardHeader>

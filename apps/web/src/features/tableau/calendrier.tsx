@@ -23,14 +23,22 @@ const COLONNES = { gridTemplateColumns: "repeat(52, minmax(0, 1fr))" };
 export function Calendrier({
   annee,
   debutPeriode,
+  finPeriode,
   onOuvrir,
 }: {
   annee: StatsPeriode;
   debutPeriode: string;
+  finPeriode?: string;
   onOuvrir: (seanceId: string) => void;
 }) {
   const aujourdhui = cleJour(new Date().toISOString(), FUSEAU);
-  const { colonnes, mois } = grilleAnnee(annee.jours, annee.premierLundi, debutPeriode, aujourdhui);
+  const { colonnes, mois } = grilleAnnee(
+    annee.jours,
+    annee.premierLundi,
+    debutPeriode,
+    aujourdhui,
+    finPeriode,
+  );
   const entraines = colonnes.flat().filter((c) => c.dansPeriode && c.niveau > 0).length;
 
   return (

@@ -5,13 +5,16 @@ import {
   type SemaineVolume,
 } from "@better-lift/shared";
 
-/** « ↗ +3 », « ↘ −12 % », « = avant » : l'écart avec la période d'avant (D125). */
+/**
+ * « +3 », « −12 % », « = avant » : l'écart avec la période d'avant (D125). La flèche
+ * est une icône posée par l'appelant : le caractère ↗ tourne à l'emoji selon la police.
+ */
 export function ecart(valeur: number, avant: number, enPourcent: boolean): string {
   if (valeur === avant) return "= avant";
   if (avant === 0) return "rien avant";
   const d = valeur - avant;
   const texte = enPourcent ? `${Math.round((Math.abs(d) / avant) * 100)} %` : String(Math.abs(d));
-  return `${d > 0 ? "↗ +" : "↘ −"}${texte}`;
+  return `${d > 0 ? "+" : "−"}${texte}`;
 }
 
 export function dureeTexte(min: number): string {
@@ -31,6 +34,28 @@ const formater = (options: Intl.DateTimeFormatOptions) =>
 const MOIS = formater({ month: "short" });
 const JOUR_MOIS = formater({ day: "numeric", month: "short" });
 const enDate = (cle: string) => new Date(`${cle}T00:00:00Z`);
+
+// --- Intervalle d'une période (D190) ----------------------------------------
+
+const JOUR_MOIS_AN = formater({ day: "numeric", month: "short", year: "numeric" });
+const JOUR = formater({ day: "numeric" });
+
+/** L'intervalle d'une période, du lundi au dimanche (D190). */
+/** Le dernier jour civil d'une période, le dimanche. */
+export function finDePeriode(premierLundi: string, nbSemaines: number): string {
+  return plusJours(premierLundi, nbSemaines * 7 - 1);
+}
+
+export function intervallePeriode(premierLundi: string, nbSemaines: number): string {
+  const dernier = finDePeriode(premierLundi, nbSemaines);
+  const debut = enDate(premierLundi);
+  const fin = enDate(dernier);
+  const memeAn = premierLundi.slice(0, 4) === dernier.slice(0, 4);
+  const memeMois = memeAn && premierLundi.slice(5, 7) === dernier.slice(5, 7);
+  if (memeMois) return `${JOUR.format(debut)} – ${JOUR_MOIS_AN.format(fin)}`;
+  if (memeAn) return `${JOUR_MOIS.format(debut)} – ${JOUR_MOIS_AN.format(fin)}`;
+  return `${JOUR_MOIS_AN.format(debut)} – ${JOUR_MOIS_AN.format(fin)}`;
+}
 
 // --- Calendrier de 12 mois (D138) ---------------------------------------------
 
@@ -57,6 +82,8 @@ export function grilleAnnee(
   premierLundi: string,
   debutPeriode: string,
   aujourdhui: string,
+  /** Le dernier jour de la période (D190) ; par défaut, aujourd'hui. */
+  finPeriode: string = aujourdhui,
 ): { colonnes: CaseCalendrier[][]; mois: { colonne: number; libelle: string }[] } {
   const niveaux = niveauxCalendrier(jours);
   const parJour = new Map(jours.map((j) => [j.jour, j.seances]));
@@ -76,7 +103,7 @@ export function grilleAnnee(
           jour,
           niveau: niveaux.get(jour) ?? 0,
           seances: parJour.get(jour) ?? [],
-          dansPeriode: jour >= debutPeriode && !futur,
+          dansPeriode: jour >= debutPeriode && jour <= finPeriode && !futur,
           aujourdhui: jour === aujourdhui,
           futur,
         };

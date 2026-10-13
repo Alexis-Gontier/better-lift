@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { barresGraphique, dureeTexte, ecart, grilleAnnee } from "./calculs";
+import { barresGraphique, dureeTexte, ecart, grilleAnnee, intervallePeriode } from "./calculs";
 
 describe("ecart", () => {
   it("dit l'égalité, l'absence de référence, la hausse et la baisse", () => {
     expect(ecart(4, 4, false)).toBe("= avant");
     expect(ecart(4, 0, false)).toBe("rien avant");
-    expect(ecart(7, 4, false)).toBe("↗ +3");
-    expect(ecart(88, 100, true)).toBe("↘ −12 %");
+    expect(ecart(7, 4, false)).toBe("+3");
+    expect(ecart(88, 100, true)).toBe("−12 %");
   });
 });
 
@@ -90,6 +90,33 @@ describe("barresGraphique (D187)", () => {
     expect(b.map((x) => [x.libelle, x.valeur])).toEqual([
       ["août", 3000],
       ["sept.", 3000],
+    ]);
+  });
+});
+
+describe("intervallePeriode (D190)", () => {
+  it("dit une semaine, un mois, une année à cheval", () => {
+    expect(intervallePeriode("2026-10-12", 1)).toBe("12 – 18 oct. 2026");
+    expect(intervallePeriode("2026-09-07", 4)).toBe("7 sept. – 4 oct. 2026");
+    expect(intervallePeriode("2025-10-06", 52)).toBe("6 oct. 2025 – 4 oct. 2026");
+  });
+});
+
+describe("grilleAnnee, période passée (D190)", () => {
+  it("ne met en clair que les jours de la période", () => {
+    const { colonnes } = grilleAnnee([], "2025-10-13", "2026-09-21", "2026-10-03", "2026-09-27");
+    const clairs = colonnes
+      .flat()
+      .filter((c) => c.dansPeriode)
+      .map((c) => c.jour);
+    expect(clairs).toEqual([
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-26",
+      "2026-09-27",
     ]);
   });
 });

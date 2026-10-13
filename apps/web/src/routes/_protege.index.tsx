@@ -8,6 +8,7 @@ import { EtatVide } from "@/components/etats/etat-vide";
 import { PageTableau } from "@/components/shell/page-tableau";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { finDePeriode, intervallePeriode } from "@/features/tableau/calculs";
 import { Calendrier } from "@/features/tableau/calendrier";
 import { DernieresSeances } from "@/features/tableau/dernieres-seances";
 import { Muscles } from "@/features/tableau/muscles";
@@ -18,7 +19,12 @@ import { Tuiles } from "@/features/tableau/tuiles";
 import { Volume } from "@/features/tableau/volume";
 
 // La période vit dans l'URL (D137) : absente, c'est le mois — l'adresse reste `/`.
-const recherche = z.object({ periode: z.enum(PERIODES).optional(), etat: champEtat });
+const recherche = z.object({
+  periode: z.enum(PERIODES).optional(),
+  // D190 : combien de périodes en arrière ; absent, la période en cours.
+  decalage: z.coerce.number().int().min(0).optional(),
+  etat: champEtat,
+});
 
 // La page d'arrivée (D134), sous la garde de `_protege`.
 export const Route = createFileRoute("/_protege/")({
@@ -29,9 +35,9 @@ export const Route = createFileRoute("/_protege/")({
 const GRILLE = "grid grid-cols-1 gap-3 lg:grid-cols-12";
 
 function TableauDeBord() {
-  const { periode = "mois", etat } = Route.useSearch();
+  const { periode = "mois", decalage = 0, etat } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const stats = useQuery(optionsStatsPeriode(periode));
+  const stats = useQuery(optionsStatsPeriode(periode, decalage));
   // Le calendrier montre toujours l'année (D138) ; en Année, c'est la même requête.
   const annee = useQuery(optionsStatsPeriode("annee"));
   const preferences = useQuery(optionsPreferences());
@@ -73,7 +79,7 @@ function TableauDeBord() {
     }
     return (
       <div className={GRILLE}>
-        <Tuiles stats={stats.data} preferences={preferences.data ?? null} />
+        <Tuiles stats={stats.data} preferences={preferences.data ?? null} decalage={decalage} />
         <Volume stats={stats.data} />
         <Records records={stats.data.records} />
         <Muscles stats={stats.data} />
@@ -81,6 +87,7 @@ function TableauDeBord() {
         <Calendrier
           annee={annee.data}
           debutPeriode={stats.data.premierLundi}
+          finPeriode={finDePeriode(stats.data.premierLundi, stats.data.nbSemaines)}
           onOuvrir={(id) => navigate({ to: "/seances/$id", params: { id } })}
         />
       </div>
@@ -93,7 +100,12 @@ function TableauDeBord() {
       actions={
         <SelecteurPeriode
           periode={periode}
-          onChange={(p) => navigate({ search: (s) => ({ ...s, periode: p }) })}
+          decalage={decalage}
+          intervalle={
+            stats.data ? intervallePeriode(stats.data.premierLundi, stats.data.nbSemaines) : null
+          }
+          onChange={(p) => navigate({ search: (s) => ({ ...s, periode: p, decalage: undefined }) })}
+          onDecaler={(d) => navigate({ search: (s) => ({ ...s, decalage: d || undefined }) })}
         />
       }
     >
