@@ -9,6 +9,7 @@ import { PageTableau } from "@/components/shell/page-tableau";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendrier } from "@/features/tableau/calendrier";
+import { DernieresSeances } from "@/features/tableau/dernieres-seances";
 import { Muscles } from "@/features/tableau/muscles";
 import { Records } from "@/features/tableau/records";
 import { optionsPreferences, optionsStatsPeriode } from "@/features/tableau/requetes";
@@ -73,14 +74,15 @@ function TableauDeBord() {
     return (
       <div className={GRILLE}>
         <Tuiles stats={stats.data} preferences={preferences.data ?? null} />
+        <Volume stats={stats.data} />
+        <Records records={stats.data.records} />
+        <Muscles stats={stats.data} />
+        <DernieresSeances />
         <Calendrier
           annee={annee.data}
           debutPeriode={stats.data.premierLundi}
           onOuvrir={(id) => navigate({ to: "/seances/$id", params: { id } })}
         />
-        <Muscles stats={stats.data} />
-        <Volume stats={stats.data} />
-        <Records records={stats.data.records} />
       </div>
     );
   }
@@ -101,11 +103,13 @@ function TableauDeBord() {
 }
 
 // La forme de la grille, pour que rien ne saute à l'arrivée des données.
-const SQUELETTE = [3, 3, 3, 3, 12, 7, 5, 12] as const;
+const SQUELETTE = [3, 3, 3, 3, 8, 4, 7, 5, 12] as const;
 const SPAN: Record<number, string> = {
   3: "lg:col-span-3",
+  4: "lg:col-span-4",
   5: "lg:col-span-5",
   7: "lg:col-span-7",
+  8: "lg:col-span-8",
   12: "lg:col-span-12",
 };
 

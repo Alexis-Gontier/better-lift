@@ -2,13 +2,16 @@ import { LIBELLE_ZONE, type StatsPeriode, zonesTravaillees } from "@better-lift/
 import { Carte } from "./carte";
 import { CarteCorps } from "./carte-corps";
 
-/** La carte du corps, puis les séries par zone en barres : comparer se lit mieux en longueur. */
 export function Muscles({ stats }: { stats: StatsPeriode }) {
-  const zones = stats.zones.slice(0, 6);
-  const max = Math.max(1, ...zones.map((z) => z.series));
+  const zones = stats.zones.slice(0, 8);
+  const max = Math.max(1, ...zones.flatMap((z) => [z.series, z.reference]));
 
   return (
-    <Carte titre="Muscles travaillés · séries" className="lg:col-span-7">
+    <Carte
+      titre="Séries par muscle"
+      detail="trait : moyenne des 8 semaines d'avant"
+      className="lg:col-span-7"
+    >
       {zones.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           Aucune série comptée sur la période.
@@ -20,16 +23,26 @@ export function Muscles({ stats }: { stats: StatsPeriode }) {
             {zones.map((z) => (
               <li
                 key={z.zone}
-                className="grid grid-cols-[110px_1fr_32px] items-center gap-3 text-[13px]"
+                className="grid grid-cols-[110px_1fr_64px] items-center gap-3 text-[13px]"
               >
                 <span>{LIBELLE_ZONE[z.zone]}</span>
-                <span className="h-2 overflow-hidden rounded-full bg-muted">
+                <span className="relative h-2 rounded-full bg-muted">
                   <span
-                    className="block h-full rounded-full bg-muted-foreground"
+                    className="block h-full rounded-full bg-primary"
                     style={{ width: `${(z.series / max) * 100}%` }}
                   />
+                  {z.reference > 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -top-1 h-4 w-0.5 rounded bg-foreground"
+                      style={{ left: `${(z.reference / max) * 100}%` }}
+                    />
+                  ) : null}
                 </span>
-                <span className="text-right text-muted-foreground">{z.series}</span>
+                <span className="text-right text-muted-foreground">
+                  {z.series}
+                  <span className="text-muted-foreground/70"> / {z.reference}</span>
+                </span>
               </li>
             ))}
           </ul>
