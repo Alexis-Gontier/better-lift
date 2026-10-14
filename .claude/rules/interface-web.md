@@ -9,14 +9,15 @@ paths:
 
 Conception : [`2026-09-24-coquille-shadcn-design.md`](../../docs/superpowers/specs/2026-09-24-coquille-shadcn-design.md),
 refondue par [`2026-10-06-web-refonte-design.md`](../../docs/superpowers/specs/2026-10-06-web-refonte-design.md) (D132–D144),
-nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/specs/2026-10-06-web-nettoyage-design.md) (D154–D160).
+nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/specs/2026-10-06-web-nettoyage-design.md) (D154–D160),
+rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/specs/2026-10-14-web-neobrutalism-design.md) (D193–D197).
 
 - **Le web est le poste d'analyse (D132)** : on y regarde et on y prépare ; aucune entrée ne
   lance une séance.
 
 - **Coquille plate (D154–D156)** : `Sidebar collapsible="none"` (sans variante : non repliable,
-  shadcn rend un simple bloc), filet `border-r` posé à la main, fond `--canvas` comme le contenu
-  — **rien de permanent ne flotte**. Barre de 220 px en groupes : Tableau de bord seul,
+  shadcn rend un simple bloc), filet `border-r` posé à la main, fond `--background` comme le contenu
+  — **rien de permanent ne flotte**. Barre de 220 px en groupes : Accueil seul,
   **Entraînement** (Séances, Routines), **Catalogue** (Exercices). Champ « Rechercher » (ouvre la
   palette). Pied `NavUser` : nom tiré de l'adresse (`nom-compte.ts`), menu Profil / Se déconnecter.
 - **En-tête commun `EnTetePage` (D157)**, posé par les deux gabarits : 44 px, fil d'Ariane dont le
@@ -54,22 +55,22 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   `modifier` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
   `arrayMove`). Menu ⋯ : « Superset avec le suivant » (`peutLierAuSuivant`), « Retirer du
   superset ». Repos masqué sur les membres non derniers (`roleRepos`).
-- **`/` est le Tableau de bord**, protégé (D134) : `features/tableau/`, période dans l'URL
-  (`?periode=`, défaut `mois`). Deux lectures de `/stats/periode` (la période, et `annee` pour le
-  calendrier qui montre toujours 12 mois, D138) ; le calcul propre au web est dans `calculs.ts`
-  (testé). Cartes : `Carte` enveloppe la `Card` shadcn (D158) ; tuiles à pastille d'écart en
-  contour (lime si hausse) ; période en `ToggleGroup` ; volume en `Chart` (Recharts 3.8.0,
-  animations coupées, `minPointSize` pour que la semaine en cours reste visible). Carte du corps : `corps-svg.ts`, GÉNÉRÉ depuis `react-native-body-highlighter` (MIT),
-  à ne pas modifier à la main. `--cal-0` s'écarte du mobile (posé sur une carte). **Profil** (`/profil`, ex-`/parametres`, D143) :
-  bilan de toujours, objectif hebdo et repos par défaut (SUR LE COMPTE, `["preferences"]`, la
-  clé des tuiles du Tableau de bord), thème (appareil, seul endroit où il se change), unités et
-  fuseau (affichés), export CSV par un simple lien, déconnexion (aussi au menu du pied de
-  barre). Une `Card` par section, lignes séparées par des filets. **Connexion** : le formulaire
-  dans une `Card` sous le logo.
+- **`/` est l'Accueil, vide** (D197) : la coquille et son en-tête, sans contenu, en attendant la
+  suite du chantier. Le tableau de bord (`features/tableau/`) a été retiré ; les routes `/stats`
+  de l'API restent.
+- **Profil** (`/profil`, D143) : bilan de toujours, objectif hebdo et repos par défaut (SUR LE
+  COMPTE, `["preferences"]`, `optionsPreferences` de `features/profil/requetes.ts`), unités et
+  fuseau (affichés), export CSV par un simple lien, déconnexion (aussi au menu du pied de barre).
+  Une `Card` par section, lignes séparées par des filets. Plus de choix du thème (D194).
+- **Auth en deux pages minimales (D196)** : `/connexion` et `/inscription`, autour de
+  `FormulaireAuth` (`features/auth/`). Un titre, l'e-mail, le mot de passe, le bouton, le lien vers
+  l'autre page — **ni logo, ni carte, ni sous-titre, ni œil**. Trois refus distincts (`refusDe`,
+  testé : 403 = hors liste blanche), `?redirect=` transmis d'une page à l'autre, `?etat=` gardé.
+  Une session ouverte est renvoyée vers `/` par le `beforeLoad` des deux routes.
 - **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
   fil groupé par mois (`grouperParMois`, fuseau), filtré par `?q=` (`filtrerSeances` : nom et
   aperçu, sans casse ni accents, sur les pages chargées ; le filtre garde le chemin du détail),
-  ↑ / ↓ d'une séance à l'autre DANS le fil filtré ; sélection en `--surface-2` + liseré d'encre ;
+  ↑ / ↓ d'une séance à l'autre DANS le fil filtré ; sélection en `bg-muted` + liseré d'encre ;
   actions du détail dans l'en-tête (`DansEnTete`), chiffres en tuiles jointives, relevé en `Table` ; détail = relevé
   comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
   RETIRE le détail puis invalide `["seances"]`, `["stats"]`, `["records"]`.
@@ -79,7 +80,7 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
 - **Exercices** en disposition `fil` : catalogue à gauche, **fiche en une page** (D141) — GIF,
   1RM estimé et sa courbe en `Chart` (Recharts, tracé `linear`, animations coupées ; `courbe`
-  de `calculs.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en lime s'il est record),
+  de `calculs.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en orange s'il est record),
   blocs en `Card`, historique en `Table`, nom dans le fil d'Ariane et nom anglais en sous-titre, records, historique (`["seances","historique",slug]`, invalidé par la
   suppression d'une séance), consignes.
 - **`BadgeRecord`** (`features/exercices/badge-record.tsx`) est la SEULE pastille record du web :
@@ -94,31 +95,31 @@ nettoyée par [`2026-10-06-web-nettoyage-design.md`](../../docs/superpowers/spec
 - **Les quatre états par l'URL** : `?etat=chargement|erreur|vide`, derrière
   `import.meta.env.DEV`. `vide` vide le jeu de données plutôt que de substituer un composant.
 
-## Élévation et thème
+## Thème : Neobrutalism, light seulement (D193–D195)
 
-- **Rien de permanent ne flotte** (D154, révise D71). Liste et détail sont jointifs, séparés par
-  un filet de 1 px. Flou, ombre portée et voile sont réservés au momentané (palette, menus,
-  dialogues). Les cartes (`Card`, D158) se détachent par leur filet sur `--surface-1`
-  (`--color-card`), sans ombre, rayon `rounded-xl`.
-- Rôles `--sidebar-*` et `card` traduits dans `@theme inline` (D72). L'élément actif de la
-  navigation est `--surface-3`, jamais le lime. La variante `dark:` suit `data-theme`, pas la
-  préférence du système (`@custom-variant` dans `globals.css`).
-- Sombre par défaut, clair accessible. Hiérarchie par échelle de surfaces et quatre niveaux
-  d'encre. Contraste AA : 4,5:1, ou 3:1 dès 24 px.
-- **Les primitives shadcn parlent leur propre vocabulaire**, traduit dans `@theme inline`.
-  Un rôle non déclaré n'émet aucune règle, en silence. L'aplat est `bg-primary` /
-  `text-primary-foreground`. `accent` désigne chez shadcn la **surface de survol** et pointe vers
-  `--surface-3` : ne jamais rendre `bg-accent` au lime, chaque survol deviendrait un aplat.
-- **Les valeurs des tokens ont été reprises du mobile** (D135), à l'époque où il était au lime.
-  Depuis, le mobile est passé à l'orange (D161) : le web ne suit plus
-  automatiquement. Comment il basculera (D177 : thème fixe, ou thème actif du mobile)
-  reste ouvert. Police **Archivo** (`@fontsource-variable/archivo/wdth.css`), chiffres héros
-  par l'utilitaire `chiffre` (`font-stretch: 72%`). Calendrier `--cal-0..4`, vignettes
-  `--image-bg` (blanc dans les deux thèmes).
-- `--superset` (D151) : `#9a8cf0` / `#5a4bbf`, le repère d'un superset — ni lime ni danger.
-- `--accent-ink` passe à `#4d6a12` en clair (sur blanc, `#a8cf45` tombe sous 2:1).
-  `--danger` = `#a83e39` : encre à 5,65:1, aplat détaché du fond à 3,24:1 — plus foncé, le
-  bouton disparaît.
+- **Palette Orange de neobrutalism.dev**, une seule valeur par token (`styles/tokens.css`) :
+  fond `--background` crème, `--secondary-background` blanc (champs, cartes, menus), `--main`
+  `#ff7a05` (l'action, en aplat), `--main-ink` `#a33f00` (l'orange EN TEXTE : le record, 5,6:1 ;
+  `#ff7a05` ne fait que 2,3:1 sur le crème), `--muted` / `--muted-foreground` (surface en retrait,
+  encre secondaire), `--border` et `--ring` noirs, `--shadow` `4px 4px 0 0`, `--radius-base`
+  `5px`. Pas de `dark:`, pas de `data-theme`, pas de sélecteur de thème.
+- **La grammaire** : bordure noire de 2 px (`border-2 border-border`), ombre dure
+  (`shadow-shadow`), rayon `rounded-base`. Les boutons pleins s'enfoncent au survol
+  (`hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none`). Une carte
+  qu'on glisse double son ombre. Les items survolés des menus, l'onglet actif, l'entrée active de
+  la barre et les bascules prennent l'aplat orange.
+- **Les primitives shadcn sont réhabillées, pas remplacées** : Radix, mêmes variantes (`default`
+  = aplat orange, `outline` / `secondary` blancs bordés, `ghost`, `link`, `destructive` rouge).
+  Les composants de neobrutalism.dev (`@base-ui/react`, variantes `neutral` / `noShadow`) ne sont
+  pas installés. Une surface codée hors des primitives reprend la même grammaire à la main.
+- **Les primitives parlent leur propre vocabulaire**, traduit dans `@theme inline`
+  (`globals.css`). Un rôle non déclaré n'émet aucune règle, en silence. `primary` = `--main` ;
+  `accent` (et `sidebar-accent`) = la **surface de survol** `--muted`, jamais l'orange, sinon
+  chaque survol deviendrait un aplat.
+- Police **Space Grotesk** 500 / 700 (`@fontsource/space-grotesk`) ; l'utilitaire `chiffre`
+  (chiffres héros) est gras et serré, sans axe de largeur.
+- `--superset` `#5a4bbf` (D151), `--destructive` `#e5484d` (aplat, texte noir 5,4:1) et
+  `--destructive-ink` `#b42318` (texte, 5,7:1). Vignettes sur `--image-bg` blanc.
 
 ## Pièges
 
