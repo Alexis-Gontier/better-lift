@@ -2,10 +2,13 @@
 
 Tracker de musculation personnel (2–3 comptes), web + mobile. **L'application est en français.**
 
-La conception fait foi : [`docs/superpowers/specs/2026-09-22-better-lift-redemarrage-design.md`](docs/superpowers/specs/2026-09-22-better-lift-redemarrage-design.md).
-Lis-la avant toute décision d'architecture — elle porte le registre des décisions et les pièges
-déjà payés. Les décisions suivantes (D55 et au-delà) sont dans les autres specs de
-`docs/superpowers/specs/`.
+**Les décisions (D1, D2…) décrivent l'état présent, pas un dogme.** Elles restent ouvertes : une
+meilleure idée l'emporte, à condition de le dire et d'écrire une nouvelle décision qui « révise
+Dxx » dans une spec. Avant de toucher à une zone, retrouver ce qui la régit (`grep -rn "D109"
+docs/superpowers/specs/`) et vérifier qu'une décision plus récente ne l'a pas déjà révisée.
+La conception de départ ([`2026-09-22-better-lift-redemarrage-design.md`](docs/superpowers/specs/2026-09-22-better-lift-redemarrage-design.md))
+porte l'architecture, D1–D54 et les pièges payés (§ 13) ; son périmètre (§ 2) et ses lots (§ 11)
+sont historiques. Les décisions suivantes sont dans les autres specs du dossier.
 
 Les consignes propres à une zone sont dans `.claude/rules/` et se chargent avec ses fichiers :
 `interface-web.md` (apps/web), `mobile.md` (apps/mobile), `catalogue-db.md` (packages/db),
@@ -15,20 +18,15 @@ Les consignes propres à une zone sont dans `.claude/rules/` et se chargent avec
 
 ## État
 
-Premier jalon complet (lots 0 à 7 : socle, coquille web, auth, catalogue français, routines,
-séance mobile, historique et records), plus, sur mobile, les routines (D82–D85), la séance façon
-Hevy (D86–D94) et le hors ligne avec l'Accueil en fil des séances (D95–D100). Le web a été
-repensé en **poste d'analyse** (D132–D144, `2026-10-06-web-refonte-design.md`) : Tableau de bord,
-Séances, Routines, Exercices, Profil — pas de séance en direct sur le web. Les **supersets** sont
-livrés (D145–D153, `2026-10-06-supersets-design.md`) : éditeur de routine web et mobile, séance
-mobile, historique. Le web est **nettoyé** (D154–D160, `2026-10-06-web-nettoyage-design.md`) :
-coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. Le mobile a une
-**nouvelle identité** (D161–D177, `2026-10-11-mobile-identite-design.md`, `DESIGN.md`) :
-« Underground orange », Barlow, Accueil tableau de la semaine, onglet Progrès, horloge de salle ;
-le web bascule ensuite (D177). Le mobile est ensuite **resserré pour le MVP** (D178,
-`2026-10-13-mobile-mvp-retrait-design.md`) : Accueil, Progrès et détail de séance retirés, la barre
-est Routines · Démarrer · Profil ; les pages gardées sont revues une à une. **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
-`git log` et les plans de `docs/superpowers/plans/` donnent le détail.
+- **Web = poste d'analyse** (D132) : Tableau de bord, Séances, Routines, Exercices, Profil ; pas
+  de séance en direct. Encore au lime ; sa bascule vers la couleur du mobile (D177) reste à
+  cadrer.
+- **Mobile resserré pour le MVP** (D178, `2026-10-13-mobile-mvp-retrait-design.md`) : la barre est
+  Routines · Démarrer · Profil ; séance façon Hevy, supersets, hors ligne.
+- **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera
+  guidera la suite, et pourra réviser n'importe quelle décision.
+
+L'historique des chantiers : `git log`, les specs et les plans de `docs/superpowers/`.
 
 Distant : `Alexis-Gontier/better-lift` (privé). Le code de la V1 reste sur la branche `v1` et le
 tag `v1-final` ; il sert de référence et n'est pas repris.
@@ -81,15 +79,15 @@ que `tsconfig.base.json`).
 
 ## Interface (les deux surfaces)
 
-- **Une seule couleur pour l'action et le record** : l'**orange** sur le mobile (D161,
-  `DESIGN.md`), encore le **lime sourd `#a8cf45`** sur le web jusqu'à sa bascule (D177). La distinction se
-  fait par la forme : l'action est un **aplat** (fond lime, texte sombre), le record un
-  **contour** (lime en texte sur fond teinté, flèche montante). Invariant.
+- **Une seule couleur pour l'action et le record**, celle du thème (orange sur le mobile, lime
+  sur le web pour l'instant). La distinction se fait par la forme : l'action est un **aplat** (fond
+  de la couleur, texte sombre), le record un **contour** (la couleur en texte sur fond teinté,
+  flèche montante).
 - **Le danger a sa propre couleur** (`--danger`, D36) et ne porte jamais l'action ni le record.
 - **Un token par rôle, deux valeurs par token** (sombre / clair). Jamais de couleur en dur
   réutilisée dans les deux registres.
-- **Logo** : l'haltère Lucide (`Dumbbell`) redressée de 45°, en encre sur aplat de la couleur d'action (orange sur le mobile, lime sur le web).
-- **La densité vaut pour le web seulement.** Le mobile partage la palette, pas l'échelle : en
+- **Logo** : l'haltère Lucide (`Dumbbell`) redressée de 45°, en encre sur aplat de la couleur d'action.
+- **La densité vaut pour le web seulement.** Le mobile ne partage pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.
 - **L'interface passe avant la logique** : on dessine et valide un écran avant de brancher ses
   données, avec ses **quatre états** dès le dessin (vide, chargement, erreur, nominal). Sur le
@@ -145,7 +143,7 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
 
 ## Skills
 
-22 skills installées en fichiers réels sous `.claude/skills/`, commitées. **Jamais de dossier
+Les skills sont installées en fichiers réels sous `.claude/skills/`, commitées. **Jamais de dossier
 `.agents/`.** Installation, une invocation par skill :
 
 ```

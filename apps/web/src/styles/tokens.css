@@ -1,5 +1,5 @@
-/* Les valeurs suivent `apps/mobile/lib/theme.ts` (D101, D135) : les deux surfaces
-   partagent la palette. Nom web ← nom mobile en commentaire. */
+/* Les valeurs ont été reprises du mobile (D101, D135) ; le mobile est passé
+   à l'orange depuis (D161), le web ne suit pas encore. Nom web ← nom mobile en commentaire. */
 :root {
   /* Surfaces — l'échelle porte la hiérarchie */
   --canvas: #08090a; /* canevas */
