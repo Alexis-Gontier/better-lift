@@ -99,6 +99,9 @@ function fauxDepot() {
 
 /** La lecture : une séance « s-1 » à alice, et une réponse reconnaissable pour « precedentes ». */
 const fauxLecture: DepotLectureSeances = {
+  async pratiques() {
+    return [];
+  },
   async lister(userId) {
     return userId === "alice"
       ? {

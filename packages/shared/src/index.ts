@@ -1,5 +1,17 @@
 export { resumeSemaine, routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
+export {
+  avecCharge,
+  debutPeriode,
+  type MeilleureParReps,
+  meilleuresParReps,
+  PERIODES_EXERCICE,
+  type PeriodeExercice,
+  type PointSeance,
+  pointsExercice,
+  REPS_TABLEAU,
+  resumePeriode,
+} from "./analyse-exercice.js";
 export { type ApercuExercice, apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
@@ -158,4 +170,11 @@ export {
 } from "./supersets.js";
 export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
-export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";
+export {
+  CIBLES,
+  EQUIPEMENTS,
+  EQUIPEMENTS_PRINCIPAUX,
+  GROUPES,
+  type Groupe,
+  LIBELLE_GROUPE,
+} from "./vocabulaire.js";

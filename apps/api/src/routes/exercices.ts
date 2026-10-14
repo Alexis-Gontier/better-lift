@@ -16,17 +16,25 @@ import { type DepotExercices, depotPrisma } from "../services/exercices.js";
  * seront gardées, elles.
  */
 export function routesExercices(depot: DepotExercices = depotPrisma) {
-  return new Hono()
-    .get("/", zValidator("query", requeteCatalogue), async (c) => {
-      const requete = c.req.valid("query");
-      const { exercices, total } = await depot.lister(requete);
-      return c.json({ exercices, total, page: requete.page, taille: requete.taille });
-    })
-    .get("/:slug", async (c) => {
-      const exercice = await depot.parSlug(c.req.param("slug"));
-      // 404 et non 200 à corps vide : côté client, c'est ce qui distingue un
-      // état d'erreur d'un écran blanc.
-      if (!exercice) return c.json({ erreur: "Exercice introuvable." }, 404);
-      return c.json(exercice);
-    });
+  return (
+    new Hono()
+      .get("/", zValidator("query", requeteCatalogue), async (c) => {
+        const requete = c.req.valid("query");
+        const { exercices, total } = await depot.lister(requete);
+        return c.json({ exercices, total, page: requete.page, taille: requete.taille });
+      })
+      // Les variantes de la fiche (D204) : même muscle ciblé, un exercice par équipement.
+      .get("/:slug/variantes", async (c) => {
+        const variantes = await depot.variantes(c.req.param("slug"));
+        if (!variantes) return c.json({ erreur: "Exercice introuvable." }, 404);
+        return c.json({ variantes });
+      })
+      .get("/:slug", async (c) => {
+        const exercice = await depot.parSlug(c.req.param("slug"));
+        // 404 et non 200 à corps vide : côté client, c'est ce qui distingue un
+        // état d'erreur d'un écran blanc.
+        if (!exercice) return c.json({ erreur: "Exercice introuvable." }, 404);
+        return c.json(exercice);
+      })
+  );
 }

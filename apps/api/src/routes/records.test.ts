@@ -21,6 +21,11 @@ const historique: HistoriqueExercice = [
 
 /** Seule alice a un historique, et seul « bench » existe. */
 const lecture = {
+  async pratiques(userId: string) {
+    return userId === "alice"
+      ? [{ slug: "bench", nbSeances: 1, derniere: historique[0]?.debut }]
+      : [];
+  },
   async historiqueExercice(userId: string, slug: string) {
     if (slug !== "bench") return null;
     return userId === "alice" ? historique : [];
@@ -47,5 +52,18 @@ describe("GET /exercices/:slug/historique (D124)", () => {
 
   it("rend 404 pour un exercice inconnu", async () => {
     expect((await lire("/exercices/inconnu/historique")).status).toBe(404);
+  });
+});
+
+describe("GET /exercices/pratiques (D205)", () => {
+  it("exige une session", async () => {
+    expect((await lire("/exercices/pratiques", null)).status).toBe(401);
+  });
+
+  it("rend les exercices pratiqués par l'utilisateur de la session", async () => {
+    expect(await (await lire("/exercices/pratiques")).json()).toEqual({
+      pratiques: [{ slug: "bench", nbSeances: 1, derniere: "2026-10-03T17:00:00.000Z" }],
+    });
+    expect(await (await lire("/exercices/pratiques", "bob")).json()).toEqual({ pratiques: [] });
   });
 });

@@ -1,9 +1,11 @@
 import { texteRecherche } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 import {
+  choisirVariantes,
   filtreCatalogue,
   imageDe,
   type LigneExercice,
+  ordonnerPertinence,
   versDetail,
   versResume,
 } from "./exercices.js";
@@ -78,6 +80,7 @@ describe("projections", () => {
       nom: "Développé couché à la barre",
       groupe: "CHEST",
       equipement: "Barre",
+      cible: "Pectoraux",
       recherche: "developpe couche a la barre barbell bench press",
       image:
         "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efa/images/0025.jpg",
@@ -106,5 +109,112 @@ describe("projections", () => {
       secondaires: ["Triceps", "Deltoïdes"],
       instructions: ["Allonge-toi sur le banc.", "Descends la barre."],
     });
+  });
+});
+
+describe("choisirVariantes (D204)", () => {
+  const ex = (slug: string, equipement: string, recherche = slug) => ({
+    slug,
+    nom: slug,
+    groupe: "CHEST" as const,
+    equipement,
+    cible: "Pectoraux",
+    image: null,
+    recherche,
+  });
+
+  it("garde un exercice par autre équipement, les principaux d'abord, puis par nom", () => {
+    const choix = choisirVariantes(
+      { slug: "bench", equipement: "Barre", recherche: "developpe couche barre" },
+      [
+        ex("bench", "Barre"),
+        ex("incline-barre", "Barre"),
+        ex("z-machine", "Machine à levier", "z"),
+        ex("a-machine", "Machine à levier", "a"),
+        ex("pompe", "Poids du corps"),
+        ex("bosu-push", "Bosu"),
+        ex("halteres", "Haltères"),
+      ],
+    );
+    expect(choix.map((c) => c.slug)).toEqual(["pompe", "halteres", "a-machine", "bosu-push"]);
+  });
+
+  it("préfère, par équipement, le nom le plus proche de la source", () => {
+    const choix = choisirVariantes(
+      { slug: "bench", equipement: "Barre", recherche: "developpe couche barre" },
+      [
+        ex("breeding", "Haltères", "breeding incline halteres"),
+        ex("db-bench", "Haltères", "developpe couche halteres"),
+      ],
+    );
+    expect(choix.map((c) => c.slug)).toEqual(["db-bench"]);
+  });
+
+  it("s'arrête à 8", () => {
+    const candidats = Array.from({ length: 12 }, (_, i) => ex(`e${i}`, `Équipement ${i}`));
+    expect(
+      choisirVariantes({ slug: "x", equipement: "Barre", recherche: "x" }, candidats),
+    ).toHaveLength(8);
+  });
+});
+
+describe("ordonnerPertinence (D210)", () => {
+  const ex = (nom: string, cible: string, equipement: string) => ({
+    slug: nom,
+    nom,
+    groupe: "CHEST" as const,
+    equipement,
+    cible,
+    image: null,
+    recherche: texteRecherche(nom, ""),
+  });
+  const noms = (l: { nom: string }[]) => l.map((e) => e.nom);
+
+  it("sans recherche, alterne les muscles, puis les équipements en décalant leur départ", () => {
+    const liste = [
+      ex("Abduction de hanche assise", "Abducteurs", "Machine à levier"),
+      ex("Abduction allongée", "Abducteurs", "Poids du corps"),
+      ex("Développé couché à la barre", "Pectoraux", "Barre"),
+      ex("Pompe archer", "Pectoraux", "Poids du corps"),
+      ex("Pompe", "Pectoraux", "Poids du corps"),
+      ex("Écarté aux haltères", "Pectoraux", "Haltères"),
+      ex("Crunch", "Abdominaux", "Poids du corps"),
+    ];
+    // Tour 1 : un par muscle, dans l'ordre de CIBLES. Le n-ième muscle présent commence par
+    // son n-ième équipement : Pectoraux (n° 1) par Haltères, Abducteurs (n° 2, 2 % 2 = 0) par
+    // Poids du corps.
+    expect(noms(ordonnerPertinence(liste))).toEqual([
+      "Crunch",
+      "Écarté aux haltères",
+      "Abduction allongée",
+      "Développé couché à la barre",
+      "Abduction de hanche assise",
+      "Pompe",
+      "Pompe archer",
+    ]);
+  });
+
+  it("dans une case, la famille la plus fournie d'abord, puis le nom le plus court", () => {
+    const liste = [
+      ex("Cocons", "Abdominaux", "Poids du corps"),
+      ex("Crunch inversé", "Abdominaux", "Poids du corps"),
+      ex("Crunch", "Abdominaux", "Poids du corps"),
+    ];
+    expect(noms(ordonnerPertinence(liste))).toEqual(["Crunch", "Crunch inversé", "Cocons"]);
+  });
+
+  it("avec une recherche, le début du nom, puis un début de mot, puis le plus court", () => {
+    const liste = [
+      ex("Drag curl à la barre", "Biceps", "Barre"),
+      ex("Curl à la barre en prise serrée", "Biceps", "Barre"),
+      ex("Encurlé", "Biceps", "Barre"),
+      ex("Curl à la barre", "Biceps", "Barre"),
+    ];
+    expect(noms(ordonnerPertinence(liste, "Curl"))).toEqual([
+      "Curl à la barre",
+      "Curl à la barre en prise serrée",
+      "Drag curl à la barre",
+      "Encurlé",
+    ]);
   });
 });

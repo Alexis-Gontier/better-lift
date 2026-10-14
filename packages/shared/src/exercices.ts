@@ -16,6 +16,25 @@ export const requeteCatalogue = z.object({
   q: z.string().trim().min(1).max(100).optional(),
   groupe: z.enum(GROUPES).optional(),
   equipement: z.string().trim().min(1).max(60).optional(),
+  /** Le muscle ciblé, en français (« Pectoraux ») : le filtre de la grille (D200). */
+  cible: z.string().trim().min(1).max(60).optional(),
+  /**
+   * « Mes exercices » (D200, D205) : des slugs séparés par des virgules dans l'URL,
+   * rendus en liste. Plafonnés à 200 : on ne pratique pas davantage d'exercices.
+   */
+  slugs: z
+    .string()
+    .trim()
+    .min(1)
+    .max(8000)
+    .transform((s) => s.split(",").filter(Boolean))
+    .pipe(z.array(z.string().min(1).max(200)).max(200))
+    .optional(),
+  /**
+   * L'ordre (D210) : par nom, le défaut (le mobile le garde), ou par pertinence — la
+   * recherche d'abord par début de nom, sinon un catalogue varié, muscle après muscle.
+   */
+  ordre: z.enum(["nom", "pertinence"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   // Plafonnée : sans borne, une requête ferait remonter tout le catalogue.
   taille: z.coerce.number().int().min(1).max(100).default(50),
@@ -31,6 +50,8 @@ export type ExerciceResume = {
   /** La clé de données, pas le libellé : le français vient de `LIBELLE_GROUPE`. */
   groupe: Groupe;
   equipement: string;
+  /** Le muscle ciblé, en français (« Pectoraux ») : la carte de la grille le montre (D200). */
+  cible: string;
   /**
    * URL de l'image fixe (JPG, ~6 Ko), ou `null` : c'est elle que montrent les
    * listes — des centaines de GIF animés à la fois pèseraient trop.
@@ -52,7 +73,6 @@ export type ExerciceDetail = ExerciceResume & {
    * maladroit (D44).
    */
   nomAnglais: string;
-  cible: string;
   secondaires: string[];
   instructions: string[];
 };

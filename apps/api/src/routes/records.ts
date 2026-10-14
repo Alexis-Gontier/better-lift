@@ -12,6 +12,11 @@ import type { DepotLectureSeances } from "../services/seances.js";
 export function routesRecords(lecture: DepotLectureSeances, lireSession: LireSession) {
   return (
     new Hono()
+      // « Mes exercices » (D205) : ce que l'utilisateur a pratiqué. Monté AVANT le catalogue,
+      // dont le `/:slug` prendrait sinon « pratiques » pour un exercice inconnu.
+      .get("/pratiques", exigerSession(lireSession), async (c) =>
+        c.json({ pratiques: await lecture.pratiques(c.get("userId")) }),
+      )
       .get("/:slug/records", exigerSession(lireSession), async (c) => {
         const records = await lecture.records(c.get("userId"), c.req.param("slug"));
         return records ? c.json({ records }) : c.json({ erreur: "Exercice introuvable." }, 404);

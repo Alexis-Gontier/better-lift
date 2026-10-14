@@ -18,9 +18,12 @@ Les consignes propres à une zone sont dans `.claude/rules/` et se chargent avec
 
 ## État
 
-- **Web = poste d'analyse** (D132) : Tableau de bord, Séances, Routines, Exercices, Profil ; pas
-  de séance en direct. Encore au lime ; sa bascule vers la couleur du mobile (D177) reste à
-  cadrer.
+- **Web = poste d'analyse** (D132) : Accueil, Séances, Routines, Exercices, Profil ; pas de séance
+  en direct. En refonte sur `feat/web-refonte` (`2026-10-14-web-neobrutalism-design.md`) :
+  **Neobrutalism**, palette Orange (D193) et DM Sans (D199), **light seulement**
+  (D193–D195 ; le bleu de D199 est abandonné) ; auth en deux
+  pages minimales (D196) ; Accueil vide (D197) ; adresses et code du web en anglais, textes en
+  français (D198). Barre latérale et mise en page suivront.
 - **Mobile resserré pour le MVP** (D178, `2026-10-13-mobile-mvp-retrait-design.md`) : la barre est
   Routines · Démarrer · Profil ; séance façon Hevy, supersets, hors ligne.
 - **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera
@@ -79,13 +82,13 @@ que `tsconfig.base.json`).
 
 ## Interface (les deux surfaces)
 
-- **Une seule couleur pour l'action et le record**, celle du thème (orange sur le mobile, lime
-  sur le web pour l'instant). La distinction se fait par la forme : l'action est un **aplat** (fond
-  de la couleur, texte sombre), le record un **contour** (la couleur en texte sur fond teinté,
+- **Une seule couleur pour l'action et le record, par surface** : l'orange, sur le mobile comme sur le web
+  (le bleu de D199 est abandonné). La distinction se fait par la forme : l'action est un **aplat** (fond de la
+  couleur, texte noir), le record un **contour** (la couleur foncée en texte sur fond teinté,
   flèche montante).
-- **Le danger a sa propre couleur** (`--danger`, D36) et ne porte jamais l'action ni le record.
-- **Un token par rôle, deux valeurs par token** (sombre / clair). Jamais de couleur en dur
-  réutilisée dans les deux registres.
+- **Le danger a sa propre couleur** (D36) et ne porte jamais l'action ni le record.
+- **Un token par rôle.** Le mobile a deux valeurs par token (sombre / clair) ; le web est en light
+  seulement (D194), une valeur. Jamais de couleur en dur dans un écran.
 - **Logo** : l'haltère Lucide (`Dumbbell`) redressée de 45°, en encre sur aplat de la couleur d'action.
 - **La densité vaut pour le web seulement.** Le mobile ne partage pas l'échelle : en
   salle il faut des cibles larges et un contraste franc.

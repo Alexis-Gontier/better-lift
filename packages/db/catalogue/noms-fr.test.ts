@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { CIBLES, EQUIPEMENTS, EQUIPEMENTS_PRINCIPAUX } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 
 type EntreeSource = {
@@ -88,5 +89,23 @@ describe("vocabulaire.json", () => {
       }
     }
     expect([...new Set(manquants)].sort()).toEqual([]);
+  });
+});
+
+describe("vocabulaire de la grille d'exercices (D200)", () => {
+  const traduire = (table: Record<string, string>, cle: string) => table[cle] ?? cle;
+  const cibles = new Set(source.map((e) => traduire(vocabulaire.cibles, e.cible)));
+  const equipements = new Set(source.map((e) => traduire(vocabulaire.equipements, e.equipement)));
+
+  it("CIBLES couvre exactement les muscles ciblés du catalogue", () => {
+    expect([...CIBLES].sort()).toEqual([...cibles].sort());
+  });
+
+  it("EQUIPEMENTS couvre exactement les équipements du catalogue", () => {
+    expect([...EQUIPEMENTS].sort()).toEqual([...equipements].sort());
+  });
+
+  it("EQUIPEMENTS_PRINCIPAUX n'invente aucun équipement", () => {
+    expect(EQUIPEMENTS_PRINCIPAUX.filter((e) => !equipements.has(e))).toEqual([]);
   });
 });

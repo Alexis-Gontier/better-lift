@@ -314,7 +314,11 @@ export type DepotLectureSeances = {
   ): Promise<Record<string, { reps: number | null; chargeKg: number | null; faite: boolean }[]>>;
   /** Les records actuels ; `null` si l'exercice n'existe pas. */
   records(userId: string, slug: string): Promise<RecordExercice[] | null>;
+  /** « Mes exercices » (D205) : par exercice pratiqué, le nombre de séances et la dernière. */
+  pratiques(userId: string): Promise<ExercicePratique[]>;
 };
+
+type ExercicePratique = { slug: string; nbSeances: number; derniere: string };
 
 const LECTURE_SEANCE = {
   id: true,
@@ -485,6 +489,30 @@ export const depotLecture: DepotLectureSeances = {
       nom: l.seance.nom,
       debut: l.seance.debut.toISOString(),
       series: l.series.map((s) => ({ ...s, chargeKg: enNombre(s.chargeKg) })),
+    }));
+  },
+
+  async pratiques(userId) {
+    const lignes = await prisma.seanceExercice.findMany({
+      where: { seance: { userId } },
+      select: {
+        seanceId: true,
+        seance: { select: { debut: true } },
+        exercise: { select: { slug: true } },
+      },
+    });
+    // Un exercice répété dans une séance (deux blocs) ne compte qu'une fois pour elle.
+    const parSlug = new Map<string, { seances: Set<string>; derniere: Date }>();
+    for (const l of lignes) {
+      const e = parSlug.get(l.exercise.slug) ?? { seances: new Set(), derniere: l.seance.debut };
+      e.seances.add(l.seanceId);
+      if (l.seance.debut > e.derniere) e.derniere = l.seance.debut;
+      parSlug.set(l.exercise.slug, e);
+    }
+    return [...parSlug].map(([slug, e]) => ({
+      slug,
+      nbSeances: e.seances.size,
+      derniere: e.derniere.toISOString(),
     }));
   },
 
