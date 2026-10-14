@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useSignOut } from "@/lib/sign-out";
 import { displayName, initials } from "./account-name";
+import { SearchCommand } from "./search-command";
 
 // Les pages, en une seule liste ; le Profil vit dans le menu du compte.
 const PAGES = [
@@ -39,7 +40,8 @@ const PAGES = [
   { to: "/exercises", label: "Exercices", icon: Dumbbell },
 ] as const;
 
-/** La barre latérale de shadcn : la place du titre en tête, les pages, le compte en pied. */
+/** La barre latérale de shadcn : la place du titre en tête, la recherche, les pages,
+ * le compte en pied. */
 export function SideNav() {
   const email = useRouteContext({ from: "__root__" }).auth.session?.user.email ?? "";
 
@@ -48,6 +50,7 @@ export function SideNav() {
       {/* La place du titre de l'app et de son icône, à venir : même hauteur que le pied. */}
       <SidebarHeader className="h-16 border-b-2 border-sidebar-border" />
       <SidebarContent>
+        <SearchCommand />
         <SidebarGroup>
           <SidebarMenu>
             {PAGES.map(({ to, label, icon: Icon }) => (
