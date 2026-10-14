@@ -20,7 +20,8 @@ Les consignes propres à une zone sont dans `.claude/rules/` et se chargent avec
 
 - **Web = poste d'analyse** (D132) : Accueil, Séances, Routines, Exercices, Profil ; pas de séance
   en direct. En refonte sur `feat/web-refonte` (`2026-10-14-web-neobrutalism-design.md`) :
-  **Neobrutalism**, palette Orange, **light seulement**, Space Grotesk (D193–D195) ; auth en deux
+  **Neobrutalism** au style par défaut de neobrutalism.dev (bleu, DM Sans), **light seulement**
+  (D193–D195, D199) ; auth en deux
   pages minimales (D196) ; Accueil vide (D197) ; adresses et code du web en anglais, textes en
   français (D198). Barre latérale et mise en page suivront.
 - **Mobile resserré pour le MVP** (D178, `2026-10-13-mobile-mvp-retrait-design.md`) : la barre est
@@ -81,9 +82,10 @@ que `tsconfig.base.json`).
 
 ## Interface (les deux surfaces)
 
-- **Une seule couleur pour l'action et le record** : l'orange, sur les deux surfaces. La
-  distinction se fait par la forme : l'action est un **aplat** (fond orange, texte sombre), le
-  record un **contour** (orange en texte sur fond teinté, flèche montante).
+- **Une seule couleur pour l'action et le record, par surface** : l'orange sur le mobile, le bleu
+  sur le web (D199). La distinction se fait par la forme : l'action est un **aplat** (fond de la
+  couleur, texte noir), le record un **contour** (la couleur foncée en texte sur fond teinté,
+  flèche montante).
 - **Le danger a sa propre couleur** (D36) et ne porte jamais l'action ni le record.
 - **Un token par rôle.** Le mobile a deux valeurs par token (sombre / clair) ; le web est en light
   seulement (D194), une valeur. Jamais de couleur en dur dans un écran.

@@ -7,7 +7,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry: () 
     >
       <p className="text-base font-medium text-foreground">Quelque chose n'a pas fonctionné</p>
       <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
-      {/* L'aplat d'action : le bouton `default`, orange bordé à ombre dure (D193). */}
+      {/* L'aplat d'action : le bouton `default`, bleu bordé à ombre dure (D193, D199). */}
       <Button onClick={onRetry}>Réessayer</Button>
     </div>
   );

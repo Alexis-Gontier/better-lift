@@ -2,7 +2,7 @@ import { formaterCharge } from "@better-lift/shared";
 import { ArrowUpRight } from "lucide-react";
 import { UNIT_SYSTEM } from "@/lib/units";
 
-// L'invariant D28 : l'action est un aplat, le record un contour — orange foncé en texte
+// L'invariant D28 : l'action est un aplat, le record un contour — bleu foncé en texte
 // sur fond teinté, flèche montante. Une seule implémentation, réutilisée partout
 // où un record s'affiche, sinon la distinction par la forme dérive écran par écran.
 export function RecordBadge({ label }: { label: string }) {

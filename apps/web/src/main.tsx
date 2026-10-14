@@ -1,6 +1,7 @@
-// Space Grotesk (D195) : 500 pour le texte, 700 pour les titres et les chiffres.
-import "@fontsource/space-grotesk/500.css";
-import "@fontsource/space-grotesk/700.css";
+// DM Sans (D199), la police par défaut de neobrutalism.dev : 500 pour le texte, 700
+// pour les titres et les chiffres.
+import "@fontsource/dm-sans/500.css";
+import "@fontsource/dm-sans/700.css";
 import "./styles/globals.css";
 
 import { createRouter, RouterProvider } from "@tanstack/react-router";

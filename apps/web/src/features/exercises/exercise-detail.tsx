@@ -143,7 +143,7 @@ function Block({
 const CONFIG = { valeur: { label: "1RM estimé" } } satisfies ChartConfig;
 
 /**
- * Le 1RM estimé et sa courbe, séance par séance (D141, D159). Le dernier point en orange s'il
+ * Le 1RM estimé et sa courbe, séance par séance (D141, D159). Le dernier point en bleu s'il
  * est record. `courbe()` ne sert plus qu'aux chiffres (min, max, écart, record) : le tracé
  * est celui de Recharts.
  */
@@ -247,7 +247,7 @@ function Records({ records }: { records: RecordExercice[] | null | undefined }) 
               key={r.type}
               className="rounded-base border-2 border-border bg-secondary-background px-4 py-3"
             >
-              {/* Le record est un CONTOUR (D28) : orange foncé en texte sur fond teinté. */}
+              {/* Le record est un CONTOUR (D28) : bleu foncé en texte sur fond teinté. */}
               <RecordBadge label={LIBELLE_RECORD[r.type]} />
               <p className="chiffre mt-2 text-[26px]">
                 {/* 1RM et volume sont DÉRIVÉS : la valeur, puis la série qui l'a donnée. */}

@@ -80,7 +80,7 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
 - **Exercices** en disposition `feed` : catalogue à gauche, **fiche en une page** (D141) — GIF,
   1RM estimé et sa courbe en `Chart` (Recharts, tracé `linear`, animations coupées ; `curve`
-  de `calculations.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en orange s'il est record),
+  de `calculations.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en bleu s'il est record),
   blocs en `Card`, historique en `Table`, nom dans le fil d'Ariane et nom anglais en sous-titre, records, historique (`["sessions","history",slug]`, invalidé par la
   suppression d'une séance), consignes.
 - **`RecordBadge`** (`features/exercises/record-badge.tsx`) est la SEULE pastille record du web :
@@ -100,31 +100,32 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 - **Les quatre états par l'URL** : `?state=loading|error|empty`, derrière
   `import.meta.env.DEV`. `vide` vide le jeu de données plutôt que de substituer un composant.
 
-## Thème : Neobrutalism, light seulement (D193–D195)
+## Thème : Neobrutalism, light seulement (D193–D195, D199)
 
-- **Palette Orange de neobrutalism.dev**, une seule valeur par token (`styles/tokens.css`) :
-  fond `--background` crème, `--secondary-background` blanc (champs, cartes, menus), `--main`
-  `#ff7a05` (l'action, en aplat), `--main-ink` `#a33f00` (l'orange EN TEXTE : le record, 5,6:1 ;
-  `#ff7a05` ne fait que 2,3:1 sur le crème), `--muted` / `--muted-foreground` (surface en retrait,
-  encre secondaire), `--border` et `--ring` noirs, `--shadow` `4px 4px 0 0`, `--radius-base`
-  `5px`. Pas de `dark:`, pas de `data-theme`, pas de sélecteur de thème.
+- **Le style par défaut de neobrutalism.dev** (D199), une seule valeur par token
+  (`styles/tokens.css`) : fond `--background` `hsl(214 95% 93%)`, `--secondary-background` blanc
+  (champs, cartes, menus), `--main` `#5294ff` (l'action, en aplat, texte noir), `--main-ink`
+  `#1e40af` (le bleu EN TEXTE : le record, 7,2:1 ; `#5294ff` ne fait que 2,5:1 sur le fond),
+  `--muted` `#bed5f4` / `--muted-foreground` `#33415c` (surface en retrait, encre secondaire),
+  `--border` et `--ring` noirs, `--overlay` noir à 80 %, `--shadow` `4px 4px 0 0`,
+  `--radius-base` `5px`. Le web est bleu, le mobile orange. Pas de `dark:`, pas de `data-theme`, pas de sélecteur de thème.
 - **La grammaire** : bordure noire de 2 px (`border-2 border-border`), ombre dure
   (`shadow-shadow`), rayon `rounded-base`. Les boutons pleins s'enfoncent au survol
   (`hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none`). Une carte
   qu'on glisse double son ombre. Les items survolés des menus, l'onglet actif, l'entrée active de
-  la barre et les bascules prennent l'aplat orange.
+  la barre et les bascules prennent l'aplat bleu.
 - **Les primitives shadcn sont réhabillées, pas remplacées** : Radix, mêmes variantes (`default`
-  = aplat orange, `outline` / `secondary` blancs bordés, `ghost`, `link`, `destructive` rouge).
+  = aplat bleu, `outline` / `secondary` blancs bordés, `ghost`, `link`, `destructive` rouge).
   Les composants de neobrutalism.dev (`@base-ui/react`, variantes `neutral` / `noShadow`) ne sont
   pas installés. Une surface codée hors des primitives reprend la même grammaire à la main.
 - **Les primitives parlent leur propre vocabulaire**, traduit dans `@theme inline`
   (`globals.css`). Un rôle non déclaré n'émet aucune règle, en silence. `primary` = `--main` ;
-  `accent` (et `sidebar-accent`) = la **surface de survol** `--muted`, jamais l'orange, sinon
+  `accent` (et `sidebar-accent`) = la **surface de survol** `--muted`, jamais le bleu d'action, sinon
   chaque survol deviendrait un aplat.
-- Police **Space Grotesk** 500 / 700 (`@fontsource/space-grotesk`) ; l'utilitaire `chiffre`
-  (chiffres héros) est gras et serré, sans axe de largeur.
-- `--superset` `#5a4bbf` (D151), `--destructive` `#e5484d` (aplat, texte noir 5,4:1) et
-  `--destructive-ink` `#b42318` (texte, 5,7:1). Vignettes sur `--image-bg` blanc.
+- Police **DM Sans** 500 / 700 (`@fontsource/dm-sans`, D199) ; l'utilitaire `chiffre`
+  (chiffres héros) est gras et serré.
+- `--superset` `#4a3db0` (D151), `--destructive` `#e5484d` (aplat, texte noir 5,4:1) et
+  `--destructive-ink` `#a01d14` (texte, 6,5:1). Vignettes sur `--image-bg` blanc.
 
 ## Pièges
 

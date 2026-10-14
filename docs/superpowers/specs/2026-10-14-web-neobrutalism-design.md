@@ -109,6 +109,27 @@ l'interface (conception de redémarrage, §vocabulaire). L'interface reste en fr
   (`debut`, `nom`, `chargeKg`…) et les noms importés de `shared`. L'API, `shared`, la base et le
   mobile basculeront plus tard, s'ils basculent ; le web ne leur impose rien.
 
+## D199 — Le style par défaut de neobrutalism.dev
+
+Révise la palette Orange de D193 et la police de D195, à la demande de l'utilisateur : le web
+prend le style **par défaut** de neobrutalism.dev (`src/styling/globals.css` du dépôt
+`ekmas/neobrutalism-components`).
+
+| Rôle | Valeur |
+|---|---|
+| Fond (`--background`) | `hsl(214 95% 93%)` (bleu très clair) |
+| Principal (`--main`), texte dessus | `hsl(217 100% 66%)` (`#5294ff`), noir (7,0:1) |
+| Voile (`--overlay`) | noir à 80 % |
+| Police | **DM Sans** 500 / 700 (`@fontsource/dm-sans`), remplace Space Grotesk |
+
+Rayon, ombre, bordures et graisses sont ceux de D193, identiques au style par défaut. Les tokens
+propres au projet sont recalculés sur ce fond : `--main-ink` `#1e40af` (le record en texte,
+7,2:1), `--muted` `#bed5f4`, `--muted-foreground` `#33415c` (8,5:1), `--destructive-ink`
+`#a01d14` (6,5:1), `--superset` `#4a3db0` (6,7:1).
+
+**La couleur d'action n'est plus la même sur les deux surfaces** : bleu sur le web, orange sur le
+mobile. La règle « une seule couleur pour l'action et le record » vaut désormais par surface.
+
 ## Hors champ
 
 La barre latérale, la mise en page générale et la refonte des pages viendront dans les lots
