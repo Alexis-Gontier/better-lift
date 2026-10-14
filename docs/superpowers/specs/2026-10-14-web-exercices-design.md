@@ -38,8 +38,8 @@ Révise D141 (liste et fiche côte à côte) pour les exercices.
 `/exercises/$slug` devient une page à part (plus une route enfant rendue à côté de la liste), avec
 un lien « ← Exercices » qui garde les filtres (`search`). De haut en bas :
 
-1. **En-tête** : GIF, nom (`h1`), muscle ciblé en aplat, muscles secondaires en pastilles
-   teintées, équipement ; une ligne « 9 séances · dernière le 7 octobre » si l'exercice a été
+1. **En-tête** : GIF, nom (`h1`), muscle ciblé en pastille contour, muscles secondaires en
+   pastilles teintées, équipement — jamais l'orange, réservé à l'action et au record ; une ligne « 9 séances · dernière le 7 octobre » si l'exercice a été
    pratiqué.
 2. **Analyse** (D202, D203) — seulement si l'exercice a été pratiqué ; sinon une carte « Pas
    encore pratiqué » à la place.
