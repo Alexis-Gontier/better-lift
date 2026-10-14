@@ -5,7 +5,8 @@ import { useState } from "react";
  * L'animation d'un exercice (D46).
  *
  * Le GIF reste dans le dépôt du dataset : on l'affiche, on ne le copie pas. Il
- * appartient à Gym visual, d'où la mention sous le visuel, et la taille bornée
+ * appartient à Gym visual, d'où la mention SOUS le cadre (visible, exigée par la
+ * permission de Gym visual, mais hors de l'image), et la taille bornée
  * à 180×180 — la résolution à laquelle il est distribué.
  *
  * L'appelant passe `key={gif}` : changer d'exercice remonte le composant, ce qui
@@ -19,7 +20,7 @@ export function ExerciseAnimation({ gif, name }: { gif: string | null; name: str
   if (!gif || failure) return null;
 
   return (
-    <figure className="flex flex-col items-center gap-1.5">
+    <figure className="flex w-fit flex-col gap-1.5">
       <img
         src={gif}
         alt={`Animation de l'exercice : ${name}`}
@@ -27,9 +28,9 @@ export function ExerciseAnimation({ gif, name }: { gif: string | null; name: str
         height={180}
         loading="lazy"
         onError={() => setFailure(true)}
-        className="size-45 rounded-md bg-white object-contain"
+        className="size-45 rounded-base border-2 border-border bg-image-bg object-contain shadow-shadow"
       />
-      <figcaption className="text-[11px] text-muted-foreground">{ATTRIBUTION_MEDIAS}</figcaption>
+      <figcaption className="text-[10px] text-muted-foreground">{ATTRIBUTION_MEDIAS}</figcaption>
     </figure>
   );
 }

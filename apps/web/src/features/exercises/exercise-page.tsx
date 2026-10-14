@@ -40,15 +40,11 @@ export function ExercisePage({
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start gap-6">
-        <div className="w-52 shrink-0">
-          <div className="overflow-hidden rounded-base border-2 border-border bg-image-bg shadow-shadow">
-            <ExerciseAnimation
-              key={exercise.gif ?? exercise.slug}
-              gif={exercise.gif}
-              name={exercise.nom}
-            />
-          </div>
-        </div>
+        <ExerciseAnimation
+          key={exercise.gif ?? exercise.slug}
+          gif={exercise.gif}
+          name={exercise.nom}
+        />
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
