@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SideNav } from "./side-nav";
 
-/** Le conteneur commun aux deux gabarits, pleine hauteur (D200 : barre latérale retirée). */
+/** La barre latérale de shadcn et le contenu, communs aux deux gabarits. */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <main className="flex h-svh min-h-0 flex-col overflow-hidden bg-background">{children}</main>
+    <SidebarProvider className="h-svh">
+      <SideNav />
+      <SidebarInset className="min-h-0 overflow-hidden">{children}</SidebarInset>
+    </SidebarProvider>
   );
 }

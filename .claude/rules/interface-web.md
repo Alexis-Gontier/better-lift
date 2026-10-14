@@ -15,10 +15,14 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 - **Le web est le poste d'analyse (D132)** : on y regarde et on y prépare ; aucune entrée ne
   lance une séance.
 
-- **Layout remis à zéro (2026-10-14), à redessiner** : la barre latérale, l'en-tête commun
-  (`PageHeader`, `InHeader`, fil d'Ariane) et la palette Ctrl K sont supprimés, avec les
-  primitives `sidebar`, `breadcrumb`, `command`, `sheet`. `AppShell` n'est plus qu'un `<main>`
-  pleine hauteur. **Conséquences assumées** : aucune navigation (on passe par l'URL), pas de `h1`
+- **Layout remis à zéro (2026-10-14), à redessiner** : l'en-tête commun (`PageHeader`,
+  `InHeader`, fil d'Ariane) et la palette Ctrl K sont supprimés. `AppShell` pose la **`Sidebar`
+  de shadcn** (`SidebarProvider` + `SidebarInset`, repliable par Ctrl B), **vide** pour l'instant :
+  seul le pied porte le compte (`SideNav` / `NavUser` de `side-nav.tsx` : avatar, nom et adresse,
+  menu Profil / Se déconnecter). Ajoutée par le CLI sans écraser nos primitives ; les variables
+  `--sidebar*` et la variante `dark` qu'il pose dans `globals.css` ont été retirées : les rôles
+  `sidebar-*` restent traduits dans `@theme inline`. **Conséquences assumées** : aucune
+  navigation hors du menu du compte (on passe par l'URL), pas de `h1`
   de page, et les détails ont perdu leurs actions — Annuler / Enregistrer et Supprimer d'une
   routine, Ouvrir la routine / Supprimer d'une séance, la croix de fermeture. Leurs props
   (`onSave`, `saving`, `onClose`, `title`, `to`, `actions`) restent dans les types et sont
