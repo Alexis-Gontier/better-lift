@@ -21,7 +21,8 @@ Les consignes propres à une zone sont dans `.claude/rules/` et se chargent avec
 - **Web = poste d'analyse** (D132) : Accueil, Séances, Routines, Exercices, Profil ; pas de séance
   en direct. En refonte sur `feat/web-refonte` (`2026-10-14-web-neobrutalism-design.md`) :
   **Neobrutalism**, palette Orange, **light seulement**, Space Grotesk (D193–D195) ; auth en deux
-  pages minimales (D196) ; Accueil vide (D197). Barre latérale et mise en page suivront.
+  pages minimales (D196) ; Accueil vide (D197) ; adresses et code du web en anglais, textes en
+  français (D198). Barre latérale et mise en page suivront.
 - **Mobile resserré pour le MVP** (D178, `2026-10-13-mobile-mvp-retrait-design.md`) : la barre est
   Routines · Démarrer · Profil ; séance façon Hevy, supersets, hors ligne.
 - **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera

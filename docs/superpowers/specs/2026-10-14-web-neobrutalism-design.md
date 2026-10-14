@@ -1,4 +1,4 @@
-# Web : Neobrutalism, light seulement, auth minimale, Accueil vidé
+# Web : Neobrutalism, light seulement, auth minimale, Accueil vidé, code en anglais
 
 Le 14 octobre 2026. Premier lot du chantier web porté par la branche `feat/web-refonte`, qui
 accueillera ensuite les changements de barre latérale, de mise en page et des pages.
@@ -91,6 +91,23 @@ D132–D138 qui part).
 
 Séances, Routines, Exercices et Profil gardent leur logique ; ils changent d'habit par les
 primitives (D193) et perdent tout usage des anciens tokens.
+
+## D198 — Le code du web est en anglais
+
+Révise, pour le web seulement, la règle du vocabulaire identique dans le code, l'API et
+l'interface (conception de redémarrage, §vocabulaire). L'interface reste en français.
+
+- **Adresses** : `/login`, `/register`, `/sessions`, `/sessions/$id`, `/routines`,
+  `/routines/new`, `/routines/$id`, `/exercises`, `/exercises/$slug`, `/profile` ; la garde
+  `_protege` devient `_authenticated`. Paramètres `?state=loading|error|empty` et `?group=`.
+  Les anciennes adresses françaises tombent sur la page introuvable.
+- **Code** (`apps/web/src`) : dossiers, fichiers, composants, hooks, fonctions, types, variables,
+  props des composants et clés de cache TanStack Query en anglais (`features/sessions`,
+  `AuthForm`, `PageLayout`, `useSignOut`, `["sessions", "list"]`…). Les clés de stockage des
+  panneaux redimensionnables changent : les tailles enregistrées repartent des valeurs par défaut.
+- **Restent en français** : les textes affichés, les commentaires, les champs du JSON de l'API
+  (`debut`, `nom`, `chargeKg`…) et les noms importés de `shared`. L'API, `shared`, la base et le
+  mobile basculeront plus tard, s'ils basculent ; le web ne leur impose rien.
 
 ## Hors champ
 

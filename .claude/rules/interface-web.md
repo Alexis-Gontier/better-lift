@@ -19,19 +19,19 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   shadcn rend un simple bloc), filet `border-r` posé à la main, fond `--background` comme le contenu
   — **rien de permanent ne flotte**. Barre de 220 px en groupes : Accueil seul,
   **Entraînement** (Séances, Routines), **Catalogue** (Exercices). Champ « Rechercher » (ouvre la
-  palette). Pied `NavUser` : nom tiré de l'adresse (`nom-compte.ts`), menu Profil / Se déconnecter.
-- **En-tête commun `EnTetePage` (D157)**, posé par les deux gabarits : 44 px, fil d'Ariane dont le
+  palette). Pied `NavUser` : nom tiré de l'adresse (`account-name.ts`), menu Profil / Se déconnecter.
+- **En-tête commun `PageHeader` (D157)**, posé par les deux gabarits : 44 px, fil d'Ariane dont le
   premier élément est le `h1` de la page (lien vers la liste quand un détail est ouvert), actions
-  à droite. Un détail s'y inscrit par `<DansEnTete titre="…">actions</DansEnTete>` : le titre par
+  à droite. Un détail s'y inscrit par `<InHeader title="…">actions</InHeader>` : le titre par
   l'état du contexte, les actions par un portail dans l'emplacement.
 - Liste et détail redimensionnables sous l'en-tête, tailles persistées.
-- **Le détail ouvert vit dans le CHEMIN** : `/exercices/$slug`, `/seances/$id`, `/routines/$id`,
-  `/routines/nouvelle`. Les paramètres de recherche ne portent que ce qui filtre (`q`, `groupe`)
-  ou force un état (`etat`), et suivent d'un détail à l'autre (`search: (s) => s`).
+- **Le détail ouvert vit dans le CHEMIN** : `/exercises/$slug`, `/sessions/$id`, `/routines/$id`,
+  `/routines/new`. Les paramètres de recherche ne portent que ce qui filtre (`q`, `group`)
+  ou force un état (`state`), et suivent d'un détail à l'autre (`search: (s) => s`).
 - **Le gabarit est monté par la route de chaque écran, jamais par `__root.tsx`** :
-  `PageListeDetail` (liste / détail, prop `vers`) ou `PageTableau` (`largeur` `pleine` ou
-  `lecture`). Les deux posent `Coquille` et `EnTetePage`.
-  `_protege.exercices.tsx`, `_protege.seances.tsx`, `_protege.routines.tsx` montent le gabarit
+  `ListDetailPage` (liste / détail, prop `to`) ou `PageLayout` (`width` `pleine` ou
+  `lecture`). Les deux posent `AppShell` et `PageHeader`.
+  `_authenticated.exercises.tsx`, `_authenticated.sessions.tsx`, `_authenticated.routines.tsx` montent le gabarit
   et la liste ; le détail est une **route enfant** rendue par `<Outlet />`. La mise en page lit
   le paramètre de l'enfant par `useParams({ strict: false })` : la coquille change alors son jeu
   de panneaux — donc sa clé de persistance — selon qu'il y a un détail.
@@ -40,59 +40,64 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 
 ## Écrans
 
-- **Routines** en disposition `colonne` (`PageListeDetail`) : lignes à gauche (filtre `?q=` par
-  `plier` de `lib/texte.ts`, « Nouvelle routine » en contour), routine ouverte **toujours
-  modifiable** à droite. Annuler / Enregistrer vivent dans l'en-tête commun (`DansEnTete`) et
+- **Routines** en disposition `column` (`ListDetailPage`) : lignes à gauche (filtre `?q=` par
+  `fold` de `lib/text.ts`, « Nouvelle routine » en contour), routine ouverte **toujours
+  modifiable** à droite. Annuler / Enregistrer vivent dans l'en-tête commun (`InHeader`) et
   n'apparaissent qu'une fois la copie différente de la version enregistrée (`empreinte`) :
   Enregistrer est le seul aplat de l'écran. Cartes d'exercice à la Hevy : image,
   « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées É/1/2/3
   (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
-  Espace, flèches, Espace ; poignées masquées tant qu'un filtre est actif) par `useOrdonnerRoutines`, mutation OPTIMISTE sur
-  `["routines","liste"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
-- **Supersets dans l'éditeur (D151, D152)** : un groupe se rend d'un bloc — `EtiquetteSuperset`
+  Espace, flèches, Espace ; poignées masquées tant qu'un filtre est actif) par `useReorderRoutines`, mutation OPTIMISTE sur
+  `["routines","list"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
+- **Supersets dans l'éditeur (D151, D152)** : un groupe se rend d'un bloc — `SupersetLabel`
   (« Superset A », casse normale, ouvre « Défaire le superset »), puis ses cartes derrière un filet de 3 px
   `border-superset` ; le `SortableContext` garde la liste PLATE des clés. Toute retouche passe par
-  `modifier` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
+  `update` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
   `arrayMove`). Menu ⋯ : « Superset avec le suivant » (`peutLierAuSuivant`), « Retirer du
   superset ». Repos masqué sur les membres non derniers (`roleRepos`).
 - **`/` est l'Accueil, vide** (D197) : la coquille et son en-tête, sans contenu, en attendant la
-  suite du chantier. Le tableau de bord (`features/tableau/`) a été retiré ; les routes `/stats`
+  suite du chantier. Le tableau de bord (`features/tableau/` (supprimé)) a été retiré ; les routes `/stats`
   de l'API restent.
-- **Profil** (`/profil`, D143) : bilan de toujours, objectif hebdo et repos par défaut (SUR LE
-  COMPTE, `["preferences"]`, `optionsPreferences` de `features/profil/requetes.ts`), unités et
+- **Profil** (`/profile`, D143) : bilan de toujours, objectif hebdo et repos par défaut (SUR LE
+  COMPTE, `["preferences"]`, `preferencesOptions` de `features/profile/queries.ts`), unités et
   fuseau (affichés), export CSV par un simple lien, déconnexion (aussi au menu du pied de barre).
   Une `Card` par section, lignes séparées par des filets. Plus de choix du thème (D194).
-- **Auth en deux pages minimales (D196)** : `/connexion` et `/inscription`, autour de
-  `FormulaireAuth` (`features/auth/`). Un titre, l'e-mail, le mot de passe, le bouton, le lien vers
-  l'autre page — **ni logo, ni carte, ni sous-titre, ni œil**. Trois refus distincts (`refusDe`,
-  testé : 403 = hors liste blanche), `?redirect=` transmis d'une page à l'autre, `?etat=` gardé.
+- **Auth en deux pages minimales (D196)** : `/login` et `/register`, autour de
+  `AuthForm` (`features/auth/`). Un titre, l'e-mail, le mot de passe, le bouton, le lien vers
+  l'autre page — **ni logo, ni carte, ni sous-titre, ni œil**. Trois refus distincts (`refusalOf`,
+  testé : 403 = hors liste blanche), `?redirect=` transmis d'une page à l'autre, `?state=` gardé.
   Une session ouverte est renvoyée vers `/` par le `beforeLoad` des deux routes.
-- **Séances** en disposition `fil` (liste 34 % / détail 66 %, sa propre clé de persistance) :
-  fil groupé par mois (`grouperParMois`, fuseau), filtré par `?q=` (`filtrerSeances` : nom et
+- **Séances** en disposition `feed` (liste 34 % / détail 66 %, sa propre clé de persistance) :
+  fil groupé par mois (`groupByMonth`, fuseau), filtré par `?q=` (`filterSessions` : nom et
   aperçu, sans casse ni accents, sur les pages chargées ; le filtre garde le chemin du détail),
   ↑ / ↓ d'une séance à l'autre DANS le fil filtré ; sélection en `bg-muted` + liseré d'encre ;
-  actions du détail dans l'en-tête (`DansEnTete`), chiffres en tuiles jointives, relevé en `Table` ; détail = relevé
+  actions du détail dans l'en-tête (`InHeader`), chiffres en tuiles jointives, relevé en `Table` ; détail = relevé
   comparé (`ecartSerie` face à `precedentes`, toutes les séries), menu « ⋯ » → Supprimer, qui
-  RETIRE le détail puis invalide `["seances"]`, `["stats"]`, `["records"]`.
+  RETIRE le détail puis invalide `["sessions"]`, `["stats"]`, `["records"]`.
   Un superset fait en séance se relit d'un bloc dans le relevé (D153) : étiquette texte
   « SUPERSET A » et filet `border-superset`, en lecture seule (`groupes` de `shared`).
 - **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
-- **Exercices** en disposition `fil` : catalogue à gauche, **fiche en une page** (D141) — GIF,
-  1RM estimé et sa courbe en `Chart` (Recharts, tracé `linear`, animations coupées ; `courbe`
-  de `calculs.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en orange s'il est record),
-  blocs en `Card`, historique en `Table`, nom dans le fil d'Ariane et nom anglais en sous-titre, records, historique (`["seances","historique",slug]`, invalidé par la
+- **Exercices** en disposition `feed` : catalogue à gauche, **fiche en une page** (D141) — GIF,
+  1RM estimé et sa courbe en `Chart` (Recharts, tracé `linear`, animations coupées ; `curve`
+  de `calculations.ts`, testée, ne sert plus qu'aux chiffres ; dernier point en orange s'il est record),
+  blocs en `Card`, historique en `Table`, nom dans le fil d'Ariane et nom anglais en sous-titre, records, historique (`["sessions","history",slug]`, invalidé par la
   suppression d'une séance), consignes.
-- **`BadgeRecord`** (`features/exercices/badge-record.tsx`) est la SEULE pastille record du web :
+- **`RecordBadge`** (`features/exercises/record-badge.tsx`) est la SEULE pastille record du web :
   ne jamais recopier ses classes.
 - **Liste des exercices** : image fixe (JPG ~6 Ko) déduite de `gifUrl` par `imageDe` — aucune
   colonne ni migration. Le GIF reste réservé aux fiches.
 - **Adresse inconnue et route qui plante** : `defaultNotFoundComponent` et
-  `defaultErrorComponent` du routeur (`main.tsx`), dans `components/etats/pages-routeur.tsx`. Ni
+  `defaultErrorComponent` du routeur (`main.tsx`), dans `components/states/router-pages.tsx`. Ni
   coquille ni requête : ils tiennent quand c'est elles qui tombent. La 404 prend la page,
   l'erreur ne remplace que la route fautive (la coquille reste). Une 404 se voit à toute
   adresse inconnue.
-- **Les quatre états par l'URL** : `?etat=chargement|erreur|vide`, derrière
+- **Le code du web est en anglais (D198)** : adresses, fichiers, dossiers, composants, fonctions,
+  variables et clés de cache TanStack Query. Les **textes affichés** et les **commentaires** restent
+  en français. Les champs du JSON de l'API et les noms importés de `shared` (`formaterCharge`,
+  `ecartSerie`, `deplacerAvecGroupes`…) restent en français tant que l'API et `shared` ne
+  basculent pas : `{ nom: name }` dans une déstructuration est normal.
+- **Les quatre états par l'URL** : `?state=loading|error|empty`, derrière
   `import.meta.env.DEV`. `vide` vide le jeu de données plutôt que de substituer un composant.
 
 ## Thème : Neobrutalism, light seulement (D193–D195)
@@ -127,7 +132,7 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   `core.autocrlf=true` le rend « modifié » sans différence, ce qui bloque un `git pull` ou un
   changement de branche avec un `git diff` vide. Arrêter le serveur avant de fusionner, et
   vérifier que le port 3000 est libre (`TaskStop` ne tue pas toujours le Vite enfant).
-- `SYSTEME_UNITES` (`src/lib/unites.ts`) et le fuseau (`src/lib/fuseau.ts`, Europe/Paris) sont
+- `UNIT_SYSTEM` (`src/lib/units.ts`) et le fuseau (`src/lib/time-zone.ts`, Europe/Paris) sont
   fixés à un seul endroit chacun, tant que le Profil ne permet pas de les changer.
 - Logo : `src/components/logo.tsx`, source vectorielle `public/favicon.svg`.
 - Le lien `/` de la barre latérale porte `exact` : sans lui, il reste actif sur toutes les pages.

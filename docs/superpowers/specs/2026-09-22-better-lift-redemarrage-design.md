@@ -47,7 +47,7 @@ Deux à trois comptes, tous connus personnellement. L'inscription est fermée pa
 
 ### Vocabulaire
 
-Identique dans le code, l'API et l'interface. **L'application est en français, cette liste fait foi.**
+Identique dans le code, l'API et l'interface. **L'application est en français, cette liste fait foi.** Le code du web fait exception depuis D198 (`2026-10-14-web-neobrutalism-design.md`) : il est en anglais, son interface reste en français.
 
 | Terme | Code | Définition |
 |---|---|---|
