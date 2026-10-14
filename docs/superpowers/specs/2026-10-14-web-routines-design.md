@@ -79,3 +79,21 @@ les siens (squelette, erreur discrète, « pas encore faite »).
 3. Web : `routineSummaryOptions`, `RoutineSummary`, `ExerciseTrend`, en-tête de l'éditeur
    (D212), date dans la liste.
 4. Vérification : `/verif`, captures Playwright (routine faite, jamais faite, neuve, modifiée).
+
+## D215 — La page resserrée (14 octobre 2026)
+
+Après le retrait de D213–D214, l'utilisateur a laissé le choix des améliorations.
+
+- **Liste** : la recherche et un bouton carré « + » (Nouvelle routine, libellé en infobulle et
+  pour les lecteurs d'écran) sur une ligne ; le compteur en badge disparaît. Chaque routine
+  montre son nombre de séries et l'**aperçu de ses exercices** (deux lignes au plus) :
+  `RoutineResume` gagne `apercu` (les noms, dans l'ordre), que le mobile ignore. Filets de 2 px.
+- **Cartes** : la colonne de l'éditeur est bornée (`max-w-3xl`) ; la table des séries serre ses
+  colonnes (kg et reps juste après le type, plus de vide au milieu) ; vignette et poignée prennent
+  la bordure de 2 px.
+- **Sélecteur d'exercices** : mêmes outils que la page Exercices (D210, D211), par
+  `ExerciseFilters` et `useExerciseList` (option `enabled`, rien ne charge dialogue fermé) :
+  onglets, filtres Muscle / Équipement repliés, tri Pertinence, « Tes exercices » titrés en tête,
+  pastille ×N. La carte cochée s'enfonce sur `bg-muted` : plus d'orange pour une sélection (D160).
+- Écarté pour l'instant : la colonne « Précédent » par série (à la Hevy), trop proche des stats
+  qu'on vient de retirer.

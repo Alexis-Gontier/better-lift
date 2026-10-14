@@ -117,7 +117,13 @@ describe("projections", () => {
   });
 
   it("résume en comptant exercices et séries", () => {
-    expect(versResume(ligne)).toEqual({ id: "r1", nom: "Push", nbExercices: 1, nbSeries: 2 });
+    expect(versResume(ligne)).toEqual({
+      id: "r1",
+      nom: "Push",
+      nbExercices: 1,
+      nbSeries: 2,
+      apercu: ["Développé couché à la barre"],
+    });
   });
 });
 

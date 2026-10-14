@@ -18,7 +18,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "cn";
 import { GripVertical, Plus, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,7 +25,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 type Props = {
   /** Les routines affichées, déjà filtrées. */
   routines: RoutineResume[];
-  total: number;
   filter: string;
   onFilter: (text: string) => void;
   selectedId?: string;
@@ -44,7 +42,6 @@ const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
  */
 export function RoutineList({
   routines,
-  total,
   filter,
   onFilter,
   selectedId,
@@ -67,28 +64,31 @@ export function RoutineList({
   return (
     <section aria-label="Routines" className="flex h-full flex-col">
       {/* Le titre est dans l'en-tête commun (D157) ; ici, le filtre et l'action (D160). */}
-      <header className="flex flex-col gap-2 border-b px-3 py-2.5">
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-0 flex-1">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              value={filter}
-              onChange={(e) => onFilter(e.target.value)}
-              placeholder="Filtrer…"
-              aria-label="Filtrer les routines"
-              className="h-8 pl-8"
-            />
-          </div>
-          <Badge variant="outline" title={plural(total, "routine")}>
-            {total}
-          </Badge>
+      {/* Une seule ligne (D215) : la recherche et l'action, à la hauteur des contrôles. */}
+      <header className="flex items-center gap-2 border-b-2 border-border px-3 py-3">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            type="search"
+            value={filter}
+            onChange={(e) => onFilter(e.target.value)}
+            placeholder="Rechercher…"
+            aria-label="Rechercher une routine"
+            className="pl-9"
+          />
         </div>
-        <Button size="sm" variant="outline" onClick={onCreate} className="w-full font-semibold">
+        {/* Carré, pour laisser la place à la recherche dans une colonne étroite. */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onCreate}
+          aria-label="Nouvelle routine"
+          title="Nouvelle routine"
+        >
           <Plus aria-hidden="true" />
-          Nouvelle routine
         </Button>
       </header>
 
@@ -148,7 +148,7 @@ function RoutineCard({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "group flex items-center border-b",
+        "group flex items-center border-b-2 border-border",
         selected
           ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
           : "hover:bg-secondary-background",
@@ -172,11 +172,17 @@ function RoutineCard({
         type="button"
         onClick={onClick}
         aria-current={selected ? "true" : undefined}
-        className="min-w-0 flex-1 px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        className="min-w-0 flex-1 py-3 pr-3 pl-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       >
-        <span className="block truncate font-bold">{r.nom}</span>
-        <span className="mt-0.5 block text-[12.5px] text-foreground">
-          {plural(r.nbExercices, "exercice")} · {plural(r.nbSeries, "série")}
+        <span className="flex items-baseline justify-between gap-2">
+          <span className="truncate font-bold">{r.nom}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {plural(r.nbSeries, "série")}
+          </span>
+        </span>
+        {/* L'aperçu de ses exercices (D215) : on reconnaît une routine à ce qu'elle contient. */}
+        <span className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-muted-foreground">
+          {r.apercu.length ? r.apercu.join(" · ") : "Aucun exercice"}
         </span>
       </button>
     </li>

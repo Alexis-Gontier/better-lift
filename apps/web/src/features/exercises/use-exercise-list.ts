@@ -18,9 +18,15 @@ type Filters = { q?: string; target?: string; equipment?: string };
 export function useExerciseList({
   mine,
   sort,
+  enabled = true,
   ...filters
-}: Filters & { mine: boolean; sort: Sort }) {
-  const practiced = useQuery(practicedOptions());
+}: Filters & {
+  mine: boolean;
+  sort: Sort;
+  /** `false` : rien ne se charge (le sélecteur des routines, dialogue fermé). */
+  enabled?: boolean;
+}) {
+  const practiced = useQuery({ ...practicedOptions(), enabled });
   const practicedMap = useMemo(
     () => new Map<string, Practice>((practiced.data ?? []).map((p) => [p.slug, p])),
     [practiced.data],
@@ -30,11 +36,11 @@ export function useExerciseList({
   const wantsHead = mine || byPractice;
   const slugs = practiced.data?.map((p) => p.slug) ?? [];
   // Sans exercice pratiqué, la tête est vide d'office : `slugs` vide serait refusé par l'API.
-  const headActive = wantsHead && practiced.isSuccess && slugs.length > 0;
+  const headActive = enabled && wantsHead && practiced.isSuccess && slugs.length > 0;
   const head = useInfiniteQuery({ ...catalogOptions({ ...filters, slugs }), enabled: headActive });
   const rest = useInfiniteQuery({
     ...catalogOptions({ ...filters, order: byPractice ? "relevance" : "name" }),
-    enabled: !mine,
+    enabled: enabled && !mine,
   });
 
   const headList = useMemo(() => {

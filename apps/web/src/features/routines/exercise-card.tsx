@@ -88,7 +88,7 @@ export function ExerciseCard({
         {...attributes}
         {...listeners}
         aria-label={`Déplacer ${exercise.nom}`}
-        className="grid w-7 shrink-0 cursor-grab place-items-center border-r border-border text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
+        className="grid w-7 shrink-0 cursor-grab place-items-center border-r-2 border-border text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
@@ -102,10 +102,13 @@ export function ExerciseCard({
               alt=""
               width={48}
               height={48}
-              className="size-12 shrink-0 rounded-[10px] bg-image-bg object-contain"
+              className="size-12 shrink-0 rounded-base border-2 border-border bg-image-bg object-contain"
             />
           ) : (
-            <span aria-hidden="true" className="size-12 shrink-0 rounded-[10px] bg-muted" />
+            <span
+              aria-hidden="true"
+              className="size-12 shrink-0 rounded-base border-2 border-border bg-muted"
+            />
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">{exercise.nom}</p>

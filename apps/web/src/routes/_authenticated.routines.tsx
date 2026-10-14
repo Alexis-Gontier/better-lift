@@ -49,7 +49,6 @@ function RoutinesPage() {
     return (
       <RoutineList
         routines={searching ? all.filter((r) => fold(r.nom).includes(searching)) : all}
-        total={all.length}
         filter={q}
         onFilter={(text) => {
           // Le filtre garde la routine ouverte : son chemin reste, seul `q` change.

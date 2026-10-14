@@ -111,6 +111,7 @@ export function versResume(l: LigneRoutine): RoutineResume {
     nom: l.nom,
     nbExercices: l.exercices.length,
     nbSeries: l.exercices.reduce((n, e) => n + e.series.length, 0),
+    apercu: l.exercices.map((e) => e.exercise.nomFr),
   };
 }
 

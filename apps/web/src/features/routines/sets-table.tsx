@@ -50,7 +50,7 @@ export function SetsTable({
           colonne de retrait n'apparaît qu'au survol de sa ligne. */}
       <div
         aria-hidden="true"
-        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-border px-4 py-2 text-xs font-medium text-muted-foreground"
+        className="grid grid-cols-[2.5rem_9rem_5rem_5rem_2rem] items-center gap-2 border-t-2 border-border px-4 py-2 text-xs font-medium text-muted-foreground"
       >
         <span>Série</span>
         <span>Type</span>
@@ -66,7 +66,7 @@ export function SetsTable({
             <li
               // Les séries n'ont pas d'identité propre : leur rang en tient lieu.
               key={i}
-              className="group/serie grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 px-4 py-1"
+              className="group/serie grid grid-cols-[2.5rem_9rem_5rem_5rem_2rem] items-center gap-2 px-4 py-1"
             >
               <span
                 className={`text-sm font-semibold ${
