@@ -44,11 +44,16 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 
 - **Routines** en disposition `column` (`ListDetailPage`) : lignes à gauche (filtre `?q=` par
   `fold` de `lib/text.ts`, « Nouvelle routine » en contour), routine ouverte **toujours
-  modifiable** à droite. Annuler / Enregistrer vivent dans l'en-tête commun (`InHeader`) et
-  n'apparaissent qu'une fois la copie différente de la version enregistrée (`empreinte`) :
-  Enregistrer est le seul aplat de l'écran. Cartes d'exercice à la Hevy : image,
-  « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées É/1/2/3
-  (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
+  modifiable** à droite (`2026-10-14-web-routines-design.md`, D212–D214). Annuler / Enregistrer
+  et le menu ⋯ → Supprimer vivent dans l'**en-tête de l'éditeur**, à côté du nom (D212), et
+  Annuler / Enregistrer n'apparaissent qu'une fois la copie différente de la version enregistrée
+  (`empreinte`) : Enregistrer est le seul aplat de l'écran. Sous l'en-tête, le **résumé**
+  (`RoutineSummary`, `GET /routines/:id/bilan`, `bilanRoutine` de `shared`, clé
+  `["sessions","routine-summary",id]`) ; la liste date la dernière séance (`derniere` de
+  `RoutineResume`). Cartes d'exercice à la Hevy : image, pastille de repos, séries étiquetées
+  É/1/2/3 (`etiquettesSeries`), et une **bande d'analyse** (`ExerciseTrend`, D214) : dernière
+  perf (`meilleureSerie`), tendance (`tendance`), mini-courbe des 8 dernières séances sur tout
+  l'historique de l'exercice (`historyOptions`), lien vers sa fiche. La colonne se **réordonne** à la poignée (souris ou clavier :
   Espace, flèches, Espace ; poignées masquées tant qu'un filtre est actif) par `useReorderRoutines`, mutation OPTIMISTE sur
   `["routines","list"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.
 - **Supersets dans l'éditeur (D151, D152)** : un groupe se rend d'un bloc — `SupersetLabel`

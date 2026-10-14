@@ -1,5 +1,7 @@
 import { prisma } from "@better-lift/db";
 import {
+  type BilanRoutine,
+  bilanRoutine,
   normaliserGroupes,
   type RoutineDetail,
   type RoutineResume,
@@ -105,12 +107,13 @@ export function versDetail(l: LigneRoutine): RoutineDetail {
   };
 }
 
-export function versResume(l: LigneRoutine): RoutineResume {
+export function versResume(l: LigneRoutine, derniere: Date | null = null): RoutineResume {
   return {
     id: l.id,
     nom: l.nom,
     nbExercices: l.exercices.length,
     nbSeries: l.exercices.reduce((n, e) => n + e.series.length, 0),
+    derniere: derniere?.toISOString() ?? null,
   };
 }
 
@@ -124,6 +127,8 @@ export type DepotRoutines = {
   supprimer(userId: string, id: string): Promise<boolean>;
   /** `false` si un identifiant n'est pas à lui : rien n'est alors modifié. */
   ordonner(userId: string, ids: string[]): Promise<boolean>;
+  /** Le résumé des séances faites avec elle (D213) ; `undefined` si elle n'est pas à lui. */
+  bilan(userId: string, id: string): Promise<BilanRoutine | null | undefined>;
 };
 
 const LECTURE = {
@@ -173,9 +178,18 @@ export const depotPrisma: DepotRoutines = {
     const lignes = await prisma.routine.findMany({
       where: { userId },
       orderBy: [{ position: "asc" }, { createdAt: "asc" }],
-      select: LECTURE,
+      select: {
+        ...LECTURE,
+        // La dernière séance faite avec chaque routine (D213), pour la liste.
+        seances: {
+          where: { userId },
+          orderBy: { debut: "desc" },
+          take: 1,
+          select: { debut: true },
+        },
+      },
     });
-    return lignes.map((l) => versResume(l as LigneRoutine));
+    return lignes.map((l) => versResume(l as LigneRoutine, l.seances[0]?.debut ?? null));
   },
 
   async lire(userId, id) {
@@ -222,6 +236,34 @@ export const depotPrisma: DepotRoutines = {
   async supprimer(userId, id) {
     const { count } = await prisma.routine.deleteMany({ where: { id, userId } });
     return count > 0;
+  },
+
+  async bilan(userId, id) {
+    const routine = await prisma.routine.findFirst({ where: { id, userId }, select: { id: true } });
+    if (!routine) return undefined;
+    const seances = await prisma.seance.findMany({
+      where: { userId, routineId: id },
+      select: {
+        debut: true,
+        fin: true,
+        exercices: {
+          select: { series: { select: { type: true, reps: true, chargeKg: true, faite: true } } },
+        },
+      },
+    });
+    return bilanRoutine(
+      seances.map((s) => ({
+        debut: s.debut.toISOString(),
+        fin: s.fin.toISOString(),
+        // `chargeKg` est un `Decimal` Prisma : ramené à un nombre ici.
+        series: s.exercices.flatMap((e) =>
+          e.series.map((x) => ({
+            ...x,
+            chargeKg: x.chargeKg === null ? null : Number(x.chargeKg.toString()),
+          })),
+        ),
+      })),
+    );
   },
 
   async ordonner(userId, ids) {

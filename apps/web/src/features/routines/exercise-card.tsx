@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { exerciseOptions } from "@/features/exercises/queries";
-import { formatSet } from "@/features/exercises/record-badge";
+import { ExerciseTrend } from "./exercise-trend";
 import { SetsTable } from "./sets-table";
 
 /** Les repos proposés, en secondes ; « "" » = pas de repos. */
@@ -113,7 +113,6 @@ export function ExerciseCard({
               {detail.data
                 ? `${LIBELLE_GROUPE[detail.data.groupe]} · ${detail.data.equipement}`
                 : " "}
-              {last ? ` · dernière fois : ${formatSet(last.chargeKg, last.reps)}` : ""}
             </p>
           </div>
 
@@ -180,6 +179,8 @@ export function ExerciseCard({
           </DropdownMenu>
         </div>
 
+        {/* La dernière perf vit dans la bande d'analyse (D214), pas sous le nom. */}
+        <ExerciseTrend slug={exercise.slug} name={exercise.nom} last={last} />
         <SetsTable
           exerciseName={exercise.nom}
           series={exercise.series}

@@ -23,6 +23,11 @@ export function routesRoutines(depot: DepotRoutines, lireSession: LireSession) {
         const ok = await depot.ordonner(c.get("userId"), c.req.valid("json").ids);
         return ok ? c.body(null, 204) : c.json(INTROUVABLE, 404);
       })
+      // Le résumé des séances faites avec la routine (D213).
+      .get("/:id/bilan", async (c) => {
+        const bilan = await depot.bilan(c.get("userId"), c.req.param("id"));
+        return bilan === undefined ? c.json(INTROUVABLE, 404) : c.json({ bilan });
+      })
       .get("/:id", async (c) => {
         const routine = await depot.lire(c.get("userId"), c.req.param("id"));
         return routine ? c.json(routine) : c.json(INTROUVABLE, 404);

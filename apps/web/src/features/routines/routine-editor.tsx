@@ -1,7 +1,9 @@
 import {
+  brouillonValide,
   defaireGroupe,
   deplacerAvecGroupes,
   type ExerciceBrouillon,
+  empreinte,
   groupes,
   lierAuSuivant,
   meilleureSerie,
@@ -13,6 +15,7 @@ import {
   retirerDuGroupe,
   roleRepos,
   versBrouillon,
+  versSaisie,
 } from "@better-lift/shared";
 import {
   closestCenter,
@@ -29,15 +32,22 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Ellipsis, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UNIT_SYSTEM } from "@/lib/units";
 import { ConfirmDelete } from "./confirm-delete";
 import { ExerciseCard } from "./exercise-card";
 import { ExercisePicker } from "./exercise-picker";
 import { previousOptions } from "./queries";
+import { RoutineSummary } from "./routine-summary";
 import { SupersetLabel } from "./superset-label";
 
 /**
@@ -51,7 +61,10 @@ import { SupersetLabel } from "./superset-label";
  */
 export function RoutineEditor({
   initial,
+  saving,
   erreur: error,
+  onSave,
+  onClose,
   onDelete,
 }: {
   /** `null` pour une routine neuve. */
@@ -91,6 +104,14 @@ export function RoutineEditor({
     });
   };
 
+  // D212 : les actions n'apparaissent qu'une fois la copie différente de la version
+  // enregistrée ; une routine neuve les montre toujours.
+  const dirty =
+    initial === null || empreinte(draft) !== empreinte(versBrouillon(initial, UNIT_SYSTEM));
+  const valid = brouillonValide(draft, UNIT_SYSTEM);
+  const cancel = () =>
+    initial === null ? onClose() : setDraft(versBrouillon(initial, UNIT_SYSTEM));
+
   const blocks = groupes(draft.exercices);
   const card = (ex: ExerciceBrouillon, i: number) => (
     <ExerciseCard
@@ -109,19 +130,54 @@ export function RoutineEditor({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-6 pt-5 pb-2">
+      {/* L'en-tête de la routine porte ses propres actions (D212). */}
+      <div className="flex items-center gap-2 border-b-2 border-border px-6 py-3">
         <input
           aria-label="Nom de la routine"
           placeholder="Nom de la routine"
           maxLength={120}
           value={draft.nom}
           onChange={(e) => setDraft({ ...draft, nom: e.target.value })}
-          className="-ml-2 w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-[22px] font-extrabold tracking-tight outline-none hover:border-border focus-visible:border-border focus-visible:ring-2 focus-visible:ring-ring"
+          className="-ml-2 min-w-0 flex-1 rounded-base border-2 border-transparent bg-transparent px-2 py-1 text-[22px] font-extrabold tracking-tight outline-none hover:border-border focus-visible:border-border focus-visible:ring-2 focus-visible:ring-ring"
         />
+        {dirty ? (
+          <>
+            <Button variant="outline" onClick={cancel} disabled={saving}>
+              Annuler
+            </Button>
+            {/* Le seul aplat de l'écran. */}
+            <Button
+              onClick={() => onSave(versSaisie(draft, UNIT_SYSTEM))}
+              disabled={!valid || saving}
+            >
+              {saving ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+          </>
+        ) : null}
+        {onDelete ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Actions de la routine">
+                <Ellipsis aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={() => setConfirmation(true)}
+                className="text-destructive-ink"
+              >
+                <Trash2 aria-hidden="true" />
+                Supprimer la routine
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 px-6 pt-2 pb-6">
+        <div className="flex flex-col gap-4 px-6 pt-5 pb-6">
+          {/* Le résumé des séances faites avec elle (D213) : seulement une fois enregistrée. */}
+          {initial ? <RoutineSummary id={initial.id} /> : null}
           {draft.exercices.length === 0 ? (
             <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.

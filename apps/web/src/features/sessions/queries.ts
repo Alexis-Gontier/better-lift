@@ -49,7 +49,8 @@ export function useDeleteSession() {
     onSuccess: (_, id) => {
       client.removeQueries({ queryKey: ["sessions", "detail", id] });
       return Promise.all(
-        [["sessions"], ["stats"], ["records"]].map((queryKey) =>
+        // `["routines","list"]` : la liste date la dernière séance de chaque routine (D213).
+        [["sessions"], ["stats"], ["records"], ["routines", "list"]].map((queryKey) =>
           client.invalidateQueries({ queryKey }),
         ),
       );

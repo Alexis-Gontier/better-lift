@@ -55,7 +55,14 @@ export type ExerciceRoutine = {
 
 export type RoutineDetail = { id: string; nom: string; exercices: ExerciceRoutine[] };
 
-export type RoutineResume = { id: string; nom: string; nbExercices: number; nbSeries: number };
+export type RoutineResume = {
+  id: string;
+  nom: string;
+  nbExercices: number;
+  nbSeries: number;
+  /** Le début de la dernière séance faite avec elle (ISO), ou `null` (D213). */
+  derniere: string | null;
+};
 
 // --- Le contrat d'écriture ---------------------------------------------------
 // Ce que l'éditeur envoie. L'ordre des tableaux EST la position : le client
