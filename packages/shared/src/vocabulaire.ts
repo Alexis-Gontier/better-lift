@@ -41,3 +41,45 @@ export const LIBELLE_GROUPE: Record<Groupe, string> = {
   CARDIO: "Cardio",
   NECK: "Nuque",
 };
+
+/**
+ * Les 19 muscles ciblés du catalogue, en français, des plus fournis aux moins fournis :
+ * les filtres de la grille d'exercices (D200). `vocabulaire.test.ts` du paquet `db` les
+ * tient d'accord avec `vocabulaire.json`.
+ */
+export const CIBLES = [
+  "Abdominaux",
+  "Pectoraux",
+  "Biceps",
+  "Fessiers",
+  "Deltoïdes",
+  "Triceps",
+  "Haut du dos",
+  "Grand dorsal",
+  "Mollets",
+  "Quadriceps",
+  "Avant-bras",
+  "Système cardiovasculaire",
+  "Ischio-jambiers",
+  "Érecteurs du rachis",
+  "Trapèzes",
+  "Adducteurs",
+  "Abducteurs",
+  "Dentelé antérieur",
+  "Élévateur de la scapula",
+] as const;
+
+/**
+ * Les 8 équipements qui couvrent 95 % du catalogue, montrés en pastilles (D200) ; les
+ * autres passent derrière « Autres ». L'ordre est aussi celui des variantes (D204).
+ */
+export const EQUIPEMENTS_PRINCIPAUX = [
+  "Poids du corps",
+  "Haltères",
+  "Poulie",
+  "Barre",
+  "Machine à levier",
+  "Élastique",
+  "Smith machine",
+  "Kettlebell",
+] as const;

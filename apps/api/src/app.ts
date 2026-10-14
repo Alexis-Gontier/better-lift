@@ -60,8 +60,10 @@ const lireSession = (headers: Headers) => auth.api.getSession({ headers });
 
 const routes = app
   .route("/health", health)
-  .route("/exercices", routesExercices())
+  // Les routes personnelles d'abord : `/exercices/pratiques` passerait sinon par le
+  // `/:slug` public du catalogue.
   .route("/exercices", routesRecords(depotLecture, lireSession))
+  .route("/exercices", routesExercices())
   .route("/routines", routesRoutines(depotRoutines, lireSession))
   .route("/seances", routesSeances(depotSeances, depotLecture, lireSession))
   .route("/stats", routesStats(depotStats, lireSession))

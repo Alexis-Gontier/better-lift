@@ -9,6 +9,7 @@ const resume: ExerciceResume = {
   nom: "Squat complet à la barre",
   groupe: "UPPER_LEGS",
   equipement: "Barre",
+  cible: "Quadriceps",
   image: null,
   recherche: "squat complet a la barre barbell full squat",
 };
@@ -17,7 +18,6 @@ const detail: ExerciceDetail = {
   ...resume,
   nomAnglais: "barbell full squat",
   gif: null,
-  cible: "Quadriceps",
   secondaires: ["Fessiers"],
   instructions: ["Place la barre sur tes trapèzes."],
 };
@@ -34,6 +34,9 @@ function fauxDepot(): DepotExercices & { derniereRequete?: unknown } {
     },
     async parSlug(slug: string) {
       return slug === resume.slug ? detail : null;
+    },
+    async variantes(slug: string) {
+      return slug === resume.slug ? [resume] : null;
     },
   };
   return depot;
@@ -82,5 +85,37 @@ describe("GET /exercices/:slug", () => {
   it("rend 404 pour un slug inconnu", async () => {
     const res = await monter(fauxDepot()).request("/exercices/nexiste-pas");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("GET /exercices (filtres de la grille, D200)", () => {
+  it("transmet le muscle ciblé et la liste de slugs", async () => {
+    const depot = fauxDepot();
+    await monter(depot).request("/exercices?cible=Pectoraux&slugs=bench,squat");
+    expect(depot.derniereRequete).toEqual({
+      cible: "Pectoraux",
+      slugs: ["bench", "squat"],
+      page: 1,
+      taille: 50,
+    });
+  });
+
+  it("refuse plus de 200 slugs", async () => {
+    const slugs = Array.from({ length: 201 }, (_, i) => `e${i}`).join(",");
+    expect((await monter(fauxDepot()).request(`/exercices?slugs=${slugs}`)).status).toBe(400);
+  });
+});
+
+describe("GET /exercices/:slug/variantes (D204)", () => {
+  it("rend les variantes", async () => {
+    const res = await monter(fauxDepot()).request(`/exercices/${resume.slug}/variantes`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ variantes: [resume] });
+  });
+
+  it("rend 404 pour un slug inconnu", async () => {
+    expect((await monter(fauxDepot()).request("/exercices/nexiste-pas/variantes")).status).toBe(
+      404,
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { texteRecherche } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 import {
+  choisirVariantes,
   filtreCatalogue,
   imageDe,
   type LigneExercice,
@@ -78,6 +79,7 @@ describe("projections", () => {
       nom: "Développé couché à la barre",
       groupe: "CHEST",
       equipement: "Barre",
+      cible: "Pectoraux",
       recherche: "developpe couche a la barre barbell bench press",
       image:
         "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efa/images/0025.jpg",
@@ -106,5 +108,51 @@ describe("projections", () => {
       secondaires: ["Triceps", "Deltoïdes"],
       instructions: ["Allonge-toi sur le banc.", "Descends la barre."],
     });
+  });
+});
+
+describe("choisirVariantes (D204)", () => {
+  const ex = (slug: string, equipement: string, recherche = slug) => ({
+    slug,
+    nom: slug,
+    groupe: "CHEST" as const,
+    equipement,
+    cible: "Pectoraux",
+    image: null,
+    recherche,
+  });
+
+  it("garde un exercice par autre équipement, les principaux d'abord, puis par nom", () => {
+    const choix = choisirVariantes(
+      { slug: "bench", equipement: "Barre", recherche: "developpe couche barre" },
+      [
+        ex("bench", "Barre"),
+        ex("incline-barre", "Barre"),
+        ex("z-machine", "Machine à levier", "z"),
+        ex("a-machine", "Machine à levier", "a"),
+        ex("pompe", "Poids du corps"),
+        ex("bosu-push", "Bosu"),
+        ex("halteres", "Haltères"),
+      ],
+    );
+    expect(choix.map((c) => c.slug)).toEqual(["pompe", "halteres", "a-machine", "bosu-push"]);
+  });
+
+  it("préfère, par équipement, le nom le plus proche de la source", () => {
+    const choix = choisirVariantes(
+      { slug: "bench", equipement: "Barre", recherche: "developpe couche barre" },
+      [
+        ex("breeding", "Haltères", "breeding incline halteres"),
+        ex("db-bench", "Haltères", "developpe couche halteres"),
+      ],
+    );
+    expect(choix.map((c) => c.slug)).toEqual(["db-bench"]);
+  });
+
+  it("s'arrête à 8", () => {
+    const candidats = Array.from({ length: 12 }, (_, i) => ex(`e${i}`, `Équipement ${i}`));
+    expect(
+      choisirVariantes({ slug: "x", equipement: "Barre", recherche: "x" }, candidats),
+    ).toHaveLength(8);
   });
 });
