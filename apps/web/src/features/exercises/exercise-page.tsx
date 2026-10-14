@@ -128,7 +128,7 @@ export function ExercisePage({
               Même muscle ciblé, avec un autre équipement.
             </p>
           </div>
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3">
             {variants.map((v) => (
               <li key={v.slug} className="flex">
                 <ExerciseCard exercise={v} />

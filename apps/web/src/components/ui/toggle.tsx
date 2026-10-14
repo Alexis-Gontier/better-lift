@@ -12,9 +12,10 @@ const toggleVariants = cva(
         outline: "border-2 border-border bg-secondary-background hover:bg-muted",
       },
       size: {
-        default: "h-9 min-w-9 px-2",
-        sm: "h-8 min-w-8 px-1.5",
-        lg: "h-10 min-w-10 px-2.5",
+        // La même échelle que Button, Input et Select : 40 px par défaut, 36 px en petit.
+        default: "h-10 min-w-10 px-3",
+        sm: "h-9 min-w-9 px-2.5",
+        lg: "h-11 min-w-11 px-3",
       },
     },
     defaultVariants: {

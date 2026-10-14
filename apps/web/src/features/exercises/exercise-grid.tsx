@@ -4,7 +4,11 @@ import { useEffect, useRef } from "react";
 
 export type Practice = { nbSeances: number; derniere: string };
 
-/** Une carte de la grille (D200) : image, nom, muscle ciblé · équipement, pratiques. */
+/**
+ * Une carte de la grille (D200), compacte : l'image carrée à gauche, le texte à droite, sur
+ * une hauteur FIXE. La pastille ×N se range au bout de la ligne muscle · équipement : sa
+ * présence ne change ni la hauteur ni l'alignement, avec ou sans « Mes exercices ».
+ */
 export function ExerciseCard({
   exercise,
   practice,
@@ -22,25 +26,30 @@ export function ExerciseCard({
       aria-current={selected ? "page" : undefined}
       // La carte ouverte est enfoncée dans son ombre, sur une surface en retrait :
       // une sélection, jamais l'orange de l'action (D160).
-      className="group flex w-full aria-[current=page]:translate-x-boxShadowX aria-[current=page]:translate-y-boxShadowY aria-[current=page]:bg-muted aria-[current=page]:shadow-none flex-col overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow outline-none transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="flex h-20 w-full overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow outline-none transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[current=page]:translate-x-boxShadowX aria-[current=page]:translate-y-boxShadowY aria-[current=page]:bg-muted aria-[current=page]:shadow-none"
     >
       {/* L'image FIXE (~6 Ko, D46) : la grille montre des dizaines de cartes à la fois. */}
-      <div className="aspect-[4/3] border-b-2 border-border bg-image-bg">
+      <div className="aspect-square h-full shrink-0 border-r-2 border-border bg-image-bg">
         {exercise.image ? (
           <img src={exercise.image} alt="" loading="lazy" className="size-full object-contain" />
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <span className="line-clamp-2 font-bold leading-tight">{exercise.nom}</span>
-        <span className="text-xs text-muted-foreground">
-          {exercise.cible} · {exercise.equipement}
-        </span>
-        {practice ? (
-          // Un contour, pas un aplat : c'est une information, pas une action (D28).
-          <span className="mt-1 w-fit rounded-base border-2 border-main bg-main/15 px-1.5 text-[11px] font-bold text-main-ink">
-            ×{practice.nbSeances}
+      <div className="flex min-w-0 flex-1 flex-col justify-between px-3 py-2">
+        <span className="line-clamp-2 text-sm font-bold leading-tight">{exercise.nom}</span>
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="truncate">
+            {exercise.cible} · {exercise.equipement}
           </span>
-        ) : null}
+          {practice ? (
+            // Un contour, pas un aplat : une information, pas une action (D28).
+            <span
+              className="ml-auto shrink-0 rounded-base border-2 border-main bg-main/15 px-1.5 text-[11px] leading-4 font-bold text-main-ink"
+              title={`Pratiqué en ${practice.nbSeances} séance${practice.nbSeances > 1 ? "s" : ""}`}
+            >
+              ×{practice.nbSeances}
+            </span>
+          ) : null}
+        </span>
       </div>
     </Link>
   );
@@ -73,7 +82,7 @@ export function ExerciseGrid({
 
   return (
     <>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-4">
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3">
         {exercises.map((e) => (
           <li key={e.slug} className="flex">
             <ExerciseCard

@@ -163,10 +163,10 @@ function ExercisesPage() {
 
 function GridSkeleton() {
   return (
-    <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-4" aria-busy="true">
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3" aria-busy="true">
       {Array.from({ length: 12 }, (_, i) => (
         <li key={i}>
-          <Skeleton className="aspect-[4/5] w-full" />
+          <Skeleton className="h-20 w-full" />
         </li>
       ))}
     </ul>
