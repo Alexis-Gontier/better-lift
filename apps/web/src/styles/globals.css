@@ -21,10 +21,10 @@
 }
 
 @theme inline {
-  /* Space Grotesk partout (D195) ; la police système ne sert que pendant le chargement. */
-  --font-sans: "Space Grotesk", system-ui, sans-serif;
+  /* DM Sans partout (D199) ; la police système ne sert que pendant le chargement. */
+  --font-sans: "DM Sans", system-ui, sans-serif;
 
-  /* Vocabulaire de neobrutalism.dev (D193). */
+  /* Vocabulaire de neobrutalism.dev (D193, D199). */
   --color-background: var(--background);
   --color-secondary-background: var(--secondary-background);
   --color-foreground: var(--foreground);
@@ -49,7 +49,7 @@
   --color-secondary: var(--secondary-background);
   --color-secondary-foreground: var(--foreground);
   /* `accent` chez shadcn désigne la surface de survol, pas la marque : le faire
-     pointer sur l'orange peindrait un aplat d'action sous chaque survol. */
+     pointer sur le bleu d'action peindrait un aplat d'action sous chaque survol. */
   --color-accent: var(--muted);
   --color-accent-foreground: var(--foreground);
   --color-card: var(--secondary-background);
@@ -61,7 +61,7 @@
   --color-sidebar-foreground: var(--foreground);
   --color-sidebar-primary: var(--main);
   --color-sidebar-primary-foreground: var(--main-foreground);
-  /* Le survol d'une entrée ; l'entrée active, elle, est l'aplat orange bordé
+  /* Le survol d'une entrée ; l'entrée active, elle, est l'aplat bleu bordé
      (`data-[active=true]` dans sidebar.tsx). */
   --color-sidebar-accent: var(--muted);
   --color-sidebar-accent-foreground: var(--foreground);
@@ -98,8 +98,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Le chiffre héros (D195) : tuiles, bilans. Space Grotesk n'a pas d'axe de
-   largeur : le chiffre est gras et serré, plus condensé. */
+/* Le chiffre héros (D195) : tuiles, bilans. Gras et serré, sans condensation. */
 @utility chiffre {
   font-weight: 700;
   line-height: 1;

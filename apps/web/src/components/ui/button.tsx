@@ -8,7 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       // Grammaire Neobrutalism (D193) : bordure noire et ombre dure ; au survol, le
-      // bouton s'enfonce dans son ombre. `default` est l'aplat d'action, en orange.
+      // bouton s'enfonce dans son ombre. `default` est l'aplat d'action, en bleu (D199).
       variant: {
         default:
           "border-2 border-border bg-main text-main-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
