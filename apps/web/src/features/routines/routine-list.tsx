@@ -10,16 +10,14 @@ import {
 } from "@dnd-kit/core";
 import {
   arrayMove,
+  rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "cn";
 import { GripVertical, Plus, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -37,10 +35,15 @@ type Props = {
 
 const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
 
+/** Combien d'exercices une carte nomme avant « + N autres ». */
+const SHOWN = 4;
+
 /**
- * La colonne des routines (D142, D160) : le filtre et l'action en tête, puis une ligne par
- * routine, réordonnable par la poignée (souris ou clavier) — sauf filtrée : on ne réordonne
- * pas une liste partielle. La ligne choisie est une SURFACE, jamais l'orange.
+ * Les routines en CARTES (D216), comme la grille des exercices : pleine largeur sans routine
+ * ouverte, dans le panneau de gauche quand une routine s'édite à droite. Une carte se
+ * réordonne à la poignée (souris ou clavier : Espace, flèches, Espace) — sauf filtrée : on ne
+ * réordonne pas une liste partielle. L'ordre est celui que suit le mobile (D142). La carte
+ * ouverte s'enfonce sur une SURFACE, jamais l'orange (D160).
  */
 export function RoutineList({
   routines,
@@ -65,51 +68,38 @@ export function RoutineList({
   };
 
   return (
-    <section aria-label="Routines" className="flex h-full flex-col">
-      {/* Le titre est dans l'en-tête commun (D157) ; ici, le filtre et l'action (D160). */}
-      <header className="flex flex-col gap-2 border-b px-3 py-2.5">
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-0 flex-1">
+    // `block` : sans lui, le contenu de la ScrollArea s'élargit au lieu de couper (piège connu).
+    <ScrollArea className="h-full [&_[data-slot=scroll-area-viewport]>div]:block!">
+      <section aria-label="Routines" className="flex flex-col gap-5 px-6 py-6">
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="text-2xl">Routines</h1>
+          <span className="text-sm text-muted-foreground">{plural(total, "routine")}</span>
+        </div>
+        {total > 0 ? (
+          <div className="relative">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
+              type="search"
               value={filter}
               onChange={(e) => onFilter(e.target.value)}
-              placeholder="Filtrer…"
-              aria-label="Filtrer les routines"
-              className="h-8 pl-8"
+              placeholder="Rechercher une routine…"
+              aria-label="Rechercher une routine"
+              className="pl-9"
             />
           </div>
-          <Badge variant="outline" title={plural(total, "routine")}>
-            {total}
-          </Badge>
-        </div>
-        <Button size="sm" variant="outline" onClick={onCreate} className="w-full font-semibold">
-          <Plus aria-hidden="true" />
-          Nouvelle routine
-        </Button>
-      </header>
+        ) : null}
 
-      {routines.length === 0 && filter.trim() ? (
-        <p className="px-5 py-6 text-center text-sm text-muted-foreground">
-          Aucune routine ne correspond à ce filtre.
-        </p>
-      ) : routines.length === 0 ? (
-        // Un compte neuf n'a aucune routine : c'est le tout premier écran qu'on verra.
-        <p className="px-5 py-6 text-center text-sm text-muted-foreground">
-          Aucune routine pour l'instant. Une routine est un modèle de séance : ses exercices et
-          leurs séries cibles.
-        </p>
-      ) : (
-        <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
+        {routines.length === 0 && filter.trim() ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Aucune routine ne correspond à cette recherche.
+          </p>
+        ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={drop}>
-            <SortableContext
-              items={routines.map((r) => r.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ul className="flex flex-col">
+            <SortableContext items={routines.map((r) => r.id)} strategy={rectSortingStrategy}>
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(16rem,100%),1fr))] gap-4">
                 {routines.map((r) => (
                   <RoutineCard
                     key={r.id}
@@ -119,12 +109,31 @@ export function RoutineList({
                     onClick={() => onSelect(r.id)}
                   />
                 ))}
+                {/* La création, à la suite des cartes : là où la prochaine routine viendra. */}
+                <li className="flex">
+                  <button
+                    type="button"
+                    onClick={onCreate}
+                    className="flex min-h-44 w-full flex-col items-center justify-center gap-2 rounded-base border-2 border-dashed border-border text-sm font-bold text-muted-foreground outline-none transition-colors hover:bg-secondary-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
+                    <Plus aria-hidden="true" className="size-5" />
+                    Nouvelle routine
+                  </button>
+                </li>
               </ul>
             </SortableContext>
           </DndContext>
-        </ScrollArea>
-      )}
-    </section>
+        )}
+
+        {total === 0 ? (
+          // Un compte neuf n'a aucune routine : c'est le tout premier écran qu'on verra.
+          <p className="text-sm text-muted-foreground">
+            Une routine est un modèle de séance : ses exercices et leurs séries cibles. Le téléphone
+            la lance.
+          </p>
+        ) : null}
+      </section>
+    </ScrollArea>
   );
 }
 
@@ -142,43 +151,64 @@ function RoutineCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: r.id,
   });
+  const rest = r.apercu.length - SHOWN;
 
   return (
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn(
-        "group flex items-center border-b",
-        selected
-          ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
-          : "hover:bg-secondary-background",
-        isDragging && "relative z-10 bg-muted shadow-lg",
-      )}
+      className={cn("relative flex", isDragging && "z-10")}
     >
+      {/* Toute la carte ouvre la routine ; la poignée, en surimpression, la déplace. */}
+      <button
+        type="button"
+        onClick={onClick}
+        aria-current={selected ? "true" : undefined}
+        className={cn(
+          "flex min-h-44 w-full flex-col gap-3 rounded-base border-2 border-border bg-secondary-background p-4 text-left outline-none transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          isDragging
+            ? // Pendant le glisser, la carte se SOULÈVE : son ombre double (D193).
+              "shadow-[8px_8px_0_0_var(--border)]"
+            : "shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+          // Ouverte, elle reste enfoncée sur la surface en retrait : une sélection (D160).
+          selected && "translate-x-boxShadowX translate-y-boxShadowY bg-muted shadow-none",
+        )}
+      >
+        <span className={cn("flex flex-col gap-0.5", sortable && "pr-8")}>
+          <span className="line-clamp-2 text-lg leading-tight font-bold">{r.nom}</span>
+          <span className="text-xs text-muted-foreground">
+            {plural(r.nbExercices, "exercice")} · {plural(r.nbSeries, "série")}
+          </span>
+        </span>
+        {r.apercu.length ? (
+          <ul className="flex flex-col gap-1 border-t-2 border-border pt-3 text-sm">
+            {r.apercu.slice(0, SHOWN).map((name, i) => (
+              // Un même exercice peut revenir deux fois : le rang distingue les lignes.
+              <li key={`${i}-${name}`} className="truncate">
+                {name}
+              </li>
+            ))}
+            {rest > 0 ? (
+              <li className="text-muted-foreground">
+                + {rest} autre{rest > 1 ? "s" : ""}
+              </li>
+            ) : null}
+          </ul>
+        ) : (
+          <span className="text-sm text-muted-foreground">Aucun exercice</span>
+        )}
+      </button>
       {sortable ? (
         <button
           type="button"
           aria-label={`Déplacer « ${r.nom} »`}
-          className="cursor-grab touch-none self-stretch pl-1.5 text-muted-foreground opacity-0 outline-none group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute top-3 right-3 grid size-8 cursor-grab touch-none place-items-center rounded-base text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
           <GripVertical aria-hidden="true" className="size-4" />
         </button>
-      ) : (
-        <span className="w-[22px] shrink-0" />
-      )}
-      <button
-        type="button"
-        onClick={onClick}
-        aria-current={selected ? "true" : undefined}
-        className="min-w-0 flex-1 px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-      >
-        <span className="block truncate font-bold">{r.nom}</span>
-        <span className="mt-0.5 block text-[12.5px] text-foreground">
-          {plural(r.nbExercices, "exercice")} · {plural(r.nbSeries, "série")}
-        </span>
-      </button>
+      ) : null}
     </li>
   );
 }

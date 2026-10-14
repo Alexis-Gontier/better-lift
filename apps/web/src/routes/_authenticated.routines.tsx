@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useMatchRoute, useParams } from "@tanstack/react-router";
 import { z } from "zod";
 import { ListDetailPage } from "@/components/shell/list-detail-page";
 import { ErrorState } from "@/components/states/error-state";
@@ -26,6 +26,10 @@ export const Route = createFileRoute("/_authenticated/routines")({
 function RoutinesPage() {
   const { q = "", state } = Route.useSearch();
   const { id } = useParams({ strict: false });
+  // Une routine ouverte (ou neuve) repousse les cartes dans le panneau de gauche ; sinon
+  // elles prennent toute la largeur, comme la grille des exercices (D216).
+  const matchRoute = useMatchRoute();
+  const open = id !== undefined || Boolean(matchRoute({ to: "/routines/new" }));
   const navigate = Route.useNavigate();
   const list = useQuery(routinesOptions());
   const reorder = useReorderRoutines();
@@ -71,7 +75,7 @@ function RoutinesPage() {
       title="Routines"
       layout="column"
       list={listPanel()}
-      detail={<Outlet />}
+      detail={open ? <Outlet /> : undefined}
     />
   );
 }

@@ -1,15 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EmptyState } from "@/components/states/empty-state";
 
 /**
- * Aucune routine ouverte : l'espace de travail reste en place et invite à
- * choisir, plutôt que de disparaître et de faire sauter la mise en page.
+ * Aucune routine ouverte : les cartes prennent toute la largeur (D216) et la mise en page ne
+ * monte pas de panneau de droite. La route existe pour que `/routines` corresponde.
  */
-export const Route = createFileRoute("/_authenticated/routines/")({
-  component: () => (
-    <EmptyState
-      title="Aucune routine ouverte"
-      message="Choisis une routine à gauche pour la voir ou la modifier, ou crées-en une."
-    />
-  ),
-});
+export const Route = createFileRoute("/_authenticated/routines/")({ component: () => null });

@@ -22,7 +22,8 @@ type Props = {
  * l'une ne dérègle pas l'autre. */
 const SIZES = {
   list: { list: "62%", detail: "38%", listMin: "35%", detailMin: "25%", detailMax: "55%" },
-  column: { list: "24%", detail: "76%", listMin: "16%", detailMin: "50%", detailMax: "84%" },
+  // Les routines en cartes (D216) : une colonne assez large pour une carte de 16rem.
+  column: { list: "30%", detail: "70%", listMin: "20%", detailMin: "50%", detailMax: "80%" },
   feed: { list: "34%", detail: "66%", listMin: "24%", detailMin: "45%", detailMax: "76%" },
   catalog: { list: "36%", detail: "64%", listMin: "20%", detailMin: "40%", detailMax: "80%" },
 } as const;
@@ -50,7 +51,7 @@ export function ListDetailPage({ list, detail, layout = "list" }: Props) {
           id="list"
           defaultSize={detail ? t.list : "100%"}
           minSize={t.listMin}
-          maxSize={{ column: "35%", feed: "55%", catalog: "60%", list: undefined }[layout]}
+          maxSize={{ column: "50%", feed: "55%", catalog: "60%", list: undefined }[layout]}
         >
           {list}
         </ResizablePanel>

@@ -42,8 +42,12 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 
 ## Écrans
 
-- **Routines** en disposition `column` (`ListDetailPage`) : lignes à gauche (filtre `?q=` par
-  `fold` de `lib/text.ts`, « Nouvelle routine » en contour), routine ouverte **toujours
+- **Routines** en **cartes** (D216, `2026-10-14-web-routines-design.md`) : sans routine ouverte,
+  la grille prend toute la largeur ; une routine ouverte (ou neuve) la repousse dans le panneau
+  de gauche (`ListDetailPage` disposition `column`, `detail` seulement si `$id` ou `/new`).
+  Carte : nom, compte, quatre premiers exercices (`apercu` de `RoutineResume`), poignée en haut à
+  droite, ouverte enfoncée sur `bg-muted` ; « Nouvelle routine » en carte pointillée. Recherche
+  `?q=` par `fold` de `lib/text.ts`. Routine ouverte **toujours
   modifiable** à droite. Annuler / Enregistrer et le menu ⋯ → Supprimer vivent dans l'en-tête
   de l'éditeur, à côté du nom (D212, `2026-10-14-web-routines-design.md` ; le résumé et l'analyse
   par exercice, D213–D214, ont été essayés puis retirés). Annuler / Enregistrer

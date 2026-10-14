@@ -32,7 +32,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useQuery } from "@tanstack/react-query";
-import { Ellipsis, Plus, Trash2 } from "lucide-react";
+import { Ellipsis, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -171,6 +171,13 @@ export function RoutineEditor({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
+        {/* Fermer rend les cartes en pleine largeur (D216). Masquée tant qu'une modification
+            attend : on ne la perdrait pas d'un clic, Annuler est là pour ça. */}
+        {dirty ? null : (
+          <Button variant="outline" size="icon-sm" onClick={onClose} aria-label="Fermer la routine">
+            <X aria-hidden="true" />
+          </Button>
+        )}
       </div>
 
       <ScrollArea className="min-h-0 flex-1">

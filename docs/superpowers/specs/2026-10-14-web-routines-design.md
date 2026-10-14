@@ -79,3 +79,22 @@ les siens (squelette, erreur discrète, « pas encore faite »).
 3. Web : `routineSummaryOptions`, `RoutineSummary`, `ExerciseTrend`, en-tête de l'éditeur
    (D212), date dans la liste.
 4. Vérification : `/verif`, captures Playwright (routine faite, jamais faite, neuve, modifiée).
+
+## D216 — Les routines en cartes (14 octobre 2026)
+
+Un premier resserrement (D215 : liste en lignes avec aperçu, cartes d'exercice serrées,
+sélecteur aligné sur Exercices) a été essayé puis annulé à la demande de l'utilisateur, qui a
+voulu revenir à l'état d'avant et passer les routines en **cartes**.
+
+- **Comme la grille des exercices (D206)** : sans routine ouverte, les cartes prennent toute la
+  largeur, sans panneau de droite ; une routine ouverte (ou neuve) les repousse dans le panneau
+  de gauche (disposition `column`, 30 % par défaut) et s'édite à droite. Une croix ferme la
+  routine, masquée tant qu'une modification attend (Annuler est là pour ça).
+- **Une carte** : le nom, « N exercices · N séries », puis, sous un filet, les quatre premiers
+  exercices et « + N autres ». Toute la carte ouvre la routine ; elle s'enfonce au survol et
+  reste enfoncée sur `bg-muted` une fois ouverte (D160). Une poignée en haut à droite la
+  réordonne (souris, ou clavier : Espace, flèches, Espace), masquée pendant une recherche ;
+  l'ordre est celui du mobile (D142). En glissant, la carte double son ombre (D193).
+- « Nouvelle routine » est une carte en pointillés à la suite des autres.
+- Données : `RoutineResume` gagne `apercu` (les noms des exercices, dans l'ordre), que le
+  mobile ignore.
