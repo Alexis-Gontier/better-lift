@@ -16,14 +16,13 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   lance une séance.
 
 - **Layout remis à zéro (2026-10-14), à redessiner** : l'en-tête commun (`PageHeader`,
-  `InHeader`, fil d'Ariane) est supprimé. `AppShell` pose la **`Sidebar`
-  de shadcn** (`SidebarProvider` + `SidebarInset`, repliable par Ctrl B) : en tête, une place
-  vide de 64 px pour le titre de l'app ; puis la recherche (`SearchCommand`, un faux champ qui
-  ouvre la palette `Command` des pages, aussi par Ctrl K) ; les quatre pages en une liste ; en
-  pied, le compte (`NavUser` : avatar carré, nom et adresse, menu Profil / Se déconnecter).
-  L'en-tête de page (64 px, filet dessous) est vide aussi, aligné sur celui de la barre. Ajoutée par le CLI sans écraser nos primitives ; les variables
+  `InHeader`, fil d'Ariane) et la palette Ctrl K sont supprimés. `AppShell` pose la **`Sidebar`
+  de shadcn** (`SidebarProvider` + `SidebarInset`, repliable par Ctrl B), **vide** pour l'instant :
+  seul le pied porte le compte (`SideNav` / `NavUser` de `side-nav.tsx` : avatar, nom et adresse,
+  menu Profil / Se déconnecter). Ajoutée par le CLI sans écraser nos primitives ; les variables
   `--sidebar*` et la variante `dark` qu'il pose dans `globals.css` ont été retirées : les rôles
-  `sidebar-*` restent traduits dans `@theme inline`. **Conséquences assumées** : pas de `h1`
+  `sidebar-*` restent traduits dans `@theme inline`. **Conséquences assumées** : aucune
+  navigation hors du menu du compte (on passe par l'URL), pas de `h1`
   de page, et les détails ont perdu leurs actions — Annuler / Enregistrer et Supprimer d'une
   routine, Ouvrir la routine / Supprimer d'une séance, la croix de fermeture. Leurs props
   (`onSave`, `saving`, `onClose`, `title`, `to`, `actions`) restent dans les types et sont
