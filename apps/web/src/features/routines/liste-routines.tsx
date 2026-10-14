@@ -40,7 +40,7 @@ const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 /**
  * La colonne des routines (D142, D160) : le filtre et l'action en tête, puis une ligne par
  * routine, réordonnable par la poignée (souris ou clavier) — sauf filtrée : on ne réordonne
- * pas une liste partielle. La ligne choisie est une SURFACE, jamais le lime.
+ * pas une liste partielle. La ligne choisie est une SURFACE, jamais l'orange.
  */
 export function ListeRoutines({
   routines,

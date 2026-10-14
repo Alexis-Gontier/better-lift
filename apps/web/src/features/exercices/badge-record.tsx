@@ -2,12 +2,12 @@ import { formaterCharge } from "@better-lift/shared";
 import { ArrowUpRight } from "lucide-react";
 import { SYSTEME_UNITES } from "@/lib/unites";
 
-// L'invariant D28 : l'action est un aplat, le record un contour — lime en texte
+// L'invariant D28 : l'action est un aplat, le record un contour — orange foncé en texte
 // sur fond teinté, flèche montante. Une seule implémentation, réutilisée partout
 // où un record s'affiche, sinon la distinction par la forme dérive écran par écran.
 export function BadgeRecord({ libelle }: { libelle: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-main bg-main/15 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-main-ink">
+    <span className="inline-flex items-center gap-1 rounded-base border-2 border-main bg-main/15 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-main-ink">
       <ArrowUpRight aria-hidden="true" className="size-3" />
       {libelle}
     </span>

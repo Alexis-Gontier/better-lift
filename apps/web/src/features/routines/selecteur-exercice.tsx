@@ -141,10 +141,8 @@ export function SelecteurExercice({
                         {/* Toute la carte coche : un label autour de la case. */}
                         <label
                           htmlFor={`choix-${ex.slug}`}
-                          className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2.5 transition-colors ${
-                            coche
-                              ? "border-border bg-muted"
-                              : "border-border hover:border-border hover:bg-muted"
+                          className={`flex cursor-pointer items-center gap-3 rounded-base border-2 p-2.5 transition-colors ${
+                            coche ? "border-border bg-main/20" : "border-border hover:bg-muted"
                           }`}
                         >
                           {ex.image ? (

@@ -111,7 +111,7 @@ export function ListeExercices({
                     if (ex.slug === slugSelectionne) el?.scrollIntoView({ block: "nearest" });
                   }}
                   className={`flex h-[60px] w-full items-center gap-3 border-b px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
-                    // La sélection est une surface et un liseré d'encre, jamais le lime (D160).
+                    // La sélection est une surface et un liseré d'encre, jamais l'orange (D160).
                     ex.slug === slugSelectionne
                       ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
                       : "hover:bg-secondary-background"

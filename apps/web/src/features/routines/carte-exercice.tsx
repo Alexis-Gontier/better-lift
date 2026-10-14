@@ -72,10 +72,10 @@ export function CarteExercice({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      // Pendant le glisser, la carte FLOTTE : elle gagne l'ombre que la doctrine
-      // réserve au passager, et la perd en se posant.
-      className={`relative flex overflow-hidden rounded-xl border bg-card ${
-        isDragging ? "z-10 shadow-lg" : ""
+      // Pendant le glisser, la carte se SOULÈVE : son ombre dure double, et
+      // reprend sa taille en se posant (D193).
+      className={`relative flex overflow-hidden rounded-base border-2 border-border bg-card ${
+        isDragging ? "z-10 shadow-[8px_8px_0_0_var(--border)]" : "shadow-shadow"
       }`}
     >
       {/* La poignée est une bande sur toute la hauteur, à gauche : visible, facile
@@ -122,7 +122,7 @@ export function CarteExercice({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-full text-xs"
+                  className="text-xs"
                   aria-label={`${libelleRepos(exercice.repos, repos === "groupe")}, modifier`}
                 >
                   <Timer aria-hidden="true" />

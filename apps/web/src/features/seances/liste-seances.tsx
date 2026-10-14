@@ -143,7 +143,7 @@ function Entree({
       }}
       className={cn(
         "flex w-full flex-col gap-0.5 border-b px-4 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-        // La sélection est une surface et un liseré d'encre, jamais le lime (D160).
+        // La sélection est une surface et un liseré d'encre, jamais l'orange (D160).
         active
           ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
           : "hover:bg-secondary-background",
