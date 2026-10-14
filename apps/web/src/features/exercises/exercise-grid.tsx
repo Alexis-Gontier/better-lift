@@ -55,17 +55,23 @@ export function ExerciseCard({
   );
 }
 
-/** La grille ; un repère en bas de page charge la suite quand il devient visible. */
+/**
+ * La grille ; un repère en bas de page charge la suite quand il devient visible. Quand tes
+ * exercices ouvrent le catalogue (`headCount`, D210), deux titres disent où finit ta pratique
+ * et où commence le reste : sans eux, l'ordre semblerait arbitraire.
+ */
 export function ExerciseGrid({
   selectedSlug,
   exercises,
   practiced,
+  headCount = 0,
   hasMore,
   onMore,
 }: {
   selectedSlug?: string;
   exercises: ExerciceResume[];
   practiced: Map<string, Practice>;
+  headCount?: number;
   hasMore: boolean;
   onMore: () => void;
 }) {
@@ -80,19 +86,43 @@ export function ExerciseGrid({
     return () => observer.disconnect();
   }, [hasMore, onMore]);
 
+  const cards = (list: ExerciceResume[]) => (
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3">
+      {list.map((e) => (
+        <li key={e.slug} className="flex">
+          <ExerciseCard
+            exercise={e}
+            practice={practiced.get(e.slug)}
+            selected={e.slug === selectedSlug}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+  const rest = exercises.slice(headCount);
+
   return (
     <>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3">
-        {exercises.map((e) => (
-          <li key={e.slug} className="flex">
-            <ExerciseCard
-              exercise={e}
-              practice={practiced.get(e.slug)}
-              selected={e.slug === selectedSlug}
-            />
-          </li>
-        ))}
-      </ul>
+      {headCount > 0 ? (
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col gap-3" aria-labelledby="grid-mine">
+            <h2 id="grid-mine" className="text-xs font-bold text-muted-foreground uppercase">
+              Tes exercices · {headCount}
+            </h2>
+            {cards(exercises.slice(0, headCount))}
+          </section>
+          {rest.length ? (
+            <section className="flex flex-col gap-3" aria-labelledby="grid-rest">
+              <h2 id="grid-rest" className="text-xs font-bold text-muted-foreground uppercase">
+                Le reste du catalogue
+              </h2>
+              {cards(rest)}
+            </section>
+          ) : null}
+        </div>
+      ) : (
+        cards(exercises)
+      )}
       {hasMore ? <div ref={sentinel} className="h-px" /> : null}
     </>
   );

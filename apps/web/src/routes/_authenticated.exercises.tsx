@@ -19,7 +19,7 @@ const search = z.object({
   target: z.enum(CIBLES).optional().catch(undefined),
   equipment: z.enum(EQUIPEMENTS).optional().catch(undefined),
   mine: z.literal(1).optional().catch(undefined),
-  sort: z.enum(["name", "recent", "count"]).optional().catch(undefined),
+  sort: z.enum(["relevance", "count", "name"]).optional().catch(undefined),
   state: stateField,
 });
 
@@ -38,8 +38,8 @@ function ExercisesPage() {
   // Le slug de l'enfant décide du jeu de panneaux : la coquille ne connaît pas ses routes.
   const { slug } = useParams({ strict: false });
   const compact = slug !== undefined;
-  // Par défaut : le nom pour le catalogue, la dernière fois pour « Mes exercices » (D208).
-  const order: Sort = sort ?? (mine ? "recent" : "name");
+  // « Pertinence » par défaut, partout (D210).
+  const order: Sort = sort ?? "relevance";
   const list = useExerciseList({ q, target, equipment, mine: mine === 1, sort: order });
   const { practiced, exercises } = list;
 
@@ -94,6 +94,7 @@ function ExercisesPage() {
         selectedSlug={slug}
         exercises={exercises}
         practiced={list.practicedMap}
+        headCount={list.headCount}
         hasMore={list.hasMore}
         onMore={list.more}
       />
@@ -122,9 +123,9 @@ function ExercisesPage() {
           onSearch={(value) => set({ q: value || undefined })}
           onTarget={(value) => set({ target: value as typeof target })}
           onEquipment={(value) => set({ equipment: value as typeof equipment })}
-          // Le tri choisi survit à la bascule ; seul le défaut suit « Mes exercices ».
+          // Le tri choisi survit à la bascule.
           onMine={(on) => set({ mine: on ? 1 : undefined })}
-          onSort={(value: Sort) => set({ sort: value })}
+          onSort={(value: Sort) => set({ sort: value === "relevance" ? undefined : value })}
         />
         {content()}
       </div>

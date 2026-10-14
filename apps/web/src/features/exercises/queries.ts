@@ -10,6 +10,8 @@ export type CatalogFilters = {
   target?: string;
   equipment?: string;
   slugs?: string[];
+  /** L'ordre de l'API (D210) : par nom (défaut) ou par pertinence. */
+  order?: "name" | "relevance";
 };
 
 /**
@@ -27,7 +29,7 @@ export type CatalogFilters = {
  * 1 316. `page` n'entre pas dans la clé : c'est le `pageParam` d'une même requête
  * infinie, pas un critère.
  */
-export function catalogOptions({ q, group, target, equipment, slugs }: CatalogFilters) {
+export function catalogOptions({ q, group, target, equipment, slugs, order }: CatalogFilters) {
   return infiniteQueryOptions({
     queryKey: [
       "exercises",
@@ -38,6 +40,7 @@ export function catalogOptions({ q, group, target, equipment, slugs }: CatalogFi
         target: target ?? null,
         equipment: equipment ?? null,
         slugs: slugs ?? null,
+        order: order ?? "name",
       },
     ],
     placeholderData: keepPreviousData,
@@ -51,6 +54,7 @@ export function catalogOptions({ q, group, target, equipment, slugs }: CatalogFi
           ...(target ? { cible: target } : {}),
           ...(equipment ? { equipement: equipment } : {}),
           ...(slugs ? { slugs: slugs.join(",") } : {}),
+          ...(order === "relevance" ? { ordre: "pertinence" as const } : {}),
           page: String(pageParam),
           taille: "60",
         },

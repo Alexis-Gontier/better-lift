@@ -8,11 +8,12 @@ import { catalogOptions, practicedOptions } from "./queries";
 type Filters = { q?: string; target?: string; equipment?: string };
 
 /**
- * La liste de la grille (D208). Deux requêtes paginées : les exercices PRATIQUÉS (par leurs
- * slugs) et le CATALOGUE (par nom). « Mes exercices » ne lit que la première ; le catalogue
- * trié par pratique les met bout à bout — les pratiqués triés en tête, puis le reste du
- * catalogue sans eux. Trier côté client les seules pages chargées laisserait des exercices
- * pratiqués plus loin dans le catalogue, hors de la tête.
+ * La liste de la grille (D208, D210). Deux requêtes paginées : les exercices PRATIQUÉS (par
+ * leurs slugs) et le CATALOGUE. « Mes exercices » ne lit que la première ; le catalogue trié
+ * par pertinence ou par pratique les met bout à bout — les pratiqués en tête (les plus récents
+ * d'abord, comme Hevy, ou les plus faits), puis le reste du catalogue sans eux, dans l'ordre
+ * « pertinence » de l'API. Trier côté client les seules pages chargées laisserait des
+ * exercices pratiqués plus loin, hors de la tête.
  */
 export function useExerciseList({
   mine,
@@ -31,7 +32,10 @@ export function useExerciseList({
   // Sans exercice pratiqué, la tête est vide d'office : `slugs` vide serait refusé par l'API.
   const headActive = wantsHead && practiced.isSuccess && slugs.length > 0;
   const head = useInfiniteQuery({ ...catalogOptions({ ...filters, slugs }), enabled: headActive });
-  const rest = useInfiniteQuery({ ...catalogOptions(filters), enabled: !mine });
+  const rest = useInfiniteQuery({
+    ...catalogOptions({ ...filters, order: byPractice ? "relevance" : "name" }),
+    enabled: !mine,
+  });
 
   const headList = useMemo(() => {
     const all = headActive ? (head.data?.pages.flatMap((p) => p.exercices) ?? []) : [];
@@ -63,6 +67,8 @@ export function useExerciseList({
 
   return {
     practiced,
+    /** Combien d'exercices pratiqués ouvrent le catalogue : la grille les titre à part. */
+    headCount: !mine && byPractice && headDone ? headList.length : 0,
     practicedMap,
     exercises,
     total: mine

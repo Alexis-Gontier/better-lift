@@ -5,6 +5,7 @@ import {
   filtreCatalogue,
   imageDe,
   type LigneExercice,
+  ordonnerPertinence,
   versDetail,
   versResume,
 } from "./exercices.js";
@@ -154,5 +155,66 @@ describe("choisirVariantes (D204)", () => {
     expect(
       choisirVariantes({ slug: "x", equipement: "Barre", recherche: "x" }, candidats),
     ).toHaveLength(8);
+  });
+});
+
+describe("ordonnerPertinence (D210)", () => {
+  const ex = (nom: string, cible: string, equipement: string) => ({
+    slug: nom,
+    nom,
+    groupe: "CHEST" as const,
+    equipement,
+    cible,
+    image: null,
+    recherche: texteRecherche(nom, ""),
+  });
+  const noms = (l: { nom: string }[]) => l.map((e) => e.nom);
+
+  it("sans recherche, alterne les muscles, puis les équipements en décalant leur départ", () => {
+    const liste = [
+      ex("Abduction de hanche assise", "Abducteurs", "Machine à levier"),
+      ex("Abduction allongée", "Abducteurs", "Poids du corps"),
+      ex("Développé couché à la barre", "Pectoraux", "Barre"),
+      ex("Pompe archer", "Pectoraux", "Poids du corps"),
+      ex("Pompe", "Pectoraux", "Poids du corps"),
+      ex("Écarté aux haltères", "Pectoraux", "Haltères"),
+      ex("Crunch", "Abdominaux", "Poids du corps"),
+    ];
+    // Tour 1 : un par muscle, dans l'ordre de CIBLES. Le n-ième muscle présent commence par
+    // son n-ième équipement : Pectoraux (n° 1) par Haltères, Abducteurs (n° 2, 2 % 2 = 0) par
+    // Poids du corps.
+    expect(noms(ordonnerPertinence(liste))).toEqual([
+      "Crunch",
+      "Écarté aux haltères",
+      "Abduction allongée",
+      "Développé couché à la barre",
+      "Abduction de hanche assise",
+      "Pompe",
+      "Pompe archer",
+    ]);
+  });
+
+  it("dans une case, la famille la plus fournie d'abord, puis le nom le plus court", () => {
+    const liste = [
+      ex("Cocons", "Abdominaux", "Poids du corps"),
+      ex("Crunch inversé", "Abdominaux", "Poids du corps"),
+      ex("Crunch", "Abdominaux", "Poids du corps"),
+    ];
+    expect(noms(ordonnerPertinence(liste))).toEqual(["Crunch", "Crunch inversé", "Cocons"]);
+  });
+
+  it("avec une recherche, le début du nom, puis un début de mot, puis le plus court", () => {
+    const liste = [
+      ex("Drag curl à la barre", "Biceps", "Barre"),
+      ex("Curl à la barre en prise serrée", "Biceps", "Barre"),
+      ex("Encurlé", "Biceps", "Barre"),
+      ex("Curl à la barre", "Biceps", "Barre"),
+    ];
+    expect(noms(ordonnerPertinence(liste, "Curl"))).toEqual([
+      "Curl à la barre",
+      "Curl à la barre en prise serrée",
+      "Drag curl à la barre",
+      "Encurlé",
+    ]);
   });
 });

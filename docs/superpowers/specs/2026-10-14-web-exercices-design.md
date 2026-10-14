@@ -135,6 +135,31 @@ recherche et l'équipement sautent, sans quoi la grille pourrait ne rien montrer
 exercices » et le tri restent. Un muscle hors du filtre (« Épaules ») reste du texte. Survol :
 soulignement, jamais l'orange.
 
+## D210 — Trois tris, « Pertinence » par défaut
+
+Révise D208 après recherche (Baymard, « default sort type » ; bibliothèque d'exercices de
+Hevy). Deux constats : un tri par défaut alphabétique ouvrait le catalogue sur six « Abduction
+de hanche » — Baymard montre qu'un premier écran d'un seul type fait croire le choix étroit et
+pousse à filtrer à tort ; et Hevy met les exercices faits récemment en tête de sa bibliothèque.
+
+- **Trois tris**, le sens dans le libellé et une ligne d'aide dans le menu : **Pertinence**
+  (défaut, partout), **Plus pratiqués**, **Nom (A → Z)**. « Fait récemment » disparaît : c'est
+  la tête de Pertinence. Pas de « Populaire » (Baymard : lu comme « meilleures ventes »). L'URL ne
+  porte le tri que s'il n'est pas le défaut (`?sort=count|name`).
+- **Pertinence** = tes exercices en tête, les plus récents d'abord, puis le reste du catalogue
+  dans l'ordre `ordre=pertinence` de l'API (`ordonnerPertinence`, testée) :
+  - avec une recherche : le nom qui commence par la saisie, puis un mot qui commence par elle,
+    puis le reste ; à égalité, le nom le plus court ;
+  - sans recherche : un catalogue varié, muscle après muscle (`CIBLES`) et, dans chaque
+    muscle, équipement principal après équipement principal, en décalant le départ d'un cran
+    par muscle ; dans chaque case, la famille de mouvements la plus fournie (premier mot du
+    nom : « Pompe », « Curl ») puis le nom le plus court. Le catalogue n'a ni popularité ni
+    note : ces signaux tiennent lieu de « mouvement de base ».
+- **Deux titres** quand tes exercices ouvrent le catalogue : « Tes exercices · N », puis « Le
+  reste du catalogue ». Sans eux, l'ordre semblerait arbitraire.
+- L'API trie en mémoire tout le résultat filtré (1 316 lignes au plus) avant de paginer. Le
+  mobile ne passe pas `ordre` et garde l'ordre par nom.
+
 ## Hors champ
 
 La progression multi-exercices, la carte du corps, la création d'exercices personnels.

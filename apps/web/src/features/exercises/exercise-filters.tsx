@@ -28,12 +28,17 @@ const OTHER_EQUIPMENT = EQUIPEMENTS.filter(
 );
 const ALL = "__all__";
 
-export type Sort = "name" | "recent" | "count";
+export type Sort = "relevance" | "count" | "name";
 
-const SORTS: { value: Sort; label: string }[] = [
-  { value: "name", label: "Nom" },
-  { value: "recent", label: "Fait récemment" },
-  { value: "count", label: "Plus pratiqués" },
+/**
+ * Les trois tris (D210). « Pertinence » est le défaut : tes exercices en tête, les plus
+ * récents d'abord, puis un catalogue varié (ou, en recherche, les noms qui commencent par la
+ * saisie). Le sens de chaque tri est dans son libellé et sa description.
+ */
+const SORTS: { value: Sort; label: string; hint: string }[] = [
+  { value: "relevance", label: "Pertinence", hint: "Tes exercices récents d'abord" },
+  { value: "count", label: "Plus pratiqués", hint: "Le plus de séances d'abord" },
+  { value: "name", label: "Nom (A → Z)", hint: "Ordre alphabétique" },
 ];
 
 type Props = {
@@ -84,8 +89,13 @@ export function ExerciseFilters(props: Props) {
           <SelectContent align="end">
             <SelectGroup>
               {SORTS.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  {s.label}
+                <SelectItem key={s.value} value={s.value} textValue={s.label}>
+                  <span className="flex flex-col">
+                    <span>{s.label}</span>
+                    <span className="text-xs font-medium text-muted-foreground in-data-[slot=select-value]:hidden">
+                      {s.hint}
+                    </span>
+                  </span>
                 </SelectItem>
               ))}
             </SelectGroup>
