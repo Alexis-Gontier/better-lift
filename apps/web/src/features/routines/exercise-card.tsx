@@ -110,7 +110,7 @@ export function ExerciseCard({
             <Link
               to="/exercises/$slug"
               params={{ slug: exercise.slug }}
-              className="truncate font-bold underline-offset-2 outline-none hover:underline focus-visible:underline"
+              className="truncate text-lg leading-tight font-bold underline-offset-2 outline-none hover:underline focus-visible:underline"
             >
               {exercise.nom}
             </Link>

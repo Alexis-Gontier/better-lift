@@ -23,7 +23,7 @@ const UNIT = UNIT_SYSTEM === "imperial" ? "lb" : "kg";
 
 /** Les colonnes : rang, type, charge, reps, retrait. Type, kg et reps se partagent toute la largeur. */
 const COLUMNS =
-  "grid grid-cols-[2.5rem_minmax(9rem,1fr)_minmax(5rem,1fr)_minmax(5rem,1fr)_2rem] items-center gap-2 px-4";
+  "grid grid-cols-[2.5rem_minmax(9rem,1fr)_minmax(5rem,1fr)_minmax(5rem,1fr)_2.5rem] items-center gap-2 px-4";
 
 /** Une case de saisie : chiffres centrés, dans une boîte nette. */
 const CELL = "h-9 w-full text-center text-sm tabular-nums";
@@ -116,13 +116,14 @@ export function SetsTable({
                 className={CELL}
               />
               <Button
-                variant="ghost"
+                // Toujours visible, dans la couleur du danger (D36) : retirer est destructeur.
+                variant="destructive"
                 size="icon"
                 aria-label={`Retirer la ${label}`}
                 onClick={() => onChange(sets.filter((_, j) => j !== i))}
                 // Une série est le minimum : la dernière ne se retire pas.
                 disabled={sets.length === 1}
-                className="size-7 text-muted-foreground opacity-0 group-hover/serie:opacity-100 focus-visible:opacity-100 hover:text-foreground"
+                className="size-8"
               >
                 <X aria-hidden="true" />
               </Button>
@@ -131,10 +132,16 @@ export function SetsTable({
         })}
       </ol>
 
-      <Button variant="ghost" size="sm" onClick={add} className="mx-2 mt-1 text-muted-foreground">
-        <Plus aria-hidden="true" />
-        Ajouter une série
-      </Button>
+      <div className="px-4 pt-2">
+        <Button
+          variant="outline"
+          onClick={add}
+          className="w-full border-dashed text-muted-foreground"
+        >
+          <Plus aria-hidden="true" />
+          Ajouter une série
+        </Button>
+      </div>
     </div>
   );
 }

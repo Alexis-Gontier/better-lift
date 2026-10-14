@@ -54,7 +54,8 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   n'apparaissent qu'une fois la copie différente de la version enregistrée (`empreinte`) :
   Enregistrer est le seul aplat de l'écran. Cartes d'exercice à la Hevy (D217) : vignette
   encadrée, nom en lien vers la fiche, muscle ciblé · équipement (plus de « dernière fois »),
-  pastille de repos et menu ⋯ en `outline`, table des séries sur toute la largeur, étiquetées É/1/2/3
+  pastille de repos et menu ⋯ en `outline`, table des séries sur toute la largeur (croix de retrait toujours visible en `destructive`,
+  « Ajouter une série » pointillé pleine largeur), étiquetées É/1/2/3
   (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
   Espace, flèches, Espace ; poignées masquées tant qu'un filtre est actif) par `useReorderRoutines`, mutation OPTIMISTE sur
   `["routines","list"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.

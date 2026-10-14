@@ -105,6 +105,7 @@ voulu revenir à l'état d'avant et passer les routines en **cartes**.
   avec). Le menu ⋯ est un bouton `outline` carré, de la hauteur du bouton Repos. Un filet de 2 px
   sépare l'en-tête de la table.
 - **Table des séries** : toute la largeur de la carte — type, kg et reps se la partagent
-  (rang et retrait fixes) ; ligne d'en-tête sur `bg-muted/40`, séries séparées par un filet léger.
+  (rang et retrait fixes) ; la croix de retrait toujours visible, en aplat `destructive` (D36) ;
+  « Ajouter une série » en bouton pointillé sur toute la largeur ; le nom de l'exercice en `text-lg` ; ligne d'en-tête sur `bg-muted/40`, séries séparées par un filet léger.
 - **Poignée** : la bande de gauche garde toute la hauteur, avec un filet de 2 px et un fond en
   retrait.
