@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { CommandPalette } from "@/components/shell/command-palette";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Session } from "@/lib/auth-client";
 
@@ -24,7 +23,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={300}>
         <Outlet />
-        <CommandPalette />
       </TooltipProvider>
     </QueryClientProvider>
   ),

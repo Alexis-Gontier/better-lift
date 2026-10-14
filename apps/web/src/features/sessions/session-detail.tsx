@@ -7,17 +7,9 @@ import {
   type SeanceDetail,
 } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
-import { MoreHorizontal, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { InHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
@@ -28,7 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatSet, RecordBadge } from "@/features/exercises/record-badge";
-import { CloseButton } from "@/features/routines/close-button";
 import { ConfirmDelete } from "@/features/routines/confirm-delete";
 import { TIME_ZONE } from "@/lib/time-zone";
 import { UNIT_SYSTEM } from "@/lib/units";
@@ -54,7 +45,6 @@ const hour = (iso: string) => HOUR.format(new Date(iso)).replace(":", " h ");
  */
 export function SessionDetail({
   session,
-  onClose,
   onDelete,
 }: {
   session: SeanceDetail;
@@ -70,33 +60,6 @@ export function SessionDetail({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Les actions du détail montent dans l'en-tête commun (D157). */}
-      <InHeader title={session.nom}>
-        {session.routineId ? (
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/routines/$id" params={{ id: session.routineId }}>
-              Ouvrir la routine
-            </Link>
-          </Button>
-        ) : null}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="size-8" aria-label="Plus d'actions">
-              <MoreHorizontal aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onSelect={() => setConfirm(true)}
-              className="text-destructive-ink focus:text-destructive-ink"
-            >
-              <Trash2 aria-hidden="true" className="text-destructive-ink" />
-              Supprimer la séance
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <CloseButton onClose={onClose} />
-      </InHeader>
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 px-6 py-5">
           <p className="text-[13px] text-foreground first-letter:uppercase">

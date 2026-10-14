@@ -11,7 +11,6 @@ import {
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Line, LineChart, YAxis } from "recharts";
-import { InHeader } from "@/components/shell/page-header";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -28,7 +27,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CloseButton } from "@/features/routines/close-button";
 import { TIME_ZONE } from "@/lib/time-zone";
 import { UNIT_SYSTEM } from "@/lib/units";
 import { curve } from "./calculations";
@@ -52,7 +50,6 @@ export function ExerciseDetail({
   exercise,
   records,
   history,
-  onClose,
 }: {
   exercise: ExerciceDetail;
   records: RecordExercice[] | null | undefined;
@@ -62,9 +59,6 @@ export function ExerciseDetail({
   return (
     <ScrollArea className="h-full">
       <div className="flex flex-col gap-4 px-6 py-5">
-        <InHeader title={exercise.nom}>
-          <CloseButton onClose={onClose} />
-        </InHeader>
         <header className="flex items-start gap-5">
           <ExerciseAnimation
             key={exercise.gif ?? exercise.slug}

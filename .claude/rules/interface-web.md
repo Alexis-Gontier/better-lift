@@ -15,28 +15,26 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 - **Le web est le poste d'analyse (D132)** : on y regarde et on y prépare ; aucune entrée ne
   lance une séance.
 
-- **Coquille plate (D154–D156)** : `Sidebar collapsible="none"` (sans variante : non repliable,
-  shadcn rend un simple bloc), filet `border-r` posé à la main, fond `--background` comme le contenu
-  — **rien de permanent ne flotte**. Barre de 220 px en groupes : Accueil seul,
-  **Entraînement** (Séances, Routines), **Catalogue** (Exercices). Champ « Rechercher » (ouvre la
-  palette). Pied `NavUser` : nom tiré de l'adresse (`account-name.ts`), menu Profil / Se déconnecter.
-- **En-tête commun `PageHeader` (D157)**, posé par les deux gabarits : 44 px, fil d'Ariane dont le
-  premier élément est le `h1` de la page (lien vers la liste quand un détail est ouvert), actions
-  à droite. Un détail s'y inscrit par `<InHeader title="…">actions</InHeader>` : le titre par
-  l'état du contexte, les actions par un portail dans l'emplacement.
-- Liste et détail redimensionnables sous l'en-tête, tailles persistées.
+- **Layout remis à zéro (2026-10-14), à redessiner** : la barre latérale, l'en-tête commun
+  (`PageHeader`, `InHeader`, fil d'Ariane) et la palette Ctrl K sont supprimés, avec les
+  primitives `sidebar`, `breadcrumb`, `command`, `sheet`. `AppShell` n'est plus qu'un `<main>`
+  pleine hauteur. **Conséquences assumées** : aucune navigation (on passe par l'URL), pas de `h1`
+  de page, et les détails ont perdu leurs actions — Annuler / Enregistrer et Supprimer d'une
+  routine, Ouvrir la routine / Supprimer d'une séance, la croix de fermeture. Leurs props
+  (`onSave`, `saving`, `onClose`, `title`, `to`, `actions`) restent dans les types et sont
+  toujours passées par les routes : à rebrancher quand le layout sera dessiné.
+- Liste et détail redimensionnables, tailles persistées.
 - **Le détail ouvert vit dans le CHEMIN** : `/exercises/$slug`, `/sessions/$id`, `/routines/$id`,
   `/routines/new`. Les paramètres de recherche ne portent que ce qui filtre (`q`, `group`)
   ou force un état (`state`), et suivent d'un détail à l'autre (`search: (s) => s`).
 - **Le gabarit est monté par la route de chaque écran, jamais par `__root.tsx`** :
   `ListDetailPage` (liste / détail, prop `to`) ou `PageLayout` (`width` `pleine` ou
-  `lecture`). Les deux posent `AppShell` et `PageHeader`.
+  `lecture`). Les deux posent `AppShell`.
   `_authenticated.exercises.tsx`, `_authenticated.sessions.tsx`, `_authenticated.routines.tsx` montent le gabarit
   et la liste ; le détail est une **route enfant** rendue par `<Outlet />`. La mise en page lit
   le paramètre de l'enfant par `useParams({ strict: false })` : la coquille change alors son jeu
   de panneaux — donc sa clé de persistance — selon qu'il y a un détail.
-- `Resizable`, `Sidebar` et `Command` (palette `Cmd+K`) de shadcn. Composants shadcn plutôt que
-  maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
+- `Resizable` de shadcn. Composants shadcn plutôt que maison : `ScrollArea`, `Skeleton`, `Badge`, `Card`, `Table`, `Select`, `Tabs`, `Tooltip`.
 
 ## Écrans
 
@@ -136,6 +134,5 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 - `UNIT_SYSTEM` (`src/lib/units.ts`) et le fuseau (`src/lib/time-zone.ts`, Europe/Paris) sont
   fixés à un seul endroit chacun, tant que le Profil ne permet pas de les changer.
 - Logo : `src/components/logo.tsx`, source vectorielle `public/favicon.svg`.
-- Le lien `/` de la barre latérale porte `exact` : sans lui, il reste actif sur toutes les pages.
 - Biome lit aussi `.superpowers/` (maquettes non versionnées) : ses erreurs y sont sans effet
   sur la CI, ignorer celles qui en viennent.

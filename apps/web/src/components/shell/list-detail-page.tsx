@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { AppShell } from "./app-shell";
-import { PageHeader } from "./page-header";
 
 type Props = {
   title: string;
@@ -26,7 +25,7 @@ const SIZES = {
   feed: { list: "34%", detail: "66%", listMin: "24%", detailMin: "45%", detailMax: "76%" },
 } as const;
 
-export function ListDetailPage({ title, to, list, detail, layout = "list" }: Props) {
+export function ListDetailPage({ list, detail, layout = "list" }: Props) {
   const t = SIZES[layout];
   // react-resizable-panels 4 n'a plus de prop `autoSaveId` (API des versions 1/2) : la
   // persistance passe par ce hook, qui lit `localStorage` de façon SYNCHRONE au rendu
@@ -39,39 +38,37 @@ export function ListDetailPage({ title, to, list, detail, layout = "list" }: Pro
 
   return (
     <AppShell>
-      <PageHeader title={title} to={to}>
-        <ResizablePanelGroup
-          orientation="horizontal"
-          defaultLayout={defaultLayout}
-          onLayoutChanged={onLayoutChanged}
-          className="min-h-0 flex-1"
+      <ResizablePanelGroup
+        orientation="horizontal"
+        defaultLayout={defaultLayout}
+        onLayoutChanged={onLayoutChanged}
+        className="min-h-0 flex-1"
+      >
+        <ResizablePanel
+          id="list"
+          defaultSize={detail ? t.list : "100%"}
+          minSize={t.listMin}
+          maxSize={{ column: "35%", feed: "55%", list: undefined }[layout]}
         >
-          <ResizablePanel
-            id="list"
-            defaultSize={detail ? t.list : "100%"}
-            minSize={t.listMin}
-            maxSize={{ column: "35%", feed: "55%", list: undefined }[layout]}
-          >
-            {list}
-          </ResizablePanel>
+          {list}
+        </ResizablePanel>
 
-          {detail ? (
-            <>
-              <ResizableHandle className="bg-border" />
-              <ResizablePanel
-                id="detail"
-                defaultSize={t.detail}
-                minSize={t.detailMin}
-                maxSize={t.detailMax}
-              >
-                <aside aria-label="Détail" className="h-full">
-                  {detail}
-                </aside>
-              </ResizablePanel>
-            </>
-          ) : null}
-        </ResizablePanelGroup>
-      </PageHeader>
+        {detail ? (
+          <>
+            <ResizableHandle className="bg-border" />
+            <ResizablePanel
+              id="detail"
+              defaultSize={t.detail}
+              minSize={t.detailMin}
+              maxSize={t.detailMax}
+            >
+              <aside aria-label="Détail" className="h-full">
+                {detail}
+              </aside>
+            </ResizablePanel>
+          </>
+        ) : null}
+      </ResizablePanelGroup>
     </AppShell>
   );
 }

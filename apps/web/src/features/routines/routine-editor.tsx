@@ -1,9 +1,7 @@
 import {
-  brouillonValide,
   defaireGroupe,
   deplacerAvecGroupes,
   type ExerciceBrouillon,
-  empreinte,
   groupes,
   lierAuSuivant,
   meilleureSerie,
@@ -15,7 +13,6 @@ import {
   retirerDuGroupe,
   roleRepos,
   versBrouillon,
-  versSaisie,
 } from "@better-lift/shared";
 import {
   closestCenter,
@@ -32,19 +29,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useQuery } from "@tanstack/react-query";
-import { Ellipsis, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { InHeader } from "@/components/shell/page-header";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UNIT_SYSTEM } from "@/lib/units";
-import { CloseButton } from "./close-button";
 import { ConfirmDelete } from "./confirm-delete";
 import { ExerciseCard } from "./exercise-card";
 import { ExercisePicker } from "./exercise-picker";
@@ -62,10 +51,7 @@ import { SupersetLabel } from "./superset-label";
  */
 export function RoutineEditor({
   initial,
-  saving,
   erreur: error,
-  onSave,
-  onClose,
   onDelete,
 }: {
   /** `null` pour une routine neuve. */
@@ -79,10 +65,6 @@ export function RoutineEditor({
   onDelete?: () => void;
 }) {
   const [draft, setDraft] = useState(() => versBrouillon(initial, UNIT_SYSTEM));
-  // La référence suit la version ENREGISTRÉE : après un enregistrement réussi,
-  // `initiale` devient la copie, et la barre disparaît d'elle-même.
-  const baseline = useMemo(() => empreinte(versBrouillon(initial, UNIT_SYSTEM)), [initial]);
-  const modified = initial === null || empreinte(draft) !== baseline;
   const previous = useQuery(previousOptions(draft.exercices.map((e) => e.slug)));
   const [picker, setPicker] = useState(false);
   const [confirmation, setConfirmation] = useState(false);
@@ -125,62 +107,8 @@ export function RoutineEditor({
     />
   );
 
-  const valid = brouillonValide(draft, UNIT_SYSTEM);
-
   return (
     <div className="flex h-full flex-col">
-      {/* Les actions montent dans l'en-tête commun (D157) : enregistrer d'abord, quand il y a
-          des changements, puis le menu et la fermeture. */}
-      <InHeader title={draft.nom || "Nouvelle routine"}>
-        {modified ? (
-          <>
-            <span className="text-[13px] text-muted-foreground">
-              {initial ? "Modifications non enregistrées" : "Nouvelle routine"}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              // Annuler une routine neuve la ferme ; une existante revient à sa
-              // version enregistrée.
-              onClick={() => (initial ? setDraft(versBrouillon(initial, UNIT_SYSTEM)) : onClose())}
-            >
-              Annuler
-            </Button>
-            <Button
-              size="sm"
-              disabled={!valid || saving}
-              onClick={() => onSave(versSaisie(draft, UNIT_SYSTEM))}
-              className="font-semibold"
-            >
-              {saving ? "Enregistrement…" : "Enregistrer"}
-            </Button>
-          </>
-        ) : null}
-        {onDelete ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-8"
-                aria-label="Actions de la routine"
-              >
-                <Ellipsis aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onSelect={() => setConfirmation(true)}
-                className="text-destructive-ink"
-              >
-                <Trash2 aria-hidden="true" />
-                Supprimer la routine
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : null}
-        <CloseButton onClose={onClose} />
-      </InHeader>
       <div className="px-6 pt-5 pb-2">
         <input
           aria-label="Nom de la routine"
