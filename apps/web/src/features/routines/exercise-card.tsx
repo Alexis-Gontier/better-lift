@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { exerciseOptions } from "@/features/exercises/queries";
-import { formatSet } from "@/features/exercises/record-badge";
 import { SetsTable } from "./sets-table";
 
 /** Les repos proposés, en secondes ; « "" » = pas de repos. */
@@ -33,7 +32,6 @@ const restLabel = (t: string, group = false) => {
 
 export function ExerciseCard({
   exercise,
-  last,
   rest,
   canLink,
   inGroup,
@@ -50,8 +48,6 @@ export function ExerciseCard({
   inGroup: boolean;
   onLink: () => void;
   onUnlink: () => void;
-  /** La meilleure série de la dernière fois, s'il y en a une (D67). */
-  last: { reps: number | null; chargeKg: number | null } | null;
   onChange: (e: ExerciceBrouillon) => void;
   onRemove: () => void;
 }) {
@@ -121,14 +117,6 @@ export function ExerciseCard({
             <p className="truncate text-xs text-muted-foreground">
               {detail.data ? `${detail.data.cible} · ${detail.data.equipement}` : " "}
             </p>
-            {last ? (
-              <p className="truncate text-xs text-muted-foreground">
-                Dernière fois :{" "}
-                <span className="font-bold text-foreground">
-                  {formatSet(last.chargeKg, last.reps)}
-                </span>
-              </p>
-            ) : null}
           </div>
 
           {rest === "masque" ? null : (
@@ -165,12 +153,7 @@ export function ExerciseCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 text-muted-foreground"
-                aria-label={`Actions pour ${exercise.nom}`}
-              >
+              <Button variant="outline" size="icon-sm" aria-label={`Actions pour ${exercise.nom}`}>
                 <Ellipsis aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>

@@ -6,7 +6,6 @@ import {
   empreinte,
   groupes,
   lierAuSuivant,
-  meilleureSerie,
   normaliserGroupes,
   nouvelExercice,
   peutLierAuSuivant,
@@ -31,7 +30,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useQuery } from "@tanstack/react-query";
 import { Ellipsis, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -46,7 +44,6 @@ import { UNIT_SYSTEM } from "@/lib/units";
 import { ConfirmDelete } from "./confirm-delete";
 import { ExerciseCard } from "./exercise-card";
 import { ExercisePicker } from "./exercise-picker";
-import { previousOptions } from "./queries";
 import { SupersetLabel } from "./superset-label";
 
 /**
@@ -77,7 +74,6 @@ export function RoutineEditor({
   onDelete?: () => void;
 }) {
   const [draft, setDraft] = useState(() => versBrouillon(initial, UNIT_SYSTEM));
-  const previous = useQuery(previousOptions(draft.exercices.map((e) => e.slug)));
   const [picker, setPicker] = useState(false);
   const [confirmation, setConfirmation] = useState(false);
 
@@ -116,7 +112,6 @@ export function RoutineEditor({
     <ExerciseCard
       key={ex.cle}
       exercise={ex}
-      last={meilleureSerie(previous.data?.[ex.slug] ?? [])}
       rest={roleRepos(draft.exercices, i)}
       canLink={peutLierAuSuivant(draft.exercices, i)}
       inGroup={roleRepos(draft.exercices, i) !== "propre"}

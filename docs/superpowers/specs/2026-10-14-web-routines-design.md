@@ -101,8 +101,9 @@ voulu revenir à l'état d'avant et passer les routines en **cartes**.
 
 - **En-tête** : la vignette dans le cadre de la grille des exercices (bordure de 2 px) ; le nom
   est un lien vers la fiche de l'exercice ; dessous, le **muscle ciblé** et l'équipement (comme la
-  page Exercices, plus le groupe) ; puis « Dernière fois : **80 kg × 6** » sur sa propre ligne. Un
-  filet de 2 px sépare l'en-tête de la table.
+  page Exercices, plus le groupe). La « dernière fois » a été retirée de la carte (et sa requête
+  avec). Le menu ⋯ est un bouton `outline` carré, de la hauteur du bouton Repos. Un filet de 2 px
+  sépare l'en-tête de la table.
 - **Table des séries** : colonnes serrées (rang, type, kg, reps, retrait), kg et reps juste après
   le type ; ligne d'en-tête sur `bg-muted/40`, séries séparées par un filet léger.
 - **Poignée** : la bande de gauche garde toute la hauteur, avec un filet de 2 px et un fond en

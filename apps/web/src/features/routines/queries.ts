@@ -129,24 +129,3 @@ export function useReorderRoutines() {
     onSettled: () => client.invalidateQueries({ queryKey: key }),
   });
 }
-
-/**
- * Ce qui a été fait la dernière fois sur ces exercices, série par série (D67).
- * La clé porte les slugs triés : deux routines aux mêmes exercices partagent la
- * lecture, et l'ordre des cartes ne la refait pas.
- */
-export function previousOptions(slugs: string[]) {
-  const sorted = [...new Set(slugs)].sort();
-  return queryOptions({
-    queryKey: ["sessions", "previous", sorted],
-    queryFn: async () => {
-      const res = await api.seances.precedentes.$get({ query: { slugs: sorted.join(",") } });
-      if (!res.ok) throw new Error("La dernière fois n'a pas pu être chargée.");
-      return (await res.json()) as Record<
-        string,
-        { reps: number | null; chargeKg: number | null; faite: boolean }[]
-      >;
-    },
-    enabled: sorted.length > 0,
-  });
-}
