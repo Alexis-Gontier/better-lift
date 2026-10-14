@@ -53,7 +53,7 @@ export function SideNav() {
             {PAGES.map(({ to, label, icon: Icon }) => (
               <SidebarMenuItem key={to}>
                 {/* La route décide de l'entrée active, par le `data-active` du lien. */}
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild className="h-10 gap-3 px-3 text-[15px]">
                   {/* Les filtres de l'URL n'éteignent pas l'entrée ; sans `exact`, `/`
                       resterait actif sur toutes les pages. */}
                   <Link
