@@ -35,7 +35,6 @@ function fauxDepot(): DepotRoutines {
           nom: d.nom,
           nbExercices: d.exercices.length,
           nbSeries: 1,
-          derniere: null,
         }));
     },
     async lire(userId, id) {
@@ -60,11 +59,6 @@ function fauxDepot(): DepotRoutines {
     },
     async ordonner(userId, ids) {
       return ids.every((id) => routines.get(id)?.userId === userId);
-    },
-    async bilan(userId, id) {
-      const r = routines.get(id);
-      if (!r || r.userId !== userId) return undefined;
-      return null;
     },
   };
 }
@@ -101,17 +95,6 @@ function client() {
 }
 
 describe("routes des routines", () => {
-  it("rend le bilan de sa routine, 404 pour celle d'autrui (D213)", async () => {
-    const envoyer = client();
-    const { id } = (await (await envoyer("POST", "/routines", "alice", saisie)).json()) as {
-      id: string;
-    };
-    const mien = await envoyer("GET", `/routines/${id}/bilan`, "alice");
-    expect(mien.status).toBe(200);
-    expect(await mien.json()).toEqual({ bilan: null });
-    expect((await envoyer("GET", `/routines/${id}/bilan`, "bob")).status).toBe(404);
-  });
-
   it("rend 401 sans session, sur chaque route", async () => {
     const envoyer = client();
     for (const [m, p] of [

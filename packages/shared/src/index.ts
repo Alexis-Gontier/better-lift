@@ -13,7 +13,6 @@ export {
   resumePeriode,
 } from "./analyse-exercice.js";
 export { type ApercuExercice, apercuExercices } from "./apercu.js";
-export { type BilanRoutine, bilanRoutine, tendance } from "./bilan-routine.js";
 export {
   type Brouillon,
   brouillonValide,

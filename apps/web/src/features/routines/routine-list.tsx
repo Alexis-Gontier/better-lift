@@ -22,13 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TIME_ZONE } from "@/lib/time-zone";
-
-const SHORT_DATE = new Intl.DateTimeFormat("fr-FR", {
-  day: "numeric",
-  month: "short",
-  timeZone: TIME_ZONE,
-});
 
 type Props = {
   /** Les routines affichées, déjà filtrées. */
@@ -184,11 +177,6 @@ function RoutineCard({
         <span className="block truncate font-bold">{r.nom}</span>
         <span className="mt-0.5 block text-[12.5px] text-foreground">
           {plural(r.nbExercices, "exercice")} · {plural(r.nbSeries, "série")}
-        </span>
-        <span className="mt-0.5 block text-[12.5px] text-muted-foreground">
-          {r.derniere
-            ? `Dernière le ${SHORT_DATE.format(new Date(r.derniere))}`
-            : "Pas encore faite"}
         </span>
       </button>
     </li>

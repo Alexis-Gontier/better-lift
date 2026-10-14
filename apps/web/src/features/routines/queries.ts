@@ -150,18 +150,3 @@ export function previousOptions(slugs: string[]) {
     enabled: sorted.length > 0,
   });
 }
-
-/**
- * Le résumé des séances faites avec une routine (D213) ; `null` si elle n'a jamais été faite.
- * Sous `["sessions"]` : supprimer une séance l'invalide.
- */
-export function routineSummaryOptions(id: string) {
-  return queryOptions({
-    queryKey: ["sessions", "routine-summary", id],
-    queryFn: async () => {
-      const res = await api.routines[":id"].bilan.$get({ param: { id } });
-      if (!res.ok) throw new Error("Le résumé de la routine n'a pas pu être chargé.");
-      return (await res.json()).bilan;
-    },
-  });
-}

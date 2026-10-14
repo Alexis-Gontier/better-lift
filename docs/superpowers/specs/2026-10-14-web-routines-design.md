@@ -23,7 +23,11 @@ commun (layout remis à zéro), reviennent **dans son propre en-tête**, à côt
 - **Menu ⋯ → Supprimer la routine**, en rouge, avec la confirmation existante
   (`ConfirmDelete`). Absent pour une routine neuve.
 
-## D213 — Le résumé de la routine
+## D213 — Le résumé de la routine (retiré)
+
+**Retiré le 14 octobre 2026** à la demande de l'utilisateur, après essai : la page revient à
+l'éditeur seul. Gardé ici pour mémoire.
+
 
 En tête, sous le nom, quatre tuiles jointives : **Séances** (faites avec la routine),
 **Dernière** (date), **Durée moyenne**, **Volume moyen** (charge × reps des séries de travail
@@ -39,7 +43,10 @@ routine d'autrui), qui lit les séances dont `routineId` est la routine. Le calc
 La liste de gauche affiche « dernière le 7 oct. » sous chaque routine faite : `RoutineResume`
 gagne `derniere` (date ISO ou `null`), lu par `GET /routines`. Le mobile l'ignore.
 
-## D214 — L'analyse sur chaque carte d'exercice
+## D214 — L'analyse sur chaque carte d'exercice (retirée)
+
+**Retirée le 14 octobre 2026** avec D213 ; la « dernière fois » revient sous le nom.
+
 
 Sous l'en-tête de chaque carte de l'éditeur, une bande d'analyse (`ExerciseTrend`), qui mène à
 la fiche de l'exercice (`/exercises/$slug`) :
