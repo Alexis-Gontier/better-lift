@@ -14,6 +14,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -22,7 +23,7 @@ import { useSignOut } from "@/lib/sign-out";
 import { displayName, initials } from "./account-name";
 
 /**
- * La barre latérale de shadcn, vide pour l'instant : le compte seul, en pied.
+ * La barre latérale de shadcn : une place en tête pour le titre de l'app, le compte en pied.
  * La navigation viendra quand le layout sera dessiné.
  */
 export function SideNav() {
@@ -30,8 +31,10 @@ export function SideNav() {
 
   return (
     <Sidebar>
+      {/* La place du titre de l'app et de son icône, à venir : même hauteur que le pied. */}
+      <SidebarHeader className="h-16 border-b-2 border-sidebar-border" />
       <SidebarContent />
-      <SidebarFooter>
+      <SidebarFooter className="border-t-2 border-sidebar-border">
         <NavUser email={email} />
       </SidebarFooter>
     </Sidebar>
@@ -52,8 +55,8 @@ function NavUser({ email }: { email: string }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="size-8 rounded-base">
-                <AvatarFallback className="rounded-base">{initials(email)}</AvatarFallback>
+              <Avatar>
+                <AvatarFallback>{initials(email)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-bold">{name}</span>
