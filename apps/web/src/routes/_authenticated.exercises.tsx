@@ -1,13 +1,14 @@
 import { CIBLES, EQUIPEMENTS } from "@better-lift/shared";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { z } from "zod";
-import { PageLayout } from "@/components/shell/page-layout";
+import { ListDetailPage } from "@/components/shell/list-detail-page";
 import { EmptyState } from "@/components/states/empty-state";
 import { ErrorState } from "@/components/states/error-state";
 import { isForcedEmpty, renderForcedState, stateField } from "@/components/states/forced-state";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExerciseFilters, type Sort } from "@/features/exercises/exercise-filters";
 import { ExerciseGrid, type Practice } from "@/features/exercises/exercise-grid";
@@ -24,7 +25,10 @@ const search = z.object({
   state: stateField,
 });
 
-/** La grille des exercices (D200). La fiche est une page à part, `/exercises/$slug`. */
+/**
+ * La grille des exercices (D200). Une fiche ouverte (`/exercises/$slug`, route enfant) la
+ * repousse dans un panneau de gauche redimensionnable, la fiche à droite (D206).
+ */
 export const Route = createFileRoute("/_authenticated/exercises")({
   validateSearch: search,
   component: ExercisesPage,
@@ -33,6 +37,9 @@ export const Route = createFileRoute("/_authenticated/exercises")({
 function ExercisesPage() {
   const { q, target, equipment, mine, sort, state } = Route.useSearch();
   const navigate = Route.useNavigate();
+  // Le slug de l'enfant décide du jeu de panneaux : la coquille ne connaît pas ses routes.
+  const { slug } = useParams({ strict: false });
+  const compact = slug !== undefined;
   const practiced = useQuery(practicedOptions());
 
   const practicedMap = useMemo(
@@ -104,6 +111,7 @@ function ExercisesPage() {
     }
     return (
       <ExerciseGrid
+        selectedSlug={slug}
         exercises={exercises}
         practiced={practicedMap}
         hasMore={list.hasNextPage && !list.isFetchingNextPage}
@@ -113,30 +121,43 @@ function ExercisesPage() {
   }
 
   const total = list.data?.pages[0]?.total;
-  return (
-    <PageLayout title="Exercices">
-      <div className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl">Exercices</h1>
-        {total !== undefined && !isForcedEmpty(state) ? (
-          <span className="text-sm text-muted-foreground">
-            {total.toLocaleString("fr-FR")} exercice{total > 1 ? "s" : ""}
-          </span>
-        ) : null}
+  const listPanel = (
+    <ScrollArea className="h-full">
+      <div className="flex flex-col gap-5 px-6 py-6">
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="text-2xl">Exercices</h1>
+          {total !== undefined && !isForcedEmpty(state) ? (
+            <span className="text-sm text-muted-foreground">
+              {total.toLocaleString("fr-FR")} exercice{total > 1 ? "s" : ""}
+            </span>
+          ) : null}
+        </div>
+        <ExerciseFilters
+          compact={compact}
+          q={q ?? ""}
+          target={target}
+          equipment={equipment}
+          mine={mine === 1}
+          sort={order}
+          onSearch={(value) => set({ q: value || undefined })}
+          onTarget={(value) => set({ target: value as typeof target })}
+          onEquipment={(value) => set({ equipment: value as typeof equipment })}
+          onMine={(on) => set({ mine: on ? 1 : undefined, sort: undefined })}
+          onSort={(value: Sort) => set({ sort: value })}
+        />
+        {content()}
       </div>
-      <ExerciseFilters
-        q={q ?? ""}
-        target={target}
-        equipment={equipment}
-        mine={mine === 1}
-        sort={order}
-        onSearch={(value) => set({ q: value || undefined })}
-        onTarget={(value) => set({ target: value as typeof target })}
-        onEquipment={(value) => set({ equipment: value as typeof equipment })}
-        onMine={(on) => set({ mine: on ? 1 : undefined, sort: undefined })}
-        onSort={(value: Sort) => set({ sort: value })}
-      />
-      {content()}
-    </PageLayout>
+    </ScrollArea>
+  );
+
+  return (
+    <ListDetailPage
+      to="/exercises"
+      title="Exercices"
+      layout="catalog"
+      list={listPanel}
+      detail={compact ? <Outlet /> : undefined}
+    />
   );
 }
 

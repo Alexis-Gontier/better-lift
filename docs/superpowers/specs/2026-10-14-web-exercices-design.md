@@ -33,7 +33,7 @@ Révise D141 (liste et fiche côte à côte) pour les exercices.
 - Un clic sur une carte ouvre la fiche. La grille n'est plus un panneau : `ListDetailPage` n'est
   plus utilisé ici.
 
-## D201 — La fiche est une page entière
+## D201 — La fiche est une page entière (révisée par D206)
 
 `/exercises/$slug` devient une page à part (plus une route enfant rendue à côté de la liste), avec
 un lien « ← Exercices » qui garde les filtres (`search`). De haut en bas :
@@ -88,6 +88,20 @@ différent**, l'exercice ouvert exclu, les équipements principaux d'abord. Calc
   (`analyse-exercice.ts`, testé) à partir de l'historique existant (`/exercices/:slug/historique`,
   qui renvoie déjà toutes les séries de toutes les séances). Pas de nouvelle route pour l'analyse ;
   le mobile pourra reprendre le même calcul.
+
+## D206 — La grille et la fiche côte à côte, la liste redimensionnable
+
+Révise D201 (fiche en page entière), à la demande de l'utilisateur.
+
+- Sans exercice ouvert, la grille prend toute la largeur (D200 inchangé).
+- Une fiche ouverte (`/exercises/$slug`, route ENFANT de la grille) repousse la grille dans un
+  **panneau de gauche redimensionnable** à la poignée (`ListDetailPage`, disposition `catalog` :
+  36 % / 64 %, liste entre 20 et 60 %, taille retenue). La fiche s'affiche à droite, avec une
+  croix qui la ferme en gardant les filtres.
+- Dans le panneau étroit, les deux rangées de pastilles deviennent deux menus déroulants
+  (Muscle, Équipement) ; la grille passe à une, deux ou trois colonnes selon la largeur.
+- La carte ouverte est enfoncée dans son ombre sur une surface en retrait (sélection, jamais
+  l'orange de l'action, D160).
 
 ## Hors champ
 

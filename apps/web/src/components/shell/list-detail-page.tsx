@@ -14,7 +14,8 @@ type Props = {
    * l'espace de travail principal (routines). Par défaut, la liste domine.
    */
   /** `feed` : un fil à parcourir à gauche, un détail large à droite (séances, D140). */
-  layout?: "list" | "column" | "feed";
+  /** `catalog` : la grille d'exercices à gauche, la fiche à droite (D206). */
+  layout?: "list" | "column" | "feed" | "catalog";
 };
 
 /** Tailles par disposition : chacune a sa clé de persistance, pour que régler
@@ -23,6 +24,7 @@ const SIZES = {
   list: { list: "62%", detail: "38%", listMin: "35%", detailMin: "25%", detailMax: "55%" },
   column: { list: "24%", detail: "76%", listMin: "16%", detailMin: "50%", detailMax: "84%" },
   feed: { list: "34%", detail: "66%", listMin: "24%", detailMin: "45%", detailMax: "76%" },
+  catalog: { list: "36%", detail: "64%", listMin: "20%", detailMin: "40%", detailMax: "80%" },
 } as const;
 
 export function ListDetailPage({ list, detail, layout = "list" }: Props) {
@@ -48,7 +50,7 @@ export function ListDetailPage({ list, detail, layout = "list" }: Props) {
           id="list"
           defaultSize={detail ? t.list : "100%"}
           minSize={t.listMin}
-          maxSize={{ column: "35%", feed: "55%", list: undefined }[layout]}
+          maxSize={{ column: "35%", feed: "55%", catalog: "60%", list: undefined }[layout]}
         >
           {list}
         </ResizablePanel>

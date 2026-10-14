@@ -6,8 +6,7 @@ import {
   type HistoriqueExercice,
   type PeriodeExercice,
 } from "@better-lift/shared";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +18,7 @@ import { ExerciseAnimation } from "./exercise-animation";
 import { ExerciseCard } from "./exercise-grid";
 
 /**
- * La fiche d'un exercice, en page entière (D201) : en-tête, analyse (si pratiqué),
+ * La fiche d'un exercice, dans le panneau de droite (D206) : en-tête, analyse (si pratiqué),
  * consignes, variantes. `undefined` : en chargement ; `null` : en échec.
  */
 export function ExercisePage({
@@ -28,26 +27,20 @@ export function ExercisePage({
   variants,
   period,
   onPeriod,
+  onClose,
 }: {
   exercise: ExerciceDetail;
   history: HistoriqueExercice | null | undefined;
   variants: ExerciceResume[] | null | undefined;
   period: PeriodeExercice;
   onPeriod: (period: PeriodeExercice) => void;
+  onClose: () => void;
 }) {
   const last = history?.[0];
   return (
     <div className="flex flex-col gap-6">
-      <Button variant="link" asChild className="w-fit px-0">
-        {/* Retour à la grille telle qu'on l'a laissée : les filtres suivent (D201). */}
-        <Link to="/exercises" search={({ period: _p, state: _s, ...s }) => s}>
-          <ArrowLeft data-icon="inline-start" aria-hidden="true" />
-          Exercices
-        </Link>
-      </Button>
-
       <header className="flex flex-wrap items-start gap-6">
-        <div className="w-56 shrink-0">
+        <div className="w-52 shrink-0">
           <div className="overflow-hidden rounded-base border-2 border-border bg-image-bg shadow-shadow">
             <ExerciseAnimation
               key={exercise.gif ?? exercise.slug}
@@ -57,9 +50,15 @@ export function ExercisePage({
           </div>
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <div>
-            <h1 className="text-3xl leading-tight">{exercise.nom}</h1>
-            <p className="text-sm text-muted-foreground">{exercise.nomAnglais}</p>
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl leading-tight">{exercise.nom}</h1>
+              <p className="text-sm text-muted-foreground">{exercise.nomAnglais}</p>
+            </div>
+            {/* Fermer rend la grille en pleine largeur, filtres gardés (D206). */}
+            <Button variant="outline" size="icon-sm" onClick={onClose} aria-label="Fermer la fiche">
+              <X aria-hidden="true" />
+            </Button>
           </div>
           {/* Les muscles et l'équipement : des informations, jamais l'orange de l'action. */}
           <div className="flex flex-wrap gap-2">

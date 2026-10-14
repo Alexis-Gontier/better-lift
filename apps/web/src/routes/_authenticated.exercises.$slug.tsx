@@ -2,10 +2,10 @@ import { PERIODES_EXERCICE } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { PageLayout } from "@/components/shell/page-layout";
 import { ErrorState } from "@/components/states/error-state";
 import { renderForcedState, stateField } from "@/components/states/forced-state";
 import { LoadingState } from "@/components/states/loading-state";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExercisePage } from "@/features/exercises/exercise-page";
 import { exerciseOptions, historyOptions, variantsOptions } from "@/features/exercises/queries";
 
@@ -19,10 +19,11 @@ const search = z
   .passthrough();
 
 /**
- * La fiche d'un exercice, en page entière (D201) : `exercises_` la sort de la grille.
+ * La fiche d'un exercice, dans le panneau de droite (D206) : une route ENFANT de la grille,
+ * rendue par son `Outlet`.
  * Le slug est l'identifiant stable et lisible du catalogue : `/exercises/barbell-bench-press`.
  */
-export const Route = createFileRoute("/_authenticated/exercises_/$slug")({
+export const Route = createFileRoute("/_authenticated/exercises/$slug")({
   validateSearch: search,
   component: ExerciseRoute,
 });
@@ -55,6 +56,9 @@ function ExerciseRoute() {
         history={history.isError ? null : history.data}
         variants={variants.isError ? null : variants.data}
         period={period}
+        onClose={() =>
+          navigate({ to: "/exercises", search: ({ period: _p, state: _s, ...s }) => s })
+        }
         onPeriod={(p) =>
           navigate({ search: (s) => ({ ...s, period: p === "3m" ? undefined : p }), replace: true })
         }
@@ -63,8 +67,8 @@ function ExerciseRoute() {
   }
 
   return (
-    <PageLayout title="Exercice">
-      <div className="mx-auto w-full max-w-5xl">{content()}</div>
-    </PageLayout>
+    <ScrollArea className="h-full">
+      <div className="px-6 py-5">{content()}</div>
+    </ScrollArea>
   );
 }

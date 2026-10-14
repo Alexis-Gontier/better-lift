@@ -8,16 +8,21 @@ export type Practice = { nbSeances: number; derniere: string };
 export function ExerciseCard({
   exercise,
   practice,
+  selected = false,
 }: {
   exercise: ExerciceResume;
   practice?: Practice;
+  selected?: boolean;
 }) {
   return (
     <Link
       to="/exercises/$slug"
       params={{ slug: exercise.slug }}
       search={(s) => s}
-      className="group flex w-full flex-col overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow outline-none transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      aria-current={selected ? "page" : undefined}
+      // La carte ouverte est enfoncée dans son ombre, sur une surface en retrait :
+      // une sélection, jamais l'orange de l'action (D160).
+      className="group flex w-full aria-[current=page]:translate-x-boxShadowX aria-[current=page]:translate-y-boxShadowY aria-[current=page]:bg-muted aria-[current=page]:shadow-none flex-col overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow outline-none transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       {/* L'image FIXE (~6 Ko, D46) : la grille montre des dizaines de cartes à la fois. */}
       <div className="aspect-[4/3] border-b-2 border-border bg-image-bg">
@@ -43,11 +48,13 @@ export function ExerciseCard({
 
 /** La grille ; un repère en bas de page charge la suite quand il devient visible. */
 export function ExerciseGrid({
+  selectedSlug,
   exercises,
   practiced,
   hasMore,
   onMore,
 }: {
+  selectedSlug?: string;
   exercises: ExerciceResume[];
   practiced: Map<string, Practice>;
   hasMore: boolean;
@@ -69,7 +76,11 @@ export function ExerciseGrid({
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-4">
         {exercises.map((e) => (
           <li key={e.slug} className="flex">
-            <ExerciseCard exercise={e} practice={practiced.get(e.slug)} />
+            <ExerciseCard
+              exercise={e}
+              practice={practiced.get(e.slug)}
+              selected={e.slug === selectedSlug}
+            />
           </li>
         ))}
       </ul>

@@ -31,6 +31,8 @@ const ALL = "__all__";
 export type Sort = "name" | "recent" | "count";
 
 type Props = {
+  /** Une fiche est ouverte : le panneau est étroit, les pastilles deviennent deux menus (D206). */
+  compact?: boolean;
   q: string;
   target?: string;
   equipment?: string;
@@ -82,23 +84,68 @@ export function ExerciseFilters(props: Props) {
         ) : null}
       </div>
 
-      <FilterRow
-        label="Muscle"
-        value={target}
-        visible={VISIBLE_TARGETS}
-        others={OTHER_TARGETS}
-        othersLabel={`+ ${OTHER_TARGETS.length}`}
-        onChange={props.onTarget}
-      />
-      <FilterRow
-        label="Équipement"
-        value={equipment}
-        visible={EQUIPEMENTS_PRINCIPAUX}
-        others={OTHER_EQUIPMENT}
-        othersLabel="Autres"
-        onChange={props.onEquipment}
-      />
+      {props.compact ? (
+        <div className="grid grid-cols-2 gap-2">
+          <FilterSelect label="Muscle" value={target} options={CIBLES} onChange={props.onTarget} />
+          <FilterSelect
+            label="Équipement"
+            value={equipment}
+            options={EQUIPEMENTS}
+            onChange={props.onEquipment}
+          />
+        </div>
+      ) : (
+        <>
+          <FilterRow
+            label="Muscle"
+            value={target}
+            visible={VISIBLE_TARGETS}
+            others={OTHER_TARGETS}
+            othersLabel={`+ ${OTHER_TARGETS.length}`}
+            onChange={props.onTarget}
+          />
+          <FilterRow
+            label="Équipement"
+            value={equipment}
+            visible={EQUIPEMENTS_PRINCIPAUX}
+            others={OTHER_EQUIPMENT}
+            othersLabel="Autres"
+            onChange={props.onEquipment}
+          />
+        </>
+      )}
     </div>
+  );
+}
+
+/** Le même filtre en menu déroulant, pour le panneau étroit. */
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value?: string;
+  options: readonly string[];
+  onChange: (value?: string) => void;
+}) {
+  return (
+    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
+      <SelectTrigger aria-label={label} className="w-full">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="max-h-80">
+        <SelectGroup>
+          <SelectItem value={ALL}>{label} : tous</SelectItem>
+          {options.map((o) => (
+            <SelectItem key={o} value={o}>
+              {o}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }
 
