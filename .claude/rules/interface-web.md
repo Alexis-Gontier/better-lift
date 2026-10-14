@@ -42,9 +42,8 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 
 ## Écrans
 
-- **Routines** en disposition `column` (`ListDetailPage`) : lignes à gauche (recherche `?q=` par
-  `fold` de `lib/text.ts` et bouton carré « + » sur une ligne ; chaque ligne montre l'aperçu de ses
-  exercices, `apercu` de `RoutineResume`, D215), routine ouverte **toujours
+- **Routines** en disposition `column` (`ListDetailPage`) : lignes à gauche (filtre `?q=` par
+  `fold` de `lib/text.ts`, « Nouvelle routine » en contour), routine ouverte **toujours
   modifiable** à droite. Annuler / Enregistrer et le menu ⋯ → Supprimer vivent dans l'en-tête
   de l'éditeur, à côté du nom (D212, `2026-10-14-web-routines-design.md` ; le résumé et l'analyse
   par exercice, D213–D214, ont été essayés puis retirés). Annuler / Enregistrer
@@ -60,9 +59,6 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   `update` et les fonctions de `shared/supersets.ts` (glisser : `deplacerAvecGroupes`, jamais
   `arrayMove`). Menu ⋯ : « Superset avec le suivant » (`peutLierAuSuivant`), « Retirer du
   superset ». Repos masqué sur les membres non derniers (`roleRepos`).
-- **Sélecteur d'exercices des routines** (`exercise-picker.tsx`, D215) : il réutilise
-  `ExerciseFilters` et `useExerciseList` (`enabled: open`) de la page Exercices ; carte cochée
-  enfoncée sur `bg-muted`, jamais l'orange.
 - **`/` est l'Accueil, vide** (D197) : la coquille et son en-tête, sans contenu, en attendant la
   suite du chantier. Le tableau de bord (`features/tableau/` (supprimé)) a été retiré ; les routes `/stats`
   de l'API restent.

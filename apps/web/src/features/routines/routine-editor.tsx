@@ -174,7 +174,7 @@ export function RoutineEditor({
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex w-full max-w-3xl flex-col gap-4 px-6 pt-5 pb-6">
+        <div className="flex flex-col gap-4 px-6 pt-5 pb-6">
           {draft.exercices.length === 0 ? (
             <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
