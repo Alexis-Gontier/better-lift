@@ -1,7 +1,8 @@
-import { type ExerciceBrouillon, LIBELLE_GROUPE, type RoleRepos } from "@better-lift/shared";
+import type { ExerciceBrouillon, RoleRepos } from "@better-lift/shared";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { Ellipsis, GripVertical, Link2, Timer, Trash2, Unlink2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,33 +89,46 @@ export function ExerciseCard({
         {...attributes}
         {...listeners}
         aria-label={`Déplacer ${exercise.nom}`}
-        className="grid w-7 shrink-0 cursor-grab place-items-center border-r border-border text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
+        className="grid w-7 shrink-0 cursor-grab place-items-center border-r-2 border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
 
       {/* Le contenu à droite de la bande de préhension, sur toute sa hauteur. */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-          {detail.data?.image ? (
-            <img
-              src={detail.data.image}
-              alt=""
-              width={48}
-              height={48}
-              className="size-12 shrink-0 rounded-[10px] bg-image-bg object-contain"
-            />
-          ) : (
-            <span aria-hidden="true" className="size-12 shrink-0 rounded-[10px] bg-muted" />
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-foreground">{exercise.nom}</p>
-            <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
-              {detail.data
-                ? `${LIBELLE_GROUPE[detail.data.groupe]} · ${detail.data.equipement}`
-                : " "}
-              {last ? ` · dernière fois : ${formatSet(last.chargeKg, last.reps)}` : ""}
+        <div className="flex items-center gap-3 border-b-2 border-border px-4 py-3">
+          {/* La vignette dans le cadre de la grille des exercices (D200). */}
+          <span className="size-14 shrink-0 overflow-hidden rounded-base border-2 border-border bg-image-bg">
+            {detail.data?.image ? (
+              <img
+                src={detail.data.image}
+                alt=""
+                width={56}
+                height={56}
+                className="size-full object-contain"
+              />
+            ) : null}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            {/* Le nom mène à la fiche : son analyse et ses consignes. */}
+            <Link
+              to="/exercises/$slug"
+              params={{ slug: exercise.slug }}
+              className="truncate font-bold underline-offset-2 outline-none hover:underline focus-visible:underline"
+            >
+              {exercise.nom}
+            </Link>
+            <p className="truncate text-xs text-muted-foreground">
+              {detail.data ? `${detail.data.cible} · ${detail.data.equipement}` : " "}
             </p>
+            {last ? (
+              <p className="truncate text-xs text-muted-foreground">
+                Dernière fois :{" "}
+                <span className="font-bold text-foreground">
+                  {formatSet(last.chargeKg, last.reps)}
+                </span>
+              </p>
+            ) : null}
           </div>
 
           {rest === "masque" ? null : (

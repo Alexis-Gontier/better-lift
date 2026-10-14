@@ -52,8 +52,9 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   de l'éditeur, à côté du nom (D212, `2026-10-14-web-routines-design.md` ; le résumé et l'analyse
   par exercice, D213–D214, ont été essayés puis retirés). Annuler / Enregistrer
   n'apparaissent qu'une fois la copie différente de la version enregistrée (`empreinte`) :
-  Enregistrer est le seul aplat de l'écran. Cartes d'exercice à la Hevy : image,
-  « dernière fois » (`meilleureSerie`), pastille de repos, séries étiquetées É/1/2/3
+  Enregistrer est le seul aplat de l'écran. Cartes d'exercice à la Hevy (D217) : vignette
+  encadrée, nom en lien vers la fiche, muscle ciblé · équipement, « Dernière fois » sur sa ligne
+  (`meilleureSerie`), pastille de repos, table serrée des séries étiquetées É/1/2/3
   (`etiquettesSeries`). La colonne se **réordonne** à la poignée (souris ou clavier :
   Espace, flèches, Espace ; poignées masquées tant qu'un filtre est actif) par `useReorderRoutines`, mutation OPTIMISTE sur
   `["routines","list"]` (D142) : c'est l'ordre que suit « À suivre » sur le mobile.

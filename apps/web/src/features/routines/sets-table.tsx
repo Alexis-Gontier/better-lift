@@ -21,8 +21,11 @@ import { UNIT_SYSTEM } from "@/lib/units";
 
 const UNIT = UNIT_SYSTEM === "imperial" ? "lb" : "kg";
 
-/** Une case de saisie : chiffres centrés, grands, dans une boîte nette. */
-const CHECKBOX = "h-9 w-20 text-center text-sm tabular-nums";
+/** Les colonnes : rang, type, charge, reps, retrait. Serrées : kg et reps suivent le type. */
+const COLUMNS = "grid grid-cols-[2.5rem_10rem_5.5rem_5.5rem_2rem] items-center gap-2 px-4";
+
+/** Une case de saisie : chiffres centrés, dans une boîte nette. */
+const CELL = "h-9 w-full text-center text-sm tabular-nums";
 
 export function SetsTable({
   exerciseName,
@@ -50,7 +53,7 @@ export function SetsTable({
           colonne de retrait n'apparaît qu'au survol de sa ligne. */}
       <div
         aria-hidden="true"
-        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-border px-4 py-2 text-xs font-medium text-muted-foreground"
+        className={`${COLUMNS} border-b-2 border-border bg-muted/40 py-2 text-xs font-bold text-muted-foreground`}
       >
         <span>Série</span>
         <span>Type</span>
@@ -66,7 +69,7 @@ export function SetsTable({
             <li
               // Les séries n'ont pas d'identité propre : leur rang en tient lieu.
               key={i}
-              className="group/serie grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 px-4 py-1"
+              className={`group/serie ${COLUMNS} border-b border-border/15 py-1.5 last:border-b-0`}
             >
               <span
                 className={`text-sm font-semibold ${
@@ -100,7 +103,7 @@ export function SetsTable({
                 value={s.charge}
                 onChange={(e) => update(i, { charge: e.target.value })}
                 aria-invalid={chargeInvalide(s.charge, UNIT_SYSTEM) || undefined}
-                className={CHECKBOX}
+                className={CELL}
               />
               <Input
                 aria-label={`${label} : répétitions`}
@@ -109,7 +112,7 @@ export function SetsTable({
                 value={s.reps}
                 onChange={(e) => update(i, { reps: e.target.value })}
                 aria-invalid={repsInvalides(s.reps) || undefined}
-                className={CHECKBOX}
+                className={CELL}
               />
               <Button
                 variant="ghost"

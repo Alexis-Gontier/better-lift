@@ -96,3 +96,14 @@ voulu revenir à l'état d'avant et passer les routines en **cartes**.
   réordonne (souris, ou clavier : Espace, flèches, Espace), masquée pendant une recherche ;
   l'ordre est celui du mobile (D142). En glissant, la carte double son ombre (D193).
 - « Nouvelle routine » est une carte en pointillés à la suite des autres.
+
+## D217 — La carte d'exercice de l'éditeur
+
+- **En-tête** : la vignette dans le cadre de la grille des exercices (bordure de 2 px) ; le nom
+  est un lien vers la fiche de l'exercice ; dessous, le **muscle ciblé** et l'équipement (comme la
+  page Exercices, plus le groupe) ; puis « Dernière fois : **80 kg × 6** » sur sa propre ligne. Un
+  filet de 2 px sépare l'en-tête de la table.
+- **Table des séries** : colonnes serrées (rang, type, kg, reps, retrait), kg et reps juste après
+  le type ; ligne d'en-tête sur `bg-muted/40`, séries séparées par un filet léger.
+- **Poignée** : la bande de gauche garde toute la hauteur, avec un filet de 2 px et un fond en
+  retrait.
