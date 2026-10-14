@@ -1,31 +1,32 @@
-/* Neobrutalism, style par défaut de neobrutalism.dev (D199, révise la palette Orange
-   de D193), light seulement (D194) : une seule valeur par token. */
+/* Neobrutalism, palette Orange de neobrutalism.dev (D193, retour après le bleu de D199),
+   light seulement (D194) :
+   une seule valeur par token. */
 :root {
-  --background: hsl(214 95% 93%);
+  --background: hsl(33 100% 92%);
   --secondary-background: #ffffff;
   --foreground: #000000;
-  --main: hsl(217 100% 66%);
+  --main: #ff7a05;
   --main-foreground: #000000;
-  /* Le bleu en TEXTE (le record) : #5294ff ne fait que 2,5:1 sur le fond.
-     #1e40af tient 7,2:1 sur le fond, 5,8:1 sur --muted. */
-  --main-ink: #1e40af;
-  /* Surface en retrait (survol, pistes, squelettes) et encre secondaire : 8,5:1. */
-  --muted: #bed5f4;
-  --muted-foreground: #33415c;
+  /* L'orange en TEXTE (le record) : #ff7a05 ne fait que 2,3:1 sur le crème.
+     #a33f00 tient 5,6:1 sur le fond, 4,9:1 sur --muted. */
+  --main-ink: #a33f00;
+  /* Surface en retrait (survol, pistes, squelettes) et encre secondaire : 8,7:1. */
+  --muted: #f6dcc2;
+  --muted-foreground: #4d4036;
   --border: #000000;
   --ring: #000000;
-  --overlay: rgb(0 0 0 / 0.8);
+  --overlay: rgb(0 0 0 / 0.6);
   --shadow: 4px 4px 0 0 var(--border);
   --radius-base: 5px;
 
   /* Danger (D36) : borné au danger, ne porte jamais l'action ni le record.
-     Noir sur l'aplat : 5,4:1 ; l'encre de danger : 6,5:1 sur le fond, 5,2:1 sur --muted. */
+     Noir sur l'aplat : 5,4:1 ; l'encre de danger : 5,7:1 sur le fond. */
   --destructive: #e5484d;
   --destructive-foreground: #000000;
-  --destructive-ink: #a01d14;
+  --destructive-ink: #b42318;
 
-  /* Le repère d'un superset (D151) : ni bleu d'action ni danger. 6,7:1 sur le fond. */
-  --superset: #4a3db0;
+  /* Le repère d'un superset (D151) : ni orange ni danger. 5,7:1 sur le fond. */
+  --superset: #5a4bbf;
 
   /* Vignettes et GIF d'exercice : les images du catalogue sont détourées sur blanc. */
   --image-bg: #ffffff;

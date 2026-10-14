@@ -49,7 +49,7 @@
   --color-secondary: var(--secondary-background);
   --color-secondary-foreground: var(--foreground);
   /* `accent` chez shadcn désigne la surface de survol, pas la marque : le faire
-     pointer sur le bleu d'action peindrait un aplat d'action sous chaque survol. */
+     pointer sur l'orange d'action peindrait un aplat d'action sous chaque survol. */
   --color-accent: var(--muted);
   --color-accent-foreground: var(--foreground);
   --color-card: var(--secondary-background);
@@ -61,7 +61,7 @@
   --color-sidebar-foreground: var(--foreground);
   --color-sidebar-primary: var(--main);
   --color-sidebar-primary-foreground: var(--main-foreground);
-  /* Le survol d'une entrée ; l'entrée active, elle, est l'aplat bleu bordé
+  /* Le survol d'une entrée ; l'entrée active, elle, est l'aplat orange bordé
      (`data-[active=true]` dans sidebar.tsx). */
   --color-sidebar-accent: var(--muted);
   --color-sidebar-accent-foreground: var(--foreground);
