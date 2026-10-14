@@ -1,5 +1,17 @@
 export { resumeSemaine, routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
+export {
+  avecCharge,
+  debutPeriode,
+  type MeilleureParReps,
+  meilleuresParReps,
+  PERIODES_EXERCICE,
+  type PeriodeExercice,
+  type PointSeance,
+  pointsExercice,
+  REPS_TABLEAU,
+  resumePeriode,
+} from "./analyse-exercice.js";
 export { type ApercuExercice, apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
