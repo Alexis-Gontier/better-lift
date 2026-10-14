@@ -1,105 +1,79 @@
 @import "tailwindcss";
 @import "./tokens.css";
 
-/* Le sombre est le thème par défaut (`:root`), le clair se pose par
-   `data-theme="light"` : les variantes `dark:` des primitives shadcn suivent ce
-   mécanisme, pas la préférence du système. */
-@custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
-
-/* Tailwind 4 laisse `border` en `currentColor` : les primitives shadcn (Card,
-   Table…) posent `border` sans couleur et comptent sur ce défaut. */
+/* Tailwind 4 laisse `border` en `currentColor` : les primitives shadcn posent
+   `border` sans couleur et comptent sur ce défaut. */
 @layer base {
   *,
   ::before,
   ::after {
-    border-color: var(--line);
+    border-color: var(--border);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
   }
 }
 
 @theme inline {
-  /* Vocabulaire du projet : surfaces, filets, quatre niveaux d’encre. */
-  --color-canvas: var(--canvas);
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-ink: var(--ink);
-  --color-ink-muted: var(--ink-muted);
-  --color-ink-subtle: var(--ink-subtle);
-  --color-ink-faint: var(--ink-faint);
+  /* Space Grotesk partout (D195) ; la police système ne sert que pendant le chargement. */
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
 
-  /* Le lime EN TEXTE, c’est-à-dire le contour du record. L’aplat de l’action passe
-     par `primary` plus bas : la distinction par la forme vaut aussi pour les noms
-     de classes, un registre par nom. */
-  --color-accent-ink: var(--accent-ink);
-  --color-accent-line: var(--accent-line);
-  --color-accent-wash: var(--accent-wash);
-  --color-image-bg: var(--image-bg);
-  --color-cal-0: var(--cal-0);
-  --color-cal-1: var(--cal-1);
-  --color-cal-2: var(--cal-2);
-  --color-cal-3: var(--cal-3);
-  --color-cal-4: var(--cal-4);
+  /* Vocabulaire de neobrutalism.dev (D193). */
+  --color-background: var(--background);
+  --color-secondary-background: var(--secondary-background);
+  --color-foreground: var(--foreground);
+  --color-main: var(--main);
+  --color-main-foreground: var(--main-foreground);
+  --color-main-ink: var(--main-ink);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-ink: var(--destructive-ink);
   --color-superset: var(--superset);
+  --color-image-bg: var(--image-bg);
 
-  /* Archivo partout (D135) ; la police système ne sert que pendant le chargement. */
-  --font-sans: "Archivo Variable", system-ui, sans-serif;
+  /* Vocabulaire des primitives shadcn vendorisées. Un rôle absent d'ici n'émet
+     AUCUNE règle, en silence : l'élément hérite alors de son parent. */
+  --color-primary: var(--main);
+  --color-primary-foreground: var(--main-foreground);
+  --color-secondary: var(--secondary-background);
+  --color-secondary-foreground: var(--foreground);
+  /* `accent` chez shadcn désigne la surface de survol, pas la marque : le faire
+     pointer sur l'orange peindrait un aplat d'action sous chaque survol. */
+  --color-accent: var(--muted);
+  --color-accent-foreground: var(--foreground);
+  --color-card: var(--secondary-background);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--secondary-background);
+  --color-popover-foreground: var(--foreground);
+  --color-input: var(--border);
+  --color-sidebar: var(--background);
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-primary: var(--main);
+  --color-sidebar-primary-foreground: var(--main-foreground);
+  --color-sidebar-accent: var(--main);
+  --color-sidebar-accent-foreground: var(--main-foreground);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--ring);
 
-  /* Vocabulaire des primitives shadcn vendorisées. Elles ne connaissent que leurs
-     propres noms de rôles, et un rôle absent d’ici n’émet AUCUNE règle, en silence :
-     l’élément hérite alors de son parent. C’est ce qui rendait la ligne sélectionnée
-     de la palette illisible : `bg-accent` touchait le lime, mais `text-accent-foreground`
-     n’existait pas, le texte restait en --ink, soit 1,6:1. */
-  --color-background: var(--canvas);
-  --color-foreground: var(--ink);
-  --color-popover: var(--surface-1);
-  --color-popover-foreground: var(--ink);
-  --color-muted: var(--surface-2);
-  --color-muted-foreground: var(--ink-subtle);
-  --color-border: var(--line);
-  --color-input: var(--line-strong);
-  --color-ring: var(--accent);
-
-  /* `primary` chez shadcn porte l’action : c’est exactement l’aplat de la doctrine,
-     fond lime et texte sombre. */
-  --color-primary: var(--accent);
-  --color-primary-foreground: var(--accent-on);
-  --color-secondary: var(--surface-3);
-  --color-secondary-foreground: var(--ink);
-
-  /* `accent` chez shadcn ne désigne PAS la marque mais la surface de survol ou de
-     sélection : `bg-accent` habille l’item de command.tsx et les variantes `ghost`
-     et `outline` de button.tsx. Le faire pointer sur le lime peindrait un aplat de
-     marque sous chaque survol, et la couleur unique n’aurait plus de sens. */
-  --color-accent: var(--surface-3);
-  --color-accent-foreground: var(--ink);
-
-  /* `destructive` est désormais traduit (D36). Le rouge est borné au danger : il
-     ne porte jamais l’action ni le record, qui restent au lime. C’est parce que
-     le lime porte déjà deux rôles qu’il ne peut pas en porter un troisième — un
-     champ invalide cerclé de lime dirait « agis ici » au moment où il faut dire
-     « quelque chose ne va pas ». */
-  --color-destructive: var(--danger);
-  --color-destructive-foreground: var(--danger-on);
-  --color-destructive-ink: var(--danger-ink);
-
-  /* `card` (D158) : la carte se détache par son filet, une marche au-dessus du canevas. */
-  --color-card: var(--surface-1);
-  --color-card-foreground: var(--ink);
-
-  /* La sidebar (D72, D154). Même fond que le canevas et le contenu : la coquille
-     est plate, un filet sépare la barre du contenu. L'élément actif est une
-     SURFACE, jamais le lime — `sidebar-primary` n'est utilisé par aucun bloc
-     rendu ici, mais il reste traduit pour qu'aucun rôle n'émette en silence. */
-  --color-sidebar: var(--canvas);
-  --color-sidebar-foreground: var(--ink-muted);
-  --color-sidebar-primary: var(--accent);
-  --color-sidebar-primary-foreground: var(--accent-on);
-  --color-sidebar-accent: var(--nav-active);
-  --color-sidebar-accent-foreground: var(--ink);
-  --color-sidebar-border: var(--line);
-  --color-sidebar-ring: var(--accent);
+  /* La grammaire Neobrutalism : rayon, ombre dure, et le décalage qui l'annule
+     quand un bouton s'enfonce. */
+  --radius-base: var(--radius-base);
+  --shadow-shadow: var(--shadow);
+  --spacing-boxShadowX: 4px;
+  --spacing-boxShadowY: 4px;
+  --spacing-reverseBoxShadowX: -4px;
+  --spacing-reverseBoxShadowY: -4px;
 }
 
 /* react-resizable-panels fixe `height: 100%` en style inline sur le groupe (non
@@ -113,21 +87,21 @@ body,
 
 body {
   margin: 0;
-  background: var(--canvas);
-  color: var(--ink);
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
+  font-weight: 500;
   font-size: 14px;
   /* Tout chiffre s'aligne en colonne : charges, reps, durées, dates. */
   font-variant-numeric: tabular-nums;
 }
 
-/* Le chiffre héros (D103, D135) : tuiles, bilans. Sur le web, la coupe condensée
-   est un réglage de l'axe `wdth`, pas une police à part. */
+/* Le chiffre héros (D195) : tuiles, bilans. Space Grotesk n'a pas d'axe de
+   largeur : le chiffre est gras et serré, plus condensé. */
 @utility chiffre {
-  font-stretch: 72%;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 /* Les animations pilotées en JavaScript échappent à cette règle : toute

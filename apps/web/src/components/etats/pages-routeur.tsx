@@ -14,16 +14,16 @@ function Cadre({ titre, children }: { titre: string; children: ReactNode }) {
   return (
     <main className="flex h-full min-h-96 flex-1 flex-col items-center justify-center gap-3 bg-background px-8 text-center">
       <Logo className="mb-2 size-9" />
-      <h1 className="text-lg font-semibold text-(--ink)">{titre}</h1>
+      <h1 className="text-lg font-semibold text-foreground">{titre}</h1>
       {children}
     </main>
   );
 }
 
 const aplat =
-  "rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)";
+  "rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 const secondaire =
-  "rounded-md border border-(--line-strong) px-4 py-2 text-sm font-medium text-(--ink) hover:bg-(--surface-3) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)";
+  "rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /** Une adresse inconnue : `defaultNotFoundComponent` du routeur. */
 export function PageIntrouvable() {
@@ -31,7 +31,7 @@ export function PageIntrouvable() {
     // Une adresse inconnue n'a pas de coquille autour : l'écran prend la page.
     <div className="flex min-h-svh flex-col">
       <Cadre titre="Page introuvable">
-        <p className="max-w-sm text-sm text-(--ink-subtle)">
+        <p className="max-w-sm text-sm text-muted-foreground">
           Cette adresse ne mène à rien. Le lien est peut-être ancien, ou l'élément a été supprimé.
         </p>
         <Link to="/seances" className={`mt-3 ${aplat}`}>
@@ -50,11 +50,11 @@ export function PageErreur({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   return (
     <Cadre titre="Quelque chose s'est mal passé">
-      <p role="alert" className="max-w-sm text-sm text-(--ink-subtle)">
+      <p role="alert" className="max-w-sm text-sm text-muted-foreground">
         Cet écran n'a pas pu s'afficher. Réessaie ; si ça recommence, recharge la page.
       </p>
       {import.meta.env.DEV ? (
-        <p className="max-w-md font-mono text-xs text-(--danger-ink)">
+        <p className="max-w-md font-mono text-xs text-destructive-ink">
           {error instanceof Error ? error.message : String(error)}
         </p>
       ) : null}

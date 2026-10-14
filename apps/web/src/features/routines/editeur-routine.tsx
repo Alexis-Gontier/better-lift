@@ -134,7 +134,7 @@ export function EditeurRoutine({
       <DansEnTete titre={brouillon.nom || "Nouvelle routine"}>
         {modifiee ? (
           <>
-            <span className="text-[13px] text-(--ink-subtle)">
+            <span className="text-[13px] text-muted-foreground">
               {initiale ? "Modifications non enregistrées" : "Nouvelle routine"}
             </span>
             <Button
@@ -190,14 +190,14 @@ export function EditeurRoutine({
           maxLength={120}
           value={brouillon.nom}
           onChange={(e) => setBrouillon({ ...brouillon, nom: e.target.value })}
-          className="-ml-2 w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-[22px] font-extrabold tracking-tight outline-none hover:border-(--line) focus-visible:border-(--line) focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="-ml-2 w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-[22px] font-extrabold tracking-tight outline-none hover:border-border focus-visible:border-border focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 px-6 pt-2 pb-6">
           {brouillon.exercices.length === 0 ? (
-            <p className="rounded-md border border-dashed border-(--line) px-4 py-6 text-center text-sm text-(--ink-faint)">
+            <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
               Aucun exercice pour l'instant. Ajoute le premier ci-dessous.
             </p>
           ) : (
@@ -236,7 +236,7 @@ export function EditeurRoutine({
           <Button
             variant="outline"
             onClick={() => setSelecteur(true)}
-            className="h-11 border-dashed text-(--ink-subtle)"
+            className="h-11 border-dashed text-muted-foreground"
           >
             <Plus aria-hidden="true" />
             Ajouter un exercice
@@ -245,7 +245,7 @@ export function EditeurRoutine({
       </ScrollArea>
 
       {erreur ? (
-        <p role="alert" className="border-t border-(--line) px-6 py-3 text-sm text-destructive-ink">
+        <p role="alert" className="border-t border-border px-6 py-3 text-sm text-destructive-ink">
           {erreur}
         </p>
       ) : null}

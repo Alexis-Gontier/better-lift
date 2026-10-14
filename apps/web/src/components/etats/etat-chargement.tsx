@@ -14,13 +14,10 @@ export function EtatChargement({ lignes = 8 }: { lignes?: number }) {
         // être réordonnées — il n'y a rien d'autre à quoi s'accrocher.
         <div
           key={i}
-          className="flex h-[54px] flex-col justify-center gap-1.5 border-b border-(--line) px-5"
+          className="flex h-[54px] flex-col justify-center gap-1.5 border-b border-border px-5"
         >
-          <Skeleton
-            className="h-3.5 bg-(--surface-3)"
-            style={{ width: LARGEURS[i % LARGEURS.length] }}
-          />
-          <Skeleton className="h-2.5 w-24 bg-(--surface-2)" />
+          <Skeleton className="h-3.5 bg-muted" style={{ width: LARGEURS[i % LARGEURS.length] }} />
+          <Skeleton className="h-2.5 w-24 bg-muted" />
         </div>
       ))}
     </div>

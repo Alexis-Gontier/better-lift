@@ -100,7 +100,7 @@ export function DetailSeance({
       </DansEnTete>
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 px-6 py-5">
-          <p className="text-[13px] text-(--ink-muted) first-letter:uppercase">
+          <p className="text-[13px] text-foreground first-letter:uppercase">
             {JOUR.format(new Date(seance.debut))} · {heure(seance.debut)} → {heure(seance.fin)}
           </p>
 
@@ -114,7 +114,7 @@ export function DetailSeance({
 
           {/* La note de la séance (D130). */}
           {seance.note ? (
-            <p className="whitespace-pre-line text-(--ink-muted) italic">« {seance.note} »</p>
+            <p className="whitespace-pre-line text-foreground italic">« {seance.note} »</p>
           ) : null}
 
           {seance.exercices.map((ex, iE) => {
@@ -154,7 +154,7 @@ export function DetailSeance({
 function Tuile({ titre, children }: { titre: string; children: ReactNode }) {
   return (
     <div className="px-4 py-3">
-      <p className="text-[13px] text-(--ink-subtle)">{titre}</p>
+      <p className="text-[13px] text-muted-foreground">{titre}</p>
       <p className="chiffre mt-1 text-[30px]">{children}</p>
     </div>
   );
@@ -172,7 +172,7 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-[15px] font-bold">{ex.nom}</h3>
-          <p className="text-[12.5px] text-(--ink-muted)">
+          <p className="text-[12.5px] text-foreground">
             {faites} {faites > 1 ? "séries faites" : "série faite"}
           </p>
         </div>
@@ -185,18 +185,18 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
       <CardContent>
         {/* La note prise en séance (D90). */}
         {ex.note ? (
-          <p className="mb-2 text-[13px] whitespace-pre-line text-(--ink-muted)">{ex.note}</p>
+          <p className="mb-2 text-[13px] whitespace-pre-line text-foreground">{ex.note}</p>
         ) : null}
 
         {/* Largeurs fixes : les colonnes s'alignent d'un exercice à l'autre. */}
         <Table className="table-fixed text-[13.5px]">
           <TableHeader>
             <TableRow className="text-xs hover:bg-transparent">
-              <TableHead className="h-8 w-16 px-0 text-(--ink-subtle)">Série</TableHead>
-              <TableHead className="h-8 text-(--ink-subtle)">Charge × reps</TableHead>
-              <TableHead className="h-8 text-(--ink-subtle)">La fois d'avant</TableHead>
-              <TableHead className="h-8 text-(--ink-subtle)">Écart</TableHead>
-              <TableHead className="h-8 w-[30%] px-0 text-right text-(--ink-subtle)">
+              <TableHead className="h-8 w-16 px-0 text-muted-foreground">Série</TableHead>
+              <TableHead className="h-8 text-muted-foreground">Charge × reps</TableHead>
+              <TableHead className="h-8 text-muted-foreground">La fois d'avant</TableHead>
+              <TableHead className="h-8 text-muted-foreground">Écart</TableHead>
+              <TableHead className="h-8 w-[30%] px-0 text-right text-muted-foreground">
                 Record
               </TableHead>
             </TableRow>
@@ -216,8 +216,8 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
                 >
                   <TableCell className="px-0">
                     <span
-                      className={`grid h-6 w-8 place-items-center rounded-[7px] bg-(--surface-3) text-xs font-bold ${
-                        serie.type === "ECHAUFFEMENT" ? "text-(--ink-subtle)" : ""
+                      className={`grid h-6 w-8 place-items-center rounded-[7px] bg-muted text-xs font-bold ${
+                        serie.type === "ECHAUFFEMENT" ? "text-muted-foreground" : ""
                       }`}
                     >
                       {etiquettes[i]}
@@ -226,7 +226,7 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
                   <TableCell className={serie.records.length > 0 ? "font-bold" : ""}>
                     {formaterSerie(serie.chargeKg, serie.reps)}
                   </TableCell>
-                  <TableCell className="text-(--ink-subtle)">
+                  <TableCell className="text-muted-foreground">
                     {precedente ? formaterSerie(precedente.chargeKg, precedente.reps) : "—"}
                   </TableCell>
                   <TableCell
@@ -235,7 +235,7 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
                       ecart.genre !== "egal" &&
                       (ecart.genre === "charge" ? ecart.deltaKg : ecart.delta) > 0
                         ? "font-bold"
-                        : "text-(--ink-subtle)"
+                        : "text-muted-foreground"
                     }
                   >
                     {ecart ? texteEcart(ecart) : precedente ? "—" : "nouvelle"}

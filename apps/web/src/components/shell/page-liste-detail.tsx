@@ -57,7 +57,7 @@ export function PageListeDetail({ titre, vers, liste, detail, disposition = "lis
 
           {detail ? (
             <>
-              <ResizableHandle className="bg-(--line)" />
+              <ResizableHandle className="bg-border" />
               <ResizablePanel
                 id="detail"
                 defaultSize={t.detail}

@@ -1,6 +1,6 @@
-// Les axes graisse ET largeur (D135) : la coupe condensée des chiffres héros est un
-// simple `font-stretch`, là où le mobile doit générer un TTF.
-import "@fontsource-variable/archivo/wdth.css";
+// Space Grotesk (D195) : 500 pour le texte, 700 pour les titres et les chiffres.
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/700.css";
 import "./styles/globals.css";
 
 import { createRouter, RouterProvider } from "@tanstack/react-router";
@@ -29,8 +29,7 @@ const racine = document.getElementById("root");
 if (!racine) throw new Error("Élément #root introuvable");
 
 // La session est résolue AVANT le premier rendu : c'est ce qui évite qu'un écran
-// protégé se peigne puis disparaisse — le même clignotement que le script
-// synchrone du thème a servi à supprimer au lot 1. Sur une application privée,
+// protégé se peigne puis disparaisse — un clignotement. Sur une application privée,
 // il n'y a rien à montrer avant de savoir qui est là.
 await chargerSession();
 

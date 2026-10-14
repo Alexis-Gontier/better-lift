@@ -1,8 +1,8 @@
 import { formaterCharge, PREFERENCES_DEFAUT } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, LogOut, Moon, Sun } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { Download, LogOut } from "lucide-react";
+import type { ReactNode } from "react";
 import { initiales, nomAffiche } from "@/components/shell/nom-compte";
 import { PageTableau } from "@/components/shell/page-tableau";
 import { Button } from "@/components/ui/button";
@@ -19,15 +19,9 @@ import { optionsPreferences } from "@/features/tableau/requetes";
 import { URL_API } from "@/lib/config";
 import { useDeconnexion } from "@/lib/deconnexion";
 import { FUSEAU } from "@/lib/fuseau";
-import { appliquerTheme, type Theme, themeInitial } from "@/lib/theme";
 import { SYSTEME_UNITES } from "@/lib/unites";
 
 export const Route = createFileRoute("/_protege/profil")({ component: Profil });
-
-const THEMES: { valeur: Theme; libelle: string; icone: typeof Sun }[] = [
-  { valeur: "dark", libelle: "Sombre", icone: Moon },
-  { valeur: "light", libelle: "Clair", icone: Sun },
-];
 
 // Les mêmes choix que le mobile (D91, D128). `Select` veut des chaînes : « aucun » vaut null.
 const AUCUN = "aucun";
@@ -48,31 +42,25 @@ const MOIS_ANNEE = new Intl.DateTimeFormat("fr-FR", {
   timeZone: FUSEAU,
 });
 
-/** Le Profil (D143) : le bilan, l'entraînement (sur le compte), l'appareil, les données, le compte. */
+/** Le Profil (D143) : le bilan, l'entraînement (sur le compte), les mesures, les données, le compte. */
 function Profil() {
   const email = Route.useRouteContext().auth.session?.user.email ?? "—";
-  const [theme, setTheme] = useState<Theme>(() => themeInitial());
   const seDeconnecter = useDeconnexion();
   const bilan = useQuery(optionsBilan());
   const preferences = useQuery(optionsPreferences());
   const ecrire = useEcrirePreferences();
   const prefs = preferences.data ?? PREFERENCES_DEFAUT;
 
-  const choisirTheme = (t: Theme) => {
-    appliquerTheme(t);
-    setTheme(t);
-  };
-
   return (
     <PageTableau titre="Profil" largeur="lecture">
       {/* Le bilan de toujours (D128). */}
       <Card className="flex-row items-center gap-4 px-5">
-        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-(--surface-3) text-lg font-extrabold">
+        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-muted text-lg font-extrabold">
           {initiales(email)}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold">{nomAffiche(email)}</p>
-          <p className="text-[13px] text-(--ink-muted)">
+          <p className="text-[13px] text-foreground">
             {bilan.data?.depuis
               ? `Depuis ${MOIS_ANNEE.format(new Date(bilan.data.depuis))}`
               : bilan.isPending
@@ -123,27 +111,6 @@ function Profil() {
         ) : null}
       </Section>
 
-      <Section
-        titre="Apparence"
-        description="Le thème de cet appareil, retenu d'une visite à l'autre."
-      >
-        {/* Deux boutons à état plutôt qu'un interrupteur : on lit le choix courant. */}
-        <fieldset className="flex gap-2 pt-3">
-          <legend className="sr-only">Thème</legend>
-          {THEMES.map(({ valeur, libelle, icone: Icone }) => (
-            <Button
-              key={valeur}
-              variant={theme === valeur ? "secondary" : "outline"}
-              aria-pressed={theme === valeur}
-              onClick={() => choisirTheme(valeur)}
-            >
-              <Icone aria-hidden="true" />
-              {libelle}
-            </Button>
-          ))}
-        </fieldset>
-      </Section>
-
       {/* Ni l'unité ni le fuseau ne se règlent encore : fixés en un seul endroit
           chacun (D52, D66). On les montre pour qu'aucun chiffre ne surprenne. */}
       <Section titre="Mesures">
@@ -169,7 +136,7 @@ function Profil() {
       <Section titre="Compte">
         <Ligne libelle="Adresse e-mail">{email}</Ligne>
         <Ligne libelle="Rechercher, aller à une page">
-          <kbd className="rounded border border-(--line) px-1.5 py-0.5 text-xs">Ctrl K</kbd>
+          <kbd className="rounded border border-border px-1.5 py-0.5 text-xs">Ctrl K</kbd>
         </Ligne>
         <div className="pt-3">
           <Button variant="outline" onClick={seDeconnecter} className="text-destructive-ink">
@@ -186,7 +153,7 @@ function Chiffre({ libelle, children }: { libelle: string; children: ReactNode }
   return (
     <div className="text-right">
       <p className="chiffre text-[28px]">{children}</p>
-      <p className="text-xs text-(--ink-subtle)">{libelle}</p>
+      <p className="text-xs text-muted-foreground">{libelle}</p>
     </div>
   );
 }
@@ -227,9 +194,9 @@ function Ligne({
     <div className="flex items-center justify-between gap-4 py-3 text-sm last:pb-0">
       <div>
         <p>{libelle}</p>
-        {detail ? <p className="text-xs text-(--ink-subtle)">{detail}</p> : null}
+        {detail ? <p className="text-xs text-muted-foreground">{detail}</p> : null}
       </div>
-      <div className="shrink-0 text-(--ink-muted)">{children}</div>
+      <div className="shrink-0 text-foreground">{children}</div>
     </div>
   );
 }

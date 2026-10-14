@@ -58,7 +58,7 @@ export function ListeSeances({
         <div className="relative min-w-0 flex-1">
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-(--ink-faint)"
+            className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             value={filtre}
@@ -89,7 +89,7 @@ export function ListeSeances({
         <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
           {grouperParMois(seances, FUSEAU).map((g) => (
             <div key={g.cle}>
-              <h3 className="border-b px-4 pt-4 pb-1.5 text-xs font-medium text-(--ink-subtle)">
+              <h3 className="border-b px-4 pt-4 pb-1.5 text-xs font-medium text-muted-foreground">
                 {g.libelle}
               </h3>
               <ul className="flex flex-col">
@@ -111,7 +111,7 @@ export function ListeSeances({
                 variant="outline"
                 onClick={onSuite}
                 disabled={chargeSuite}
-                className="w-full text-(--ink-subtle)"
+                className="w-full text-muted-foreground"
               >
                 {chargeSuite ? "Chargement…" : `Afficher plus — ${charges} sur ${total}`}
               </Button>
@@ -143,9 +143,11 @@ function Entree({
         if (active) el?.scrollIntoView({ block: "nearest" });
       }}
       className={cn(
-        "flex w-full flex-col gap-0.5 border-b px-4 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) focus-visible:ring-inset",
+        "flex w-full flex-col gap-0.5 border-b px-4 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
         // La sélection est une surface et un liseré d'encre, jamais le lime (D160).
-        active ? "bg-(--surface-2) shadow-[inset_2px_0_0_var(--ink)]" : "hover:bg-(--surface-1)",
+        active
+          ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
+          : "hover:bg-secondary-background",
       )}
     >
       <span className="flex items-center justify-between gap-2">
@@ -156,14 +158,14 @@ function Entree({
           </span>
         ) : null}
       </span>
-      <span className="text-[12.5px] text-(--ink-muted)">
+      <span className="text-[12.5px] text-foreground">
         {/* Le jour dans le fuseau de l'utilisateur, jamais en UTC (D66). */}
         {JOUR.format(new Date(s.debut))} · {dureeTexte(dureeMin(s))} ·{" "}
         {formaterCharge(s.volumeKg, SYSTEME_UNITES)} · {s.seriesFaites}{" "}
         {s.seriesFaites > 1 ? "séries" : "série"}
       </span>
       {s.apercu.length > 0 ? (
-        <span className="truncate text-[12.5px] text-(--ink-subtle)">
+        <span className="truncate text-[12.5px] text-muted-foreground">
           {s.apercu.map((e) => e.nom).join(", ")}
           {reste > 0 ? ` + ${reste}` : ""}
         </span>

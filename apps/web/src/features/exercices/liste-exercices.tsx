@@ -52,7 +52,7 @@ export function ListeExercices({
           <div className="relative min-w-0 flex-1">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-(--ink-faint)"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               type="search"
@@ -110,11 +110,11 @@ export function ListeExercices({
                   ref={(el) => {
                     if (ex.slug === slugSelectionne) el?.scrollIntoView({ block: "nearest" });
                   }}
-                  className={`flex h-[60px] w-full items-center gap-3 border-b px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) focus-visible:ring-inset ${
+                  className={`flex h-[60px] w-full items-center gap-3 border-b px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
                     // La sélection est une surface et un liseré d'encre, jamais le lime (D160).
                     ex.slug === slugSelectionne
-                      ? "bg-(--surface-2) shadow-[inset_2px_0_0_var(--ink)]"
-                      : "hover:bg-(--surface-1)"
+                      ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
+                      : "hover:bg-secondary-background"
                   }`}
                 >
                   {/* L'image FIXE de l'exercice (D46, jamais copiée) : ~6 Ko, là où le GIF
@@ -132,14 +132,11 @@ export function ListeExercices({
                       className="size-10 shrink-0 rounded-[10px] bg-image-bg object-contain"
                     />
                   ) : (
-                    <span
-                      aria-hidden="true"
-                      className="size-10 shrink-0 rounded-[10px] bg-(--surface-2)"
-                    />
+                    <span aria-hidden="true" className="size-10 shrink-0 rounded-[10px] bg-muted" />
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold text-(--ink)">{ex.nom}</span>
-                    <span className="mt-0.5 block truncate text-[12.5px] text-(--ink-subtle)">
+                    <span className="block truncate font-semibold text-foreground">{ex.nom}</span>
+                    <span className="mt-0.5 block truncate text-[12.5px] text-muted-foreground">
                       {LIBELLE_GROUPE[ex.groupe]} · {ex.equipement}
                     </span>
                   </span>
@@ -152,7 +149,7 @@ export function ListeExercices({
                   variant="outline"
                   onClick={onSuite}
                   disabled={chargeSuite}
-                  className="w-full text-(--ink-subtle)"
+                  className="w-full text-muted-foreground"
                 >
                   {chargeSuite ? "Chargement…" : `Afficher plus — ${exercices.length} sur ${total}`}
                 </Button>

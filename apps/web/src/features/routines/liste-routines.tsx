@@ -72,7 +72,7 @@ export function ListeRoutines({
           <div className="relative min-w-0 flex-1">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-(--ink-faint)"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               value={filtre}
@@ -93,12 +93,12 @@ export function ListeRoutines({
       </header>
 
       {routines.length === 0 && filtre.trim() ? (
-        <p className="px-5 py-6 text-center text-sm text-(--ink-subtle)">
+        <p className="px-5 py-6 text-center text-sm text-muted-foreground">
           Aucune routine ne correspond à ce filtre.
         </p>
       ) : routines.length === 0 ? (
         // Un compte neuf n'a aucune routine : c'est le tout premier écran qu'on verra.
-        <p className="px-5 py-6 text-center text-sm text-(--ink-subtle)">
+        <p className="px-5 py-6 text-center text-sm text-muted-foreground">
           Aucune routine pour l'instant. Une routine est un modèle de séance : ses exercices et
           leurs séries cibles.
         </p>
@@ -149,15 +149,17 @@ function CarteRoutine({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         "group flex items-center border-b",
-        choisie ? "bg-(--surface-2) shadow-[inset_2px_0_0_var(--ink)]" : "hover:bg-(--surface-1)",
-        isDragging && "relative z-10 bg-(--surface-3) shadow-lg",
+        choisie
+          ? "bg-muted shadow-[inset_2px_0_0_var(--foreground)]"
+          : "hover:bg-secondary-background",
+        isDragging && "relative z-10 bg-muted shadow-lg",
       )}
     >
       {ordonnable ? (
         <button
           type="button"
           aria-label={`Déplacer « ${r.nom} »`}
-          className="cursor-grab touch-none self-stretch pl-1.5 text-(--ink-faint) opacity-0 outline-none group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-(--focus-ring)"
+          className="cursor-grab touch-none self-stretch pl-1.5 text-muted-foreground opacity-0 outline-none group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring"
           {...attributes}
           {...listeners}
         >
@@ -170,10 +172,10 @@ function CarteRoutine({
         type="button"
         onClick={onClick}
         aria-current={choisie ? "true" : undefined}
-        className="min-w-0 flex-1 px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--focus-ring) focus-visible:ring-inset"
+        className="min-w-0 flex-1 px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       >
         <span className="block truncate font-bold">{r.nom}</span>
-        <span className="mt-0.5 block text-[12.5px] text-(--ink-muted)">
+        <span className="mt-0.5 block text-[12.5px] text-foreground">
           {pluriel(r.nbExercices, "exercice")} · {pluriel(r.nbSeries, "série")}
         </span>
       </button>

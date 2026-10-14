@@ -11,7 +11,7 @@ export function BoutonFermer({ onFermer }: { onFermer: () => void }) {
           size="icon"
           onClick={onFermer}
           aria-label="Fermer le panneau de détail"
-          className="size-7 shrink-0 text-(--ink-subtle) hover:text-(--ink)"
+          className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
         >
           <X aria-hidden="true" />
         </Button>

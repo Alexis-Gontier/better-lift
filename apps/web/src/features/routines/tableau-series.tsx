@@ -50,7 +50,7 @@ export function TableauSeries({
           colonne de retrait n'apparaît qu'au survol de sa ligne. */}
       <div
         aria-hidden="true"
-        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-(--line) px-4 py-2 text-xs font-medium text-(--ink-subtle)"
+        className="grid grid-cols-[3rem_1fr_5rem_5rem_2rem] items-center gap-2 border-t border-border px-4 py-2 text-xs font-medium text-muted-foreground"
       >
         <span>Série</span>
         <span>Type</span>
@@ -70,7 +70,7 @@ export function TableauSeries({
             >
               <span
                 className={`text-sm font-semibold ${
-                  s.type === "ECHAUFFEMENT" ? "text-(--ink-subtle)" : "text-(--ink)"
+                  s.type === "ECHAUFFEMENT" ? "text-muted-foreground" : "text-foreground"
                 }`}
               >
                 {etiquettes[i]}
@@ -79,7 +79,7 @@ export function TableauSeries({
                 <SelectTrigger
                   aria-label={`${etiquette} : type`}
                   size="sm"
-                  className="w-fit border-transparent bg-transparent px-2 text-(--ink-subtle) shadow-none hover:border-(--line) dark:bg-transparent"
+                  className="w-fit border-transparent bg-transparent px-2 text-muted-foreground shadow-none hover:border-border"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -118,7 +118,7 @@ export function TableauSeries({
                 onClick={() => onChange(series.filter((_, j) => j !== i))}
                 // Une série est le minimum : la dernière ne se retire pas.
                 disabled={series.length === 1}
-                className="size-7 text-(--ink-faint) opacity-0 group-hover/serie:opacity-100 focus-visible:opacity-100 hover:text-(--ink)"
+                className="size-7 text-muted-foreground opacity-0 group-hover/serie:opacity-100 focus-visible:opacity-100 hover:text-foreground"
               >
                 <X aria-hidden="true" />
               </Button>
@@ -127,7 +127,12 @@ export function TableauSeries({
         })}
       </ol>
 
-      <Button variant="ghost" size="sm" onClick={ajouter} className="mx-2 mt-1 text-(--ink-subtle)">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={ajouter}
+        className="mx-2 mt-1 text-muted-foreground"
+      >
         <Plus aria-hidden="true" />
         Ajouter une série
       </Button>

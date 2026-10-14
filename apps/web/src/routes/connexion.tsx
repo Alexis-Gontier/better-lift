@@ -46,7 +46,7 @@ function PageConnexion() {
           </Card>
         )}
       </div>
-      <p className="text-xs text-(--ink-faint)">Un carnet privé, pour quelques comptes.</p>
+      <p className="text-xs text-muted-foreground">Un carnet privé, pour quelques comptes.</p>
     </main>
   );
 }
