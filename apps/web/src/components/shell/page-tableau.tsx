@@ -10,7 +10,7 @@ type Props = {
   actions?: ReactNode;
   /** `pleine` : la grille d'analyse ; `lecture` : une colonne centrée (Profil). */
   largeur?: "pleine" | "lecture";
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 /** Le gabarit des pages d'analyse (D133, D157) : l'en-tête commun, puis le contenu qui défile. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filtrerSeances, grouperParMois, texteEcart } from "./calculs";
+import { dureeTexte, filtrerSeances, grouperParMois, texteEcart } from "./calculs";
 
 describe("grouperParMois", () => {
   it("groupe par mois civil dans le fuseau, dans l'ordre reçu", () => {
@@ -46,5 +46,12 @@ describe("filtrerSeances", () => {
   it("cherche dans les exercices, sans accents", () => {
     expect(filtrerSeances(seances, "developpe").map((s) => s.id)).toEqual(["a"]);
     expect(filtrerSeances(seances, "PRESSE A").map((s) => s.id)).toEqual(["b"]);
+  });
+});
+
+describe("dureeTexte", () => {
+  it("passe aux heures au-delà de 59 minutes", () => {
+    expect(dureeTexte(45)).toBe("45 min");
+    expect(dureeTexte(125)).toBe("2 h 05");
   });
 });

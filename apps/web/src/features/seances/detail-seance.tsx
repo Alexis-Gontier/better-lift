@@ -30,10 +30,9 @@ import {
 import { BadgeRecord, formaterSerie } from "@/features/exercices/badge-record";
 import { BoutonFermer } from "@/features/routines/bouton-fermer";
 import { ConfirmerSuppression } from "@/features/routines/confirmer-suppression";
-import { dureeTexte } from "@/features/tableau/calculs";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
-import { texteEcart } from "./calculs";
+import { dureeTexte, texteEcart } from "./calculs";
 import { dureeMin } from "./liste-seances";
 
 const JOUR = new Intl.DateTimeFormat("fr-FR", {

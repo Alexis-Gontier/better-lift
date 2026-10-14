@@ -2,7 +2,7 @@ import { Link, useRouteContext } from "@tanstack/react-router";
 import {
   Dumbbell,
   History,
-  LayoutDashboard,
+  House,
   ListChecks,
   LogOut,
   MoreHorizontal,
@@ -34,9 +34,9 @@ import { useDeconnexion } from "@/lib/deconnexion";
 import { initiales, nomAffiche } from "./nom-compte";
 import { OUVRIR_PALETTE } from "./palette";
 
-// Le Tableau de bord seul en tête, puis les groupes (D155) ; le Profil vit dans le pied (D156).
+// L'Accueil seul en tête (D197), puis les groupes (D155) ; le Profil vit dans le pied (D156).
 const GROUPES = [
-  { libelle: null, entrees: [{ to: "/", label: "Tableau de bord", icone: LayoutDashboard }] },
+  { libelle: null, entrees: [{ to: "/", label: "Accueil", icone: House }] },
   {
     libelle: "Entraînement",
     entrees: [

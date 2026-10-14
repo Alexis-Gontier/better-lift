@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BadgeRecord } from "@/features/exercices/badge-record";
-import { dureeTexte } from "@/features/tableau/calculs";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
-import { grouperParMois } from "./calculs";
+import { dureeTexte, grouperParMois } from "./calculs";
 
 type Props = {
   /** Les séances chargées, déjà filtrées. */

@@ -14,8 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { optionsBilan, useEcrirePreferences } from "@/features/profil/requetes";
-import { optionsPreferences } from "@/features/tableau/requetes";
+import { optionsBilan, optionsPreferences, useEcrirePreferences } from "@/features/profil/requetes";
 import { URL_API } from "@/lib/config";
 import { useDeconnexion } from "@/lib/deconnexion";
 import { FUSEAU } from "@/lib/fuseau";
@@ -75,7 +74,7 @@ function Profil() {
       </Card>
 
       <Section titre="Entraînement" description="Sur ton compte : le téléphone les suit aussi.">
-        <Ligne libelle="Objectif hebdomadaire" detail="Les semaines tenues, au Tableau de bord.">
+        <Ligne libelle="Objectif hebdomadaire" detail="Le nombre de séances visé chaque semaine.">
           <Choix
             libelle="Objectif hebdomadaire"
             valeur={prefs.objectifHebdo === null ? AUCUN : String(prefs.objectifHebdo)}

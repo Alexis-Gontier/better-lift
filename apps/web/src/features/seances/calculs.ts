@@ -2,6 +2,12 @@ import { cleJour, type Ecart, formaterCharge } from "@better-lift/shared";
 import { plier } from "@/lib/texte";
 import { SYSTEME_UNITES } from "@/lib/unites";
 
+/** « 45 min », « 2 h 05 ». */
+export function dureeTexte(min: number): string {
+  const h = Math.floor(min / 60);
+  return h > 0 ? `${h} h ${String(min % 60).padStart(2, "0")}` : `${min} min`;
+}
+
 const MOIS = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
 
 /**

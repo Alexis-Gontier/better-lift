@@ -15,7 +15,7 @@ export const OUVRIR_PALETTE = "better-lift:ouvrir-palette";
 // Les destinations de la barre latérale (D134). Exercices, routines et séances
 // s'ajoutent à la palette avec leurs lots.
 const PAGES = [
-  { to: "/", label: "Tableau de bord" },
+  { to: "/", label: "Accueil" },
   { to: "/seances", label: "Séances" },
   { to: "/routines", label: "Routines" },
   { to: "/exercices", label: "Exercices" },
