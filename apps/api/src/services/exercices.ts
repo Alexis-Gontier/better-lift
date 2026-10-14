@@ -109,7 +109,7 @@ export type DepotExercices = {
 };
 
 /** Au plus 8 variantes : une par équipement, les principaux d'abord, puis par nom. */
-export const MAX_VARIANTES = 8;
+const MAX_VARIANTES = 8;
 
 /** Les mots d'au moins 4 lettres d'un nom normalisé : « developpe couche barre ». */
 const mots = (recherche: string) => new Set(recherche.split(" ").filter((m) => m.length >= 4));

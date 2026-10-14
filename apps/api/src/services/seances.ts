@@ -318,7 +318,7 @@ export type DepotLectureSeances = {
   pratiques(userId: string): Promise<ExercicePratique[]>;
 };
 
-export type ExercicePratique = { slug: string; nbSeances: number; derniere: string };
+type ExercicePratique = { slug: string; nbSeances: number; derniere: string };
 
 const LECTURE_SEANCE = {
   id: true,

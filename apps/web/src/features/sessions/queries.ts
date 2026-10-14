@@ -34,17 +34,6 @@ export function sessionOptions(id: string) {
   });
 }
 
-export function recordsOptions(slug: string) {
-  return queryOptions({
-    queryKey: ["records", slug],
-    queryFn: async () => {
-      const res = await api.exercices[":slug"].records.$get({ param: { slug } });
-      if (!res.ok) throw new Error("Les records n'ont pas pu être chargés.");
-      return (await res.json()).records;
-    },
-  });
-}
-
 /**
  * Supprimer une séance (D140). Le détail supprimé est RETIRÉ, pas invalidé : le
  * relire donnerait un 404. Tout le reste de `["sessions"]` (le fil, « la dernière
