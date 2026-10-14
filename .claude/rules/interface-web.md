@@ -45,7 +45,7 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
 - **Routines** en **cartes** (D216, `2026-10-14-web-routines-design.md`) : sans routine ouverte,
   la grille prend toute la largeur ; une routine ouverte (ou neuve) la repousse dans le panneau
   de gauche (`ListDetailPage` disposition `column`, `detail` seulement si `$id` ou `/new`).
-  Carte : nom, compte, quatre premiers exercices (`apercu` de `RoutineResume`), poignée en haut à
+  Carte simple : nom et compte, poignée en haut à
   droite, ouverte enfoncée sur `bg-muted` ; « Nouvelle routine » en carte pointillée. Recherche
   `?q=` par `fold` de `lib/text.ts`. Routine ouverte **toujours
   modifiable** à droite. Annuler / Enregistrer et le menu ⋯ → Supprimer vivent dans l'en-tête

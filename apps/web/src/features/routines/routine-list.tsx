@@ -35,9 +35,6 @@ type Props = {
 
 const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
 
-/** Combien d'exercices une carte nomme avant « + N autres ». */
-const SHOWN = 4;
-
 /**
  * Les routines en CARTES (D216), comme la grille des exercices : pleine largeur sans routine
  * ouverte, dans le panneau de gauche quand une routine s'édite à droite. Une carte se
@@ -114,7 +111,7 @@ export function RoutineList({
                   <button
                     type="button"
                     onClick={onCreate}
-                    className="flex min-h-44 w-full flex-col items-center justify-center gap-2 rounded-base border-2 border-dashed border-border text-sm font-bold text-muted-foreground outline-none transition-colors hover:bg-secondary-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    className="flex w-full items-center justify-center gap-2 rounded-base border-2 border-dashed p-4 border-border text-sm font-bold text-muted-foreground outline-none transition-colors hover:bg-secondary-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     <Plus aria-hidden="true" className="size-5" />
                     Nouvelle routine
@@ -151,7 +148,6 @@ function RoutineCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: r.id,
   });
-  const rest = r.apercu.length - SHOWN;
 
   return (
     <li
@@ -165,7 +161,7 @@ function RoutineCard({
         onClick={onClick}
         aria-current={selected ? "true" : undefined}
         className={cn(
-          "flex min-h-44 w-full flex-col gap-3 rounded-base border-2 border-border bg-secondary-background p-4 text-left outline-none transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "flex w-full flex-col gap-3 rounded-base border-2 border-border bg-secondary-background p-4 text-left outline-none transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           isDragging
             ? // Pendant le glisser, la carte se SOULÈVE : son ombre double (D193).
               "shadow-[8px_8px_0_0_var(--border)]"
@@ -180,23 +176,6 @@ function RoutineCard({
             {plural(r.nbExercices, "exercice")} · {plural(r.nbSeries, "série")}
           </span>
         </span>
-        {r.apercu.length ? (
-          <ul className="flex flex-col gap-1 border-t-2 border-border pt-3 text-sm">
-            {r.apercu.slice(0, SHOWN).map((name, i) => (
-              // Un même exercice peut revenir deux fois : le rang distingue les lignes.
-              <li key={`${i}-${name}`} className="truncate">
-                {name}
-              </li>
-            ))}
-            {rest > 0 ? (
-              <li className="text-muted-foreground">
-                + {rest} autre{rest > 1 ? "s" : ""}
-              </li>
-            ) : null}
-          </ul>
-        ) : (
-          <span className="text-sm text-muted-foreground">Aucun exercice</span>
-        )}
       </button>
       {sortable ? (
         <button

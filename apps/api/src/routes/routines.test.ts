@@ -35,7 +35,6 @@ function fauxDepot(): DepotRoutines {
           nom: d.nom,
           nbExercices: d.exercices.length,
           nbSeries: 1,
-          apercu: d.exercices.map((e) => e.nom),
         }));
     },
     async lire(userId, id) {
