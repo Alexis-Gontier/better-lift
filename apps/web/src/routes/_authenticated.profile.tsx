@@ -20,7 +20,7 @@ import { useDeconnexion } from "@/lib/deconnexion";
 import { FUSEAU } from "@/lib/fuseau";
 import { SYSTEME_UNITES } from "@/lib/unites";
 
-export const Route = createFileRoute("/_protege/profil")({ component: Profil });
+export const Route = createFileRoute("/_authenticated/profile")({ component: Profil });
 
 // Les mêmes choix que le mobile (D91, D128). `Select` veut des chaînes : « aucun » vaut null.
 const AUCUN = "aucun";

@@ -7,7 +7,7 @@ import { EnTetePage } from "./en-tete-page";
 type Props = {
   titre: string;
   /** La liste de la page : le titre du fil y ramène quand un détail est ouvert. */
-  vers: "/seances" | "/routines" | "/exercices";
+  vers: "/sessions" | "/routines" | "/exercises";
   liste: ReactNode;
   detail?: ReactNode;
   /**

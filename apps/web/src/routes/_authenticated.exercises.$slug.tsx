@@ -8,9 +8,11 @@ import { optionsRecords } from "@/features/seances/requetes";
 
 /**
  * La fiche d'un exercice, dans le panneau de détail (D81). Le slug est
- * l'identifiant stable et lisible du catalogue : `/exercices/barbell-bench-press`.
+ * l'identifiant stable et lisible du catalogue : `/exercises/barbell-bench-press`.
  */
-export const Route = createFileRoute("/_protege/exercices/$slug")({ component: PageExercice });
+export const Route = createFileRoute("/_authenticated/exercises/$slug")({
+  component: PageExercice,
+});
 
 function PageExercice() {
   const { slug } = Route.useParams();
@@ -34,7 +36,7 @@ function PageExercice() {
       historique={historique.isError ? null : historique.data}
       exercice={detail.data}
       // Fermer garde les filtres : on retombe sur la liste telle qu'on l'a laissée.
-      onFermer={() => navigate({ to: "/exercices", search: (s) => s })}
+      onFermer={() => navigate({ to: "/exercises", search: (s) => s })}
     />
   );
 }

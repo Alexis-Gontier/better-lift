@@ -10,22 +10,22 @@ import { filtrerSeances } from "@/features/seances/calculs";
 import { ListeSeances } from "@/features/seances/liste-seances";
 import { optionsSeances } from "@/features/seances/requetes";
 
-// La séance ouverte vit dans le CHEMIN (`/seances/$id`, D81) ; les paramètres de
+// La séance ouverte vit dans le CHEMIN (`/sessions/$id`, D81) ; les paramètres de
 // recherche ne portent plus que ce qui filtre ou force un état.
-const recherche = z.object({ q: z.string().optional().catch(undefined), etat: champEtat });
+const recherche = z.object({ q: z.string().optional().catch(undefined), state: champEtat });
 
 /**
  * La mise en page des séances : la coquille et la liste. Le détail est la route
  * enfant `$id`, rendue par l'`Outlet` — la liste ne se recharge pas quand on
  * passe d'une séance à l'autre.
  */
-export const Route = createFileRoute("/_protege/seances")({
+export const Route = createFileRoute("/_authenticated/sessions")({
   validateSearch: recherche,
   component: PageSeances,
 });
 
 function PageSeances() {
-  const { q = "", etat } = Route.useSearch();
+  const { q = "", state } = Route.useSearch();
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useInfiniteQuery(optionsSeances());
@@ -44,15 +44,15 @@ function PageSeances() {
       const suivant = ids[e.key === "ArrowDown" ? i + 1 : Math.max(0, i - 1)];
       if (!suivant || suivant === id) return;
       e.preventDefault();
-      navigate({ to: "/seances/$id", params: { id: suivant }, search: (s) => s });
+      navigate({ to: "/sessions/$id", params: { id: suivant }, search: (s) => s });
     }
     document.addEventListener("keydown", surTouche);
     return () => document.removeEventListener("keydown", surTouche);
   }, [id, ids, navigate]);
 
   function panneauListe() {
-    const force = etatForceRendu(etat, "L'historique n'a pas pu être chargé.", () =>
-      navigate({ search: (s) => ({ ...s, etat: undefined }) }),
+    const force = etatForceRendu(state, "L'historique n'a pas pu être chargé.", () =>
+      navigate({ search: (s) => ({ ...s, state: undefined }) }),
     );
     if (force) return force;
     if (liste.isPending) return <EtatChargement />;
@@ -64,7 +64,7 @@ function PageSeances() {
         />
       );
     }
-    const vide = estVideForce(etat);
+    const vide = estVideForce(state);
     return (
       <ListeSeances
         seances={vide ? [] : visibles}
@@ -73,7 +73,7 @@ function PageSeances() {
         onFiltre={(texte) => {
           // Le filtre garde la séance ouverte : son chemin reste, seul `q` change.
           const search = (s: { q?: string }) => ({ ...s, q: texte || undefined });
-          if (id) navigate({ to: "/seances/$id", params: { id }, search, replace: true });
+          if (id) navigate({ to: "/sessions/$id", params: { id }, search, replace: true });
           else navigate({ search, replace: true });
         }}
         total={vide ? 0 : (liste.data.pages[0]?.total ?? 0)}
@@ -82,7 +82,7 @@ function PageSeances() {
         onSuite={() => liste.fetchNextPage()}
         idSelectionne={id}
         onSelection={(sId) =>
-          navigate({ to: "/seances/$id", params: { id: sId }, search: (s) => s })
+          navigate({ to: "/sessions/$id", params: { id: sId }, search: (s) => s })
         }
       />
     );
@@ -92,7 +92,7 @@ function PageSeances() {
   // change alors son jeu de panneaux (et sa clé de persistance).
   return (
     <PageListeDetail
-      vers="/seances"
+      vers="/sessions"
       titre="Séances"
       disposition="fil"
       liste={panneauListe()}

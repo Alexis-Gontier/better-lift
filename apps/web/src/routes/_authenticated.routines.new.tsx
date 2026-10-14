@@ -3,10 +3,10 @@ import { EditeurRoutine } from "@/features/routines/editeur-routine";
 import { useCreerRoutine } from "@/features/routines/requetes";
 
 /**
- * Une routine neuve (D81). Le segment statique `nouvelle` l'emporte sur `$id` :
+ * Une routine neuve (D81). Le segment statique `new` l'emporte sur `$id` :
  * aucun identifiant réservé à vérifier à la main.
  */
-export const Route = createFileRoute("/_protege/routines/nouvelle")({
+export const Route = createFileRoute("/_authenticated/routines/new")({
   component: PageNouvelleRoutine,
 });
 

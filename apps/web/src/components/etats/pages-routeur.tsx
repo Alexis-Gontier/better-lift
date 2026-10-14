@@ -34,7 +34,7 @@ export function PageIntrouvable() {
         <p className="max-w-sm text-sm text-muted-foreground">
           Cette adresse ne mène à rien. Le lien est peut-être ancien, ou l'élément a été supprimé.
         </p>
-        <Link to="/seances" className={`mt-3 ${aplat}`}>
+        <Link to="/sessions" className={`mt-3 ${aplat}`}>
           Revenir aux séances
         </Link>
       </Cadre>
@@ -71,7 +71,7 @@ export function PageErreur({ error, reset }: ErrorComponentProps) {
         >
           Réessayer
         </button>
-        <Link to="/seances" className={secondaire}>
+        <Link to="/sessions" className={secondaire}>
           Revenir aux séances
         </Link>
       </div>

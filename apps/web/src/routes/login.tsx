@@ -4,24 +4,24 @@ import { champEtat, etatForceRendu } from "@/components/etats/etat-force";
 import { FormulaireAuth } from "@/features/auth/formulaire-auth";
 import { chargerSession } from "@/lib/auth-session";
 
-const recherche = z.object({ redirect: z.string().optional(), etat: champEtat });
+const recherche = z.object({ redirect: z.string().optional(), state: champEtat });
 
-// L'inscription (D196), réservée aux adresses de SIGNUP_ALLOWLIST côté API.
-export const Route = createFileRoute("/inscription")({
+export const Route = createFileRoute("/login")({
   validateSearch: recherche,
+  // Une session déjà ouverte n'a rien à faire ici (D196).
   beforeLoad: ({ context }) => {
     if (context.auth.session) throw redirect({ to: "/" });
   },
-  component: PageInscription,
+  component: PageConnexion,
 });
 
-function PageInscription() {
-  const { redirect: retour, etat } = Route.useSearch();
+function PageConnexion() {
+  const { redirect: retour, state } = Route.useSearch();
   const navigate = useNavigate();
   const router = useRouter();
 
-  const force = etatForceRendu(etat, "L'API est injoignable.", () =>
-    navigate({ to: "/inscription", search: (s) => ({ ...s, etat: undefined }) }),
+  const force = etatForceRendu(state, "L'API est injoignable.", () =>
+    navigate({ to: "/login", search: (s) => ({ ...s, state: undefined }) }),
   );
 
   return (
@@ -29,11 +29,12 @@ function PageInscription() {
       <div className="w-full max-w-xs">
         {force ?? (
           <FormulaireAuth
-            mode="inscription"
+            mode="connexion"
             redirect={retour}
             onSucces={async () => {
-              // Better Auth ouvre la session à l'inscription : même enchaînement
-              // que la connexion.
+              // Relire la session PUIS invalider : sans l'invalidation, le
+              // `beforeLoad` de `_protege` relirait l'ancien contexte et
+              // renverrait aussitôt ici.
               await chargerSession();
               await router.invalidate();
               await navigate({ to: retour ?? "/" });

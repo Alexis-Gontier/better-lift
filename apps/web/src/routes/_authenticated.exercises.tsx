@@ -9,42 +9,42 @@ import { PageListeDetail } from "@/components/shell/page-liste-detail";
 import { ListeExercices } from "@/features/exercices/liste-exercices";
 import { optionsCatalogue } from "@/features/exercices/requetes";
 
-// L'exercice ouvert vit dans le CHEMIN (`/exercices/$slug`, D81) ; la recherche
+// L'exercice ouvert vit dans le CHEMIN (`/exercises/$slug`, D81) ; la recherche
 // et le groupe restent en paramètres : ce sont des filtres, et ils suivent quand
 // on passe d'un exercice à l'autre. `.catch(undefined)` évite qu'une URL
 // trafiquée fasse échouer tout l'écran — un filtre inconnu s'ignore.
 const recherche = z.object({
   q: z.string().optional(),
-  groupe: z.enum(GROUPES).optional().catch(undefined),
-  etat: champEtat,
+  group: z.enum(GROUPES).optional().catch(undefined),
+  state: champEtat,
 });
 
 /**
  * La mise en page du catalogue : la coquille et la liste filtrée. La fiche est
  * la route enfant `$slug`, rendue par l'`Outlet`.
  */
-export const Route = createFileRoute("/_protege/exercices")({
+export const Route = createFileRoute("/_authenticated/exercises")({
   validateSearch: recherche,
   component: PageExercices,
 });
 
 function PageExercices() {
-  const { q, groupe, etat } = Route.useSearch();
+  const { q, group, state } = Route.useSearch();
   const { slug } = useParams({ strict: false });
   const navigate = Route.useNavigate();
 
-  const liste = useInfiniteQuery(optionsCatalogue({ q, groupe }));
+  const liste = useInfiniteQuery(optionsCatalogue({ q, groupe: group }));
 
-  const abandonner = () => navigate({ search: (s) => ({ ...s, etat: undefined }) });
-  const vide = estVideForce(etat);
+  const abandonner = () => navigate({ search: (s) => ({ ...s, state: undefined }) });
+  const vide = estVideForce(state);
   const exercices = vide ? [] : (liste.data?.pages.flatMap((p) => p.exercices) ?? []);
   const total = vide ? 0 : (liste.data?.pages[0]?.total ?? 0);
 
   function panneauListe() {
-    // Les états forcés par `?etat=` restent prioritaires, en développement
+    // Les états forcés par `?state=` restent prioritaires, en développement
     // seulement : ils permettent de revoir chargement et erreur à la demande,
     // maintenant que les vrais ne se déclenchent plus qu'au hasard du réseau.
-    const force = etatForceRendu(etat, "Le catalogue n'a pas pu être chargé.", abandonner);
+    const force = etatForceRendu(state, "Le catalogue n'a pas pu être chargé.", abandonner);
     if (force) return force;
 
     if (liste.isPending) return <EtatChargement />;
@@ -65,12 +65,12 @@ function PageExercices() {
         chargeSuite={liste.isFetchingNextPage}
         onSuite={() => liste.fetchNextPage()}
         q={q ?? ""}
-        groupe={groupe}
+        groupe={group}
         slugSelectionne={slug}
         onRecherche={(valeur) => navigate({ search: (s) => ({ ...s, q: valeur || undefined }) })}
-        onGroupe={(g) => navigate({ search: (s) => ({ ...s, groupe: g }) })}
+        onGroupe={(g) => navigate({ search: (s) => ({ ...s, group: g }) })}
         onSelection={(choisi) =>
-          navigate({ to: "/exercices/$slug", params: { slug: choisi }, search: (s) => s })
+          navigate({ to: "/exercises/$slug", params: { slug: choisi }, search: (s) => s })
         }
       />
     );
@@ -78,7 +78,7 @@ function PageExercices() {
 
   return (
     <PageListeDetail
-      vers="/exercices"
+      vers="/exercises"
       titre="Exercices"
       disposition="fil"
       liste={panneauListe()}

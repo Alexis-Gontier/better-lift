@@ -16,10 +16,10 @@ export const OUVRIR_PALETTE = "better-lift:ouvrir-palette";
 // s'ajoutent à la palette avec leurs lots.
 const PAGES = [
   { to: "/", label: "Accueil" },
-  { to: "/seances", label: "Séances" },
+  { to: "/sessions", label: "Séances" },
   { to: "/routines", label: "Routines" },
-  { to: "/exercices", label: "Exercices" },
-  { to: "/profil", label: "Profil" },
+  { to: "/exercises", label: "Exercices" },
+  { to: "/profile", label: "Profil" },
 ] as const;
 
 export function Palette() {

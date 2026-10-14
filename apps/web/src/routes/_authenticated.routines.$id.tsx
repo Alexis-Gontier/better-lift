@@ -10,7 +10,7 @@ import {
 } from "@/features/routines/requetes";
 
 /** Une routine enregistrée, ouverte et toujours modifiable (D81). */
-export const Route = createFileRoute("/_protege/routines/$id")({ component: PageRoutine });
+export const Route = createFileRoute("/_authenticated/routines/$id")({ component: PageRoutine });
 
 function PageRoutine() {
   const { id } = Route.useParams();

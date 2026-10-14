@@ -9,30 +9,30 @@ import { ListeRoutines } from "@/features/routines/liste-routines";
 import { optionsRoutines, useOrdonnerRoutines } from "@/features/routines/requetes";
 import { plier } from "@/lib/texte";
 
-// La routine ouverte vit dans le CHEMIN (`/routines/$id`, `/routines/nouvelle`,
+// La routine ouverte vit dans le CHEMIN (`/routines/$id`, `/routines/new`,
 // D81). Plus de paramètre `edition` : une routine ouverte est toujours modifiable.
-const recherche = z.object({ q: z.string().optional().catch(undefined), etat: champEtat });
+const recherche = z.object({ q: z.string().optional().catch(undefined), state: champEtat });
 
 /**
  * La mise en page des routines, en disposition `colonne` : la colonne de
  * sélection à gauche, l'espace de travail à droite — l'`Outlet`, toujours
  * présent (invite, éditeur, ou routine neuve selon la route enfant).
  */
-export const Route = createFileRoute("/_protege/routines")({
+export const Route = createFileRoute("/_authenticated/routines")({
   validateSearch: recherche,
   component: PageRoutines,
 });
 
 function PageRoutines() {
-  const { q = "", etat } = Route.useSearch();
+  const { q = "", state } = Route.useSearch();
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
   const liste = useQuery(optionsRoutines());
   const ordonner = useOrdonnerRoutines();
 
   function panneauListe() {
-    const force = etatForceRendu(etat, "Les routines n'ont pas pu être chargées.", () =>
-      navigate({ search: (s) => ({ ...s, etat: undefined }) }),
+    const force = etatForceRendu(state, "Les routines n'ont pas pu être chargées.", () =>
+      navigate({ search: (s) => ({ ...s, state: undefined }) }),
     );
     if (force) return force;
     if (liste.isPending) return <EtatChargement />;
@@ -44,7 +44,7 @@ function PageRoutines() {
         />
       );
     }
-    const toutes = estVideForce(etat) ? [] : liste.data;
+    const toutes = estVideForce(state) ? [] : liste.data;
     const cherche = plier(q.trim());
     return (
       <ListeRoutines
@@ -61,7 +61,7 @@ function PageRoutines() {
         onSelection={(rId) =>
           navigate({ to: "/routines/$id", params: { id: rId }, search: (s) => s })
         }
-        onCreer={() => navigate({ to: "/routines/nouvelle" })}
+        onCreer={() => navigate({ to: "/routines/new" })}
         onOrdonner={(ids) => ordonner.mutate(ids)}
       />
     );

@@ -40,11 +40,11 @@ const GROUPES = [
   {
     libelle: "Entraînement",
     entrees: [
-      { to: "/seances", label: "Séances", icone: History },
+      { to: "/sessions", label: "Séances", icone: History },
       { to: "/routines", label: "Routines", icone: ListChecks },
     ],
   },
-  { libelle: "Catalogue", entrees: [{ to: "/exercices", label: "Exercices", icone: Dumbbell }] },
+  { libelle: "Catalogue", entrees: [{ to: "/exercises", label: "Exercices", icone: Dumbbell }] },
 ] as const;
 
 export function NavLaterale() {
@@ -138,7 +138,7 @@ function NavUser({ email }: { email: string }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/profil">
+              <Link to="/profile">
                 <UserRound aria-hidden="true" />
                 Profil
               </Link>

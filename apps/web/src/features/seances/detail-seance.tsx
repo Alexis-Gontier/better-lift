@@ -176,7 +176,7 @@ function Exercice({ exercice: ex }: { exercice: SeanceDetail["exercices"][number
           </p>
         </div>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/exercices/$slug" params={{ slug: ex.slug }}>
+          <Link to="/exercises/$slug" params={{ slug: ex.slug }}>
             Fiche
           </Link>
         </Button>

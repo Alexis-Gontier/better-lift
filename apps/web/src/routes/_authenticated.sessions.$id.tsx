@@ -6,7 +6,7 @@ import { DetailSeance } from "@/features/seances/detail-seance";
 import { optionsSeance, useSupprimerSeance } from "@/features/seances/requetes";
 
 /** Une séance de l'historique, ouverte dans le panneau de détail (D81). */
-export const Route = createFileRoute("/_protege/seances/$id")({ component: PageSeance });
+export const Route = createFileRoute("/_authenticated/sessions/$id")({ component: PageSeance });
 
 function PageSeance() {
   const { id } = Route.useParams();
@@ -26,9 +26,9 @@ function PageSeance() {
   return (
     <DetailSeance
       seance={detail.data}
-      onFermer={() => navigate({ to: "/seances", search: (s) => s })}
+      onFermer={() => navigate({ to: "/sessions", search: (s) => s })}
       onSupprimer={() =>
-        supprimer.mutate(id, { onSuccess: () => navigate({ to: "/seances", search: (s) => s }) })
+        supprimer.mutate(id, { onSuccess: () => navigate({ to: "/sessions", search: (s) => s }) })
       }
     />
   );

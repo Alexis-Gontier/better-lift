@@ -13,6 +13,6 @@ export function useDeconnexion() {
     // de laisser passer.
     await chargerSession();
     await router.invalidate();
-    await navigate({ to: "/connexion" });
+    await navigate({ to: "/login" });
   };
 }

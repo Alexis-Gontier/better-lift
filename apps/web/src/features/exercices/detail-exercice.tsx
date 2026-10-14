@@ -296,7 +296,7 @@ function Historique({ historique }: { historique: HistoriqueExercice }) {
                 </TableCell>
                 <TableCell>
                   <Link
-                    to="/seances/$id"
+                    to="/sessions/$id"
                     params={{ id: s.id }}
                     className="font-semibold hover:underline hover:underline-offset-4"
                   >

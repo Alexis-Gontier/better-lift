@@ -11,14 +11,14 @@ const TEXTES = {
     action: "Se connecter",
     question: "Pas de compte ?",
     lien: "Créer un compte",
-    vers: "/inscription",
+    vers: "/register",
   },
   inscription: {
     titre: "Créer un compte",
     action: "Créer le compte",
     question: "Déjà un compte ?",
     lien: "Se connecter",
-    vers: "/connexion",
+    vers: "/login",
   },
 } as const;
 
