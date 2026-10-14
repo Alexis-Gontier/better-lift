@@ -1,5 +1,13 @@
 import { Link, useRouteContext } from "@tanstack/react-router";
-import { ChevronsUpDown, LogOut, UserRound } from "lucide-react";
+import {
+  ChevronsUpDown,
+  Dumbbell,
+  History,
+  House,
+  ListChecks,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -14,6 +22,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -22,10 +31,15 @@ import {
 import { useSignOut } from "@/lib/sign-out";
 import { displayName, initials } from "./account-name";
 
-/**
- * La barre latérale de shadcn : une place en tête pour le titre de l'app, le compte en pied.
- * La navigation viendra quand le layout sera dessiné.
- */
+// Les pages, en une seule liste ; le Profil vit dans le menu du compte.
+const PAGES = [
+  { to: "/", label: "Accueil", icon: House },
+  { to: "/sessions", label: "Séances", icon: History },
+  { to: "/routines", label: "Routines", icon: ListChecks },
+  { to: "/exercises", label: "Exercices", icon: Dumbbell },
+] as const;
+
+/** La barre latérale de shadcn : la place du titre en tête, les pages, le compte en pied. */
 export function SideNav() {
   const email = useRouteContext({ from: "__root__" }).auth.session?.user.email ?? "";
 
@@ -33,7 +47,29 @@ export function SideNav() {
     <Sidebar>
       {/* La place du titre de l'app et de son icône, à venir : même hauteur que le pied. */}
       <SidebarHeader className="h-16 border-b-2 border-sidebar-border" />
-      <SidebarContent />
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            {PAGES.map(({ to, label, icon: Icon }) => (
+              <SidebarMenuItem key={to}>
+                {/* La route décide de l'entrée active, par le `data-active` du lien. */}
+                <SidebarMenuButton asChild>
+                  {/* Les filtres de l'URL n'éteignent pas l'entrée ; sans `exact`, `/`
+                      resterait actif sur toutes les pages. */}
+                  <Link
+                    to={to}
+                    activeOptions={{ includeSearch: false, exact: to === "/" }}
+                    activeProps={{ "data-active": true, "aria-current": "page" }}
+                  >
+                    <Icon aria-hidden="true" />
+                    <span>{label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
       <SidebarFooter className="border-t-2 border-sidebar-border">
         <NavUser email={email} />
       </SidebarFooter>
