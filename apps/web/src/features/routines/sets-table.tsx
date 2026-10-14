@@ -21,8 +21,9 @@ import { UNIT_SYSTEM } from "@/lib/units";
 
 const UNIT = UNIT_SYSTEM === "imperial" ? "lb" : "kg";
 
-/** Les colonnes : rang, type, charge, reps, retrait. Serrées : kg et reps suivent le type. */
-const COLUMNS = "grid grid-cols-[2.5rem_10rem_5.5rem_5.5rem_2rem] items-center gap-2 px-4";
+/** Les colonnes : rang, type, charge, reps, retrait. Type, kg et reps se partagent toute la largeur. */
+const COLUMNS =
+  "grid grid-cols-[2.5rem_minmax(9rem,1fr)_minmax(5rem,1fr)_minmax(5rem,1fr)_2rem] items-center gap-2 px-4";
 
 /** Une case de saisie : chiffres centrés, dans une boîte nette. */
 const CELL = "h-9 w-full text-center text-sm tabular-nums";

@@ -130,7 +130,7 @@ export function ExerciseFilters(props: Props) {
             <ArrowDownUp aria-hidden="true" className="text-muted-foreground" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent align="end">
+          <SelectContent>
             <SelectGroup>
               {SORTS.map((s) => {
                 // Dans « Mes exercices », la pertinence n'est que la date : on le dit.

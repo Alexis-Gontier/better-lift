@@ -45,7 +45,8 @@ function SelectContent({
   className,
   children,
   position = "popper",
-  align = "center",
+  // Tous les menus s'ouvrent alignés sur le bord gauche de leur déclencheur.
+  align = "start",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (

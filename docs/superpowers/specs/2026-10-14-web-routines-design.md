@@ -104,7 +104,7 @@ voulu revenir à l'état d'avant et passer les routines en **cartes**.
   page Exercices, plus le groupe). La « dernière fois » a été retirée de la carte (et sa requête
   avec). Le menu ⋯ est un bouton `outline` carré, de la hauteur du bouton Repos. Un filet de 2 px
   sépare l'en-tête de la table.
-- **Table des séries** : colonnes serrées (rang, type, kg, reps, retrait), kg et reps juste après
-  le type ; ligne d'en-tête sur `bg-muted/40`, séries séparées par un filet léger.
+- **Table des séries** : toute la largeur de la carte — type, kg et reps se la partagent
+  (rang et retrait fixes) ; ligne d'en-tête sur `bg-muted/40`, séries séparées par un filet léger.
 - **Poignée** : la bande de gauche garde toute la hauteur, avec un filet de 2 px et un fond en
   retrait.
