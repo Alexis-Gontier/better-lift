@@ -111,6 +111,30 @@ Révise D46 pour le web, à la demande explicite de l'utilisateur (14 octobre 20
 `packages/db/catalogue/LICENSE-dataset.md`) : choix assumé pour une application privée à trois
 comptes, à reprendre en premier si elle s'ouvrait. Le mobile garde la mention.
 
+## D208 — Un tri toujours visible, qui vaut pour tout le catalogue
+
+Révise le tri de D205, qui n'apparaissait qu'avec « Mes exercices » et décalait la rangée.
+Le menu « Trier par » (Nom, Fait récemment, Plus pratiqués) est toujours à côté de « Mes
+exercices ». Par défaut : Nom pour le catalogue, Fait récemment pour « Mes exercices » ; un
+choix explicite survit à la bascule (`?sort=name|recent|count`).
+
+Sur le catalogue entier, trier par la pratique met **les exercices pratiqués en tête**, triés,
+puis le reste du catalogue par nom, sans eux. Deux requêtes paginées
+(`use-exercise-list.ts`) : les pratiqués par leurs slugs, chargés en entier d'abord, puis le
+catalogue. Trier côté client les seules pages chargées aurait laissé des exercices pratiqués
+plus loin, hors de la tête. Aucune route d'API nouvelle.
+
+Dans le panneau étroit, les deux menus de filtre montrent le seul nom du filtre (« Muscle »,
+« Équipement ») tant que rien n'est choisi : « Équipement : tous » était coupé.
+
+## D209 — Les muscles de la fiche sont des liens
+
+Dans l'en-tête de la fiche, un muscle (ciblé ou secondaire) qui fait partie des 19 `CIBLES`
+est un lien : la grille de gauche se filtre sur lui (`?target=`), la fiche reste ouverte. La
+recherche et l'équipement sautent, sans quoi la grille pourrait ne rien montrer ; « Mes
+exercices » et le tri restent. Un muscle hors du filtre (« Épaules ») reste du texte. Survol :
+soulignement, jamais l'orange.
+
 ## Hors champ
 
 La progression multi-exercices, la carte du corps, la création d'exercices personnels.

@@ -1,11 +1,14 @@
 import {
   avecCharge,
+  CIBLES,
   type ExerciceDetail,
   type ExerciceResume,
   formatJour,
   type HistoriqueExercice,
   type PeriodeExercice,
 } from "@better-lift/shared";
+import { Link } from "@tanstack/react-router";
+import { cn } from "cn";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,11 +61,9 @@ export function ExercisePage({
           </div>
           {/* Les muscles et l'équipement : des informations, jamais l'orange de l'action. */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline">{exercise.cible}</Badge>
+            <MuscleBadge slug={exercise.slug} muscle={exercise.cible} primary />
             {exercise.secondaires.map((m) => (
-              <Badge key={m} variant="secondary" className="bg-muted font-medium">
-                {m}
-              </Badge>
+              <MuscleBadge key={m} slug={exercise.slug} muscle={m} />
             ))}
             <Badge variant="secondary" className="font-medium text-muted-foreground">
               {exercise.equipement}
@@ -134,5 +135,45 @@ export function ExercisePage({
         </section>
       ) : null}
     </div>
+  );
+}
+
+const isTarget = (m: string): m is (typeof CIBLES)[number] =>
+  (CIBLES as readonly string[]).includes(m);
+
+/**
+ * Un muscle de la fiche (D209). S'il est l'un des 19 muscles ciblés du filtre, c'est un lien :
+ * la grille de gauche se filtre sur lui, la fiche reste ouverte ; la recherche et l'équipement
+ * sautent, sans quoi « Pectoraux » pourrait ne rien montrer. Les autres restent du texte.
+ */
+function MuscleBadge({
+  slug,
+  muscle,
+  primary = false,
+}: {
+  slug: string;
+  muscle: string;
+  primary?: boolean;
+}) {
+  const look = primary ? "outline" : "secondary";
+  const tint = primary ? undefined : "bg-muted font-medium";
+  if (!isTarget(muscle)) {
+    return (
+      <Badge variant={look} className={tint}>
+        {muscle}
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant={look} className={cn(tint, "underline-offset-2 hover:underline")} asChild>
+      <Link
+        to="/exercises/$slug"
+        params={{ slug }}
+        search={(s) => ({ ...s, target: muscle, q: undefined, equipment: undefined })}
+        title={`Voir les exercices : ${muscle}`}
+      >
+        {muscle}
+      </Link>
+    </Badge>
   );
 }

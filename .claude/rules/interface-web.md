@@ -80,21 +80,21 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   « SUPERSET A » et filet `border-superset`, en lecture seule (`groupes` de `shared`).
 - **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
-- **Exercices** (D200–D206, `2026-10-14-web-exercices-design.md`) : grille seule, ou grille dans
+- **Exercices** (D200–D209, `2026-10-14-web-exercices-design.md`) : grille seule, ou grille dans
   un panneau de gauche redimensionnable (`ListDetailPage` disposition `catalog`) quand une fiche
   est ouverte à droite (D206).
   - **Grille** `/exercises` (`features/exercises/exercise-grid.tsx`, `exercise-filters.tsx`) : cartes
     illustrées (image fixe), filtres en pastilles dans l'URL — `?q=`, `?target=` (les 19
     `CIBLES` de `shared`, 8 visibles + menu « + 11 »), `?equipment=` (`EQUIPEMENTS_PRINCIPAUX` +
     menu « Autres »), `?mine=1` (« Mes exercices », par `/exercices/pratiques`, clé
-    `["sessions","practiced"]`), `?sort=recent|count` (trié côté client). Pastille `×N` en contour
+    `["sessions","practiced"]`), `?sort=name|recent|count` toujours visible (D208 : sur le catalogue, les pratiqués en tête puis le reste, deux requêtes dans `use-exercise-list.ts`). Pastille `×N` en contour
     pour un exercice pratiqué. Défilement infini par un repère `IntersectionObserver`.
   - **Fiche** `/exercises/$slug` = route ENFANT (`Outlet` de la grille), dans le panneau de
     droite ; une croix la ferme en gardant les filtres (sans `period`). Dans le panneau étroit, les
     pastilles de filtre deviennent deux `Select` (`compact`), la carte ouverte est enfoncée sur
     `bg-muted`. En-tête (GIF,
     `h1`, muscle ciblé en `Badge outline`, secondaires en `bg-muted`, équipement — jamais
-    l'orange), analyse si pratiqué (`exercise-analysis.tsx` : Charge max / 1RM / Volume / Reps en
+    l'orange ; un muscle des `CIBLES` est un lien qui filtre la grille, D209), analyse si pratiqué (`exercise-analysis.tsx` : Charge max / 1RM / Volume / Reps en
     `ToggleGroup`, période `?period=` 3 M par défaut, écart en contour, dernier point orange s'il
     est record, résumé de la période), meilleures séries par reps (`best-sets-table.tsx`, depuis
     toujours, masqué au poids du corps), consignes, variantes (`/exercices/:slug/variantes`).

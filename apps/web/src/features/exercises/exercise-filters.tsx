@@ -1,5 +1,5 @@
 import { CIBLES, EQUIPEMENTS, EQUIPEMENTS_PRINCIPAUX } from "@better-lift/shared";
-import { ChevronDown, Search } from "lucide-react";
+import { ArrowDownUp, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,6 +29,12 @@ const OTHER_EQUIPMENT = EQUIPEMENTS.filter(
 const ALL = "__all__";
 
 export type Sort = "name" | "recent" | "count";
+
+const SORTS: { value: Sort; label: string }[] = [
+  { value: "name", label: "Nom" },
+  { value: "recent", label: "Fait récemment" },
+  { value: "count", label: "Plus pratiqués" },
+];
 
 type Props = {
   /** Une fiche est ouverte : le panneau est étroit, les pastilles deviennent deux menus (D206). */
@@ -68,20 +74,23 @@ export function ExerciseFilters(props: Props) {
         <Toggle variant="outline" pressed={mine} onPressedChange={props.onMine}>
           Mes exercices
         </Toggle>
-        {mine ? (
-          <Select value={sort} onValueChange={(v) => props.onSort(v as Sort)}>
-            <SelectTrigger aria-label="Trier">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="recent">Dernière fois</SelectItem>
-                <SelectItem value="count">Plus pratiqués</SelectItem>
-                <SelectItem value="name">Nom</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        ) : null}
+        {/* Toujours là, au même endroit (D208) : sur le catalogue entier, trier par la
+            pratique fait remonter tes exercices en tête, le reste suit par nom. */}
+        <Select value={sort} onValueChange={(v) => props.onSort(v as Sort)}>
+          <SelectTrigger aria-label="Trier par">
+            <ArrowDownUp aria-hidden="true" className="text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectGroup>
+              {SORTS.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       {props.compact ? (
@@ -131,9 +140,11 @@ function FilterSelect({
   onChange: (value?: string) => void;
 }) {
   return (
-    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
+    // Sans choix, la valeur vide montre le seul nom du filtre : « Équipement : tous » ne
+    // tenait pas dans le panneau étroit.
+    <Select value={value ?? ""} onValueChange={(v) => onChange(v === ALL ? undefined : v)}>
       <SelectTrigger aria-label={label} className="w-full">
-        <SelectValue />
+        <SelectValue placeholder={label} />
       </SelectTrigger>
       <SelectContent className="max-h-80">
         <SelectGroup>

@@ -1,7 +1,5 @@
 import { CIBLES, EQUIPEMENTS } from "@better-lift/shared";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
-import { useMemo } from "react";
 import { z } from "zod";
 import { ListDetailPage } from "@/components/shell/list-detail-page";
 import { EmptyState } from "@/components/states/empty-state";
@@ -11,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExerciseFilters, type Sort } from "@/features/exercises/exercise-filters";
-import { ExerciseGrid, type Practice } from "@/features/exercises/exercise-grid";
-import { catalogOptions, practicedOptions } from "@/features/exercises/queries";
+import { ExerciseGrid } from "@/features/exercises/exercise-grid";
+import { useExerciseList } from "@/features/exercises/use-exercise-list";
 
 // Les filtres vivent dans l'URL (D200) et suivent jusqu'à la fiche, qui y ramène.
 // `.catch(undefined)` : une URL trafiquée ignore le filtre au lieu de casser l'écran.
@@ -40,50 +38,32 @@ function ExercisesPage() {
   // Le slug de l'enfant décide du jeu de panneaux : la coquille ne connaît pas ses routes.
   const { slug } = useParams({ strict: false });
   const compact = slug !== undefined;
-  const practiced = useQuery(practicedOptions());
-
-  const practicedMap = useMemo(
-    () => new Map<string, Practice>((practiced.data ?? []).map((p) => [p.slug, p])),
-    [practiced.data],
-  );
-  // « Mes exercices » filtre par la liste des slugs pratiqués ; tant qu'elle n'est pas
-  // là, la grille attend plutôt que de montrer tout le catalogue.
-  const slugs = mine ? practiced.data?.map((p) => p.slug) : undefined;
-  const list = useInfiniteQuery({
-    ...catalogOptions({ q, target, equipment, slugs }),
-    enabled: !mine || practiced.isSuccess,
-  });
+  // Par défaut : le nom pour le catalogue, la dernière fois pour « Mes exercices » (D208).
+  const order: Sort = sort ?? (mine ? "recent" : "name");
+  const list = useExerciseList({ q, target, equipment, mine: mine === 1, sort: order });
+  const { practiced, exercises } = list;
 
   const set = (patch: Partial<z.infer<typeof search>>) =>
     navigate({ search: (s) => ({ ...s, ...patch }), replace: true });
   const clear = () =>
     navigate({ search: (s) => ({ ...s, q: undefined, target: undefined, equipment: undefined }) });
 
-  const order = mine ? (sort ?? "recent") : "name";
-  const exercises = useMemo(() => {
-    const all = list.data?.pages.flatMap((p) => p.exercices) ?? [];
-    if (order === "name") return all;
-    const value = (slug: string) => {
-      const p = practicedMap.get(slug);
-      return order === "count" ? (p?.nbSeances ?? 0) : Date.parse(p?.derniere ?? "0");
-    };
-    return [...all].sort((a, b) => value(b.slug) - value(a.slug));
-  }, [list.data, order, practicedMap]);
-
   function content() {
     const forced = renderForcedState(state, "Le catalogue n'a pas pu être chargé.", () =>
       set({ state: undefined }),
     );
     if (forced) return forced;
-    if (mine && practiced.isError) {
-      return <ErrorState message={practiced.error.message} onRetry={() => practiced.refetch()} />;
-    }
-    if (list.isError) {
+    if (list.error) {
       return (
-        <ErrorState message="Le catalogue n'a pas pu être chargé." onRetry={() => list.refetch()} />
+        <ErrorState
+          message={
+            practiced.isError ? practiced.error.message : "Le catalogue n'a pas pu être chargé."
+          }
+          onRetry={list.retry}
+        />
       );
     }
-    if (list.isPending) return <GridSkeleton />;
+    if (list.pending) return <GridSkeleton />;
     if (isForcedEmpty(state) || exercises.length === 0) {
       return (
         <div className="py-16">
@@ -113,14 +93,14 @@ function ExercisesPage() {
       <ExerciseGrid
         selectedSlug={slug}
         exercises={exercises}
-        practiced={practicedMap}
-        hasMore={list.hasNextPage && !list.isFetchingNextPage}
-        onMore={() => list.fetchNextPage()}
+        practiced={list.practicedMap}
+        hasMore={list.hasMore}
+        onMore={list.more}
       />
     );
   }
 
-  const total = list.data?.pages[0]?.total;
+  const total = list.total;
   const listPanel = (
     <ScrollArea className="h-full">
       <div className="flex flex-col gap-5 px-6 py-6">
@@ -142,7 +122,8 @@ function ExercisesPage() {
           onSearch={(value) => set({ q: value || undefined })}
           onTarget={(value) => set({ target: value as typeof target })}
           onEquipment={(value) => set({ equipment: value as typeof equipment })}
-          onMine={(on) => set({ mine: on ? 1 : undefined, sort: undefined })}
+          // Le tri choisi survit à la bascule ; seul le défaut suit « Mes exercices ».
+          onMine={(on) => set({ mine: on ? 1 : undefined })}
           onSort={(value: Sort) => set({ sort: value })}
         />
         {content()}
