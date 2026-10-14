@@ -83,3 +83,28 @@ export const EQUIPEMENTS_PRINCIPAUX = [
   "Smith machine",
   "Kettlebell",
 ] as const;
+
+/** Tous les équipements du catalogue, des plus fournis aux moins fournis (menu « Autres », D200). */
+export const EQUIPEMENTS = [
+  ...EQUIPEMENTS_PRINCIPAUX,
+  "Lesté",
+  "Swiss ball",
+  "Barre EZ",
+  "Machine guidée",
+  "Assisté",
+  "Médecine-ball",
+  "Corde",
+  "Rouleau",
+  "Bande élastique",
+  "Bosu",
+  "Barre olympique",
+  "Roue abdominale",
+  "SkiErg",
+  "Ergomètre à bras",
+  "Masse",
+  "Vélo elliptique",
+  "Pneu",
+  "Escalier mécanique",
+  "Trap bar",
+  "Vélo d'appartement",
+] as const;

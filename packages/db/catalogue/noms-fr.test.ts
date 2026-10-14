@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { CIBLES, EQUIPEMENTS_PRINCIPAUX } from "@better-lift/shared";
+import { CIBLES, EQUIPEMENTS, EQUIPEMENTS_PRINCIPAUX } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 
 type EntreeSource = {
@@ -99,6 +99,10 @@ describe("vocabulaire de la grille d'exercices (D200)", () => {
 
   it("CIBLES couvre exactement les muscles ciblés du catalogue", () => {
     expect([...CIBLES].sort()).toEqual([...cibles].sort());
+  });
+
+  it("EQUIPEMENTS couvre exactement les équipements du catalogue", () => {
+    expect([...EQUIPEMENTS].sort()).toEqual([...equipements].sort());
   });
 
   it("EQUIPEMENTS_PRINCIPAUX n'invente aucun équipement", () => {

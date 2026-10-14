@@ -7,10 +7,10 @@ import { exerciseOptions, historyOptions } from "@/features/exercises/queries";
 import { recordsOptions } from "@/features/sessions/queries";
 
 /**
- * La fiche d'un exercice, dans le panneau de détail (D81). Le slug est
+ * La fiche d'un exercice, en page entière (D201) : `exercises_` la sort de la grille. Le slug est
  * l'identifiant stable et lisible du catalogue : `/exercises/barbell-bench-press`.
  */
-export const Route = createFileRoute("/_authenticated/exercises/$slug")({
+export const Route = createFileRoute("/_authenticated/exercises_/$slug")({
   component: ExercisePage,
 });
 

@@ -17,7 +17,7 @@ import { Route as AuthenticatedExercisesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedRoutinesRouteImport } from './routes/_authenticated.routines'
 import { Route as AuthenticatedSessionsRouteImport } from './routes/_authenticated.sessions'
-import { Route as AuthenticatedExercisesSlugRouteImport } from './routes/_authenticated.exercises.$slug'
+import { Route as AuthenticatedExercisesSlugRouteImport } from './routes/_authenticated.exercises_.$slug'
 import { Route as AuthenticatedRoutinesIndexRouteImport } from './routes/_authenticated.routines.index'
 import { Route as AuthenticatedRoutinesIdRouteImport } from './routes/_authenticated.routines.$id'
 import { Route as AuthenticatedRoutinesNewRouteImport } from './routes/_authenticated.routines.new'
@@ -64,9 +64,9 @@ const AuthenticatedSessionsRoute = AuthenticatedSessionsRouteImport.update({
 } as any)
 const AuthenticatedExercisesSlugRoute =
   AuthenticatedExercisesSlugRouteImport.update({
-    id: '/$slug',
-    path: '/$slug',
-    getParentRoute: () => AuthenticatedExercisesRoute,
+    id: '/exercises_/$slug',
+    path: '/exercises/$slug',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedRoutinesIndexRoute =
   AuthenticatedRoutinesIndexRouteImport.update({
@@ -95,7 +95,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/exercises': typeof AuthenticatedExercisesRouteWithChildren
+  '/exercises': typeof AuthenticatedExercisesRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/routines': typeof AuthenticatedRoutinesRouteWithChildren
   '/sessions': typeof AuthenticatedSessionsRouteWithChildren
@@ -108,7 +108,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/exercises': typeof AuthenticatedExercisesRouteWithChildren
+  '/exercises': typeof AuthenticatedExercisesRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/sessions': typeof AuthenticatedSessionsRouteWithChildren
   '/': typeof AuthenticatedIndexRoute
@@ -123,12 +123,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/_authenticated/exercises': typeof AuthenticatedExercisesRouteWithChildren
+  '/_authenticated/exercises': typeof AuthenticatedExercisesRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/routines': typeof AuthenticatedRoutinesRouteWithChildren
   '/_authenticated/sessions': typeof AuthenticatedSessionsRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/exercises/$slug': typeof AuthenticatedExercisesSlugRoute
+  '/_authenticated/exercises_/$slug': typeof AuthenticatedExercisesSlugRoute
   '/_authenticated/routines/$id': typeof AuthenticatedRoutinesIdRoute
   '/_authenticated/routines/new': typeof AuthenticatedRoutinesNewRoute
   '/_authenticated/sessions/$id': typeof AuthenticatedSessionsIdRoute
@@ -172,7 +172,7 @@ export interface FileRouteTypes {
     | '/_authenticated/routines'
     | '/_authenticated/sessions'
     | '/_authenticated/'
-    | '/_authenticated/exercises/$slug'
+    | '/_authenticated/exercises_/$slug'
     | '/_authenticated/routines/$id'
     | '/_authenticated/routines/new'
     | '/_authenticated/sessions/$id'
@@ -243,12 +243,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSessionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/exercises/$slug': {
-      id: '/_authenticated/exercises/$slug'
-      path: '/$slug'
+    '/_authenticated/exercises_/$slug': {
+      id: '/_authenticated/exercises_/$slug'
+      path: '/exercises/$slug'
       fullPath: '/exercises/$slug'
       preLoaderRoute: typeof AuthenticatedExercisesSlugRouteImport
-      parentRoute: typeof AuthenticatedExercisesRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/routines/': {
       id: '/_authenticated/routines/'
@@ -281,20 +281,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedExercisesRouteChildren {
-  AuthenticatedExercisesSlugRoute: typeof AuthenticatedExercisesSlugRoute
-}
-
-const AuthenticatedExercisesRouteChildren: AuthenticatedExercisesRouteChildren =
-  {
-    AuthenticatedExercisesSlugRoute: AuthenticatedExercisesSlugRoute,
-  }
-
-const AuthenticatedExercisesRouteWithChildren =
-  AuthenticatedExercisesRoute._addFileChildren(
-    AuthenticatedExercisesRouteChildren,
-  )
-
 interface AuthenticatedRoutinesRouteChildren {
   AuthenticatedRoutinesIdRoute: typeof AuthenticatedRoutinesIdRoute
   AuthenticatedRoutinesNewRoute: typeof AuthenticatedRoutinesNewRoute
@@ -326,19 +312,21 @@ const AuthenticatedSessionsRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedExercisesRoute: typeof AuthenticatedExercisesRouteWithChildren
+  AuthenticatedExercisesRoute: typeof AuthenticatedExercisesRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRoutinesRoute: typeof AuthenticatedRoutinesRouteWithChildren
   AuthenticatedSessionsRoute: typeof AuthenticatedSessionsRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedExercisesSlugRoute: typeof AuthenticatedExercisesSlugRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedExercisesRoute: AuthenticatedExercisesRouteWithChildren,
+  AuthenticatedExercisesRoute: AuthenticatedExercisesRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRoutinesRoute: AuthenticatedRoutinesRouteWithChildren,
   AuthenticatedSessionsRoute: AuthenticatedSessionsRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedExercisesSlugRoute: AuthenticatedExercisesSlugRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

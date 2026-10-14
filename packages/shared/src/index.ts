@@ -172,6 +172,7 @@ export { estimate1RM, type SetType, setVolume } from "./training.js";
 export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 export {
   CIBLES,
+  EQUIPEMENTS,
   EQUIPEMENTS_PRINCIPAUX,
   GROUPES,
   type Groupe,

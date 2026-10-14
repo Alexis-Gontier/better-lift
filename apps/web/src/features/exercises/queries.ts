@@ -2,7 +2,15 @@ import type { Groupe } from "@better-lift/shared";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-type Filters = { q?: string; groupe?: Groupe };
+/** Les filtres de la grille (D200), tels qu'ils partent à l'API. */
+export type CatalogFilters = {
+  q?: string;
+  /** Le groupe : le filtre du sélecteur d'exercices des routines. */
+  group?: Groupe;
+  target?: string;
+  equipment?: string;
+  slugs?: string[];
+};
 
 /**
  * La liste du catalogue.
@@ -12,17 +20,26 @@ type Filters = { q?: string; groupe?: Groupe };
  * réafficher les résultats précédents après un changement de critère — un défaut
  * qui ressemble à de la lenteur et qu'on ne soupçonne pas.
  *
- * `keepPreviousData` garde la liste affichée pendant la frappe : sans lui, chaque
+ * `keepPreviousData` garde la grille affichée pendant la frappe : sans lui, chaque
  * lettre tapée renvoie l'écran à son état de chargement, ce qui clignote.
  *
  * PAGINÉE : l'API plafonne une page à 100 exercices, et le catalogue en compte
- * 1 316. Sans pages suivantes, la liste s'arrêtait aux 50 premiers sans moyen
- * de voir le reste. `page` n'entre pas dans la clé : c'est le `pageParam` d'une
- * même requête infinie, pas un critère.
+ * 1 316. `page` n'entre pas dans la clé : c'est le `pageParam` d'une même requête
+ * infinie, pas un critère.
  */
-export function catalogOptions({ q, groupe: group }: Filters) {
+export function catalogOptions({ q, group, target, equipment, slugs }: CatalogFilters) {
   return infiniteQueryOptions({
-    queryKey: ["exercises", "list", { q: q ?? null, groupe: group ?? null }],
+    queryKey: [
+      "exercises",
+      "list",
+      {
+        q: q ?? null,
+        group: group ?? null,
+        target: target ?? null,
+        equipment: equipment ?? null,
+        slugs: slugs ?? null,
+      },
+    ],
     placeholderData: keepPreviousData,
     queryFn: async ({ pageParam }) => {
       // Les clés absentes sont omises plutôt que posées à `undefined` : le client
@@ -31,7 +48,11 @@ export function catalogOptions({ q, groupe: group }: Filters) {
         query: {
           ...(q ? { q } : {}),
           ...(group ? { groupe: group } : {}),
+          ...(target ? { cible: target } : {}),
+          ...(equipment ? { equipement: equipment } : {}),
+          ...(slugs ? { slugs: slugs.join(",") } : {}),
           page: String(pageParam),
+          taille: "60",
         },
       });
       if (!res.ok) throw new Error("Le catalogue n'a pas pu être chargé.");
@@ -40,6 +61,33 @@ export function catalogOptions({ q, groupe: group }: Filters) {
     // Après `queryFn` : TypeScript tire le type d'une page de son retour.
     initialPageParam: 1,
     getNextPageParam: (last) => (last.page * last.taille < last.total ? last.page + 1 : undefined),
+  });
+}
+
+/**
+ * « Mes exercices » (D205) : par exercice pratiqué, le nombre de séances et la dernière.
+ * Sous `["sessions"]` : enregistrer ou supprimer une séance l'invalide.
+ */
+export function practicedOptions() {
+  return queryOptions({
+    queryKey: ["sessions", "practiced"],
+    queryFn: async () => {
+      const res = await api.exercices.pratiques.$get();
+      if (!res.ok) throw new Error("Tes exercices n'ont pas pu être chargés.");
+      return (await res.json()).pratiques;
+    },
+  });
+}
+
+/** Les variantes de la fiche (D204) : même muscle, un exercice par autre équipement. */
+export function variantsOptions(slug: string) {
+  return queryOptions({
+    queryKey: ["exercises", "variants", slug],
+    queryFn: async () => {
+      const res = await api.exercices[":slug"].variantes.$get({ param: { slug } });
+      if (!res.ok) throw new Error("Les variantes n'ont pas pu être chargées.");
+      return (await res.json()).variantes;
+    },
   });
 }
 

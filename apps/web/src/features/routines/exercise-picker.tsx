@@ -49,7 +49,7 @@ export function ExercisePicker({
   const [chosen, setChosen] = useState<Choice[]>([]);
 
   const catalog = useInfiniteQuery({
-    ...catalogOptions({ q: q.trim() || undefined, groupe: group }),
+    ...catalogOptions({ q: q.trim() || undefined, group }),
     enabled: open,
   });
   const exercises = catalog.data?.pages.flatMap((p) => p.exercices) ?? [];
