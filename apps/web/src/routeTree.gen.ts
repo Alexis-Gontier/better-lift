@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtegeRouteImport } from './routes/_protege'
 import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as ProtegeIndexRouteImport } from './routes/_protege.index'
 import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
 import { Route as ProtegeProfilRouteImport } from './routes/_protege.profil'
@@ -29,6 +30,11 @@ const ProtegeRoute = ProtegeRouteImport.update({
 const ConnexionRoute = ConnexionRouteImport.update({
   id: '/connexion',
   path: '/connexion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InscriptionRoute = InscriptionRouteImport.update({
+  id: '/inscription',
+  path: '/inscription',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProtegeIndexRoute = ProtegeIndexRouteImport.update({
@@ -85,6 +91,7 @@ const ProtegeSeancesIdRoute = ProtegeSeancesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ProtegeIndexRoute
   '/connexion': typeof ConnexionRoute
+  '/inscription': typeof InscriptionRoute
   '/exercices': typeof ProtegeExercicesRouteWithChildren
   '/profil': typeof ProtegeProfilRoute
   '/routines': typeof ProtegeRoutinesRouteWithChildren
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/connexion': typeof ConnexionRoute
+  '/inscription': typeof InscriptionRoute
   '/exercices': typeof ProtegeExercicesRouteWithChildren
   '/profil': typeof ProtegeProfilRoute
   '/seances': typeof ProtegeSeancesRouteWithChildren
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protege': typeof ProtegeRouteWithChildren
   '/connexion': typeof ConnexionRoute
+  '/inscription': typeof InscriptionRoute
   '/_protege/exercices': typeof ProtegeExercicesRouteWithChildren
   '/_protege/profil': typeof ProtegeProfilRoute
   '/_protege/routines': typeof ProtegeRoutinesRouteWithChildren
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/connexion'
+    | '/inscription'
     | '/exercices'
     | '/profil'
     | '/routines'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/connexion'
+    | '/inscription'
     | '/exercices'
     | '/profil'
     | '/seances'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_protege'
     | '/connexion'
+    | '/inscription'
     | '/_protege/exercices'
     | '/_protege/profil'
     | '/_protege/routines'
@@ -167,6 +179,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   ProtegeRoute: typeof ProtegeRouteWithChildren
   ConnexionRoute: typeof ConnexionRoute
+  InscriptionRoute: typeof InscriptionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -183,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/connexion'
       fullPath: '/connexion'
       preLoaderRoute: typeof ConnexionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inscription': {
+      id: '/inscription'
+      path: '/inscription'
+      fullPath: '/inscription'
+      preLoaderRoute: typeof InscriptionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_protege/': {
@@ -319,6 +339,7 @@ const ProtegeRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   ProtegeRoute: ProtegeRouteWithChildren,
   ConnexionRoute: ConnexionRoute,
+  InscriptionRoute: InscriptionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

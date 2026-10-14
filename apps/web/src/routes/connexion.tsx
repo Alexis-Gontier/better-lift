@@ -1,20 +1,22 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { z } from "zod";
 import { champEtat, etatForceRendu } from "@/components/etats/etat-force";
-import { Logo } from "@/components/logo";
-import { Card } from "@/components/ui/card";
-import { FormulaireConnexion } from "@/features/auth/formulaire-connexion";
+import { FormulaireAuth } from "@/features/auth/formulaire-auth";
 import { chargerSession } from "@/lib/auth-session";
 
 const recherche = z.object({ redirect: z.string().optional(), etat: champEtat });
 
 export const Route = createFileRoute("/connexion")({
   validateSearch: recherche,
+  // Une session déjà ouverte n'a rien à faire ici (D196).
+  beforeLoad: ({ context }) => {
+    if (context.auth.session) throw redirect({ to: "/" });
+  },
   component: PageConnexion,
 });
 
 function PageConnexion() {
-  const { redirect, etat } = Route.useSearch();
+  const { redirect: retour, etat } = Route.useSearch();
   const navigate = useNavigate();
   const router = useRouter();
 
@@ -23,30 +25,23 @@ function PageConnexion() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col items-center px-6 py-10">
-      <div className="flex w-full max-w-sm flex-1 flex-col justify-center">
-        {/* D131 au bureau (D144) : la marque en tête, le formulaire dessous. */}
-        <div className="mb-10 flex flex-col items-center gap-3">
-          <Logo className="size-14" />
-          <span className="text-xl font-extrabold tracking-tight">better-lift</span>
-        </div>
+    <main className="flex min-h-screen items-center justify-center px-6 py-10">
+      <div className="w-full max-w-xs">
         {force ?? (
-          // Le formulaire dans une `Card` (D158), sous le logo.
-          <Card className="px-6 py-6">
-            <FormulaireConnexion
-              onSucces={async () => {
-                // Relire la session PUIS invalider : sans l'invalidation, le
-                // `beforeLoad` de `_protege` relirait l'ancien contexte et
-                // renverrait aussitôt vers /connexion.
-                await chargerSession();
-                await router.invalidate();
-                await navigate({ to: redirect ?? "/" });
-              }}
-            />
-          </Card>
+          <FormulaireAuth
+            mode="connexion"
+            redirect={retour}
+            onSucces={async () => {
+              // Relire la session PUIS invalider : sans l'invalidation, le
+              // `beforeLoad` de `_protege` relirait l'ancien contexte et
+              // renverrait aussitôt ici.
+              await chargerSession();
+              await router.invalidate();
+              await navigate({ to: retour ?? "/" });
+            }}
+          />
         )}
       </div>
-      <p className="text-xs text-muted-foreground">Un carnet privé, pour quelques comptes.</p>
     </main>
   );
 }
