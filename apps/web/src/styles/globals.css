@@ -61,8 +61,10 @@
   --color-sidebar-foreground: var(--foreground);
   --color-sidebar-primary: var(--main);
   --color-sidebar-primary-foreground: var(--main-foreground);
-  --color-sidebar-accent: var(--main);
-  --color-sidebar-accent-foreground: var(--main-foreground);
+  /* Le survol d'une entrée ; l'entrée active, elle, est l'aplat orange bordé
+     (`data-[active=true]` dans sidebar.tsx). */
+  --color-sidebar-accent: var(--muted);
+  --color-sidebar-accent-foreground: var(--foreground);
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--ring);
 
