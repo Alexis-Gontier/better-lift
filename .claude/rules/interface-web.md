@@ -80,11 +80,11 @@ rhabillée par [`2026-10-14-web-neobrutalism-design.md`](../../docs/superpowers/
   « SUPERSET A » et filet `border-superset`, en lecture seule (`groupes` de `shared`).
 - **`ScrollArea` de Radix** : son contenu est un `display: table` qui s'élargit au lieu de couper.
   Une liste à `truncate` doit forcer `[&_[data-slot=scroll-area-viewport]>div]:block!`.
-- **Exercices** (D200–D210, `2026-10-14-web-exercices-design.md`) : grille seule, ou grille dans
+- **Exercices** (D200–D211, `2026-10-14-web-exercices-design.md`) : grille seule, ou grille dans
   un panneau de gauche redimensionnable (`ListDetailPage` disposition `catalog`) quand une fiche
   est ouverte à droite (D206).
   - **Grille** `/exercises` (`features/exercises/exercise-grid.tsx`, `exercise-filters.tsx`) : cartes
-    illustrées (image fixe), filtres en pastilles dans l'URL — `?q=`, `?target=` (les 19
+    illustrées (image fixe). Onglets **Tous / Mes exercices N** en tête, puis recherche, bouton **Filtres** (muscle et équipement repliés, nombre d'actifs, pastilles retirables sous la barre, D211) et tri. Tout vit dans l'URL — `?q=`, `?target=` (les 19
     `CIBLES` de `shared`, 8 visibles + menu « + 11 »), `?equipment=` (`EQUIPEMENTS_PRINCIPAUX` +
     menu « Autres »), `?mine=1` (« Mes exercices », par `/exercices/pratiques`, clé
     `["sessions","practiced"]`), tri toujours visible (D210) : Pertinence par défaut (tes exercices récents en tête sous « Tes exercices », puis le catalogue en `ordre=pertinence` de l'API, varié ou par début de nom), `?sort=count` Plus pratiqués, `?sort=name` Nom ; deux requêtes dans `use-exercise-list.ts`. Pastille `×N` en contour

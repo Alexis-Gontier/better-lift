@@ -1,5 +1,7 @@
 import { CIBLES, EQUIPEMENTS, EQUIPEMENTS_PRINCIPAUX } from "@better-lift/shared";
-import { ArrowDownUp, ChevronDown, Search } from "lucide-react";
+import { cn } from "cn";
+import { ArrowDownUp, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 /** Les 8 muscles les plus fournis en pastilles ; les 11 autres derrière « + 11 » (D200). */
@@ -48,21 +50,52 @@ type Props = {
   target?: string;
   equipment?: string;
   mine: boolean;
+  /** Le nombre d'exercices pratiqués, pour l'onglet ; `undefined` tant qu'il charge. */
+  mineCount?: number;
   sort: Sort;
   onSearch: (q: string) => void;
   onTarget: (target?: string) => void;
   onEquipment: (equipment?: string) => void;
+  /** Retire muscle et équipement d'une seule navigation. */
+  onClearFilters: () => void;
   onMine: (mine: boolean) => void;
   onSort: (sort: Sort) => void;
 };
 
-/** Les filtres de la grille (D200) : texte, muscle ciblé, équipement, « Mes exercices », tri. */
+/**
+ * Les filtres de la grille (D211). Deux onglets choisissent l'ensemble — tout le catalogue ou
+ * tes exercices —, une barre porte la recherche, le bouton « Filtres » et le tri. Muscle et
+ * équipement, secondaires, vivent dans un panneau replié ; un filtre actif reste visible en
+ * pastille qu'on retire d'un clic, et le bouton en donne le nombre.
+ */
 export function ExerciseFilters(props: Props) {
   const { q, target, equipment, mine, sort } = props;
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const active = [
+    target ? { key: "target", label: target, clear: () => props.onTarget(undefined) } : null,
+    equipment
+      ? { key: "equipment", label: equipment, clear: () => props.onEquipment(undefined) }
+      : null,
+  ].filter((f) => f !== null);
+
   return (
     <div className="flex flex-col gap-3">
+      <Tabs value={mine ? "mine" : "all"} onValueChange={(v) => props.onMine(v === "mine")}>
+        <TabsList className="h-10! [&>*]:px-4">
+          <TabsTrigger value="all">Tous</TabsTrigger>
+          <TabsTrigger value="mine">
+            Mes exercices
+            {props.mineCount !== undefined ? (
+              <span className="font-medium opacity-70">{props.mineCount}</span>
+            ) : null}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-60 flex-1">
+        {/* Panneau étroit : la recherche prend sa ligne, filtres et tri se partagent la suivante. */}
+        <div className={cn("relative", props.compact ? "basis-full" : "min-w-48 flex-1")}>
           <Search
             aria-hidden="true"
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -70,17 +103,28 @@ export function ExerciseFilters(props: Props) {
           <Input
             type="search"
             aria-label="Rechercher un exercice"
-            placeholder="Rechercher un exercice…"
+            placeholder={mine ? "Rechercher dans tes exercices…" : "Rechercher un exercice…"}
             value={q}
             onChange={(e) => props.onSearch(e.target.value)}
             className="pl-9"
           />
         </div>
-        <Toggle variant="outline" pressed={mine} onPressedChange={props.onMine}>
-          Mes exercices
-        </Toggle>
-        {/* Toujours là, au même endroit (D208) : sur le catalogue entier, trier par la
-            pratique fait remonter tes exercices en tête, le reste suit par nom. */}
+        <Button
+          variant="outline"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen((o) => !o)}
+          // Ouvert, il s'enfonce dans son ombre comme la carte ouverte : un état, pas l'orange.
+          className="aria-expanded:translate-x-boxShadowX aria-expanded:translate-y-boxShadowY aria-expanded:bg-muted aria-expanded:shadow-none"
+        >
+          <SlidersHorizontal aria-hidden="true" />
+          Filtres
+          {active.length ? (
+            <span className="rounded-[3px] bg-foreground px-1.5 text-xs leading-5 text-background">
+              {active.length}
+            </span>
+          ) : null}
+        </Button>
         <Select value={sort} onValueChange={(v) => props.onSort(v as Sort)}>
           <SelectTrigger aria-label="Trier par">
             <ArrowDownUp aria-hidden="true" className="text-muted-foreground" />
@@ -88,51 +132,95 @@ export function ExerciseFilters(props: Props) {
           </SelectTrigger>
           <SelectContent align="end">
             <SelectGroup>
-              {SORTS.map((s) => (
-                <SelectItem key={s.value} value={s.value} textValue={s.label}>
-                  <span className="flex flex-col">
-                    <span>{s.label}</span>
-                    <span className="text-xs font-medium text-muted-foreground in-data-[slot=select-value]:hidden">
-                      {s.hint}
+              {SORTS.map((s) => {
+                // Dans « Mes exercices », la pertinence n'est que la date : on le dit.
+                const label = mine && s.value === "relevance" ? "Fait récemment" : s.label;
+                const hint =
+                  mine && s.value === "relevance" ? "La dernière séance d'abord" : s.hint;
+                return (
+                  <SelectItem key={s.value} value={s.value} textValue={label}>
+                    <span className="flex flex-col">
+                      <span>{label}</span>
+                      <span className="text-xs font-medium text-muted-foreground in-data-[slot=select-value]:hidden">
+                        {hint}
+                      </span>
                     </span>
-                  </span>
-                </SelectItem>
-              ))}
+                  </SelectItem>
+                );
+              })}
             </SelectGroup>
           </SelectContent>
         </Select>
       </div>
 
-      {props.compact ? (
-        <div className="grid grid-cols-2 gap-2">
-          <FilterSelect label="Muscle" value={target} options={CIBLES} onChange={props.onTarget} />
-          <FilterSelect
-            label="Équipement"
-            value={equipment}
-            options={EQUIPEMENTS}
-            onChange={props.onEquipment}
-          />
+      {open ? (
+        <div
+          id={panelId}
+          className="flex flex-col gap-3 rounded-base border-2 border-border bg-secondary-background p-3"
+        >
+          {props.compact ? (
+            <div className="grid grid-cols-2 gap-2">
+              <FilterSelect
+                label="Muscle"
+                value={target}
+                options={CIBLES}
+                onChange={props.onTarget}
+              />
+              <FilterSelect
+                label="Équipement"
+                value={equipment}
+                options={EQUIPEMENTS}
+                onChange={props.onEquipment}
+              />
+            </div>
+          ) : (
+            <>
+              <FilterRow
+                label="Muscle"
+                value={target}
+                visible={VISIBLE_TARGETS}
+                others={OTHER_TARGETS}
+                othersLabel={`+ ${OTHER_TARGETS.length}`}
+                onChange={props.onTarget}
+              />
+              <FilterRow
+                label="Équipement"
+                value={equipment}
+                visible={EQUIPEMENTS_PRINCIPAUX}
+                others={OTHER_EQUIPMENT}
+                othersLabel="Autres"
+                onChange={props.onEquipment}
+              />
+            </>
+          )}
         </div>
-      ) : (
-        <>
-          <FilterRow
-            label="Muscle"
-            value={target}
-            visible={VISIBLE_TARGETS}
-            others={OTHER_TARGETS}
-            othersLabel={`+ ${OTHER_TARGETS.length}`}
-            onChange={props.onTarget}
-          />
-          <FilterRow
-            label="Équipement"
-            value={equipment}
-            visible={EQUIPEMENTS_PRINCIPAUX}
-            others={OTHER_EQUIPMENT}
-            othersLabel="Autres"
-            onChange={props.onEquipment}
-          />
-        </>
-      )}
+      ) : null}
+
+      {active.length && !open ? (
+        <ul className="flex flex-wrap items-center gap-2" aria-label="Filtres actifs">
+          {active.map((f) => (
+            <li key={f.key}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={f.clear}
+                aria-label={`Retirer le filtre ${f.label}`}
+                className="bg-muted"
+              >
+                {f.label}
+                <X data-icon="inline-end" aria-hidden="true" />
+              </Button>
+            </li>
+          ))}
+          {active.length > 1 ? (
+            <li>
+              <Button variant="link" size="sm" className="px-1" onClick={props.onClearFilters}>
+                Tout effacer
+              </Button>
+            </li>
+          ) : null}
+        </ul>
+      ) : null}
     </div>
   );
 }

@@ -160,6 +160,24 @@ pousse à filtrer à tort ; et Hevy met les exercices faits récemment en tête 
 - L'API trie en mémoire tout le résultat filtré (1 316 lignes au plus) avant de paginer. Le
   mobile ne passe pas `ordre` et garde l'ordre par nom.
 
+## D211 — Onglets « Tous / Mes exercices », filtres repliés
+
+Révise la barre de D200 et D205, jugée peu claire à l'usage (14 octobre 2026) : deux rangées de
+pastilles prenaient le haut de l'écran pour des filtres secondaires, et « Mes exercices », un
+bouton bascule perdu dans la barre, ne disait pas qu'il changeait l'ensemble affiché.
+
+- **Deux onglets** (`Tabs`) en tête : **Tous** et **Mes exercices N** (N = exercices
+  pratiqués). Choisir l'ensemble est la première décision ; un onglet le dit mieux qu'une
+  bascule. Le titre « Tes exercices » de l'onglet Tous mène à l'onglet par « Voir seulement les
+  miens ». Dans Mes exercices, la recherche dit « Rechercher dans tes exercices… » et
+  « Pertinence » s'y nomme « Fait récemment ».
+- **Muscle et équipement repliés** derrière un bouton **Filtres** (divulgation progressive) : il
+  porte le nombre de filtres actifs et s'enfonce quand le panneau est ouvert. Un filtre actif reste
+  visible sous la barre, en pastille qu'on retire d'un clic (« Tout effacer » à partir de deux).
+  Le panneau garde les pastilles en grand, deux menus quand la fiche est ouverte.
+- Panneau étroit : la recherche prend sa ligne, Filtres et tri la suivante.
+- Changer un filtre ne ferme plus la fiche ouverte (la navigation vise le chemin courant).
+
 ## Hors champ
 
 La progression multi-exercices, la carte du corps, la création d'exercices personnels.

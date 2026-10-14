@@ -43,10 +43,15 @@ function ExercisesPage() {
   const list = useExerciseList({ q, target, equipment, mine: mine === 1, sort: order });
   const { practiced, exercises } = list;
 
-  const set = (patch: Partial<z.infer<typeof search>>) =>
-    navigate({ search: (s) => ({ ...s, ...patch }), replace: true });
-  const clear = () =>
-    navigate({ search: (s) => ({ ...s, q: undefined, target: undefined, equipment: undefined }) });
+  type Search = z.infer<typeof search>;
+  // On reste sur le chemin courant, fiche comprise : sans cible explicite, la navigation part
+  // de cette route, `/exercises`, et un filtre changé fermerait la fiche ouverte (D206).
+  const go = (update: (s: Search) => Search, replace = false) =>
+    slug === undefined
+      ? navigate({ search: update, replace })
+      : navigate({ to: "/exercises/$slug", params: { slug }, search: update, replace });
+  const set = (patch: Partial<Search>) => go((s) => ({ ...s, ...patch }), true);
+  const clear = () => go((s) => ({ ...s, q: undefined, target: undefined, equipment: undefined }));
 
   function content() {
     const forced = renderForcedState(state, "Le catalogue n'a pas pu être chargé.", () =>
@@ -95,6 +100,7 @@ function ExercisesPage() {
         exercises={exercises}
         practiced={list.practicedMap}
         headCount={list.headCount}
+        onShowMine={() => set({ mine: 1 })}
         hasMore={list.hasMore}
         onMore={list.more}
       />
@@ -119,10 +125,12 @@ function ExercisesPage() {
           target={target}
           equipment={equipment}
           mine={mine === 1}
+          mineCount={practiced.data?.length}
           sort={order}
           onSearch={(value) => set({ q: value || undefined })}
           onTarget={(value) => set({ target: value as typeof target })}
           onEquipment={(value) => set({ equipment: value as typeof equipment })}
+          onClearFilters={() => set({ target: undefined, equipment: undefined })}
           // Le tri choisi survit à la bascule.
           onMine={(on) => set({ mine: on ? 1 : undefined })}
           onSort={(value: Sort) => set({ sort: value === "relevance" ? undefined : value })}

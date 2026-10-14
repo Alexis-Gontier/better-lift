@@ -65,6 +65,7 @@ export function ExerciseGrid({
   exercises,
   practiced,
   headCount = 0,
+  onShowMine,
   hasMore,
   onMore,
 }: {
@@ -72,6 +73,8 @@ export function ExerciseGrid({
   exercises: ExerciceResume[];
   practiced: Map<string, Practice>;
   headCount?: number;
+  /** Le lien du titre « Tes exercices » vers l'onglet du même nom (D211). */
+  onShowMine?: () => void;
   hasMore: boolean;
   onMore: () => void;
 }) {
@@ -106,9 +109,20 @@ export function ExerciseGrid({
       {headCount > 0 ? (
         <div className="flex flex-col gap-6">
           <section className="flex flex-col gap-3" aria-labelledby="grid-mine">
-            <h2 id="grid-mine" className="text-xs font-bold text-muted-foreground uppercase">
-              Tes exercices · {headCount}
-            </h2>
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 id="grid-mine" className="text-xs font-bold text-muted-foreground uppercase">
+                Tes exercices · {headCount}
+              </h2>
+              {onShowMine ? (
+                <button
+                  type="button"
+                  onClick={onShowMine}
+                  className="text-xs font-bold underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
+                >
+                  Voir seulement les miens
+                </button>
+              ) : null}
+            </div>
             {cards(exercises.slice(0, headCount))}
           </section>
           {rest.length ? (
