@@ -103,6 +103,14 @@ Révise D201 (fiche en page entière), à la demande de l'utilisateur.
 - La carte ouverte est enfoncée dans son ombre sur une surface en retrait (sélection, jamais
   l'orange de l'action, D160).
 
+## D207 — Plus de mention Gym visual sur le web
+
+Révise D46 pour le web, à la demande explicite de l'utilisateur (14 octobre 2026). La mention
+« © Gym visual — https://gymvisual.com/ » ne s'affiche plus sous les animations de la fiche.
+**C'est contraire à la permission de Gym visual**, qui exige une attribution visible (voir
+`packages/db/catalogue/LICENSE-dataset.md`) : choix assumé pour une application privée à trois
+comptes, à reprendre en premier si elle s'ouvrait. Le mobile garde la mention.
+
 ## Hors champ
 
 La progression multi-exercices, la carte du corps, la création d'exercices personnels.
