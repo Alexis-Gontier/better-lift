@@ -2,21 +2,21 @@ import { GROUPES } from "@better-lift/shared";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { z } from "zod";
-import { EtatChargement } from "@/components/etats/etat-chargement";
-import { EtatErreur } from "@/components/etats/etat-erreur";
-import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
-import { PageListeDetail } from "@/components/shell/page-liste-detail";
-import { ListeExercices } from "@/features/exercices/liste-exercices";
-import { optionsCatalogue } from "@/features/exercices/requetes";
+import { ListDetailPage } from "@/components/shell/list-detail-page";
+import { ErrorState } from "@/components/states/error-state";
+import { isForcedEmpty, renderForcedState, stateField } from "@/components/states/forced-state";
+import { LoadingState } from "@/components/states/loading-state";
+import { ExerciseList } from "@/features/exercises/exercise-list";
+import { catalogOptions } from "@/features/exercises/queries";
 
 // L'exercice ouvert vit dans le CHEMIN (`/exercises/$slug`, D81) ; la recherche
 // et le groupe restent en paramètres : ce sont des filtres, et ils suivent quand
 // on passe d'un exercice à l'autre. `.catch(undefined)` évite qu'une URL
 // trafiquée fasse échouer tout l'écran — un filtre inconnu s'ignore.
-const recherche = z.object({
+const search = z.object({
   q: z.string().optional(),
   group: z.enum(GROUPES).optional().catch(undefined),
-  state: champEtat,
+  state: stateField,
 });
 
 /**
@@ -24,64 +24,61 @@ const recherche = z.object({
  * la route enfant `$slug`, rendue par l'`Outlet`.
  */
 export const Route = createFileRoute("/_authenticated/exercises")({
-  validateSearch: recherche,
-  component: PageExercices,
+  validateSearch: search,
+  component: ExercisesPage,
 });
 
-function PageExercices() {
+function ExercisesPage() {
   const { q, group, state } = Route.useSearch();
   const { slug } = useParams({ strict: false });
   const navigate = Route.useNavigate();
 
-  const liste = useInfiniteQuery(optionsCatalogue({ q, groupe: group }));
+  const list = useInfiniteQuery(catalogOptions({ q, groupe: group }));
 
-  const abandonner = () => navigate({ search: (s) => ({ ...s, state: undefined }) });
-  const vide = estVideForce(state);
-  const exercices = vide ? [] : (liste.data?.pages.flatMap((p) => p.exercices) ?? []);
-  const total = vide ? 0 : (liste.data?.pages[0]?.total ?? 0);
+  const abandon = () => navigate({ search: (s) => ({ ...s, state: undefined }) });
+  const empty = isForcedEmpty(state);
+  const exercises = empty ? [] : (list.data?.pages.flatMap((p) => p.exercices) ?? []);
+  const total = empty ? 0 : (list.data?.pages[0]?.total ?? 0);
 
-  function panneauListe() {
+  function listPanel() {
     // Les états forcés par `?state=` restent prioritaires, en développement
     // seulement : ils permettent de revoir chargement et erreur à la demande,
     // maintenant que les vrais ne se déclenchent plus qu'au hasard du réseau.
-    const force = etatForceRendu(state, "Le catalogue n'a pas pu être chargé.", abandonner);
-    if (force) return force;
+    const forced = renderForcedState(state, "Le catalogue n'a pas pu être chargé.", abandon);
+    if (forced) return forced;
 
-    if (liste.isPending) return <EtatChargement />;
-    if (liste.isError) {
+    if (list.isPending) return <LoadingState />;
+    if (list.isError) {
       return (
-        <EtatErreur
-          message="Le catalogue n'a pas pu être chargé."
-          onReessayer={() => liste.refetch()}
-        />
+        <ErrorState message="Le catalogue n'a pas pu être chargé." onRetry={() => list.refetch()} />
       );
     }
 
     return (
-      <ListeExercices
-        exercices={exercices}
+      <ExerciseList
+        exercises={exercises}
         total={total}
-        aSuite={!vide && liste.hasNextPage}
-        chargeSuite={liste.isFetchingNextPage}
-        onSuite={() => liste.fetchNextPage()}
+        hasMore={!empty && list.hasNextPage}
+        loadMore={list.isFetchingNextPage}
+        onMore={() => list.fetchNextPage()}
         q={q ?? ""}
-        groupe={group}
-        slugSelectionne={slug}
-        onRecherche={(valeur) => navigate({ search: (s) => ({ ...s, q: valeur || undefined }) })}
-        onGroupe={(g) => navigate({ search: (s) => ({ ...s, group: g }) })}
-        onSelection={(choisi) =>
-          navigate({ to: "/exercises/$slug", params: { slug: choisi }, search: (s) => s })
+        group={group}
+        selectedSlug={slug}
+        onSearch={(value) => navigate({ search: (s) => ({ ...s, q: value || undefined }) })}
+        onGroup={(g) => navigate({ search: (s) => ({ ...s, group: g }) })}
+        onSelect={(chosen) =>
+          navigate({ to: "/exercises/$slug", params: { slug: chosen }, search: (s) => s })
         }
       />
     );
   }
 
   return (
-    <PageListeDetail
-      vers="/exercises"
-      titre="Exercices"
-      disposition="fil"
-      liste={panneauListe()}
+    <ListDetailPage
+      to="/exercises"
+      title="Exercices"
+      layout="feed"
+      list={listPanel()}
       detail={slug ? <Outlet /> : undefined}
     />
   );

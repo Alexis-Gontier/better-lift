@@ -1,42 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { EtatChargement } from "@/components/etats/etat-chargement";
-import { EtatErreur } from "@/components/etats/etat-erreur";
-import { DetailExercice } from "@/features/exercices/detail-exercice";
-import { optionsExercice, optionsHistorique } from "@/features/exercices/requetes";
-import { optionsRecords } from "@/features/seances/requetes";
+import { ErrorState } from "@/components/states/error-state";
+import { LoadingState } from "@/components/states/loading-state";
+import { ExerciseDetail } from "@/features/exercises/exercise-detail";
+import { exerciseOptions, historyOptions } from "@/features/exercises/queries";
+import { recordsOptions } from "@/features/sessions/queries";
 
 /**
  * La fiche d'un exercice, dans le panneau de détail (D81). Le slug est
  * l'identifiant stable et lisible du catalogue : `/exercises/barbell-bench-press`.
  */
 export const Route = createFileRoute("/_authenticated/exercises/$slug")({
-  component: PageExercice,
+  component: ExercisePage,
 });
 
-function PageExercice() {
+function ExercisePage() {
   const { slug } = Route.useParams();
   const navigate = Route.useNavigate();
-  const detail = useQuery(optionsExercice(slug));
-  const records = useQuery(optionsRecords(slug));
-  const historique = useQuery(optionsHistorique(slug));
+  const detail = useQuery(exerciseOptions(slug));
+  const records = useQuery(recordsOptions(slug));
+  const history = useQuery(historyOptions(slug));
 
-  if (detail.isPending) return <EtatChargement />;
+  if (detail.isPending) return <LoadingState />;
   if (detail.isError) {
     return (
-      <EtatErreur
-        message="Cet exercice n'a pas pu être chargé."
-        onReessayer={() => detail.refetch()}
-      />
+      <ErrorState message="Cet exercice n'a pas pu être chargé." onRetry={() => detail.refetch()} />
     );
   }
   return (
-    <DetailExercice
+    <ExerciseDetail
       records={records.isError ? null : records.data}
-      historique={historique.isError ? null : historique.data}
-      exercice={detail.data}
+      history={history.isError ? null : history.data}
+      exercise={detail.data}
       // Fermer garde les filtres : on retombe sur la liste telle qu'on l'a laissée.
-      onFermer={() => navigate({ to: "/exercises", search: (s) => s })}
+      onClose={() => navigate({ to: "/exercises", search: (s) => s })}
     />
   );
 }

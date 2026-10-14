@@ -1,31 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EditeurRoutine } from "@/features/routines/editeur-routine";
-import { useCreerRoutine } from "@/features/routines/requetes";
+import { useCreateRoutine } from "@/features/routines/queries";
+import { RoutineEditor } from "@/features/routines/routine-editor";
 
 /**
  * Une routine neuve (D81). Le segment statique `new` l'emporte sur `$id` :
  * aucun identifiant réservé à vérifier à la main.
  */
 export const Route = createFileRoute("/_authenticated/routines/new")({
-  component: PageNouvelleRoutine,
+  component: NewRoutinePage,
 });
 
-function PageNouvelleRoutine() {
+function NewRoutinePage() {
   const navigate = Route.useNavigate();
-  const creer = useCreerRoutine();
+  const create = useCreateRoutine();
 
   return (
-    <EditeurRoutine
-      initiale={null}
-      enregistrement={creer.isPending}
-      erreur={creer.error?.message}
-      onEnregistrer={(r) =>
-        creer.mutate(r, {
+    <RoutineEditor
+      initial={null}
+      saving={create.isPending}
+      erreur={create.error?.message}
+      onSave={(r) =>
+        create.mutate(r, {
           // Enregistrée, elle a un identifiant : on passe sur sa vraie page.
           onSuccess: (id) => navigate({ to: "/routines/$id", params: { id }, replace: true }),
         })
       }
-      onFermer={() => navigate({ to: "/routines" })}
+      onClose={() => navigate({ to: "/routines" })}
     />
   );
 }

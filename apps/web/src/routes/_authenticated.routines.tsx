@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { z } from "zod";
-import { EtatChargement } from "@/components/etats/etat-chargement";
-import { EtatErreur } from "@/components/etats/etat-erreur";
-import { champEtat, estVideForce, etatForceRendu } from "@/components/etats/etat-force";
-import { PageListeDetail } from "@/components/shell/page-liste-detail";
-import { ListeRoutines } from "@/features/routines/liste-routines";
-import { optionsRoutines, useOrdonnerRoutines } from "@/features/routines/requetes";
-import { plier } from "@/lib/texte";
+import { ListDetailPage } from "@/components/shell/list-detail-page";
+import { ErrorState } from "@/components/states/error-state";
+import { isForcedEmpty, renderForcedState, stateField } from "@/components/states/forced-state";
+import { LoadingState } from "@/components/states/loading-state";
+import { routinesOptions, useReorderRoutines } from "@/features/routines/queries";
+import { RoutineList } from "@/features/routines/routine-list";
+import { fold } from "@/lib/text";
 
 // La routine ouverte vit dans le CHEMIN (`/routines/$id`, `/routines/new`,
 // D81). Plus de paramètre `edition` : une routine ouverte est toujours modifiable.
-const recherche = z.object({ q: z.string().optional().catch(undefined), state: champEtat });
+const search = z.object({ q: z.string().optional().catch(undefined), state: stateField });
 
 /**
  * La mise en page des routines, en disposition `colonne` : la colonne de
@@ -19,60 +19,58 @@ const recherche = z.object({ q: z.string().optional().catch(undefined), state: c
  * présent (invite, éditeur, ou routine neuve selon la route enfant).
  */
 export const Route = createFileRoute("/_authenticated/routines")({
-  validateSearch: recherche,
-  component: PageRoutines,
+  validateSearch: search,
+  component: RoutinesPage,
 });
 
-function PageRoutines() {
+function RoutinesPage() {
   const { q = "", state } = Route.useSearch();
   const { id } = useParams({ strict: false });
   const navigate = Route.useNavigate();
-  const liste = useQuery(optionsRoutines());
-  const ordonner = useOrdonnerRoutines();
+  const list = useQuery(routinesOptions());
+  const reorder = useReorderRoutines();
 
-  function panneauListe() {
-    const force = etatForceRendu(state, "Les routines n'ont pas pu être chargées.", () =>
+  function listPanel() {
+    const forced = renderForcedState(state, "Les routines n'ont pas pu être chargées.", () =>
       navigate({ search: (s) => ({ ...s, state: undefined }) }),
     );
-    if (force) return force;
-    if (liste.isPending) return <EtatChargement />;
-    if (liste.isError) {
+    if (forced) return forced;
+    if (list.isPending) return <LoadingState />;
+    if (list.isError) {
       return (
-        <EtatErreur
+        <ErrorState
           message="Les routines n'ont pas pu être chargées."
-          onReessayer={() => liste.refetch()}
+          onRetry={() => list.refetch()}
         />
       );
     }
-    const toutes = estVideForce(state) ? [] : liste.data;
-    const cherche = plier(q.trim());
+    const all = isForcedEmpty(state) ? [] : list.data;
+    const searching = fold(q.trim());
     return (
-      <ListeRoutines
-        routines={cherche ? toutes.filter((r) => plier(r.nom).includes(cherche)) : toutes}
-        total={toutes.length}
-        filtre={q}
-        onFiltre={(texte) => {
+      <RoutineList
+        routines={searching ? all.filter((r) => fold(r.nom).includes(searching)) : all}
+        total={all.length}
+        filter={q}
+        onFilter={(text) => {
           // Le filtre garde la routine ouverte : son chemin reste, seul `q` change.
-          const search = (s: { q?: string }) => ({ ...s, q: texte || undefined });
+          const search = (s: { q?: string }) => ({ ...s, q: text || undefined });
           if (id) navigate({ to: "/routines/$id", params: { id }, search, replace: true });
           else navigate({ search, replace: true });
         }}
-        idSelectionne={id}
-        onSelection={(rId) =>
-          navigate({ to: "/routines/$id", params: { id: rId }, search: (s) => s })
-        }
-        onCreer={() => navigate({ to: "/routines/new" })}
-        onOrdonner={(ids) => ordonner.mutate(ids)}
+        selectedId={id}
+        onSelect={(rId) => navigate({ to: "/routines/$id", params: { id: rId }, search: (s) => s })}
+        onCreate={() => navigate({ to: "/routines/new" })}
+        onReorder={(ids) => reorder.mutate(ids)}
       />
     );
   }
 
   return (
-    <PageListeDetail
-      vers="/routines"
-      titre="Routines"
-      disposition="colonne"
-      liste={panneauListe()}
+    <ListDetailPage
+      to="/routines"
+      title="Routines"
+      layout="column"
+      list={listPanel()}
       detail={<Outlet />}
     />
   );

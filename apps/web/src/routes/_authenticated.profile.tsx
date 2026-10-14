@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
-import { initiales, nomAffiche } from "@/components/shell/nom-compte";
-import { PageTableau } from "@/components/shell/page-tableau";
+import { displayName, initials } from "@/components/shell/account-name";
+import { PageLayout } from "@/components/shell/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,113 +14,115 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { optionsBilan, optionsPreferences, useEcrirePreferences } from "@/features/profil/requetes";
+import {
+  preferencesOptions,
+  summaryOptions,
+  useWritePreferences,
+} from "@/features/profile/queries";
 import { URL_API } from "@/lib/config";
-import { useDeconnexion } from "@/lib/deconnexion";
-import { FUSEAU } from "@/lib/fuseau";
-import { SYSTEME_UNITES } from "@/lib/unites";
+import { useSignOut } from "@/lib/sign-out";
+import { TIME_ZONE } from "@/lib/time-zone";
+import { UNIT_SYSTEM } from "@/lib/units";
 
-export const Route = createFileRoute("/_authenticated/profile")({ component: Profil });
+export const Route = createFileRoute("/_authenticated/profile")({ component: Profile });
 
 // Les mêmes choix que le mobile (D91, D128). `Select` veut des chaînes : « aucun » vaut null.
-const AUCUN = "aucun";
-const OBJECTIFS = [1, 2, 3, 4, 5, 6, 7] as const;
-const REPOS = [30, 45, 60, 90, 120, 150, 180, 240, 300] as const;
+const NONE = "aucun";
+const GOALS = [1, 2, 3, 4, 5, 6, 7] as const;
+const REST = [30, 45, 60, 90, 120, 150, 180, 240, 300] as const;
 
 /** « 45 s », « 1 min », « 1 min 30 ». */
-function libelleRepos(sec: number): string {
+function restLabel(sec: number): string {
   if (sec < 60) return `${sec} s`;
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return s === 0 ? `${m} min` : `${m} min ${String(s).padStart(2, "0")}`;
 }
 
-const MOIS_ANNEE = new Intl.DateTimeFormat("fr-FR", {
+const MONTH_YEAR = new Intl.DateTimeFormat("fr-FR", {
   month: "long",
   year: "numeric",
-  timeZone: FUSEAU,
+  timeZone: TIME_ZONE,
 });
 
 /** Le Profil (D143) : le bilan, l'entraînement (sur le compte), les mesures, les données, le compte. */
-function Profil() {
+function Profile() {
   const email = Route.useRouteContext().auth.session?.user.email ?? "—";
-  const seDeconnecter = useDeconnexion();
-  const bilan = useQuery(optionsBilan());
-  const preferences = useQuery(optionsPreferences());
-  const ecrire = useEcrirePreferences();
+  const signOut = useSignOut();
+  const summary = useQuery(summaryOptions());
+  const preferences = useQuery(preferencesOptions());
+  const write = useWritePreferences();
   const prefs = preferences.data ?? PREFERENCES_DEFAUT;
 
   return (
-    <PageTableau titre="Profil" largeur="lecture">
+    <PageLayout title="Profil" width="lecture">
       {/* Le bilan de toujours (D128). */}
       <Card className="flex-row items-center gap-4 px-5">
         <span className="grid size-14 shrink-0 place-items-center rounded-full bg-muted text-lg font-extrabold">
-          {initiales(email)}
+          {initials(email)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold">{nomAffiche(email)}</p>
+          <p className="truncate font-bold">{displayName(email)}</p>
           <p className="text-[13px] text-foreground">
-            {bilan.data?.depuis
-              ? `Depuis ${MOIS_ANNEE.format(new Date(bilan.data.depuis))}`
-              : bilan.isPending
+            {summary.data?.depuis
+              ? `Depuis ${MONTH_YEAR.format(new Date(summary.data.depuis))}`
+              : summary.isPending
                 ? "…"
                 : "Pas encore de séance"}
           </p>
         </div>
-        <Chiffre libelle="séances">{bilan.data ? bilan.data.nbSeances : "—"}</Chiffre>
-        <Chiffre libelle="soulevés">
-          {bilan.data ? formaterCharge(bilan.data.volumeKg, SYSTEME_UNITES) : "—"}
-        </Chiffre>
+        <Figure label="séances">{summary.data ? summary.data.nbSeances : "—"}</Figure>
+        <Figure label="soulevés">
+          {summary.data ? formaterCharge(summary.data.volumeKg, UNIT_SYSTEM) : "—"}
+        </Figure>
       </Card>
 
-      <Section titre="Entraînement" description="Sur ton compte : le téléphone les suit aussi.">
-        <Ligne libelle="Objectif hebdomadaire" detail="Le nombre de séances visé chaque semaine.">
-          <Choix
-            libelle="Objectif hebdomadaire"
-            valeur={prefs.objectifHebdo === null ? AUCUN : String(prefs.objectifHebdo)}
+      <Section title="Entraînement" description="Sur ton compte : le téléphone les suit aussi.">
+        <Row label="Objectif hebdomadaire" detail="Le nombre de séances visé chaque semaine.">
+          <Choice
+            label="Objectif hebdomadaire"
+            value={prefs.objectifHebdo === null ? NONE : String(prefs.objectifHebdo)}
             onChange={(v) =>
-              ecrire.mutate({ ...prefs, objectifHebdo: v === AUCUN ? null : Number(v) })
+              write.mutate({ ...prefs, objectifHebdo: v === NONE ? null : Number(v) })
             }
             options={[
-              { valeur: AUCUN, libelle: "Aucun" },
-              ...OBJECTIFS.map((n) => ({
-                valeur: String(n),
-                libelle: `${n} séance${n > 1 ? "s" : ""} / sem.`,
+              { value: NONE, label: "Aucun" },
+              ...GOALS.map((n) => ({
+                value: String(n),
+                label: `${n} séance${n > 1 ? "s" : ""} / sem.`,
               })),
             ]}
           />
-        </Ligne>
-        <Ligne libelle="Repos par défaut" detail="Pour les exercices sans repos propre.">
-          <Choix
-            libelle="Repos par défaut"
-            valeur={prefs.reposDefautSec === null ? AUCUN : String(prefs.reposDefautSec)}
+        </Row>
+        <Row label="Repos par défaut" detail="Pour les exercices sans repos propre.">
+          <Choice
+            label="Repos par défaut"
+            value={prefs.reposDefautSec === null ? NONE : String(prefs.reposDefautSec)}
             onChange={(v) =>
-              ecrire.mutate({ ...prefs, reposDefautSec: v === AUCUN ? null : Number(v) })
+              write.mutate({ ...prefs, reposDefautSec: v === NONE ? null : Number(v) })
             }
             options={[
-              { valeur: AUCUN, libelle: "Aucun" },
-              ...REPOS.map((s) => ({ valeur: String(s), libelle: libelleRepos(s) })),
+              { value: NONE, label: "Aucun" },
+              ...REST.map((s) => ({ value: String(s), label: restLabel(s) })),
             ]}
           />
-        </Ligne>
-        {ecrire.isError ? (
+        </Row>
+        {write.isError ? (
           <p role="alert" className="pt-3 text-sm text-destructive-ink">
-            {ecrire.error.message}
+            {write.error.message}
           </p>
         ) : null}
       </Section>
 
       {/* Ni l'unité ni le fuseau ne se règlent encore : fixés en un seul endroit
           chacun (D52, D66). On les montre pour qu'aucun chiffre ne surprenne. */}
-      <Section titre="Mesures">
-        <Ligne libelle="Unités">
-          {SYSTEME_UNITES === "metric" ? "Kilogrammes (kg)" : "Livres (lb)"}
-        </Ligne>
-        <Ligne libelle="Fuseau horaire">{FUSEAU}</Ligne>
+      <Section title="Mesures">
+        <Row label="Unités">{UNIT_SYSTEM === "metric" ? "Kilogrammes (kg)" : "Livres (lb)"}</Row>
+        <Row label="Fuseau horaire">{TIME_ZONE}</Row>
       </Section>
 
-      <Section titre="Données">
-        <Ligne libelle="Exporter mes séances" detail="Toutes les séries, en CSV.">
+      <Section title="Données">
+        <Row label="Exporter mes séances" detail="Toutes les séries, en CSV.">
           {/* Une navigation simple : le cookie de session part avec, et l'API répond
               en pièce jointe (`Content-Disposition`). */}
           <Button variant="outline" asChild>
@@ -129,40 +131,40 @@ function Profil() {
               Télécharger
             </a>
           </Button>
-        </Ligne>
+        </Row>
       </Section>
 
-      <Section titre="Compte">
-        <Ligne libelle="Adresse e-mail">{email}</Ligne>
-        <Ligne libelle="Rechercher, aller à une page">
+      <Section title="Compte">
+        <Row label="Adresse e-mail">{email}</Row>
+        <Row label="Rechercher, aller à une page">
           <kbd className="rounded border border-border px-1.5 py-0.5 text-xs">Ctrl K</kbd>
-        </Ligne>
+        </Row>
         <div className="pt-3">
-          <Button variant="outline" onClick={seDeconnecter} className="text-destructive-ink">
+          <Button variant="outline" onClick={signOut} className="text-destructive-ink">
             <LogOut aria-hidden="true" />
             Se déconnecter
           </Button>
         </div>
       </Section>
-    </PageTableau>
+    </PageLayout>
   );
 }
 
-function Chiffre({ libelle, children }: { libelle: string; children: ReactNode }) {
+function Figure({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="text-right">
       <p className="chiffre text-[28px]">{children}</p>
-      <p className="text-xs text-muted-foreground">{libelle}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
 
 function Section({
-  titre,
+  title,
   description,
   children,
 }: {
-  titre: string;
+  title: string;
   description?: string;
   children: ReactNode;
 }) {
@@ -171,7 +173,7 @@ function Section({
     <Card className="gap-2">
       <CardHeader>
         <CardTitle>
-          <h2>{titre}</h2>
+          <h2>{title}</h2>
         </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
@@ -180,19 +182,11 @@ function Section({
   );
 }
 
-function Ligne({
-  libelle,
-  detail,
-  children,
-}: {
-  libelle: string;
-  detail?: string;
-  children: ReactNode;
-}) {
+function Row({ label, detail, children }: { label: string; detail?: string; children: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 py-3 text-sm last:pb-0">
       <div>
-        <p>{libelle}</p>
+        <p>{label}</p>
         {detail ? <p className="text-xs text-muted-foreground">{detail}</p> : null}
       </div>
       <div className="shrink-0 text-foreground">{children}</div>
@@ -200,26 +194,26 @@ function Ligne({
   );
 }
 
-function Choix({
-  libelle,
-  valeur,
+function Choice({
+  label,
+  value,
   onChange,
   options,
 }: {
-  libelle: string;
-  valeur: string;
+  label: string;
+  value: string;
   onChange: (v: string) => void;
-  options: { valeur: string; libelle: string }[];
+  options: { value: string; label: string }[];
 }) {
   return (
-    <Select value={valeur} onValueChange={onChange}>
-      <SelectTrigger aria-label={libelle} className="w-44">
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger aria-label={label} className="w-44">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
-          <SelectItem key={o.valeur} value={o.valeur}>
-            {o.libelle}
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
           </SelectItem>
         ))}
       </SelectContent>

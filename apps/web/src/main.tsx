@@ -6,8 +6,8 @@ import "./styles/globals.css";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { PageErreur, PageIntrouvable } from "./components/etats/pages-routeur";
-import { auth, chargerSession } from "./lib/auth-session";
+import { ErrorPage, NotFoundPage } from "./components/states/router-pages";
+import { auth, loadSession } from "./lib/auth-session";
 import { routeTree } from "./routeTree.gen";
 
 // Les écrans par défaut du routeur, en français et dans le système : une adresse
@@ -15,8 +15,8 @@ import { routeTree } from "./routeTree.gen";
 const router = createRouter({
   routeTree,
   context: { auth },
-  defaultNotFoundComponent: PageIntrouvable,
-  defaultErrorComponent: PageErreur,
+  defaultNotFoundComponent: NotFoundPage,
+  defaultErrorComponent: ErrorPage,
 });
 
 declare module "@tanstack/react-router" {
@@ -25,15 +25,15 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const racine = document.getElementById("root");
-if (!racine) throw new Error("Élément #root introuvable");
+const root = document.getElementById("root");
+if (!root) throw new Error("Élément #root introuvable");
 
 // La session est résolue AVANT le premier rendu : c'est ce qui évite qu'un écran
 // protégé se peigne puis disparaisse — un clignotement. Sur une application privée,
 // il n'y a rien à montrer avant de savoir qui est là.
-await chargerSession();
+await loadSession();
 
-createRoot(racine).render(
+createRoot(root).render(
   <StrictMode>
     <RouterProvider router={router} />
   </StrictMode>,

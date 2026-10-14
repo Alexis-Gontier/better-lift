@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EtatVide } from "@/components/etats/etat-vide";
+import { EmptyState } from "@/components/states/empty-state";
 
 /**
  * Aucune routine ouverte : l'espace de travail reste en place et invite à
@@ -7,8 +7,8 @@ import { EtatVide } from "@/components/etats/etat-vide";
  */
 export const Route = createFileRoute("/_authenticated/routines/")({
   component: () => (
-    <EtatVide
-      titre="Aucune routine ouverte"
+    <EmptyState
+      title="Aucune routine ouverte"
       message="Choisis une routine à gauche pour la voir ou la modifier, ou crées-en une."
     />
   ),
