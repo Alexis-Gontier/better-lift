@@ -47,6 +47,10 @@ et D199 (style), qui seront repris après validation du wireframe.
 
 ## 3. Coquille
 
+> **État au 2026-10-16** : sidebar et header **vidés** à la demande (il ne reste que la
+> structure et le bouton de repli). Le contenu décrit ci-dessous est la cible ; il revient pas à
+> pas, validé élément par élément. La palette (Ctrl K) et les raccourcis restent actifs au clavier.
+
 ```
 ┌──────────┬───────────────────────────────────────────────────────────┐
 │ ▣ Logo   │ [≡] Routines › Push A   [ 🔍 Rechercher…  Ctrl K ]  ◐ ⌨ ☺ │

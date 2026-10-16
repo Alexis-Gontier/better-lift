@@ -32,8 +32,3 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
-
-/** L'entrée est active sur sa page et ses sous-pages ; l'Accueil, seulement sur « / ». */
-export function isActive(to: string, pathname: string): boolean {
-  return to === "/" ? pathname === "/" : pathname === to || pathname.startsWith(`${to}/`);
-}
