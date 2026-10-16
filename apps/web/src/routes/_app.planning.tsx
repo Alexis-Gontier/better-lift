@@ -1,45 +1,56 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Page } from "@/components/page";
-import { PageTabs, useTab } from "@/components/page-tabs";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CalendarDays } from "lucide-react";
+import { useTab } from "@/components/page-tabs";
+import { useProto } from "@/components/proto/use-proto";
+import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
-import { Zone } from "@/components/zone";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PLANNING_TABS, PlanningView } from "@/features/planning/planning-view";
 
 export const Route = createFileRoute("/_app/planning")({
   staticData: { crumb: "Planning" },
   component: PlanningPage,
 });
 
-const TABS = [
-  { value: "semaine", label: "Semaine" },
-  { value: "mois", label: "Mois" },
-] as const;
-
 function PlanningPage() {
-  const tab = useTab(TABS.map((t) => t.value));
+  const view = useTab(PLANNING_TABS.map((t) => t.value));
+  const { state } = useProto();
+  if (state === "nominal") return <PlanningView view={view} />;
   return (
-    <Page
-      title="Planning"
-      tabs={<PageTabs tabs={TABS} />}
-      actions={
+    <PlanningView view={view}>
+      {state === "chargement" && (
         <>
-          <Button variant="outline">Répéter la semaine</Button>
-          <Button>Planifier</Button>
+          <Skeleton className="h-9 w-80 rounded-lg" />
+          <Skeleton className="h-72 rounded-xl" />
         </>
-      }
-    >
-      <Zone title="Navigation" hint="Précédent · Aujourd'hui · Suivant" className="min-h-14" />
-      <div className="grid gap-4 md:grid-cols-4">
-        <Zone
-          title={tab === "semaine" ? "Semaine" : "Mois"}
-          hint={
-            tab === "semaine"
-              ? "7 colonnes : séances faites (plein), planifiées (contour), manquées"
-              : "Grille du mois"
-          }
-          className="h-[480px] md:col-span-3"
-        />
-        <Zone title="Routines" hint="À glisser sur un jour" className="h-[480px]" />
-      </div>
-    </Page>
+      )}
+      {state === "erreur" && <StateError title="Le planning n'a pas pu se charger" />}
+      {state === "vide" && (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CalendarDays />
+            </EmptyMedia>
+            <EmptyTitle>Rien de planifié</EmptyTitle>
+            <EmptyDescription>
+              Posez une routine sur un jour, puis répétez la semaine pour tracer votre programme.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" asChild>
+              <Link to="/routines">Voir les routines</Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      )}
+    </PlanningView>
   );
 }

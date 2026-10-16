@@ -259,6 +259,9 @@ importers:
       react-body-highlighter:
         specifier: 2.0.5
         version: 2.0.5(react@19.2.3)
+      react-day-picker:
+        specifier: ^10.0.2
+        version: 10.0.2(@types/react@19.2.4)(react@19.2.3)
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
@@ -991,6 +994,9 @@ packages:
   '@conventional-changelog/template@1.4.0':
     resolution: {integrity: sha512-aalGyl7dbB5PArRebDIX43ZvBlXrYm9uWzGJ26t+4SzJVPsOuvfILGGbw5X4yX7i50YEmJ8zvbiWnqH/AAnZqg==}
     engines: {node: '>=22'}
+
+  '@date-fns/tz@1.5.0':
+    resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
 
   '@dotenvx/dotenvx@1.75.1':
     resolution: {integrity: sha512-/BITOC9dmS/edY2zQwZNicQ059O6RKabtQfyEafV0nGtfYRNHYy1DIPiYVcov40+tob9hfmBnbR963dS+EQ1DQ==}
@@ -5603,6 +5609,16 @@ packages:
     peerDependencies:
       react: '>=16'
 
+  react-day-picker@10.0.2:
+    resolution: {integrity: sha512-QetiKtZWE9Uaw/pM/SYNv6WPYOTRnSJ2puL0GgwkmUFMIwiY0dtjH1W4B7DOVXVNQM0ZOClGpH/heOfBSzWeiA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   react-devtools-core@6.1.5:
     resolution: {integrity: sha512-ePrwPfxAnB+7hgnEr8vpKxL9cmnp7F322t8oqcPshbIQQhDKgFDW4tjhF2wjVbdXF9O/nyuy3sQWd9JGpiLPvA==}
 
@@ -7402,6 +7418,8 @@ snapshots:
       conventional-commits-parser: 7.1.2
 
   '@conventional-changelog/template@1.4.0': {}
+
+  '@date-fns/tz@1.5.0': {}
 
   '@dotenvx/dotenvx@1.75.1':
     dependencies:
@@ -13110,6 +13128,14 @@ snapshots:
   react-body-highlighter@2.0.5(react@19.2.3):
     dependencies:
       react: 19.2.3
+
+  react-day-picker@10.0.2(@types/react@19.2.4)(react@19.2.3):
+    dependencies:
+      '@date-fns/tz': 1.5.0
+      date-fns: 4.4.0
+      react: 19.2.3
+    optionalDependencies:
+      '@types/react': 19.2.4
 
   react-devtools-core@6.1.5:
     dependencies:
