@@ -1,4 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +19,7 @@ function isActive(to: string, pathname: string): boolean {
   return to === "/" ? pathname === "/" : pathname === to || pathname.startsWith(`${to}/`);
 }
 
-/** Les liens seuls, pour l'instant : le reste revient pas à pas. */
+/** Les liens seuls, Paramètres en pied : le reste revient pas à pas. */
 export function AppSidebar() {
   const { pathname } = useLocation();
   return (
@@ -47,7 +48,22 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              tooltip="Paramètres"
+              isActive={isActive("/settings", pathname)}
+            >
+              <Link to="/settings/account">
+                <Settings />
+                <span>Paramètres</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
