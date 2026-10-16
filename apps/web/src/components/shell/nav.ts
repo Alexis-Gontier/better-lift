@@ -6,6 +6,7 @@ import {
   ListChecks,
   type LucideIcon,
   Scale,
+  Settings,
   TrendingUp,
 } from "lucide-react";
 import type { FileRouteTypes } from "@/routeTree.gen";
@@ -31,4 +32,5 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Corps", to: "/body", icon: Scale },
     ],
   },
+  { label: null, items: [{ title: "Paramètres", to: "/settings", icon: Settings }] },
 ];

@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, FileUp, type LucideIcon, Plus, Scale, Settings } from "lucide-react";
+import { CalendarPlus, FileUp, type LucideIcon, Plus, Scale } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   CommandDialog,
@@ -59,9 +59,6 @@ export function CommandPalette() {
               <item.icon /> {item.title}
             </CommandItem>
           ))}
-          <CommandItem onSelect={() => go("/settings/account")}>
-            <Settings /> Paramètres
-          </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Actions">
