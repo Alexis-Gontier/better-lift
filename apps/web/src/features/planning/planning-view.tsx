@@ -116,6 +116,39 @@ function AddToDay({ date, onAdd }: { date: string; onAdd: (routineId: string) =>
   );
 }
 
+const DRAG_TYPE = "application/x-routine-id";
+
+/** Les routines à glisser sur un jour à venir. */
+function RoutinePalette() {
+  return (
+    <Card size="sm" className="self-start">
+      <CardHeader>
+        <CardTitle className="text-sm">Routines</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1.5">
+        {mockRoutines.map((r) => (
+          // Un bouton glissable ; au clavier, « + Planifier » sur chaque jour fait la même chose.
+          <button
+            type="button"
+            key={r.id}
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData(DRAG_TYPE, r.id);
+              e.dataTransfer.effectAllowed = "copy";
+            }}
+            className="cursor-grab rounded-md border bg-background px-2 py-1.5 text-left text-sm active:cursor-grabbing"
+          >
+            {r.name}
+          </button>
+        ))}
+        <p className="pt-1 text-muted-foreground text-xs">
+          Glissez une routine sur un jour à venir.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 function WeekView({
   start,
   planned,
@@ -125,43 +158,64 @@ function WeekView({
   planned: Planned[];
   onAdd: (date: string, routineId: string) => void;
 }) {
+  const [over, setOver] = useState<string | null>(null);
   return (
-    <div className="grid gap-2 md:grid-cols-7">
-      {weekDays(start).map((date) => {
-        const entries = dayEntries(date, mockSessions, planned, TODAY, routineName);
-        return (
-          <Card
-            key={date}
-            size="sm"
-            className={cn("min-h-48", date === TODAY && "ring-2 ring-foreground/20")}
-          >
-            <CardHeader>
-              <CardTitle
-                className={cn(
-                  "text-sm first-letter:uppercase",
-                  date === TODAY ? "" : "text-muted-foreground",
+    <div className="grid items-start gap-4 lg:grid-cols-[1fr_11rem]">
+      <div className="grid gap-2 md:grid-cols-7">
+        {weekDays(start).map((date) => {
+          const entries = dayEntries(date, mockSessions, planned, TODAY, routineName);
+          const droppable = date >= TODAY;
+          return (
+            <Card
+              key={date}
+              size="sm"
+              data-over={over === date}
+              onDragOver={(e) => {
+                if (!droppable || !e.dataTransfer.types.includes(DRAG_TYPE)) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+                setOver(date);
+              }}
+              onDragLeave={() => setOver((o) => (o === date ? null : o))}
+              onDrop={(e) => {
+                const id = e.dataTransfer.getData(DRAG_TYPE);
+                setOver(null);
+                if (droppable && id) onAdd(date, id);
+              }}
+              className={cn(
+                "min-h-48 data-[over=true]:bg-muted data-[over=true]:ring-2 data-[over=true]:ring-foreground/40",
+                date === TODAY && "ring-2 ring-foreground/20",
+              )}
+            >
+              <CardHeader>
+                <CardTitle
+                  className={cn(
+                    "text-sm first-letter:uppercase",
+                    date === TODAY ? "" : "text-muted-foreground",
+                  )}
+                >
+                  {formatWeekdayDay(date)}
+                  {date === TODAY && " · aujourd'hui"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-1.5">
+                {entries.map((e) => (
+                  <EntryChip key={e.id} entry={e} />
+                ))}
+                {entries.length === 0 && date < TODAY && (
+                  <span className="text-muted-foreground text-xs">Repos</span>
                 )}
-              >
-                {formatWeekdayDay(date)}
-                {date === TODAY && " · aujourd'hui"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-1 flex-col gap-1.5">
-              {entries.map((e) => (
-                <EntryChip key={e.id} entry={e} />
-              ))}
-              {entries.length === 0 && date < TODAY && (
-                <span className="text-muted-foreground text-xs">Repos</span>
-              )}
-              {date >= TODAY && (
-                <div className="mt-auto">
-                  <AddToDay date={date} onAdd={(id) => onAdd(date, id)} />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+                {droppable && (
+                  <div className="mt-auto">
+                    <AddToDay date={date} onAdd={(id) => onAdd(date, id)} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+      <RoutinePalette />
     </div>
   );
 }
