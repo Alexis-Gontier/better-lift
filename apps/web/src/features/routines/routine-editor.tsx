@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Page } from "@/components/page";
+import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,7 +33,9 @@ import {
   type MockSet,
 } from "@/mocks/routines";
 
-type Draft = { name: string; folder: string; notes: string; exercises: MockRoutineExercise[] };
+/** Un exercice du brouillon porte un identifiant stable : le glisser-déposer en a besoin. */
+type DraftExercise = MockRoutineExercise & { uid: string };
+type Draft = { name: string; folder: string; notes: string; exercises: DraftExercise[] };
 
 const emptyDraft: Draft = { name: "", folder: FOLDERS[0], notes: "", exercises: [] };
 
@@ -41,7 +44,11 @@ function toDraft(routine: MockRoutine): Draft {
     name: routine.name,
     folder: routine.folder,
     notes: routine.notes ?? "",
-    exercises: routine.exercises.map((e) => ({ ...e, sets: e.sets.map((s) => ({ ...s })) })),
+    exercises: routine.exercises.map((e, i) => ({
+      ...e,
+      uid: `${e.slug}-${i}`,
+      sets: e.sets.map((s) => ({ ...s })),
+    })),
   };
 }
 
@@ -65,8 +72,16 @@ function ExerciseEditor({
     <Card size="sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          {/* Le glisser-déposer arrive en passe 5 : la poignée est dessinée, pas encore active. */}
-          <GripVertical className="size-4 text-muted-foreground" aria-hidden />
+          {/* Un vrai bouton : sans focus possible, la poignée ne répondrait pas au clavier. */}
+          <SortableItemHandle asChild>
+            <button
+              type="button"
+              aria-label="Déplacer l'exercice"
+              className="flex rounded text-muted-foreground hover:text-foreground"
+            >
+              <GripVertical className="size-4" />
+            </button>
+          </SortableItemHandle>
           {info?.name ?? exercise.slug}
           {exercise.superset && (
             <span className="font-normal text-muted-foreground text-xs">
@@ -151,7 +166,7 @@ export function RoutineEditor({ routine }: { routine?: MockRoutine }) {
   const [draft, setDraft] = useState<Draft>(() => (routine ? toDraft(routine) : emptyDraft));
   const [picking, setPicking] = useState(false);
 
-  const setExercise = (i: number, next: MockRoutineExercise) =>
+  const setExercise = (i: number, next: DraftExercise) =>
     setDraft((d) => ({ ...d, exercises: d.exercises.map((e, j) => (j === i ? next : e)) }));
 
   function save() {
@@ -227,16 +242,25 @@ export function RoutineEditor({ routine }: { routine?: MockRoutine }) {
         </CardContent>
       </Card>
 
-      {draft.exercises.map((e, i) => (
-        <ExerciseEditor
-          key={`${e.slug}-${i}`}
-          exercise={e}
-          onChange={(next) => setExercise(i, next)}
-          onRemove={() =>
-            setDraft((d) => ({ ...d, exercises: d.exercises.filter((_, j) => j !== i) }))
-          }
-        />
-      ))}
+      {/* Réordonnables à la poignée, à la souris ou au clavier (Espace, flèches, Espace). */}
+      <Sortable
+        value={draft.exercises}
+        onValueChange={(exercises) => setDraft((d) => ({ ...d, exercises }))}
+        getItemValue={(e) => e.uid}
+        className="flex flex-col gap-6"
+      >
+        {draft.exercises.map((e, i) => (
+          <SortableItem key={e.uid} value={e.uid}>
+            <ExerciseEditor
+              exercise={e}
+              onChange={(next) => setExercise(i, { ...next, uid: e.uid })}
+              onRemove={() =>
+                setDraft((d) => ({ ...d, exercises: d.exercises.filter((_, j) => j !== i) }))
+              }
+            />
+          </SortableItem>
+        ))}
+      </Sortable>
 
       <Button variant="outline" className="self-start" onClick={() => setPicking(true)}>
         <Plus data-icon="inline-start" /> Ajouter un exercice
@@ -262,7 +286,12 @@ export function RoutineEditor({ routine }: { routine?: MockRoutine }) {
                       ...d,
                       exercises: [
                         ...d.exercises,
-                        { slug: ex.slug, sets: [{ kg: 0, reps: 10 }], restSeconds: 90 },
+                        {
+                          uid: `${ex.slug}-${d.exercises.length}-${Date.now()}`,
+                          slug: ex.slug,
+                          sets: [{ kg: 0, reps: 10 }],
+                          restSeconds: 90,
+                        },
                       ],
                     }));
                     setPicking(false);

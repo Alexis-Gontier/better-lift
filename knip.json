@@ -25,6 +25,7 @@
       "entry": [
         "src/components/ui/**/*.{ts,tsx}",
         "src/components/kibo-ui/**/*.tsx",
+        "src/components/reui/**/*.tsx",
         "src/lib/utils.ts"
       ],
       "project": "src/**/*.{ts,tsx,css}"
