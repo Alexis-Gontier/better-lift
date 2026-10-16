@@ -17,4 +17,12 @@ describe("parseProtoSearch", () => {
   it("ignore les autres paramètres", () => {
     expect(parseProtoSearch({ v: "c", q: "squat" })).toEqual({ v: "c" });
   });
+
+  it("garde l'onglet demandé", () => {
+    expect(parseProtoSearch({ onglet: "mois" })).toEqual({ onglet: "mois" });
+  });
+
+  it("ignore un onglet vide", () => {
+    expect(parseProtoSearch({ onglet: "" })).toEqual({});
+  });
 });

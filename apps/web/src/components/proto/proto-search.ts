@@ -3,7 +3,7 @@ export const PROTO_STATES = ["nominal", "vide", "chargement", "erreur"] as const
 
 export type Variant = (typeof VARIANTS)[number];
 export type ProtoState = (typeof PROTO_STATES)[number];
-type ProtoSearch = { v?: Variant; etat?: ProtoState };
+type ProtoSearch = { v?: Variant; etat?: ProtoState; onglet?: string };
 
 function isOneOf<T extends string>(list: readonly T[], value: unknown): value is T {
   return typeof value === "string" && (list as readonly string[]).includes(value);
@@ -14,5 +14,7 @@ export function parseProtoSearch(search: Record<string, unknown>): ProtoSearch {
   const out: ProtoSearch = {};
   if (isOneOf(VARIANTS, search.v)) out.v = search.v;
   if (isOneOf(PROTO_STATES, search.etat)) out.etat = search.etat;
+  // L'onglet est validé par la page qui le lit (`useTab`) : ici, seulement une chaîne non vide.
+  if (typeof search.onglet === "string" && search.onglet !== "") out.onglet = search.onglet;
   return out;
 }
