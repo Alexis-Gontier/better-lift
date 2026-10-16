@@ -14,7 +14,7 @@ function AppLayout() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <main className="flex flex-1 flex-col p-4 md:p-6">
+        <main className="flex flex-1 flex-col">
           <Outlet />
         </main>
       </SidebarInset>

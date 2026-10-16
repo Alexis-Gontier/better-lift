@@ -46,6 +46,10 @@ et D199 (style), qui seront repris après validation du wireframe.
   les composants restent tels que shadcn les livre, réinstallables sans retouche.
 - **D232 — Pas de navigation au clavier.** Ni séquences `G` + lettre, ni `?`, ni `N`, ni fenêtre
   des raccourcis. Restent Ctrl K, qui ouvre la recherche, et Ctrl B, natif de la sidebar.
+- **D233 — Gabarit des pages inspiré d'ElevenLabs** (la coquille, elle, n'en hérite pas) :
+  composant `Page` (`components/page.tsx`), contenu centré `max-w-6xl`, grand dégagement en haut,
+  titre sobre, puis une ligne d'onglets soulignée avec les actions à droite (l'action principale
+  en aplat, en dernier), affichée seulement si la page a des onglets ou des actions.
 
 ## 3. Coquille
 
