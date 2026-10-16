@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { AuthPlaceholder } from "@/components/auth-placeholder";
 
 export const Route = createFileRoute("/_auth/register")({
   component: () => (
-    <PagePlaceholder title="Inscription" description="Nom, e-mail et mot de passe." />
+    <AuthPlaceholder
+      title="Inscription"
+      subtitle="Créer un compte"
+      fields="Nom, e-mail, mot de passe, Créer le compte"
+      link={{ to: "/login", label: "Déjà un compte ? Se connecter" }}
+    />
   ),
 });

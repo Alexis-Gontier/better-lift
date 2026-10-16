@@ -1,11 +1,15 @@
-import { Link, useLocation, useSearch } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { parseProtoSearch } from "@/components/proto/proto-search";
 import type { FileRouteTypes } from "@/routeTree.gen";
 
 type Tab = { value: string; label: string };
 
-const tabClass =
-  "-mb-px border-b-2 px-3 pb-2.5 font-medium text-sm transition-colors data-[active=true]:border-foreground data-[active=false]:border-transparent data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground";
+const tabBase =
+  "-mb-px border-b-2 border-transparent px-3 pb-2.5 font-medium text-muted-foreground text-sm transition-colors hover:text-foreground";
+// Onglets d'URL : actif par `data-active` (calculé, l'onglet par défaut n'est pas dans l'URL).
+const tabClass = `${tabBase} data-[active=true]:border-foreground data-[active=true]:text-foreground`;
+// Onglets de route : actif par `data-status`, posé par le routeur lui-même.
+const routeTabClass = `${tabBase} data-[status=active]:border-foreground data-[status=active]:text-foreground`;
 
 /** L'onglet actif : celui de l'URL s'il existe, sinon le premier. */
 export function useTab<T extends string>(values: readonly T[]): T {
@@ -36,9 +40,8 @@ export function RouteTabs({
 }: {
   tabs: readonly { to: FileRouteTypes["to"]; label: string }[];
 }) {
-  const { pathname } = useLocation();
   return tabs.map((t) => (
-    <Link key={t.to} to={t.to} data-active={pathname.startsWith(t.to)} className={tabClass}>
+    <Link key={t.to} to={t.to} className={routeTabClass}>
       {t.label}
     </Link>
   ));

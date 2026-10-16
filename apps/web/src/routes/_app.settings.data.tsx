@@ -1,12 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { Zone } from "@/components/zone";
 
 export const Route = createFileRoute("/_app/settings/data")({
   staticData: { crumb: "Données" },
   component: () => (
-    <PagePlaceholder
-      title="Données"
-      description="Import Hevy, export CSV / JSON, suppression des données."
-    />
+    <>
+      <Zone
+        title="Importer depuis Hevy"
+        hint="Fichier CSV → correspondance des exercices → aperçu → import"
+        className="min-h-28"
+      />
+      <Zone title="Exporter" hint="CSV ou JSON" className="min-h-28" />
+      <Zone title="Supprimer les données" hint="Séances, routines, pesées" className="min-h-28" />
+    </>
   ),
 });

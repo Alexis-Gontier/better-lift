@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { AuthPlaceholder } from "@/components/auth-placeholder";
 
 export const Route = createFileRoute("/_auth/reset-password")({
   component: () => (
-    <PagePlaceholder title="Nouveau mot de passe" description="Choisir un nouveau mot de passe." />
+    <AuthPlaceholder
+      title="Nouveau mot de passe"
+      subtitle="Choisir un nouveau mot de passe"
+      fields="Nouveau mot de passe, confirmation ; lien expiré = état erreur"
+      link={{ to: "/login", label: "Retour à la connexion" }}
+    />
   ),
 });
