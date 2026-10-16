@@ -256,6 +256,9 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.2.3
+      react-body-highlighter:
+        specifier: 2.0.5
+        version: 2.0.5(react@19.2.3)
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
@@ -5593,6 +5596,12 @@ packages:
 
   rc9@3.1.0:
     resolution: {integrity: sha512-ufjkNVzbRHKcCOmTahZkmVsyc3W+MSk3jY03m+a7tGHkIsdVMG9l10/3HvFbWkkKzY5VFp3pkRsIo/UYgmFL7Q==}
+
+  react-body-highlighter@2.0.5:
+    resolution: {integrity: sha512-yt37177vKIc+8TGxQw//G/3ah2aw/3E0g1oDt4N+46fMLVZ9BSelhc9S7kiwEkJRvYc3RyUSr9453uMJnvtxRg==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>=16'
 
   react-devtools-core@6.1.5:
     resolution: {integrity: sha512-ePrwPfxAnB+7hgnEr8vpKxL9cmnp7F322t8oqcPshbIQQhDKgFDW4tjhF2wjVbdXF9O/nyuy3sQWd9JGpiLPvA==}
@@ -13097,6 +13106,10 @@ snapshots:
     dependencies:
       defu: 6.1.7
       destr: 2.0.5
+
+  react-body-highlighter@2.0.5(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   react-devtools-core@6.1.5:
     dependencies:

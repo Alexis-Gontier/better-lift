@@ -1,8 +1,24 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Page } from "@/components/page";
 import { PageTabs, useTab } from "@/components/page-tabs";
+import { useProto } from "@/components/proto/use-proto";
+import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
-import { Zone } from "@/components/zone";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ExerciseHistory,
+  ExerciseRecords,
+  ExerciseSummary,
+} from "@/features/exercises/exercise-detail";
+import { exerciseHistory } from "@/mocks/exercise-history";
+import { exerciseBySlug } from "@/mocks/exercises";
 
 export const Route = createFileRoute("/_app/exercises/$slug")({
   staticData: { crumb: "Détail" },
@@ -18,43 +34,58 @@ const TABS = [
 function ExercisePage() {
   const { slug } = Route.useParams();
   const tab = useTab(TABS.map((t) => t.value));
+  const { state } = useProto();
+  const exercise = exerciseBySlug(slug);
+
+  if (!exercise) {
+    return (
+      <Page title="Exercice introuvable">
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>Cet exercice n'existe pas</EmptyTitle>
+            <EmptyDescription>Il a peut-être été supprimé du catalogue.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" asChild>
+              <Link to="/exercises">Retour aux exercices</Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </Page>
+    );
+  }
+
+  const history = state === "vide" ? [] : exerciseHistory(slug);
+
   return (
     <Page
-      title={slug}
+      title={exercise.name}
       tabs={<PageTabs tabs={TABS} />}
       actions={<Button variant="outline">Modifier la note</Button>}
     >
-      {tab === "resume" && (
+      {state === "chargement" && (
         <div className="grid gap-4 md:grid-cols-3">
-          <Zone
-            title="1RM estimé et meilleure charge"
-            hint="Courbe, objectif en pointillés"
-            className="h-72 md:col-span-2"
-          />
-          <Zone title="Muscles" hint="Silhouette avant / arrière" className="h-72" />
-          <Zone title="Note épinglée" hint="Réglage de machine, consignes" className="h-48" />
-          <Zone title="Pourcentages du 1RM" hint="De 50 à 100 %" className="h-48 md:col-span-2" />
+          <Skeleton className="h-80 rounded-xl md:col-span-2" />
+          <Skeleton className="h-80 rounded-xl" />
         </div>
       )}
-      {tab === "historique" && (
-        <Zone
-          title="Séances"
-          hint="Chaque séance où il apparaît, avec ses séries"
-          className="h-[480px]"
-        />
+      {state === "erreur" && <StateError title="L'exercice n'a pas pu se charger" />}
+      {state === "vide" && (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>Pas encore fait</EmptyTitle>
+            <EmptyDescription>
+              Ajoutez {exercise.name} à une routine : sa progression apparaîtra ici après la
+              première séance.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       )}
-      {tab === "records" && (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Zone title="Meilleure charge" className="h-28" />
-          <Zone title="Meilleur 1RM estimé" className="h-28" />
-          <Zone title="Meilleur volume" className="h-28" />
-          <Zone
-            title="Meilleur par nombre de répétitions"
-            hint="1 à 12 répétitions"
-            className="h-64 md:col-span-3"
-          />
-        </div>
+      {state === "nominal" && tab === "resume" && (
+        <ExerciseSummary exercise={exercise} history={history} />
       )}
+      {state === "nominal" && tab === "historique" && <ExerciseHistory history={history} />}
+      {state === "nominal" && tab === "records" && <ExerciseRecords history={history} />}
     </Page>
   );
 }

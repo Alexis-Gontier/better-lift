@@ -1,8 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Page } from "@/components/page";
 import { PageTabs, useTab } from "@/components/page-tabs";
+import { useProto } from "@/components/proto/use-proto";
+import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
-import { Zone } from "@/components/zone";
+import {
+  CustomExercisesEmpty,
+  ExerciseList,
+  ExerciseListSkeleton,
+} from "@/features/exercises/exercise-list";
+import { mockExercises } from "@/mocks/exercises";
 
 export const Route = createFileRoute("/_app/exercises/")({
   component: ExercisesPage,
@@ -13,36 +20,20 @@ const TABS = [
   { value: "mes-exercices", label: "Mes exercices" },
 ] as const;
 
-const SLUGS = ["squat", "developpe-couche", "souleve-de-terre", "tractions", "rowing", "dips"];
-
 function ExercisesPage() {
   const tab = useTab(TABS.map((t) => t.value));
+  const { state } = useProto();
+  const exercises = mockExercises.filter((e) => (tab === "catalogue" ? !e.custom : e.custom));
   return (
     <Page
       title="Exercices"
       tabs={<PageTabs tabs={TABS} />}
       actions={<Button>Exercice personnalisé</Button>}
     >
-      <div className="grid gap-4 md:grid-cols-3">
-        <Zone title="Recherche" hint="Nom de l'exercice" className="min-h-12 md:col-span-2" />
-        <Zone title="Filtres · Tri" hint="Équipement, dernière fois" className="min-h-12" />
-        <Zone
-          title="Muscles"
-          hint="Pastilles : Pectoraux / Dos / Jambes / Épaules / Bras / …"
-          className="min-h-12 md:col-span-3"
-        />
-      </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        {(tab === "catalogue" ? SLUGS : SLUGS.slice(0, 2)).map((slug) => (
-          <Link key={slug} to="/exercises/$slug" params={{ slug }} className="contents">
-            <Zone
-              title={slug}
-              hint="Image, nom, muscle principal, dernière fois"
-              className="min-h-20 transition-colors hover:bg-muted/50"
-            />
-          </Link>
-        ))}
-      </div>
+      {state === "chargement" && <ExerciseListSkeleton />}
+      {state === "erreur" && <StateError title="Les exercices n'ont pas pu se charger" />}
+      {state === "vide" && <CustomExercisesEmpty />}
+      {state === "nominal" && <ExerciseList key={tab} exercises={exercises} />}
     </Page>
   );
 }

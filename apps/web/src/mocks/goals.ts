@@ -1,7 +1,22 @@
-export type MockGoal = { id: string; label: string; current: number; target: number; unit: string };
+export type MockGoal = {
+  id: string;
+  label: string;
+  current: number;
+  target: number;
+  unit: string;
+  /** Exercice visé, pour tracer l'objectif sur sa courbe. */
+  slug?: string;
+};
 
 export const mockGoals: MockGoal[] = [
-  { id: "bench", label: "Développé couché", current: 92.5, target: 100, unit: "kg" },
-  { id: "squat", label: "Squat", current: 125, target: 140, unit: "kg" },
+  {
+    id: "bench",
+    label: "Développé couché",
+    current: 92.5,
+    target: 100,
+    unit: "kg",
+    slug: "developpe-couche",
+  },
+  { id: "squat", label: "Squat", current: 125, target: 140, unit: "kg", slug: "squat" },
   { id: "weight", label: "Poids de corps", current: 79.6, target: 78, unit: "kg" },
 ];

@@ -22,6 +22,7 @@
     "lucide-react": "^1.47.0",
     "radix-ui": "^1.6.7",
     "react": "catalog:",
+    "react-body-highlighter": "2.0.5",
     "react-dom": "catalog:",
     "recharts": "3.8.0",
     "tailwindcss": "4.3.3"
