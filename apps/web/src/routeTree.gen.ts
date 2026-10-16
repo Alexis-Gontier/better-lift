@@ -9,50 +9,638 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppBodyRouteImport } from './routes/_app.body'
+import { Route as AppExercisesRouteImport } from './routes/_app.exercises'
+import { Route as AppHistoryRouteImport } from './routes/_app.history'
+import { Route as AppPlanningRouteImport } from './routes/_app.planning'
+import { Route as AppProgressRouteImport } from './routes/_app.progress'
+import { Route as AppRoutinesRouteImport } from './routes/_app.routines'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AuthForgotPasswordRouteImport } from './routes/_auth.forgot-password'
+import { Route as AuthLoginRouteImport } from './routes/_auth.login'
+import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
+import { Route as AuthResetPasswordRouteImport } from './routes/_auth.reset-password'
+import { Route as AppExercisesIndexRouteImport } from './routes/_app.exercises.index'
+import { Route as AppExercisesSlugRouteImport } from './routes/_app.exercises.$slug'
+import { Route as AppHistoryIndexRouteImport } from './routes/_app.history.index'
+import { Route as AppHistoryIdRouteImport } from './routes/_app.history.$id'
+import { Route as AppRoutinesIndexRouteImport } from './routes/_app.routines.index'
+import { Route as AppRoutinesIdRouteImport } from './routes/_app.routines.$id'
+import { Route as AppRoutinesNewRouteImport } from './routes/_app.routines.new'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app.settings.index'
+import { Route as AppSettingsAccountRouteImport } from './routes/_app.settings.account'
+import { Route as AppSettingsDataRouteImport } from './routes/_app.settings.data'
+import { Route as AppSettingsPreferencesRouteImport } from './routes/_app.settings.preferences'
+import { Route as AppSettingsTrainingRouteImport } from './routes/_app.settings.training'
+import { Route as AppRoutinesIdEditRouteImport } from './routes/_app.routines.$id_.edit'
 
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBodyRoute = AppBodyRouteImport.update({
+  id: '/body',
+  path: '/body',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExercisesRoute = AppExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlanningRoute = AppPlanningRouteImport.update({
+  id: '/planning',
+  path: '/planning',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProgressRoute = AppProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoutinesRoute = AppRoutinesRouteImport.update({
+  id: '/routines',
+  path: '/routines',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AppExercisesIndexRoute = AppExercisesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppExercisesRoute,
+} as any)
+const AppExercisesSlugRoute = AppExercisesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AppExercisesRoute,
+} as any)
+const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppHistoryRoute,
+} as any)
+const AppHistoryIdRoute = AppHistoryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppHistoryRoute,
+} as any)
+const AppRoutinesIndexRoute = AppRoutinesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoutinesRoute,
+} as any)
+const AppRoutinesIdRoute = AppRoutinesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppRoutinesRoute,
+} as any)
+const AppRoutinesNewRoute = AppRoutinesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppRoutinesRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsAccountRoute = AppSettingsAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsDataRoute = AppSettingsDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsPreferencesRoute = AppSettingsPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsTrainingRoute = AppSettingsTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppRoutinesIdEditRoute = AppRoutinesIdEditRouteImport.update({
+  id: '/$id_/edit',
+  path: '/$id/edit',
+  getParentRoute: () => AppRoutinesRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/body': typeof AppBodyRoute
+  '/exercises': typeof AppExercisesRouteWithChildren
+  '/history': typeof AppHistoryRouteWithChildren
+  '/planning': typeof AppPlanningRoute
+  '/progress': typeof AppProgressRoute
+  '/routines': typeof AppRoutinesRouteWithChildren
+  '/settings': typeof AppSettingsRouteWithChildren
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/reset-password': typeof AuthResetPasswordRoute
+  '/exercises/$slug': typeof AppExercisesSlugRoute
+  '/history/$id': typeof AppHistoryIdRoute
+  '/routines/$id': typeof AppRoutinesIdRoute
+  '/routines/new': typeof AppRoutinesNewRoute
+  '/settings/account': typeof AppSettingsAccountRoute
+  '/settings/data': typeof AppSettingsDataRoute
+  '/settings/preferences': typeof AppSettingsPreferencesRoute
+  '/settings/training': typeof AppSettingsTrainingRoute
+  '/exercises/': typeof AppExercisesIndexRoute
+  '/history/': typeof AppHistoryIndexRoute
+  '/routines/': typeof AppRoutinesIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
+  '/routines/$id/edit': typeof AppRoutinesIdEditRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/body': typeof AppBodyRoute
+  '/planning': typeof AppPlanningRoute
+  '/progress': typeof AppProgressRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/reset-password': typeof AuthResetPasswordRoute
+  '/exercises/$slug': typeof AppExercisesSlugRoute
+  '/history/$id': typeof AppHistoryIdRoute
+  '/routines/$id': typeof AppRoutinesIdRoute
+  '/routines/new': typeof AppRoutinesNewRoute
+  '/settings/account': typeof AppSettingsAccountRoute
+  '/settings/data': typeof AppSettingsDataRoute
+  '/settings/preferences': typeof AppSettingsPreferencesRoute
+  '/settings/training': typeof AppSettingsTrainingRoute
+  '/exercises': typeof AppExercisesIndexRoute
+  '/history': typeof AppHistoryIndexRoute
+  '/routines': typeof AppRoutinesIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
+  '/routines/$id/edit': typeof AppRoutinesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_app/body': typeof AppBodyRoute
+  '/_app/exercises': typeof AppExercisesRouteWithChildren
+  '/_app/history': typeof AppHistoryRouteWithChildren
+  '/_app/planning': typeof AppPlanningRoute
+  '/_app/progress': typeof AppProgressRoute
+  '/_app/routines': typeof AppRoutinesRouteWithChildren
+  '/_app/settings': typeof AppSettingsRouteWithChildren
+  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/_auth/reset-password': typeof AuthResetPasswordRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/exercises/$slug': typeof AppExercisesSlugRoute
+  '/_app/history/$id': typeof AppHistoryIdRoute
+  '/_app/routines/$id': typeof AppRoutinesIdRoute
+  '/_app/routines/new': typeof AppRoutinesNewRoute
+  '/_app/settings/account': typeof AppSettingsAccountRoute
+  '/_app/settings/data': typeof AppSettingsDataRoute
+  '/_app/settings/preferences': typeof AppSettingsPreferencesRoute
+  '/_app/settings/training': typeof AppSettingsTrainingRoute
+  '/_app/exercises/': typeof AppExercisesIndexRoute
+  '/_app/history/': typeof AppHistoryIndexRoute
+  '/_app/routines/': typeof AppRoutinesIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
+  '/_app/routines/$id_/edit': typeof AppRoutinesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/body'
+    | '/exercises'
+    | '/history'
+    | '/planning'
+    | '/progress'
+    | '/routines'
+    | '/settings'
+    | '/forgot-password'
+    | '/login'
+    | '/register'
+    | '/reset-password'
+    | '/exercises/$slug'
+    | '/history/$id'
+    | '/routines/$id'
+    | '/routines/new'
+    | '/settings/account'
+    | '/settings/data'
+    | '/settings/preferences'
+    | '/settings/training'
+    | '/exercises/'
+    | '/history/'
+    | '/routines/'
+    | '/settings/'
+    | '/routines/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/body'
+    | '/planning'
+    | '/progress'
+    | '/forgot-password'
+    | '/login'
+    | '/register'
+    | '/reset-password'
+    | '/exercises/$slug'
+    | '/history/$id'
+    | '/routines/$id'
+    | '/routines/new'
+    | '/settings/account'
+    | '/settings/data'
+    | '/settings/preferences'
+    | '/settings/training'
+    | '/exercises'
+    | '/history'
+    | '/routines'
+    | '/settings'
+    | '/routines/$id/edit'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_auth'
+    | '/_app/body'
+    | '/_app/exercises'
+    | '/_app/history'
+    | '/_app/planning'
+    | '/_app/progress'
+    | '/_app/routines'
+    | '/_app/settings'
+    | '/_auth/forgot-password'
+    | '/_auth/login'
+    | '/_auth/register'
+    | '/_auth/reset-password'
+    | '/_app/'
+    | '/_app/exercises/$slug'
+    | '/_app/history/$id'
+    | '/_app/routines/$id'
+    | '/_app/routines/new'
+    | '/_app/settings/account'
+    | '/_app/settings/data'
+    | '/_app/settings/preferences'
+    | '/_app/settings/training'
+    | '/_app/exercises/'
+    | '/_app/history/'
+    | '/_app/routines/'
+    | '/_app/settings/'
+    | '/_app/routines/$id_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/body': {
+      id: '/_app/body'
+      path: '/body'
+      fullPath: '/body'
+      preLoaderRoute: typeof AppBodyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/exercises': {
+      id: '/_app/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof AppExercisesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/history': {
+      id: '/_app/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/planning': {
+      id: '/_app/planning'
+      path: '/planning'
+      fullPath: '/planning'
+      preLoaderRoute: typeof AppPlanningRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/progress': {
+      id: '/_app/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof AppProgressRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/routines': {
+      id: '/_app/routines'
+      path: '/routines'
+      fullPath: '/routines'
+      preLoaderRoute: typeof AppRoutinesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/reset-password': {
+      id: '/_auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_app/exercises/': {
+      id: '/_app/exercises/'
+      path: '/'
+      fullPath: '/exercises/'
+      preLoaderRoute: typeof AppExercisesIndexRouteImport
+      parentRoute: typeof AppExercisesRoute
+    }
+    '/_app/exercises/$slug': {
+      id: '/_app/exercises/$slug'
+      path: '/$slug'
+      fullPath: '/exercises/$slug'
+      preLoaderRoute: typeof AppExercisesSlugRouteImport
+      parentRoute: typeof AppExercisesRoute
+    }
+    '/_app/history/': {
+      id: '/_app/history/'
+      path: '/'
+      fullPath: '/history/'
+      preLoaderRoute: typeof AppHistoryIndexRouteImport
+      parentRoute: typeof AppHistoryRoute
+    }
+    '/_app/history/$id': {
+      id: '/_app/history/$id'
+      path: '/$id'
+      fullPath: '/history/$id'
+      preLoaderRoute: typeof AppHistoryIdRouteImport
+      parentRoute: typeof AppHistoryRoute
+    }
+    '/_app/routines/': {
+      id: '/_app/routines/'
+      path: '/'
+      fullPath: '/routines/'
+      preLoaderRoute: typeof AppRoutinesIndexRouteImport
+      parentRoute: typeof AppRoutinesRoute
+    }
+    '/_app/routines/$id': {
+      id: '/_app/routines/$id'
+      path: '/$id'
+      fullPath: '/routines/$id'
+      preLoaderRoute: typeof AppRoutinesIdRouteImport
+      parentRoute: typeof AppRoutinesRoute
+    }
+    '/_app/routines/new': {
+      id: '/_app/routines/new'
+      path: '/new'
+      fullPath: '/routines/new'
+      preLoaderRoute: typeof AppRoutinesNewRouteImport
+      parentRoute: typeof AppRoutinesRoute
+    }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/account': {
+      id: '/_app/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof AppSettingsAccountRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/data': {
+      id: '/_app/settings/data'
+      path: '/data'
+      fullPath: '/settings/data'
+      preLoaderRoute: typeof AppSettingsDataRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/preferences': {
+      id: '/_app/settings/preferences'
+      path: '/preferences'
+      fullPath: '/settings/preferences'
+      preLoaderRoute: typeof AppSettingsPreferencesRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/training': {
+      id: '/_app/settings/training'
+      path: '/training'
+      fullPath: '/settings/training'
+      preLoaderRoute: typeof AppSettingsTrainingRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/routines/$id_/edit': {
+      id: '/_app/routines/$id_/edit'
+      path: '/$id/edit'
+      fullPath: '/routines/$id/edit'
+      preLoaderRoute: typeof AppRoutinesIdEditRouteImport
+      parentRoute: typeof AppRoutinesRoute
     }
   }
 }
 
+interface AppExercisesRouteChildren {
+  AppExercisesSlugRoute: typeof AppExercisesSlugRoute
+  AppExercisesIndexRoute: typeof AppExercisesIndexRoute
+}
+
+const AppExercisesRouteChildren: AppExercisesRouteChildren = {
+  AppExercisesSlugRoute: AppExercisesSlugRoute,
+  AppExercisesIndexRoute: AppExercisesIndexRoute,
+}
+
+const AppExercisesRouteWithChildren = AppExercisesRoute._addFileChildren(
+  AppExercisesRouteChildren,
+)
+
+interface AppHistoryRouteChildren {
+  AppHistoryIdRoute: typeof AppHistoryIdRoute
+  AppHistoryIndexRoute: typeof AppHistoryIndexRoute
+}
+
+const AppHistoryRouteChildren: AppHistoryRouteChildren = {
+  AppHistoryIdRoute: AppHistoryIdRoute,
+  AppHistoryIndexRoute: AppHistoryIndexRoute,
+}
+
+const AppHistoryRouteWithChildren = AppHistoryRoute._addFileChildren(
+  AppHistoryRouteChildren,
+)
+
+interface AppRoutinesRouteChildren {
+  AppRoutinesIdRoute: typeof AppRoutinesIdRoute
+  AppRoutinesNewRoute: typeof AppRoutinesNewRoute
+  AppRoutinesIndexRoute: typeof AppRoutinesIndexRoute
+  AppRoutinesIdEditRoute: typeof AppRoutinesIdEditRoute
+}
+
+const AppRoutinesRouteChildren: AppRoutinesRouteChildren = {
+  AppRoutinesIdRoute: AppRoutinesIdRoute,
+  AppRoutinesNewRoute: AppRoutinesNewRoute,
+  AppRoutinesIndexRoute: AppRoutinesIndexRoute,
+  AppRoutinesIdEditRoute: AppRoutinesIdEditRoute,
+}
+
+const AppRoutinesRouteWithChildren = AppRoutinesRoute._addFileChildren(
+  AppRoutinesRouteChildren,
+)
+
+interface AppSettingsRouteChildren {
+  AppSettingsAccountRoute: typeof AppSettingsAccountRoute
+  AppSettingsDataRoute: typeof AppSettingsDataRoute
+  AppSettingsPreferencesRoute: typeof AppSettingsPreferencesRoute
+  AppSettingsTrainingRoute: typeof AppSettingsTrainingRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsAccountRoute: AppSettingsAccountRoute,
+  AppSettingsDataRoute: AppSettingsDataRoute,
+  AppSettingsPreferencesRoute: AppSettingsPreferencesRoute,
+  AppSettingsTrainingRoute: AppSettingsTrainingRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppBodyRoute: typeof AppBodyRoute
+  AppExercisesRoute: typeof AppExercisesRouteWithChildren
+  AppHistoryRoute: typeof AppHistoryRouteWithChildren
+  AppPlanningRoute: typeof AppPlanningRoute
+  AppProgressRoute: typeof AppProgressRoute
+  AppRoutinesRoute: typeof AppRoutinesRouteWithChildren
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBodyRoute: AppBodyRoute,
+  AppExercisesRoute: AppExercisesRouteWithChildren,
+  AppHistoryRoute: AppHistoryRouteWithChildren,
+  AppPlanningRoute: AppPlanningRoute,
+  AppProgressRoute: AppProgressRoute,
+  AppRoutinesRoute: AppRoutinesRouteWithChildren,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AuthRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

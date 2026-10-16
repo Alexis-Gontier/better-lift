@@ -3,9 +3,14 @@ import "./styles/globals.css";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { ErrorPage, NotFoundPage } from "./components/states/router-pages";
 import { routeTree } from "./routeTree.gen";
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: NotFoundPage,
+  defaultErrorComponent: ErrorPage,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
