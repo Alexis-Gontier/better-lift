@@ -22,7 +22,11 @@
       "project": "src/**/*.ts"
     },
     "apps/web": {
-      "entry": ["src/components/ui/**/*.{ts,tsx}", "src/lib/utils.ts"],
+      "entry": [
+        "src/components/ui/**/*.{ts,tsx}",
+        "src/components/kibo-ui/**/*.tsx",
+        "src/lib/utils.ts"
+      ],
       "project": "src/**/*.{ts,tsx,css}"
     },
     "apps/mobile": {

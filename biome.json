@@ -33,7 +33,7 @@
   },
   "overrides": [
     {
-      "includes": ["apps/web/src/components/ui/**"],
+      "includes": ["apps/web/src/components/ui/**", "apps/web/src/components/kibo-ui/**"],
       "linter": {
         "rules": {
           "a11y": {

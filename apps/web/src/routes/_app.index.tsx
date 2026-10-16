@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Page } from "@/components/page";
-import { Zone } from "@/components/zone";
+import { useProto } from "@/components/proto/use-proto";
+import { ConsistencyCard } from "@/features/home/consistency-card";
+import { GoalsCard } from "@/features/home/goals-card";
+import { HomeEmpty, HomeError, HomeSkeleton } from "@/features/home/home-states";
+import { RecentRecords, RecentSessions } from "@/features/home/recent-lists";
+import { TodayCard } from "@/features/home/today-card";
+import { WeekStats } from "@/features/home/week-stats";
+import { WeeklyVolumeChart } from "@/features/home/weekly-volume-chart";
+import { WeightCard } from "@/features/home/weight-card";
 
 export const Route = createFileRoute("/_app/")({
   staticData: { crumb: "Accueil" },
@@ -8,31 +16,30 @@ export const Route = createFileRoute("/_app/")({
 });
 
 function HomePage() {
+  const { state } = useProto();
   return (
     <Page title="Accueil">
-      <Zone title="Aujourd'hui" hint="Routine planifiée du jour, ou « Repos », ou Planifier" />
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Zone title="Séances" hint="Cette semaine, écart avec la précédente" />
-        <Zone title="Volume" hint="Cette semaine, écart avec la précédente" />
-        <Zone title="Durée" hint="Cette semaine, écart avec la précédente" />
-        <Zone title="Jours d'affilée" hint="Régularité en cours" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Zone
-          title="Volume par semaine"
-          hint="Barres, 12 semaines"
-          className="h-64 md:col-span-2"
-        />
-        <Zone
-          title="Poids"
-          hint="Valeur actuelle, tendance 7 jours, mini-courbe"
-          className="h-64"
-        />
-        <Zone title="Régularité" hint="Calendrier de l'année" className="h-40 md:col-span-3" />
-        <Zone title="Objectifs" hint="Barres d'avancement" className="h-48" />
-        <Zone title="Records récents" hint="30 derniers jours" className="h-48" />
-        <Zone title="Dernières séances" hint="Les 5 dernières" className="h-48" />
-      </div>
+      {state === "chargement" && <HomeSkeleton />}
+      {state === "erreur" && <HomeError />}
+      {state === "vide" && <HomeEmpty />}
+      {state === "nominal" && (
+        <>
+          <TodayCard />
+          <WeekStats />
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <WeeklyVolumeChart />
+            </div>
+            <WeightCard />
+          </div>
+          <ConsistencyCard />
+          <div className="grid gap-4 md:grid-cols-3">
+            <GoalsCard />
+            <RecentRecords />
+            <RecentSessions />
+          </div>
+        </>
+      )}
     </Page>
   );
 }
