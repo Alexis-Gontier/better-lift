@@ -1,24 +1,16 @@
-export type Theme = "dark" | "light";
+export type Theme = "light" | "dark";
 
-// Doit être identique à la clé lue par le script synchrone dans `index.html` :
-// sinon le thème restitué au chargement n'est pas celui qu'on a choisi.
-const CLE = "better-lift-theme";
+const KEY = "better-lift-theme";
 
-export function themeInitial(): Theme {
-  try {
-    const stocke = localStorage.getItem(CLE);
-    if (stocke === "dark" || stocke === "light") return stocke;
-  } catch {
-    // Navigation privée, stockage bloqué : on retombe sur la préférence système.
-  }
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+export function getTheme(): Theme {
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
-export function appliquerTheme(t: Theme): void {
-  document.documentElement.dataset.theme = t;
+export function setTheme(theme: Theme): void {
+  document.documentElement.classList.toggle("dark", theme === "dark");
   try {
-    localStorage.setItem(CLE, t);
+    localStorage.setItem(KEY, theme);
   } catch {
-    // Sans persistance, le thème reste valable pour la session.
+    // Stockage indisponible (navigation privée) : le thème vaut pour la session.
   }
 }

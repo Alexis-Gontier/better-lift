@@ -9,316 +9,50 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProtegeRouteImport } from './routes/_protege'
-import { Route as ConnexionRouteImport } from './routes/connexion'
-import { Route as ProtegeIndexRouteImport } from './routes/_protege.index'
-import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
-import { Route as ProtegeProfilRouteImport } from './routes/_protege.profil'
-import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
-import { Route as ProtegeSeancesRouteImport } from './routes/_protege.seances'
-import { Route as ProtegeExercicesSlugRouteImport } from './routes/_protege.exercices.$slug'
-import { Route as ProtegeRoutinesIndexRouteImport } from './routes/_protege.routines.index'
-import { Route as ProtegeRoutinesIdRouteImport } from './routes/_protege.routines.$id'
-import { Route as ProtegeRoutinesNouvelleRouteImport } from './routes/_protege.routines.nouvelle'
-import { Route as ProtegeSeancesIdRouteImport } from './routes/_protege.seances.$id'
+import { Route as IndexRouteImport } from './routes/index'
 
-const ProtegeRoute = ProtegeRouteImport.update({
-  id: '/_protege',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConnexionRoute = ConnexionRouteImport.update({
-  id: '/connexion',
-  path: '/connexion',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtegeIndexRoute = ProtegeIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProtegeRoute,
-} as any)
-const ProtegeExercicesRoute = ProtegeExercicesRouteImport.update({
-  id: '/exercices',
-  path: '/exercices',
-  getParentRoute: () => ProtegeRoute,
-} as any)
-const ProtegeProfilRoute = ProtegeProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
-  getParentRoute: () => ProtegeRoute,
-} as any)
-const ProtegeRoutinesRoute = ProtegeRoutinesRouteImport.update({
-  id: '/routines',
-  path: '/routines',
-  getParentRoute: () => ProtegeRoute,
-} as any)
-const ProtegeSeancesRoute = ProtegeSeancesRouteImport.update({
-  id: '/seances',
-  path: '/seances',
-  getParentRoute: () => ProtegeRoute,
-} as any)
-const ProtegeExercicesSlugRoute = ProtegeExercicesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ProtegeExercicesRoute,
-} as any)
-const ProtegeRoutinesIndexRoute = ProtegeRoutinesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ProtegeRoutinesRoute,
-} as any)
-const ProtegeRoutinesIdRoute = ProtegeRoutinesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ProtegeRoutinesRoute,
-} as any)
-const ProtegeRoutinesNouvelleRoute = ProtegeRoutinesNouvelleRouteImport.update({
-  id: '/nouvelle',
-  path: '/nouvelle',
-  getParentRoute: () => ProtegeRoutinesRoute,
-} as any)
-const ProtegeSeancesIdRoute = ProtegeSeancesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ProtegeSeancesRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof ProtegeIndexRoute
-  '/connexion': typeof ConnexionRoute
-  '/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/profil': typeof ProtegeProfilRoute
-  '/routines': typeof ProtegeRoutinesRouteWithChildren
-  '/seances': typeof ProtegeSeancesRouteWithChildren
-  '/exercices/$slug': typeof ProtegeExercicesSlugRoute
-  '/routines/$id': typeof ProtegeRoutinesIdRoute
-  '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
-  '/seances/$id': typeof ProtegeSeancesIdRoute
-  '/routines/': typeof ProtegeRoutinesIndexRoute
+  '/': typeof IndexRoute
 }
 export interface FileRoutesByTo {
-  '/connexion': typeof ConnexionRoute
-  '/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/profil': typeof ProtegeProfilRoute
-  '/seances': typeof ProtegeSeancesRouteWithChildren
-  '/': typeof ProtegeIndexRoute
-  '/exercices/$slug': typeof ProtegeExercicesSlugRoute
-  '/routines/$id': typeof ProtegeRoutinesIdRoute
-  '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
-  '/seances/$id': typeof ProtegeSeancesIdRoute
-  '/routines': typeof ProtegeRoutinesIndexRoute
+  '/': typeof IndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_protege': typeof ProtegeRouteWithChildren
-  '/connexion': typeof ConnexionRoute
-  '/_protege/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/_protege/profil': typeof ProtegeProfilRoute
-  '/_protege/routines': typeof ProtegeRoutinesRouteWithChildren
-  '/_protege/seances': typeof ProtegeSeancesRouteWithChildren
-  '/_protege/': typeof ProtegeIndexRoute
-  '/_protege/exercices/$slug': typeof ProtegeExercicesSlugRoute
-  '/_protege/routines/$id': typeof ProtegeRoutinesIdRoute
-  '/_protege/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
-  '/_protege/seances/$id': typeof ProtegeSeancesIdRoute
-  '/_protege/routines/': typeof ProtegeRoutinesIndexRoute
+  '/': typeof IndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/connexion'
-    | '/exercices'
-    | '/profil'
-    | '/routines'
-    | '/seances'
-    | '/exercices/$slug'
-    | '/routines/$id'
-    | '/routines/nouvelle'
-    | '/seances/$id'
-    | '/routines/'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/connexion'
-    | '/exercices'
-    | '/profil'
-    | '/seances'
-    | '/'
-    | '/exercices/$slug'
-    | '/routines/$id'
-    | '/routines/nouvelle'
-    | '/seances/$id'
-    | '/routines'
-  id:
-    | '__root__'
-    | '/_protege'
-    | '/connexion'
-    | '/_protege/exercices'
-    | '/_protege/profil'
-    | '/_protege/routines'
-    | '/_protege/seances'
-    | '/_protege/'
-    | '/_protege/exercices/$slug'
-    | '/_protege/routines/$id'
-    | '/_protege/routines/nouvelle'
-    | '/_protege/seances/$id'
-    | '/_protege/routines/'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  ProtegeRoute: typeof ProtegeRouteWithChildren
-  ConnexionRoute: typeof ConnexionRoute
+  IndexRoute: typeof IndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_protege': {
-      id: '/_protege'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof ProtegeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/connexion': {
-      id: '/connexion'
-      path: '/connexion'
-      fullPath: '/connexion'
-      preLoaderRoute: typeof ConnexionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_protege/': {
-      id: '/_protege/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof ProtegeIndexRouteImport
-      parentRoute: typeof ProtegeRoute
-    }
-    '/_protege/exercices': {
-      id: '/_protege/exercices'
-      path: '/exercices'
-      fullPath: '/exercices'
-      preLoaderRoute: typeof ProtegeExercicesRouteImport
-      parentRoute: typeof ProtegeRoute
-    }
-    '/_protege/profil': {
-      id: '/_protege/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof ProtegeProfilRouteImport
-      parentRoute: typeof ProtegeRoute
-    }
-    '/_protege/routines': {
-      id: '/_protege/routines'
-      path: '/routines'
-      fullPath: '/routines'
-      preLoaderRoute: typeof ProtegeRoutinesRouteImport
-      parentRoute: typeof ProtegeRoute
-    }
-    '/_protege/seances': {
-      id: '/_protege/seances'
-      path: '/seances'
-      fullPath: '/seances'
-      preLoaderRoute: typeof ProtegeSeancesRouteImport
-      parentRoute: typeof ProtegeRoute
-    }
-    '/_protege/exercices/$slug': {
-      id: '/_protege/exercices/$slug'
-      path: '/$slug'
-      fullPath: '/exercices/$slug'
-      preLoaderRoute: typeof ProtegeExercicesSlugRouteImport
-      parentRoute: typeof ProtegeExercicesRoute
-    }
-    '/_protege/routines/': {
-      id: '/_protege/routines/'
-      path: '/'
-      fullPath: '/routines/'
-      preLoaderRoute: typeof ProtegeRoutinesIndexRouteImport
-      parentRoute: typeof ProtegeRoutinesRoute
-    }
-    '/_protege/routines/$id': {
-      id: '/_protege/routines/$id'
-      path: '/$id'
-      fullPath: '/routines/$id'
-      preLoaderRoute: typeof ProtegeRoutinesIdRouteImport
-      parentRoute: typeof ProtegeRoutinesRoute
-    }
-    '/_protege/routines/nouvelle': {
-      id: '/_protege/routines/nouvelle'
-      path: '/nouvelle'
-      fullPath: '/routines/nouvelle'
-      preLoaderRoute: typeof ProtegeRoutinesNouvelleRouteImport
-      parentRoute: typeof ProtegeRoutinesRoute
-    }
-    '/_protege/seances/$id': {
-      id: '/_protege/seances/$id'
-      path: '/$id'
-      fullPath: '/seances/$id'
-      preLoaderRoute: typeof ProtegeSeancesIdRouteImport
-      parentRoute: typeof ProtegeSeancesRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface ProtegeExercicesRouteChildren {
-  ProtegeExercicesSlugRoute: typeof ProtegeExercicesSlugRoute
-}
-
-const ProtegeExercicesRouteChildren: ProtegeExercicesRouteChildren = {
-  ProtegeExercicesSlugRoute: ProtegeExercicesSlugRoute,
-}
-
-const ProtegeExercicesRouteWithChildren =
-  ProtegeExercicesRoute._addFileChildren(ProtegeExercicesRouteChildren)
-
-interface ProtegeRoutinesRouteChildren {
-  ProtegeRoutinesIdRoute: typeof ProtegeRoutinesIdRoute
-  ProtegeRoutinesNouvelleRoute: typeof ProtegeRoutinesNouvelleRoute
-  ProtegeRoutinesIndexRoute: typeof ProtegeRoutinesIndexRoute
-}
-
-const ProtegeRoutinesRouteChildren: ProtegeRoutinesRouteChildren = {
-  ProtegeRoutinesIdRoute: ProtegeRoutinesIdRoute,
-  ProtegeRoutinesNouvelleRoute: ProtegeRoutinesNouvelleRoute,
-  ProtegeRoutinesIndexRoute: ProtegeRoutinesIndexRoute,
-}
-
-const ProtegeRoutinesRouteWithChildren = ProtegeRoutinesRoute._addFileChildren(
-  ProtegeRoutinesRouteChildren,
-)
-
-interface ProtegeSeancesRouteChildren {
-  ProtegeSeancesIdRoute: typeof ProtegeSeancesIdRoute
-}
-
-const ProtegeSeancesRouteChildren: ProtegeSeancesRouteChildren = {
-  ProtegeSeancesIdRoute: ProtegeSeancesIdRoute,
-}
-
-const ProtegeSeancesRouteWithChildren = ProtegeSeancesRoute._addFileChildren(
-  ProtegeSeancesRouteChildren,
-)
-
-interface ProtegeRouteChildren {
-  ProtegeExercicesRoute: typeof ProtegeExercicesRouteWithChildren
-  ProtegeProfilRoute: typeof ProtegeProfilRoute
-  ProtegeRoutinesRoute: typeof ProtegeRoutinesRouteWithChildren
-  ProtegeSeancesRoute: typeof ProtegeSeancesRouteWithChildren
-  ProtegeIndexRoute: typeof ProtegeIndexRoute
-}
-
-const ProtegeRouteChildren: ProtegeRouteChildren = {
-  ProtegeExercicesRoute: ProtegeExercicesRouteWithChildren,
-  ProtegeProfilRoute: ProtegeProfilRoute,
-  ProtegeRoutinesRoute: ProtegeRoutinesRouteWithChildren,
-  ProtegeSeancesRoute: ProtegeSeancesRouteWithChildren,
-  ProtegeIndexRoute: ProtegeIndexRoute,
-}
-
-const ProtegeRouteWithChildren =
-  ProtegeRoute._addFileChildren(ProtegeRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
-  ProtegeRoute: ProtegeRouteWithChildren,
-  ConnexionRoute: ConnexionRoute,
+  IndexRoute: IndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
