@@ -4,6 +4,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -26,6 +27,7 @@ export function AppSidebar() {
       <SidebarContent>
         {NAV_GROUPS.map((group) => (
           <SidebarGroup key={group.label ?? "root"}>
+            {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
             <SidebarMenu>
               {group.items.map((item) => (
                 <SidebarMenuItem key={item.to}>
