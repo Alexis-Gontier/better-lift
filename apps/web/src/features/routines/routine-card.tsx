@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useSelection } from "@/components/list-detail";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -22,28 +23,42 @@ export function routineMuscles(routine: MockRoutine): string[] {
 
 export function RoutineCard({ routine }: { routine: MockRoutine }) {
   const muscles = routineMuscles(routine);
-  return (
+  const selection = useSelection();
+  const card = (
+    <Card className="h-full transition-colors group-hover:bg-muted/40 group-data-[selected=true]:ring-2 group-data-[selected=true]:ring-foreground/30">
+      <CardHeader>
+        <CardTitle>{routine.name}</CardTitle>
+        <CardDescription>
+          {routine.exercises.length} exercices · ~
+          {formatMinutes(estimateMinutes(routine.exercises))}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-1.5">
+        {muscles.slice(0, 3).map((m) => (
+          <Badge key={m} variant="secondary">
+            {m}
+          </Badge>
+        ))}
+        {muscles.length > 3 && <Badge variant="outline">+{muscles.length - 3}</Badge>}
+      </CardContent>
+      <CardFooter className="text-muted-foreground text-xs">
+        {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
+      </CardFooter>
+    </Card>
+  );
+  // En liste | détail, la carte sélectionne ; sinon elle mène à la page de la routine.
+  return selection ? (
+    <button
+      type="button"
+      className="group text-left"
+      data-selected={selection.selected === routine.id}
+      onClick={() => selection.select(routine.id)}
+    >
+      {card}
+    </button>
+  ) : (
     <Link to="/routines/$id" params={{ id: routine.id }} className="group">
-      <Card className="h-full transition-colors group-hover:bg-muted/40">
-        <CardHeader>
-          <CardTitle>{routine.name}</CardTitle>
-          <CardDescription>
-            {routine.exercises.length} exercices · ~
-            {formatMinutes(estimateMinutes(routine.exercises))}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-1.5">
-          {muscles.slice(0, 3).map((m) => (
-            <Badge key={m} variant="secondary">
-              {m}
-            </Badge>
-          ))}
-          {muscles.length > 3 && <Badge variant="outline">+{muscles.length - 3}</Badge>}
-        </CardContent>
-        <CardFooter className="text-muted-foreground text-xs">
-          {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
-        </CardFooter>
-      </Card>
+      {card}
     </Link>
   );
 }

@@ -25,6 +25,7 @@
     "react-body-highlighter": "2.0.5",
     "react-day-picker": "^10.0.2",
     "react-dom": "catalog:",
+    "react-resizable-panels": "^4.14.5",
     "recharts": "3.8.0",
     "tailwindcss": "4.3.3"
   },

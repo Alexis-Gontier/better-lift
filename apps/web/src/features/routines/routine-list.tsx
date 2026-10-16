@@ -79,7 +79,7 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
           {shown.map((r) => (
             <RoutineCard key={r.id} routine={r} />
           ))}
@@ -93,7 +93,7 @@ export function RoutineListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
         {["a", "b", "c", "d", "e", "f"].map((k) => (
           <Skeleton key={k} className="h-40 rounded-xl" />
         ))}

@@ -22,7 +22,7 @@ export function Page({ title, tabs, actions, className, children }: Props) {
           <div className="flex items-center gap-3 pb-2">{actions}</div>
         </div>
       )}
-      <div className={cn("flex flex-1 flex-col gap-6 pt-6", className)}>{children}</div>
+      <div className={cn("@container flex flex-1 flex-col gap-6 pt-6", className)}>{children}</div>
     </div>
   );
 }

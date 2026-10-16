@@ -43,7 +43,7 @@ function Summary({ detail, previous }: { detail: SessionDetail; previous?: Sessi
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 @xl:grid-cols-4">
           {items.map((i) => (
             <div key={i.label} className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">{i.label}</span>
