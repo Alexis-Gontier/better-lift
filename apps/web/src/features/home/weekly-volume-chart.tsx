@@ -6,7 +6,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { formatKg, formatShortDay } from "@/lib/format";
+import { formatKg, formatNumber, formatShortDay } from "@/lib/format";
 import { mockSessions } from "@/mocks/sessions";
 import { weeklyVolume } from "@/mocks/stats";
 import { TODAY } from "@/mocks/today";
@@ -36,7 +36,7 @@ export function WeeklyVolumeChart() {
               tickLine={false}
               axisLine={false}
               width={48}
-              tickFormatter={(v: number) => `${Math.round(v / 1000)} t`}
+              tickFormatter={(v: number) => `${formatNumber(v / 1000)} t`}
             />
             <ChartTooltip
               content={

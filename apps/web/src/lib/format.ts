@@ -51,3 +51,20 @@ export function formatRest(seconds: number): string {
   const s = seconds % 60;
   return s === 0 ? `${m} min` : `${m} min ${String(s).padStart(2, "0")}`;
 }
+
+const monthYear = new Intl.DateTimeFormat("fr-FR", {
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const weekdayDay = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
+
+/** « octobre 2026 » pour un mois `YYYY-MM`. */
+export const formatMonth = (month: string) => monthYear.format(asDate(`${month}-01`));
+/** « jeu. 15 oct. » */
+export const formatWeekdayDay = (date: string) => weekdayDay.format(asDate(date));

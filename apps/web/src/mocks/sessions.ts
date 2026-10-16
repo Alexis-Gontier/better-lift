@@ -1,3 +1,4 @@
+import { doneVolume, sessionDetail } from "./history";
 import { seeded } from "./random";
 import { addDays } from "./stats";
 import { TODAY } from "./today";
@@ -24,14 +25,17 @@ function generate(): MockSession[] {
     if (rand() > 0.5) continue;
     const name = ROUTINES[routine % ROUTINES.length] ?? "Push A";
     routine += 1;
-    sessions.push({
+    const session: MockSession = {
       id: String(1000 - day),
       date: addDays(TODAY, -day),
       routine: name,
       minutes: Math.round(50 + rand() * 40),
-      volume: Math.round((7000 + rand() * 6000 + (365 - day) * 8) / 10) * 10,
+      volume: 0,
       records: rand() > 0.8 ? Math.ceil(rand() * 3) : 0,
-    });
+    };
+    // Le volume se déduit des séries faites : liste, détail et Accueil disent le même chiffre.
+    session.volume = doneVolume(sessionDetail(session));
+    sessions.push(session);
   }
   return sessions.reverse();
 }
