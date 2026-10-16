@@ -1,6 +1,5 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { CircleAlert, Dumbbell } from "lucide-react";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Link } from "@tanstack/react-router";
+import { Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -54,26 +53,5 @@ export function HomeEmpty() {
         </Button>
       </EmptyContent>
     </Empty>
-  );
-}
-
-/** Erreur : les données n'ont pas pu être chargées. */
-export function HomeError() {
-  const navigate = useNavigate();
-  return (
-    <Alert variant="destructive">
-      <CircleAlert />
-      <AlertTitle>L'accueil n'a pas pu se charger</AlertTitle>
-      <AlertDescription>Vérifiez votre connexion, puis réessayez.</AlertDescription>
-      <AlertAction>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate({ to: ".", search: (p) => ({ ...p, etat: undefined }) })}
-        >
-          Réessayer
-        </Button>
-      </AlertAction>
-    </Alert>
   );
 }

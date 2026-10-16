@@ -35,3 +35,19 @@ export function formatDelta(current: number, previous: number, percent = false):
   const sign = diff > 0 ? "+" : diff < 0 ? "−" : "±";
   return `${sign}${number.format(Math.abs(Math.round(diff)))}${percent ? " %" : ""}`;
 }
+
+/** « Aujourd'hui », « Hier », « Il y a 5 j », ou « Jamais faite ». */
+export function formatDaysAgo(days: number | null): string {
+  if (days === null) return "Jamais faite";
+  if (days === 0) return "Aujourd'hui";
+  if (days === 1) return "Hier";
+  return `Il y a ${days} j`;
+}
+
+/** « 1 min 30 », « 2 min », « 45 s ». */
+export function formatRest(seconds: number): string {
+  if (seconds < 60) return `${seconds} s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return s === 0 ? `${m} min` : `${m} min ${String(s).padStart(2, "0")}`;
+}

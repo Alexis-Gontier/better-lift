@@ -1,7 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Page } from "@/components/page";
+import { useProto } from "@/components/proto/use-proto";
+import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
-import { Zone } from "@/components/zone";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RoutineDetail } from "@/features/routines/routine-detail";
+import { routineById } from "@/mocks/routines";
 
 export const Route = createFileRoute("/_app/routines/$id")({
   staticData: { crumb: "Détail" },
@@ -10,13 +21,36 @@ export const Route = createFileRoute("/_app/routines/$id")({
 
 function RoutinePage() {
   const { id } = Route.useParams();
+  const { state } = useProto();
+  const routine = routineById(id);
+
+  if (!routine || state === "vide") {
+    return (
+      <Page title="Routine introuvable">
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>Cette routine n'existe pas</EmptyTitle>
+            <EmptyDescription>Elle a peut-être été supprimée.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" asChild>
+              <Link to="/routines">Retour aux routines</Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </Page>
+    );
+  }
+
   return (
     <Page
-      title={`Routine ${id}`}
+      title={routine.name}
       actions={
         <>
           <Button variant="outline">Dupliquer</Button>
-          <Button variant="outline">Planifier</Button>
+          <Button variant="outline" asChild>
+            <Link to="/planning">Planifier</Link>
+          </Button>
           <Button asChild>
             <Link to="/routines/$id/edit" params={{ id }}>
               Modifier
@@ -25,19 +59,15 @@ function RoutinePage() {
         </>
       }
     >
-      <Zone
-        title="En-tête"
-        hint="Dossier, durée et volume estimés, muscles ciblés, dernière exécution"
-        className="min-h-20"
-      />
-      {["Exercice 1", "Exercice 2 + 3 (superset)", "Exercice 4", "Exercice 5"].map((t) => (
-        <Zone
-          key={t}
-          title={t}
-          hint="Séries cibles : charge × répétitions, repos"
-          className="min-h-28"
-        />
-      ))}
+      {state === "chargement" && (
+        <>
+          <Skeleton className="h-36 rounded-xl" />
+          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-xl" />
+        </>
+      )}
+      {state === "erreur" && <StateError title="La routine n'a pas pu se charger" />}
+      {state === "nominal" && <RoutineDetail routine={routine} />}
     </Page>
   );
 }

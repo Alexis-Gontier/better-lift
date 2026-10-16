@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { CalendarPlus, FileUp, type LucideIcon, Plus, Scale } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -50,25 +51,27 @@ export function CommandPalette() {
       title="Recherche"
       description="Aller à une page ou lancer une action"
     >
-      <CommandInput placeholder="Rechercher une page, une action…" />
-      <CommandList>
-        <CommandEmpty>Aucun résultat.</CommandEmpty>
-        <CommandGroup heading="Aller à">
-          {NAV_GROUPS.flatMap((g) => g.items).map((item) => (
-            <CommandItem key={item.to} onSelect={() => go(item.to)}>
-              <item.icon /> {item.title}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Actions">
-          {ACTIONS.map((a) => (
-            <CommandItem key={a.label} onSelect={() => go(a.to)}>
-              <a.icon /> {a.label}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
+      <Command>
+        <CommandInput placeholder="Rechercher une page, une action…" />
+        <CommandList>
+          <CommandEmpty>Aucun résultat.</CommandEmpty>
+          <CommandGroup heading="Aller à">
+            {NAV_GROUPS.flatMap((g) => g.items).map((item) => (
+              <CommandItem key={item.to} onSelect={() => go(item.to)}>
+                <item.icon /> {item.title}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="Actions">
+            {ACTIONS.map((a) => (
+              <CommandItem key={a.label} onSelect={() => go(a.to)}>
+                <a.icon /> {a.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
     </CommandDialog>
   );
 }

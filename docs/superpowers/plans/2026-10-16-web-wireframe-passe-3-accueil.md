@@ -55,3 +55,13 @@
 
 - [ ] `_app.index.tsx` : même grille que le squelette, chaque `Zone` remplacée par sa carte ; `useProto().state` choisit nominal / vide / chargement / erreur.
 - [ ] `/verif` ; captures des quatre états, clair et sombre ; commit `feat(web): accueil en contenu, quatre états`.
+
+---
+
+## Suite : Routines (même modèle)
+
+- Données : `mocks/exercises.ts` (16 exercices), `mocks/routines.ts` (7 routines, 4 dossiers, un superset par routine Push A / Jambes A), calculs testés dans `mocks/routine-stats.ts` (volume prévu, durée estimée, regroupement des supersets, jours écoulés).
+- Liste : recherche sans casse ni accents (nom de routine ou d'exercice), dossiers en pastilles (`ToggleGroup`), grille de cartes ; quatre états.
+- Détail : résumé (exercices, séries, durée, volume, dernière fois, muscles, notes), un bloc par exercice avec ses séries en `Table`, supersets regroupés dans une même carte ; routine inconnue → `Empty`.
+- Éditeur : nom, dossier, notes (`Field`), séries modifiables, ajout d'exercice par `CommandDialog`. Le glisser-déposer reste pour la passe 5 (poignée dessinée).
+- **Piège Nova** : `CommandDialog` ne pose plus de racine `<Command>` ; l'appelant doit l'écrire (palette et éditeur corrigés).

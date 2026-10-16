@@ -41,7 +41,7 @@
             "useKeyWithClickEvents": "off",
             "useFocusableInteractive": "off"
           },
-          "suspicious": { "noDocumentCookie": "off" }
+          "suspicious": { "noDocumentCookie": "off", "noDoubleEquals": "off" }
         }
       }
     }

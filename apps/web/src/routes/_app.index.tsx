@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Page } from "@/components/page";
 import { useProto } from "@/components/proto/use-proto";
+import { StateError } from "@/components/states/state-error";
 import { ConsistencyCard } from "@/features/home/consistency-card";
 import { GoalsCard } from "@/features/home/goals-card";
-import { HomeEmpty, HomeError, HomeSkeleton } from "@/features/home/home-states";
+import { HomeEmpty, HomeSkeleton } from "@/features/home/home-states";
 import { RecentRecords, RecentSessions } from "@/features/home/recent-lists";
 import { TodayCard } from "@/features/home/today-card";
 import { WeekStats } from "@/features/home/week-stats";
@@ -20,7 +21,7 @@ function HomePage() {
   return (
     <Page title="Accueil">
       {state === "chargement" && <HomeSkeleton />}
-      {state === "erreur" && <HomeError />}
+      {state === "erreur" && <StateError title="L'accueil n'a pas pu se charger" />}
       {state === "vide" && <HomeEmpty />}
       {state === "nominal" && (
         <>
