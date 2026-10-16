@@ -22,7 +22,7 @@ export function WeeklyVolumeChart() {
         <CardDescription>12 dernières semaines</CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
-        <ChartContainer config={config} className="h-56 w-full">
+        <ChartContainer config={config} className="aspect-auto h-56 w-full">
           <BarChart data={data} margin={{ left: 0, right: 0 }}>
             <CartesianGrid vertical={false} />
             <XAxis

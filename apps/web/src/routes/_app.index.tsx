@@ -16,14 +16,15 @@ export const Route = createFileRoute("/_app/")({
   component: HomePage,
 });
 
+/** A : grille de cartes. B : colonne principale et colonne latérale. */
 function HomePage() {
-  const { state } = useProto();
+  const { state, variant } = useProto();
   return (
     <Page title="Accueil">
       {state === "chargement" && <HomeSkeleton />}
       {state === "erreur" && <StateError title="L'accueil n'a pas pu se charger" />}
       {state === "vide" && <HomeEmpty />}
-      {state === "nominal" && (
+      {state === "nominal" && variant === "a" && (
         <>
           <TodayCard />
           <WeekStats />
@@ -40,6 +41,23 @@ function HomePage() {
             <RecentSessions />
           </div>
         </>
+      )}
+      {/* Variante B : une colonne principale, une colonne latérale étroite. */}
+      {state === "nominal" && variant !== "a" && (
+        <div className="grid items-start gap-4 lg:grid-cols-[1fr_20rem]">
+          <div className="@container flex min-w-0 flex-col gap-4">
+            <TodayCard />
+            <WeekStats />
+            <WeeklyVolumeChart />
+            <ConsistencyCard />
+          </div>
+          <div className="flex flex-col gap-4">
+            <WeightCard />
+            <GoalsCard />
+            <RecentRecords />
+            <RecentSessions />
+          </div>
+        </div>
       )}
     </Page>
   );

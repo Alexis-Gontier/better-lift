@@ -55,7 +55,7 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-64 w-full">
+        <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
           <LineChart data={data} margin={{ left: 0, right: 8 }}>
             <CartesianGrid vertical={false} />
             <XAxis

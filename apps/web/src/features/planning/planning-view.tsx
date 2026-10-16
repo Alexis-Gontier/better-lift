@@ -212,6 +212,62 @@ function MonthView({ month, planned }: { month: string; planned: Planned[] }) {
   );
 }
 
+/** Variante C : un agenda, des deux semaines passées aux quatre à venir, jours chargés seulement. */
+function AgendaView({ planned }: { planned: Planned[] }) {
+  const start = addDays(startOfWeek(TODAY), -14);
+  const weeks = Array.from({ length: 6 }, (_, w) => addDays(start, w * 7));
+  return (
+    <div className="flex flex-col gap-6">
+      {weeks.map((monday) => {
+        const days = weekDays(monday)
+          .map((date) => ({
+            date,
+            entries: dayEntries(date, mockSessions, planned, TODAY, routineName),
+          }))
+          .filter((d) => d.entries.length > 0 || d.date === TODAY);
+        return (
+          <section key={monday} className="flex flex-col gap-2">
+            <h2 className="font-medium text-sm">
+              Semaine du {formatShortDay(monday)}
+              {monday === startOfWeek(TODAY) && (
+                <span className="text-muted-foreground"> · cette semaine</span>
+              )}
+            </h2>
+            <Card className="gap-0 py-0">
+              {days.length === 0 && (
+                <p className="px-4 py-3 text-muted-foreground text-sm">Rien de prévu.</p>
+              )}
+              {days.map((d, i) => (
+                <div
+                  key={d.date}
+                  className={cn(
+                    "flex items-center gap-4 px-4 py-2.5",
+                    i > 0 && "border-t",
+                    d.date === TODAY && "bg-muted/50",
+                  )}
+                >
+                  <span className="w-28 shrink-0 text-muted-foreground text-sm first-letter:uppercase">
+                    {formatWeekdayDay(d.date)}
+                  </span>
+                  <div className="flex flex-1 flex-wrap gap-2">
+                    {d.entries.length === 0 ? (
+                      <span className="text-muted-foreground text-sm">
+                        Aujourd'hui · rien de prévu
+                      </span>
+                    ) : (
+                      d.entries.map((e) => <EntryChip key={e.id} entry={e} />)
+                    )}
+                  </div>
+                </div>
+              ))}
+            </Card>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 function Legend() {
   const items = [
     { label: "Faite", className: "border-primary bg-primary" },
@@ -353,7 +409,16 @@ function RepeatDialog({
 }
 
 /** Le Planning tient son état en mémoire : pas d'API dans le wireframe. */
-export function PlanningView({ view, children }: { view: View; children?: React.ReactNode }) {
+export function PlanningView({
+  view,
+  agenda = false,
+  children,
+}: {
+  view: View;
+  /** Variante C : un agenda en liste à la place de la semaine ou du mois. */
+  agenda?: boolean;
+  children?: React.ReactNode;
+}) {
   const [planned, setPlanned] = useState<Planned[]>(mockPlanned);
   const [weekStart, setWeekStart] = useState(startOfWeek(TODAY));
   const [month, setMonth] = useState(TODAY.slice(0, 7));
@@ -393,32 +458,36 @@ export function PlanningView({ view, children }: { view: View; children?: React.
       {children ?? (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Précédent"
-                onClick={() => shift(-1)}
-              >
-                <ChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setWeekStart(startOfWeek(TODAY));
-                  setMonth(TODAY.slice(0, 7));
-                }}
-              >
-                Aujourd'hui
-              </Button>
-              <Button variant="outline" size="icon" aria-label="Suivant" onClick={() => shift(1)}>
-                <ChevronRight />
-              </Button>
-              <span className="ml-2 font-medium first-letter:uppercase">{label}</span>
-            </div>
+            {!agenda && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Précédent"
+                  onClick={() => shift(-1)}
+                >
+                  <ChevronLeft />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setWeekStart(startOfWeek(TODAY));
+                    setMonth(TODAY.slice(0, 7));
+                  }}
+                >
+                  Aujourd'hui
+                </Button>
+                <Button variant="outline" size="icon" aria-label="Suivant" onClick={() => shift(1)}>
+                  <ChevronRight />
+                </Button>
+                <span className="ml-2 font-medium first-letter:uppercase">{label}</span>
+              </div>
+            )}
             <Legend />
           </div>
-          {view === "semaine" ? (
+          {agenda ? (
+            <AgendaView planned={planned} />
+          ) : view === "semaine" ? (
             <WeekView start={weekStart} planned={planned} onAdd={add} />
           ) : (
             <MonthView month={month} planned={planned} />

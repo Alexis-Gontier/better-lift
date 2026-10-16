@@ -37,7 +37,7 @@ const TABS = [
 
 function ProgressPage() {
   const tab = useTab(TABS.map((t) => t.value));
-  const { state } = useProto();
+  const { state, variant } = useProto();
   const [period, setPeriod] = useState<Period>("3m");
   return (
     <Page
@@ -81,7 +81,9 @@ function ProgressPage() {
           </EmptyHeader>
         </Empty>
       )}
-      {state === "nominal" && tab === "graphiques" && <ProgressCharts period={period} />}
+      {state === "nominal" && tab === "graphiques" && (
+        <ProgressCharts period={period} single={variant !== "a"} />
+      )}
       {state === "nominal" && tab === "records" && <RecordsTable period={period} />}
     </Page>
   );

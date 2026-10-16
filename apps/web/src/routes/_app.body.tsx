@@ -20,8 +20,8 @@ export const Route = createFileRoute("/_app/body")({
 
 function BodyPage() {
   const tab = useTab(BODY_TABS.map((t) => t.value));
-  const { state } = useProto();
-  if (state === "nominal") return <BodyView tab={tab} />;
+  const { state, variant } = useProto();
+  if (state === "nominal") return <BodyView tab={tab} side={variant !== "a"} />;
   return (
     <BodyView tab={tab}>
       {state === "chargement" && (

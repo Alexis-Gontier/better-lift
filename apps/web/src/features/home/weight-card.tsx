@@ -46,7 +46,7 @@ export function WeightCard() {
               : `${diff > 0 ? "+" : "−"}${formatNumber(Math.abs(diff))} kg sur 7 j`}
           </Badge>
         </div>
-        <ChartContainer config={config} className="h-24 w-full">
+        <ChartContainer config={config} className="aspect-auto h-24 w-full">
           <LineChart data={data}>
             <YAxis hide domain={["dataMin - 0.3", "dataMax + 0.3"]} />
             <Line

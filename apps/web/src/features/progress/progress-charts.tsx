@@ -1,3 +1,4 @@
+import { type ReactNode, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatKg, formatNumber, formatShortDay } from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { sessionDetail } from "@/mocks/history";
@@ -27,7 +29,17 @@ function weeksOf(period: Period): number {
   return Math.max(1, Math.round(days / 7));
 }
 
-export function ProgressCharts({ period }: { period: Period }) {
+const METRICS = [
+  { value: "volume", label: "Volume par muscle" },
+  { value: "frequence", label: "Fréquence par muscle" },
+  { value: "duree", label: "Durée des séances" },
+  { value: "seances", label: "Nombre de séances" },
+] as const;
+type Metric = (typeof METRICS)[number]["value"];
+
+/** A : les quatre graphiques en grille. B (`single`) : un seul, choisi par un sélecteur. */
+export function ProgressCharts({ period, single = false }: { period: Period; single?: boolean }) {
+  const [metric, setMetric] = useState<Metric>("volume");
   const sessions = inPeriod(mockSessions, period, TODAY);
   const weeks = weeksOf(period);
   const details = sessions.map((s) => ({
@@ -40,8 +52,8 @@ export function ProgressCharts({ period }: { period: Period }) {
   const maxPerWeek = Math.max(1, ...muscles.map((m) => m.perWeek));
   const series = weeklySeries(sessions, TODAY, weeks);
 
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
+  const cards: Record<Metric, ReactNode> = {
+    volume: (
       <Card>
         <CardHeader>
           <CardTitle>Volume par muscle</CardTitle>
@@ -50,7 +62,7 @@ export function ProgressCharts({ period }: { period: Period }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <ChartContainer config={volumeConfig} className="h-64 w-full">
+          <ChartContainer config={volumeConfig} className="aspect-auto h-64 w-full">
             <BarChart data={muscles} layout="vertical" margin={{ left: 8, right: 8 }}>
               <XAxis type="number" hide />
               <YAxis
@@ -77,7 +89,8 @@ export function ProgressCharts({ period }: { period: Period }) {
           />
         </CardContent>
       </Card>
-
+    ),
+    frequence: (
       <Card>
         <CardHeader>
           <CardTitle>Fréquence par muscle</CardTitle>
@@ -100,14 +113,15 @@ export function ProgressCharts({ period }: { period: Period }) {
           ))}
         </CardContent>
       </Card>
-
+    ),
+    duree: (
       <Card>
         <CardHeader>
           <CardTitle>Durée des séances</CardTitle>
           <CardDescription>Moyenne par semaine, en minutes</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={minutesConfig} className="h-56 w-full">
+          <ChartContainer config={minutesConfig} className="aspect-auto h-56 w-full">
             <LineChart data={series.filter((s) => s.count > 0)} margin={{ left: 0, right: 8 }}>
               <CartesianGrid vertical={false} />
               <XAxis
@@ -143,7 +157,8 @@ export function ProgressCharts({ period }: { period: Period }) {
           </ChartContainer>
         </CardContent>
       </Card>
-
+    ),
+    seances: (
       <Card>
         <CardHeader>
           <CardTitle>Nombre de séances</CardTitle>
@@ -153,7 +168,7 @@ export function ProgressCharts({ period }: { period: Period }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={countConfig} className="h-56 w-full">
+          <ChartContainer config={countConfig} className="aspect-auto h-56 w-full">
             <BarChart data={series} margin={{ left: 0, right: 8 }}>
               <CartesianGrid vertical={false} />
               <XAxis
@@ -176,6 +191,37 @@ export function ProgressCharts({ period }: { period: Period }) {
           </ChartContainer>
         </CardContent>
       </Card>
-    </div>
+    ),
+  };
+
+  if (!single)
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {cards.volume}
+        {cards.frequence}
+        {cards.duree}
+        {cards.seances}
+      </div>
+    );
+
+  return (
+    <>
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        spacing={2}
+        value={metric}
+        onValueChange={(v) => v && setMetric(v as Metric)}
+        className="flex-wrap"
+      >
+        {METRICS.map((m) => (
+          <ToggleGroupItem key={m.value} value={m.value}>
+            {m.label}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+      {cards[metric]}
+    </>
   );
 }

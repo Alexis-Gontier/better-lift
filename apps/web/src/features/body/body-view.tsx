@@ -58,7 +58,8 @@ const weightConfig = {
 const signed = (n: number, unit: string) =>
   Math.abs(n) < 0.05 ? "stable" : `${n > 0 ? "+" : "−"}${formatNumber(Math.abs(n))} ${unit}`;
 
-function WeightPanel({ weights }: { weights: Weighing[] }) {
+/** A : courbe pleine largeur, tableau dessous. B (`side`) : tableau à gauche, courbe à droite. */
+function WeightPanel({ weights, side = false }: { weights: Weighing[]; side?: boolean }) {
   const [showAll, setShowAll] = useState(false);
   const avg = movingAverage(
     weights.map((w) => w.kg),
@@ -104,96 +105,197 @@ function WeightPanel({ weights }: { weights: Weighing[] }) {
           </Card>
         ))}
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Évolution</CardTitle>
-          <CardDescription>
-            Les pesées en points, la moyenne sur 7 jours en trait, l'objectif en pointillés
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={weightConfig} className="h-72 w-full">
-            <LineChart data={data} margin={{ left: 0, right: 8 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={formatShortDay}
-                minTickGap={40}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={36}
-                domain={[WEIGHT_GOAL - 1, "dataMax + 0.5"]}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(d) => formatShortDay(String(d))}
-                    formatter={(v, name) => (
-                      <span className="flex w-full justify-between gap-4">
-                        <span className="text-muted-foreground">
-                          {weightConfig[name as keyof typeof weightConfig]?.label}
-                        </span>
-                        <span className="tabular-nums">{formatKg(Number(v))}</span>
-                      </span>
-                    )}
+      {side ? (
+        // Variante B : le tableau à gauche, la courbe à droite.
+        <div className="grid items-start gap-4 lg:grid-cols-[22rem_1fr]">
+          <div className="flex flex-col gap-4">
+            <Card className="gap-0 py-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-4">Date</TableHead>
+                    <TableHead className="text-right">Pesée</TableHead>
+                    <TableHead className="pr-4 text-right">Moyenne 7 jours</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(showAll ? rows : rows.slice(0, 10)).map((r) => (
+                    <TableRow key={r.date}>
+                      <TableCell className="pl-4 first-letter:uppercase">
+                        {formatWeekdayDay(r.date)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">{formatKg(r.kg)}</TableCell>
+                      <TableCell className="pr-4 text-right text-muted-foreground tabular-nums">
+                        {formatKg(r.avg)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+            {!showAll && rows.length > 10 && (
+              <Button variant="outline" className="self-center" onClick={() => setShowAll(true)}>
+                Afficher les {rows.length} pesées
+              </Button>
+            )}
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Évolution</CardTitle>
+              <CardDescription>
+                Les pesées en points, la moyenne sur 7 jours en trait, l'objectif en pointillés
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={weightConfig} className="aspect-auto h-72 w-full">
+                <LineChart data={data} margin={{ left: 0, right: 8 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatShortDay}
+                    minTickGap={40}
                   />
-                }
-              />
-              <ReferenceLine
-                y={WEIGHT_GOAL}
-                stroke="var(--muted-foreground)"
-                strokeDasharray="4 4"
-              />
-              <Line
-                dataKey="kg"
-                stroke="none"
-                dot={{ r: 2, fill: "var(--color-kg)", fillOpacity: 0.5 }}
-                isAnimationActive={false}
-              />
-              <Line
-                dataKey="avg"
-                type="monotone"
-                stroke="var(--color-avg)"
-                strokeWidth={2}
-                dot={false}
-                isAnimationActive={false}
-              />
-            </LineChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="gap-0 py-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-4">Date</TableHead>
-              <TableHead className="text-right">Pesée</TableHead>
-              <TableHead className="pr-4 text-right">Moyenne 7 jours</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(showAll ? rows : rows.slice(0, 10)).map((r) => (
-              <TableRow key={r.date}>
-                <TableCell className="pl-4 first-letter:uppercase">
-                  {formatWeekdayDay(r.date)}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{formatKg(r.kg)}</TableCell>
-                <TableCell className="pr-4 text-right text-muted-foreground tabular-nums">
-                  {formatKg(r.avg)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-      {!showAll && rows.length > 10 && (
-        <Button variant="outline" className="self-center" onClick={() => setShowAll(true)}>
-          Afficher les {rows.length} pesées
-        </Button>
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={36}
+                    domain={[WEIGHT_GOAL - 1, "dataMax + 0.5"]}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(d) => formatShortDay(String(d))}
+                        formatter={(v, name) => (
+                          <span className="flex w-full justify-between gap-4">
+                            <span className="text-muted-foreground">
+                              {weightConfig[name as keyof typeof weightConfig]?.label}
+                            </span>
+                            <span className="tabular-nums">{formatKg(Number(v))}</span>
+                          </span>
+                        )}
+                      />
+                    }
+                  />
+                  <ReferenceLine
+                    y={WEIGHT_GOAL}
+                    stroke="var(--muted-foreground)"
+                    strokeDasharray="4 4"
+                  />
+                  <Line
+                    dataKey="kg"
+                    stroke="none"
+                    dot={{ r: 2, fill: "var(--color-kg)", fillOpacity: 0.5 }}
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    dataKey="avg"
+                    type="monotone"
+                    stroke="var(--color-avg)"
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Évolution</CardTitle>
+              <CardDescription>
+                Les pesées en points, la moyenne sur 7 jours en trait, l'objectif en pointillés
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={weightConfig} className="aspect-auto h-72 w-full">
+                <LineChart data={data} margin={{ left: 0, right: 8 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatShortDay}
+                    minTickGap={40}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={36}
+                    domain={[WEIGHT_GOAL - 1, "dataMax + 0.5"]}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(d) => formatShortDay(String(d))}
+                        formatter={(v, name) => (
+                          <span className="flex w-full justify-between gap-4">
+                            <span className="text-muted-foreground">
+                              {weightConfig[name as keyof typeof weightConfig]?.label}
+                            </span>
+                            <span className="tabular-nums">{formatKg(Number(v))}</span>
+                          </span>
+                        )}
+                      />
+                    }
+                  />
+                  <ReferenceLine
+                    y={WEIGHT_GOAL}
+                    stroke="var(--muted-foreground)"
+                    strokeDasharray="4 4"
+                  />
+                  <Line
+                    dataKey="kg"
+                    stroke="none"
+                    dot={{ r: 2, fill: "var(--color-kg)", fillOpacity: 0.5 }}
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    dataKey="avg"
+                    type="monotone"
+                    stroke="var(--color-avg)"
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+          <Card className="gap-0 py-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-4">Date</TableHead>
+                  <TableHead className="text-right">Pesée</TableHead>
+                  <TableHead className="pr-4 text-right">Moyenne 7 jours</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(showAll ? rows : rows.slice(0, 10)).map((r) => (
+                  <TableRow key={r.date}>
+                    <TableCell className="pl-4 first-letter:uppercase">
+                      {formatWeekdayDay(r.date)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{formatKg(r.kg)}</TableCell>
+                    <TableCell className="pr-4 text-right text-muted-foreground tabular-nums">
+                      {formatKg(r.avg)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+          {!showAll && rows.length > 10 && (
+            <Button variant="outline" className="self-center" onClick={() => setShowAll(true)}>
+              Afficher les {rows.length} pesées
+            </Button>
+          )}
+        </>
       )}
     </>
   );
@@ -217,7 +319,7 @@ function MeasurementCard({ m }: { m: Measurement }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={config} className="h-28 w-full">
+        <ChartContainer config={config} className="aspect-auto h-28 w-full">
           <LineChart data={m.points} margin={{ left: 0, right: 8 }}>
             <XAxis
               dataKey="date"
@@ -335,7 +437,15 @@ function EntryDialog({
 }
 
 /** Corps tient ses pesées et mesures en mémoire : pas d'API dans le wireframe. */
-export function BodyView({ tab, children }: { tab: Tab; children?: React.ReactNode }) {
+export function BodyView({
+  tab,
+  side = false,
+  children,
+}: {
+  tab: Tab;
+  side?: boolean;
+  children?: React.ReactNode;
+}) {
   const [weights, setWeights] = useState<Weighing[]>(mockWeights);
   const [measurements, setMeasurements] = useState(mockMeasurements);
   const [entering, setEntering] = useState(false);
@@ -363,7 +473,7 @@ export function BodyView({ tab, children }: { tab: Tab; children?: React.ReactNo
     >
       {children ??
         (tab === "poids" ? (
-          <WeightPanel weights={weights} />
+          <WeightPanel weights={weights} side={side} />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {measurements.map((m) => (

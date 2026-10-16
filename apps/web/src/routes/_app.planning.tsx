@@ -22,8 +22,9 @@ export const Route = createFileRoute("/_app/planning")({
 
 function PlanningPage() {
   const view = useTab(PLANNING_TABS.map((t) => t.value));
-  const { state } = useProto();
-  if (state === "nominal") return <PlanningView view={view} />;
+  const { state, variant } = useProto();
+  // A et B : les onglets Semaine et Mois. C : un agenda en liste.
+  if (state === "nominal") return <PlanningView view={view} agenda={variant === "c"} />;
   return (
     <PlanningView view={view}>
       {state === "chargement" && (
