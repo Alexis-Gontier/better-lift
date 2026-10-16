@@ -79,16 +79,13 @@ et D199 (style), qui seront repris après validation du wireframe.
 
 ## 4. Pages
 
-### 4.1 Auth et onboarding (hors coquille)
+### 4.1 Auth (hors coquille)
 
 - **Connexion** `/login` — e-mail, mot de passe, lien « Mot de passe oublié », lien inscription.
 - **Inscription** `/register` — nom, e-mail, mot de passe.
 - **Mot de passe oublié** `/forgot-password` — e-mail, puis écran « e-mail envoyé ».
 - **Nouveau mot de passe** `/reset-password` — deux champs ; lien expiré = état erreur.
-- **Onboarding** `/onboarding` — `Stepper` en trois étapes, passable :
-  1. unités (kg / lb) et premier jour de la semaine ;
-  2. poids actuel et objectif de poids (facultatif) ;
-  3. point de départ : importer depuis Hevy, ou partir de zéro.
+L'onboarding est reporté : il viendra quand l'inscription sera branchée.
 
 Variantes : formulaire centré seul (a), deux colonnes formulaire + panneau illustré (b).
 
@@ -215,7 +212,24 @@ apps/web/src/
 - Les mocks couvrent un compte réaliste : ~25 routines en 4 dossiers, ~60 exercices, ~120
   séances sur 8 mois, 90 pesées, quelques objectifs, un planning sur 4 semaines.
 
-## 6. Vérification
+## 6. Ordre : du général au spécifique
+
+On construit par passes successives, chaque passe validée à l'écran avant la suivante :
+
+1. **Socle** : remise à zéro, coquille (sidebar, header, palette, raccourcis), barre de
+   prototypage, toutes les routes présentes avec un simple titre.
+2. **Squelette des pages** : chaque page reçoit ses zones (cadres titrés, liste | détail en
+   place), une seule variante, données factices minimales.
+3. **Contenu** : vrais composants dans chaque zone, mocks complets, quatre états.
+4. **Variantes** : les variantes B et C, page par page.
+5. **Détails** : éditeur de routine, import Hevy, interactions (glisser-déposer, menus
+   contextuels).
+
+Le catalogue n'est pas figé : à chaque passe, on peut chercher d'autres composants (shoogle.dev,
+recherches web, applications de référence comme Hevy, Strong ou Liftosaur). Chaque nouveau
+composant externe est présenté et validé avant installation (D228).
+
+## 7. Vérification
 
 - `pnpm --filter @better-lift/web typecheck` et `build` passent ; Biome et Knip propres.
 - Chaque page, chaque variante et chaque état est atteignable par l'URL et vérifié par une
@@ -223,6 +237,7 @@ apps/web/src/
 - Pas de test unitaire sur le wireframe : il n'y a pas de logique métier. Les rares calculs
   (moyenne mobile, % du 1RM) vivent dans `mocks/` et seront remplacés par ceux de `shared`.
 
-## 7. Hors périmètre
+## 8. Hors périmètre
 
-Style définitif, branchement de l'API, séance en direct, mobile, moteur de programmes.
+Style définitif, branchement de l'API, séance en direct, mobile, moteur de programmes,
+onboarding.
