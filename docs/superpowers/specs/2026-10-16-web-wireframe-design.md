@@ -39,7 +39,7 @@ et D199 (style), qui seront repris après validation du wireframe.
 - **D229 — Pas de logo pour l'instant.** Ni icône de site ni favicon : le nom « better-lift » en
   texte en tête de sidebar, masqué quand elle est repliée. L'identité viendra avec le style.
 - **D231 — shadcn : Radix, style Nova, curseur pointeur.** `components.json` en `radix-nova`
-  (marges réduites, police Geist du preset), option `--pointer` de `init`. Radix plutôt que Base
+  (marges réduites), police **Inter** (`@fontsource-variable/inter`, à la place de la Geist du preset), option `--pointer` de `init`. Radix plutôt que Base
   UI (défaut de shadcn depuis juillet 2026) : Kibo UI s'appuie dessus et Radix reste maintenu.
   `SelectContent` s'ouvre par défaut en `position="popper"`, `align="start"`. Biome ne lève pas
   les règles d'accessibilité du code vendorisé (`components/ui/**`, override dans `biome.json`) :
