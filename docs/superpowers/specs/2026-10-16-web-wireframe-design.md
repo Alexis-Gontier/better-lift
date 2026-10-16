@@ -44,12 +44,14 @@ et D199 (style), qui seront repris après validation du wireframe.
   `SelectContent` s'ouvre par défaut en `position="popper"`, `align="start"`. Biome ne lève pas
   les règles d'accessibilité du code vendorisé (`components/ui/**`, override dans `biome.json`) :
   les composants restent tels que shadcn les livre, réinstallables sans retouche.
+- **D232 — Pas de navigation au clavier.** Ni séquences `G` + lettre, ni `?`, ni `N`, ni fenêtre
+  des raccourcis. Restent Ctrl K, qui ouvre la recherche, et Ctrl B, natif de la sidebar.
 
 ## 3. Coquille
 
 > **État au 2026-10-16** : sidebar et header **vidés** à la demande (il ne reste que la
 > structure et le bouton de repli). Le contenu décrit ci-dessous est la cible ; il revient pas à
-> pas, validé élément par élément. La palette (Ctrl K) et les raccourcis restent actifs au clavier.
+> pas, validé élément par élément. La palette s'ouvre par Ctrl K.
 
 ```
 ┌──────────┬───────────────────────────────────────────────────────────┐
@@ -71,17 +73,16 @@ et D199 (style), qui seront repris après validation du wireframe.
 
 - **Sidebar** shadcn, `collapsible="icon"` (bloc `sidebar-07` + header collant de `sidebar-16`).
   Repliée, chaque icône porte un tooltip. Tête : le nom en texte (D229). Pied : menu du compte
-  (Paramètres, Raccourcis, Déconnexion). État replié mémorisé (cookie du composant).
+  (Paramètres, Déconnexion). État replié mémorisé (cookie du composant).
 - **Header** collant :
   - gauche : `SidebarTrigger`, séparateur, `Breadcrumb` ;
   - centre : faux champ « Rechercher… » + `Kbd` Ctrl K, qui ouvre un `CommandDialog` ;
-  - droite : thème clair/sombre, raccourcis clavier (ouvre une fenêtre), menu du compte (avatar).
+  - droite : thème clair/sombre, menu du compte (avatar).
 - **Palette de commandes** : groupes *Aller à* (toutes les pages), *Routines*, *Exercices*,
   *Séances* (recherche dans les mocks), *Actions* (Nouvelle routine, Planifier, Noter mon poids,
   Importer depuis Hevy).
-- **Raccourcis** : Ctrl K (palette), Ctrl B (sidebar), `G` puis lettre pour naviguer (`G A`
-  Accueil, `G P` Planning, `G R` Routines, `G E` Exercices, `G H` Historique, `G G` Progression,
-  `G C` Corps, `G S` Paramètres), `N` nouvelle routine sur Routines, `?` liste des raccourcis.
+- **Clavier** : seulement Ctrl K (palette) et Ctrl B (sidebar, natif du composant). Pas de
+  navigation au clavier (D232).
 - **Motif liste | détail** : `ResizablePanelGroup` horizontal, liste à gauche (min 20 %, défaut
   30 %), détail à droite, poignée visible. Taille mémorisée par page. Utilisé par Routines,
   Exercices et Historique.
@@ -202,7 +203,6 @@ Une seule variante : c'est un écran de formulaire.
 
 - **404** : message, lien vers l'Accueil.
 - **Erreur générale** : `errorComponent` du routeur, bouton *Réessayer*.
-- **Raccourcis** : `Dialog` listant les raccourcis avec `Kbd`.
 
 ## 5. Structure du code
 
@@ -211,7 +211,7 @@ apps/web/src/
   main.tsx, routeTree.gen.ts, styles/globals.css
   routes/                 une route par page (TanStack Router, fichiers plats)
   components/ui/          shadcn et registres validés (D228)
-  components/shell/       sidebar, header, palette, raccourcis, liste-détail
+  components/shell/       sidebar, header, palette, liste-détail
   components/proto/       barre de prototypage, lecture de ?v= et ?etat=
   components/states/      squelettes, vide, erreur réutilisables
   features/<page>/        composants propres à une page, une variante par fichier
@@ -228,7 +228,7 @@ apps/web/src/
 
 On construit par passes successives, chaque passe validée à l'écran avant la suivante :
 
-1. **Socle** : remise à zéro, coquille (sidebar, header, palette, raccourcis), barre de
+1. **Socle** : remise à zéro, coquille (sidebar, header, palette), barre de
    prototypage, toutes les routes présentes avec un simple titre.
 2. **Squelette des pages** : chaque page reçoit ses zones (cadres titrés, liste | détail en
    place), une seule variante, données factices minimales.

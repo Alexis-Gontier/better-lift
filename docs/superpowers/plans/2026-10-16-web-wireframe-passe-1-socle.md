@@ -2,11 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Remettre `apps/web` à zéro et poser la coquille cliquable du wireframe (sidebar repliable en icônes, header avec recherche Ctrl K, raccourcis, barre de prototypage) avec toutes les routes présentes sous forme de pages-titres.
+**Goal:** Remettre `apps/web` à zéro et poser la coquille cliquable du wireframe (sidebar repliable en icônes, header avec recherche Ctrl K, barre de prototypage) avec toutes les routes présentes sous forme de pages-titres.
 
 **Architecture:** SPA Vite + TanStack Router (routes en fichiers plats). Un layout sans chemin `_app` porte la coquille shadcn (`SidebarProvider` + `SidebarInset`), un layout `_auth` centre les pages d'authentification. Les paramètres de prototypage `?v=` et `?etat=` sont validés à la racine et lus partout par `useProto()`. Aucun appel à l'API.
 
 **Tech Stack:** Vite 8, React 19.2.3, TanStack Router 1.170, Tailwind 4, shadcn/ui (style `new-york`, base neutre), lucide-react, cmdk, Vitest 5.
+
+**Révisé le 2026-10-16 :** navigation au clavier retirée (D232) — la tâche 4 ne garde que la palette Ctrl K. Sidebar et header ont ensuite été vidés (spec § 3) : le code des tâches 3 décrit l'état d'alors.
 
 **Spec:** `docs/superpowers/specs/2026-10-16-web-wireframe-design.md` (D221–D228, § 3 coquille, § 6 ordre des passes)
 
@@ -45,12 +47,6 @@ apps/web/
     components/shell/app-breadcrumb.tsx
     components/shell/user-menu.tsx
     components/shell/theme-toggle.tsx
-    components/shell/shell-dialogs.tsx   contexte d'ouverture palette / raccourcis
-    components/shell/command-palette.tsx
-    components/shell/shortcuts.ts        logique pure des raccourcis
-    components/shell/shortcuts.test.ts
-    components/shell/shortcut-listener.tsx
-    components/shell/shortcuts-dialog.tsx
     components/proto/proto-search.ts     logique pure ?v= / ?etat=
     components/proto/proto-search.test.ts
     components/proto/use-proto.ts
@@ -648,9 +644,6 @@ export function UserMenuItems() {
           <Settings /> Paramètres
         </Link>
       </DropdownMenuItem>
-      <DropdownMenuItem onSelect={() => setHelpOpen(true)}>
-        <Keyboard /> Raccourcis clavier
-      </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onSelect={() => navigate({ to: "/login" })}>
         <LogOut /> Se déconnecter
@@ -865,14 +858,6 @@ export function SiteHeader() {
       </Button>
       <div className="flex flex-1 items-center justify-end gap-1">
         <ThemeToggle />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Raccourcis clavier" onClick={() => setHelpOpen(true)}>
-              <Keyboard />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Raccourcis clavier</TooltipContent>
-        </Tooltip>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full" aria-label="Compte">
@@ -937,309 +922,36 @@ git commit -m "feat(web): coquille du wireframe, sidebar repliable et header"
 
 ---
 
-### Task 4: Palette de commandes et raccourcis clavier
+### Task 4: Palette de commandes
 
 **Files:**
 - Install (shadcn): `command dialog`
-- Create: `src/components/shell/shortcuts.ts`, `shortcuts.test.ts`, `shortcut-listener.tsx`, `command-palette.tsx`, `shortcuts-dialog.tsx`
-- Modify: `src/routes/_app.tsx` (monter les trois composants)
+- Create: `src/components/shell/command-palette.tsx`
+- Modify: `src/routes/_app.tsx` (monter la palette)
 
 **Interfaces:**
-- Consumes: `useShellDialogs` (tâche 3), `NAV_GROUPS` (tâche 3).
-- Produces: `resolveShortcut(pending: Pending, key: string): ShortcutResult`, `GO_TO`, `SHORTCUT_LIST`.
+- Consumes: `NAV_GROUPS` (tâche 3).
+- Produces: `CommandPalette`, qui gère seul son ouverture (Ctrl K / Cmd K).
 
-- [ ] **Step 1: Écrire les tests — `shortcuts.test.ts`**
-
-```ts
-import { describe, expect, it } from "vitest";
-import { resolveShortcut } from "./shortcuts";
-
-describe("resolveShortcut", () => {
-  it("arme la séquence sur g", () => {
-    expect(resolveShortcut(null, "g")).toEqual({ action: null, pending: "g" });
-  });
-
-  it("navigue sur g puis une lettre connue", () => {
-    expect(resolveShortcut("g", "r")).toEqual({
-      action: { type: "navigate", to: "/routines" },
-      pending: null,
-    });
-    expect(resolveShortcut("g", "g")).toEqual({
-      action: { type: "navigate", to: "/progress" },
-      pending: null,
-    });
-  });
-
-  it("abandonne la séquence sur une lettre inconnue", () => {
-    expect(resolveShortcut("g", "z")).toEqual({ action: null, pending: null });
-  });
-
-  it("ouvre l'aide sur ?", () => {
-    expect(resolveShortcut(null, "?")).toEqual({ action: { type: "help" }, pending: null });
-  });
-
-  it("demande une nouvelle routine sur n", () => {
-    expect(resolveShortcut(null, "n")).toEqual({ action: { type: "new-routine" }, pending: null });
-  });
-
-  it("ignore la casse", () => {
-    expect(resolveShortcut("g", "R")).toEqual({
-      action: { type: "navigate", to: "/routines" },
-      pending: null,
-    });
-  });
-
-  it("ne fait rien sur une touche libre", () => {
-    expect(resolveShortcut(null, "x")).toEqual({ action: null, pending: null });
-  });
-});
-```
-
-- [ ] **Step 2: Lancer les tests, ils échouent**
-
-Run: `pnpm --filter @better-lift/web test`
-Expected: FAIL, `./shortcuts` introuvable.
-
-- [ ] **Step 3: `shortcuts.ts`**
-
-```ts
-import type { FileRouteTypes } from "@/routeTree.gen";
-
-type To = FileRouteTypes["to"];
-
-export type ShortcutAction =
-  | { type: "navigate"; to: To }
-  | { type: "help" }
-  | { type: "new-routine" };
-
-export type Pending = "g" | null;
-export type ShortcutResult = { action: ShortcutAction | null; pending: Pending };
-
-/** `G` puis une lettre : la lettre mène à la page. */
-export const GO_TO: Record<string, To> = {
-  a: "/",
-  p: "/planning",
-  r: "/routines",
-  e: "/exercises",
-  h: "/history",
-  g: "/progress",
-  c: "/body",
-  s: "/settings/account",
-};
-
-export function resolveShortcut(pending: Pending, rawKey: string): ShortcutResult {
-  const key = rawKey === "?" ? "?" : rawKey.toLowerCase();
-  if (pending === "g") {
-    const to = GO_TO[key];
-    return { action: to ? { type: "navigate", to } : null, pending: null };
-  }
-  if (key === "g") return { action: null, pending: "g" };
-  if (key === "?") return { action: { type: "help" }, pending: null };
-  if (key === "n") return { action: { type: "new-routine" }, pending: null };
-  return { action: null, pending: null };
-}
-
-/** Ce que liste la fenêtre des raccourcis. */
-export const SHORTCUT_LIST: { keys: string[]; label: string }[] = [
-  { keys: ["Ctrl", "K"], label: "Ouvrir la recherche" },
-  { keys: ["Ctrl", "B"], label: "Replier la barre latérale" },
-  { keys: ["G", "A"], label: "Aller à l'Accueil" },
-  { keys: ["G", "P"], label: "Aller au Planning" },
-  { keys: ["G", "R"], label: "Aller aux Routines" },
-  { keys: ["G", "E"], label: "Aller aux Exercices" },
-  { keys: ["G", "H"], label: "Aller à l'Historique" },
-  { keys: ["G", "G"], label: "Aller à la Progression" },
-  { keys: ["G", "C"], label: "Aller à Corps" },
-  { keys: ["G", "S"], label: "Aller aux Paramètres" },
-  { keys: ["N"], label: "Nouvelle routine (sur Routines)" },
-  { keys: ["?"], label: "Afficher les raccourcis" },
-];
-```
-
-- [ ] **Step 4: Lancer les tests, ils passent**
-
-Run: `pnpm --filter @better-lift/web test`
-Expected: PASS, 7 tests.
-
-- [ ] **Step 5: Installer `command` et `dialog`**
+- [ ] **Step 1: Installer `command` et `dialog`**
 
 Run: `npx shadcn@latest add command dialog -c apps/web -y`
 
-- [ ] **Step 6: `shortcut-listener.tsx`**
+- [ ] **Step 2: `command-palette.tsx`** — `CommandDialog` avec deux groupes, *Aller à* (les
+  entrées de `NAV_GROUPS` + Paramètres) et *Actions* (Nouvelle routine, Planifier une routine,
+  Noter mon poids, Importer depuis Hevy). L'état d'ouverture est local ; un `useEffect` écoute
+  `keydown` et bascule la palette sur Ctrl K ou Cmd K (`preventDefault`).
 
-```tsx
-import { useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { type Pending, resolveShortcut } from "./shortcuts";
-import { useShellDialogs } from "./shell-dialogs";
+- [ ] **Step 3: Monter `<CommandPalette />` dans `_app.tsx`**, dans le `SidebarProvider`.
 
-function isTyping(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
-}
+- [ ] **Step 4: Vérifier** — build et typecheck ; au navigateur, Ctrl K ouvre la palette,
+  « rout » filtre, Entrée navigue.
 
-/** Écoute le clavier pour toute la coquille ; Ctrl B est géré par le composant sidebar. */
-export function ShortcutListener() {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const { setPaletteOpen, setHelpOpen } = useShellDialogs();
-  const pending = useRef<Pending>(null);
-  const timer = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setPaletteOpen(true);
-        return;
-      }
-      if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
-
-      const { action, pending: next } = resolveShortcut(pending.current, e.key);
-      pending.current = next;
-      window.clearTimeout(timer.current);
-      if (next) timer.current = window.setTimeout(() => (pending.current = null), 1000);
-
-      if (!action) return;
-      e.preventDefault();
-      if (action.type === "navigate") navigate({ to: action.to });
-      if (action.type === "help") setHelpOpen(true);
-      if (action.type === "new-routine" && pathname.startsWith("/routines")) {
-        navigate({ to: "/routines/new" });
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navigate, pathname, setPaletteOpen, setHelpOpen]);
-
-  return null;
-}
-```
-
-- [ ] **Step 7: `command-palette.tsx`**
-
-```tsx
-import { useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, FileUp, Plus, Scale } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
-import type { FileRouteTypes } from "@/routeTree.gen";
-import { NAV_GROUPS } from "./nav";
-import { useShellDialogs } from "./shell-dialogs";
-
-const ACTIONS: { label: string; to: FileRouteTypes["to"]; icon: typeof Plus }[] = [
-  { label: "Nouvelle routine", to: "/routines/new", icon: Plus },
-  { label: "Planifier une routine", to: "/planning", icon: CalendarPlus },
-  { label: "Noter mon poids", to: "/body", icon: Scale },
-  { label: "Importer depuis Hevy", to: "/settings/data", icon: FileUp },
-];
-
-export function CommandPalette() {
-  const navigate = useNavigate();
-  const { paletteOpen, setPaletteOpen } = useShellDialogs();
-
-  function go(to: FileRouteTypes["to"]) {
-    setPaletteOpen(false);
-    navigate({ to });
-  }
-
-  return (
-    <CommandDialog
-      open={paletteOpen}
-      onOpenChange={setPaletteOpen}
-      title="Recherche"
-      description="Aller à une page ou lancer une action"
-    >
-      <CommandInput placeholder="Rechercher une page, une action…" />
-      <CommandList>
-        <CommandEmpty>Aucun résultat.</CommandEmpty>
-        <CommandGroup heading="Aller à">
-          {NAV_GROUPS.flatMap((g) => g.items).map((item) => (
-            <CommandItem key={item.to} onSelect={() => go(item.to)}>
-              <item.icon /> {item.title}
-            </CommandItem>
-          ))}
-          <CommandItem onSelect={() => go("/settings/account")}>Paramètres</CommandItem>
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Actions">
-          {ACTIONS.map((a) => (
-            <CommandItem key={a.label} onSelect={() => go(a.to)}>
-              <a.icon /> {a.label}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </CommandDialog>
-  );
-}
-```
-
-(Si la version installée de `CommandDialog` n'accepte pas `title` / `description`, les retirer et vérifier qu'aucun avertissement d'accessibilité Radix n'apparaît dans la console.)
-
-- [ ] **Step 8: `shortcuts-dialog.tsx`**
-
-```tsx
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { SHORTCUT_LIST } from "./shortcuts";
-import { useShellDialogs } from "./shell-dialogs";
-
-export function ShortcutsDialog() {
-  const { helpOpen, setHelpOpen } = useShellDialogs();
-  return (
-    <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Raccourcis clavier</DialogTitle>
-          <DialogDescription>Ils ne s'appliquent pas pendant la saisie dans un champ.</DialogDescription>
-        </DialogHeader>
-        <ul className="divide-y">
-          {SHORTCUT_LIST.map((s) => (
-            <li key={s.label} className="flex items-center justify-between py-2 text-sm">
-              <span>{s.label}</span>
-              <KbdGroup>
-                {s.keys.map((k, i) => (
-                  // « G G » répète la même touche : l'index rend la clé unique.
-                  <Kbd key={`${s.label}-${i}`}>{k}</Kbd>
-                ))}
-              </KbdGroup>
-            </li>
-          ))}
-        </ul>
-      </DialogContent>
-    </Dialog>
-  );
-}
-```
-
-- [ ] **Step 9: Monter les trois composants dans `_app.tsx`**
-
-Après `</SidebarInset>`, dans le `SidebarProvider` :
-
-```tsx
-        <CommandPalette />
-        <ShortcutsDialog />
-        <ShortcutListener />
-```
-
-- [ ] **Step 10: Vérifier**
-
-Run: `pnpm --filter @better-lift/web test && pnpm --filter @better-lift/web build && pnpm --filter @better-lift/web typecheck`
-Expected: succès. Dans le navigateur : Ctrl K ouvre la palette, « rout » filtre, Entrée navigue ; `G` `H` mène à l'Historique ; `?` ouvre la fenêtre des raccourcis ; `N` sur `/routines` ouvre `/routines/new`. Captures de la palette et de la fenêtre.
-
-- [ ] **Step 11: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add -A apps/web pnpm-lock.yaml
-git commit -m "feat(web): palette de commandes et raccourcis clavier"
+git commit -m "feat(web): palette de commandes"
 ```
 
 ---
@@ -1459,7 +1171,7 @@ Expected: tout passe. Knip ne doit signaler aucune dépendance inutilisée dans 
 
 - [ ] **Step 2: Parcours complet au navigateur, captures**
 
-Sidebar dépliée puis repliée (tooltips au survol), chaque entrée de navigation, fil d'Ariane sur une page de détail, thème sombre, palette, raccourcis, barre de prototypage, une page d'auth, la 404.
+Sidebar dépliée puis repliée (tooltips au survol), chaque entrée de navigation, fil d'Ariane sur une page de détail, thème sombre, palette, barre de prototypage, une page d'auth, la 404.
 
 - [ ] **Step 3: Commit des corrections éventuelles**
 

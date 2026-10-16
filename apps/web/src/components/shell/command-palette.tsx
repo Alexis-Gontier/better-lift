@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { CalendarPlus, FileUp, type LucideIcon, Plus, Scale, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/command";
 import type { FileRouteTypes } from "@/routeTree.gen";
 import { NAV_GROUPS } from "./nav";
-import { useShellDialogs } from "./shell-dialogs";
 
 type To = FileRouteTypes["to"];
 
@@ -24,7 +24,19 @@ const ACTIONS: { label: string; to: To; icon: LucideIcon }[] = [
 
 export function CommandPalette() {
   const navigate = useNavigate();
-  const { paletteOpen, setPaletteOpen } = useShellDialogs();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Ctrl K (Cmd K sur Mac) ouvre la recherche, même sans bouton visible.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function go(to: To) {
     setPaletteOpen(false);
