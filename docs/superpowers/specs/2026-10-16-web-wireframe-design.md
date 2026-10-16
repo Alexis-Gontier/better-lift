@@ -43,6 +43,12 @@ et D199 (style), qui seront repris après validation du wireframe.
   « Rechercher partout… », boutons-icônes en contour, avatar), contenu **centré** (`max-w-6xl`)
   sous un grand titre, onglets soulignés, barre de recherche large + Filtres + Tri, filtres en
   pastilles, sections titrées (« Voix tendance › ») en grilles ou carrousels.
+- **D231 — shadcn : Radix, style Nova, curseur pointeur.** `components.json` en `radix-nova`
+  (marges réduites, police Geist du preset), option `--pointer` de `init`. Radix plutôt que Base
+  UI (défaut de shadcn depuis juillet 2026) : Kibo UI s'appuie dessus et Radix reste maintenu.
+  `SelectContent` s'ouvre par défaut en `position="popper"`, `align="start"`. Biome ne lève pas
+  les règles d'accessibilité du code vendorisé (`components/ui/**`, override dans `biome.json`) :
+  les composants restent tels que shadcn les livre, réinstallables sans retouche.
 
 ## 3. Coquille
 

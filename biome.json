@@ -30,5 +30,20 @@
   },
   "css": {
     "parser": { "tailwindDirectives": true }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useKeyWithClickEvents": "off",
+            "useFocusableInteractive": "off"
+          },
+          "suspicious": { "noDocumentCookie": "off" }
+        }
+      }
+    }
+  ]
 }
