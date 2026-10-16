@@ -2,10 +2,7 @@ import type { FileRouteTypes } from "@/routeTree.gen";
 
 type To = FileRouteTypes["to"];
 
-export type ShortcutAction =
-  | { type: "navigate"; to: To }
-  | { type: "help" }
-  | { type: "new-routine" };
+type ShortcutAction = { type: "navigate"; to: To } | { type: "help" } | { type: "new-routine" };
 
 export type Pending = "g" | null;
 export type ShortcutResult = { action: ShortcutAction | null; pending: Pending };

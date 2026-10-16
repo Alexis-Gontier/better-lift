@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { FileRouteTypes } from "@/routeTree.gen";
 
-export type NavItem = { title: string; to: FileRouteTypes["to"]; icon: LucideIcon };
+type NavItem = { title: string; to: FileRouteTypes["to"]; icon: LucideIcon };
 export type NavGroup = { label: string | null; items: NavItem[] };
 
 export const NAV_GROUPS: NavGroup[] = [
