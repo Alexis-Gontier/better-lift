@@ -16,6 +16,7 @@ import {
   ExerciseHistory,
   ExerciseRecords,
   ExerciseSummary,
+  ExerciseSummaryHero,
 } from "@/features/exercises/exercise-detail";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { exerciseBySlug } from "@/mocks/exercises";
@@ -34,7 +35,7 @@ const TABS = [
 function ExercisePage() {
   const { slug } = Route.useParams();
   const tab = useTab(TABS.map((t) => t.value));
-  const { state } = useProto();
+  const { state, variant } = useProto();
   const exercise = exerciseBySlug(slug);
 
   if (!exercise) {
@@ -81,9 +82,14 @@ function ExercisePage() {
           </EmptyHeader>
         </Empty>
       )}
-      {state === "nominal" && tab === "resume" && (
-        <ExerciseSummary exercise={exercise} history={history} />
-      )}
+      {/* Résumé — A : courbe en tête, silhouette à droite. B : silhouette et chiffres en tête. */}
+      {state === "nominal" &&
+        tab === "resume" &&
+        (variant === "a" ? (
+          <ExerciseSummary exercise={exercise} history={history} />
+        ) : (
+          <ExerciseSummaryHero exercise={exercise} history={history} />
+        ))}
       {state === "nominal" && tab === "historique" && <ExerciseHistory history={history} />}
       {state === "nominal" && tab === "records" && <ExerciseRecords history={history} />}
     </Page>

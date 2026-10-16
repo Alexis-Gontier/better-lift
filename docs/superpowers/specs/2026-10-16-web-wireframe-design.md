@@ -50,6 +50,17 @@ et D199 (style), qui seront repris après validation du wireframe.
   composant `Page` (`components/page.tsx`), contenu centré `max-w-6xl`, grand dégagement en haut,
   titre sobre, puis une ligne d'onglets soulignée avec les actions à droite (l'action principale
   en aplat, en dernier), affichée seulement si la page a des onglets ou des actions.
+- **D234 — Variantes de la passe 4** (barre « Proto » ou `?v=`), pour choisir sur pièce :
+  - Routines, Exercices, Historique (listes) — **A** détail sur sa page, **B** liste | détail
+    redimensionnable (largeur mémorisée), **C** détail en panneau latéral ;
+  - Accueil — **A** grille de cartes, **B** colonne principale + colonne latérale ;
+  - Planning — **A/B** onglets Semaine et Mois, **C** agenda en liste ;
+  - Progression — **A** quatre graphiques, **B** un grand graphique et un sélecteur de mesure ;
+  - Corps — **A** courbe puis tableau, **B** tableau à gauche, courbe à droite ;
+  - Routine (détail) — **A** une carte par exercice, **B** tableau compact ;
+  - Exercice (Résumé) — **A** courbe en tête, **B** silhouette et chiffres en tête.
+  Les autres pages n'ont qu'une variante. Les grilles des listes et des détails suivent la
+  largeur de leur conteneur (requêtes de conteneur), pas celle de la fenêtre.
 
 ## 3. Coquille
 

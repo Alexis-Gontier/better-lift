@@ -11,7 +11,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RoutineDetail } from "@/features/routines/routine-detail";
+import { RoutineDetail, RoutineDetailCompact } from "@/features/routines/routine-detail";
 import { routineById } from "@/mocks/routines";
 
 export const Route = createFileRoute("/_app/routines/$id")({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_app/routines/$id")({
 
 function RoutinePage() {
   const { id } = Route.useParams();
-  const { state } = useProto();
+  const { state, variant } = useProto();
   const routine = routineById(id);
 
   if (!routine || state === "vide") {
@@ -67,7 +67,13 @@ function RoutinePage() {
         </>
       )}
       {state === "erreur" && <StateError title="La routine n'a pas pu se charger" />}
-      {state === "nominal" && <RoutineDetail routine={routine} />}
+      {/* A : une carte par exercice. B : un tableau compact. */}
+      {state === "nominal" &&
+        (variant === "a" ? (
+          <RoutineDetail routine={routine} />
+        ) : (
+          <RoutineDetailCompact routine={routine} />
+        ))}
     </Page>
   );
 }

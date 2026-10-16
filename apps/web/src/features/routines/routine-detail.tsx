@@ -128,3 +128,69 @@ export function RoutineDetail({ routine }: { routine: MockRoutine }) {
     </>
   );
 }
+
+/** « 80–85 kg » : la plage des charges d'un exercice, ou une seule valeur. */
+function loadRange(e: MockRoutineExercise): string {
+  const kgs = e.sets.map((s) => s.kg);
+  const min = Math.min(...kgs);
+  const max = Math.max(...kgs);
+  if (max === 0) return "Poids du corps";
+  return min === max ? formatKg(max) : `${min}–${formatKg(max)}`;
+}
+
+function repsRange(e: MockRoutineExercise): string {
+  const reps = e.sets.map((s) => s.reps);
+  const min = Math.min(...reps);
+  const max = Math.max(...reps);
+  return min === max ? String(max) : `${min}–${max}`;
+}
+
+/** Variante B : le résumé, puis un seul tableau compact, une ligne par exercice. */
+export function RoutineDetailCompact({ routine }: { routine: MockRoutine }) {
+  return (
+    <>
+      <Summary routine={routine} />
+      <Card className="gap-0 py-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="pl-4">Exercice</TableHead>
+              <TableHead className="text-right">Séries</TableHead>
+              <TableHead className="text-right">Charge</TableHead>
+              <TableHead className="text-right">Répétitions</TableHead>
+              <TableHead className="pr-4 text-right">Repos</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {routine.exercises.map((e) => {
+              const info = exerciseBySlug(e.slug);
+              return (
+                <TableRow key={e.slug}>
+                  <TableCell className="pl-4">
+                    <Link
+                      to="/exercises/$slug"
+                      params={{ slug: e.slug }}
+                      className="font-medium hover:underline"
+                    >
+                      {info?.name ?? e.slug}
+                    </Link>
+                    <div className="text-muted-foreground text-xs">
+                      {info?.muscle}
+                      {e.superset ? ` · superset ${e.superset}` : ""}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{e.sets.length}</TableCell>
+                  <TableCell className="text-right tabular-nums">{loadRange(e)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{repsRange(e)}</TableCell>
+                  <TableCell className="pr-4 text-right text-muted-foreground tabular-nums">
+                    {formatRest(e.restSeconds)}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+    </>
+  );
+}
