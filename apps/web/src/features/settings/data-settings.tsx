@@ -1,4 +1,3 @@
-import { FileUp } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { mockRoutines } from "@/mocks/routines";
 import { mockSessions } from "@/mocks/sessions";
 import { mockWeights } from "@/mocks/weights";
+import { HevyImport } from "./hevy-import";
 import { SettingsSection } from "./settings-section";
 
 /** Télécharge un fichier construit dans le navigateur. */
@@ -46,14 +46,7 @@ export function DataSettings() {
         title="Importer depuis Hevy"
         description="Reprenez votre historique : exportez-le en CSV depuis Hevy, puis déposez-le ici."
       >
-        {/* Le parcours complet (fichier → correspondance des exercices → aperçu → import) vient en passe 5. */}
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
-          <FileUp className="size-6 text-muted-foreground" />
-          <p className="text-muted-foreground text-sm">
-            Déposez le fichier CSV exporté depuis Hevy
-          </p>
-          <Button variant="outline">Choisir un fichier</Button>
-        </div>
+        <HevyImport />
       </SettingsSection>
 
       <SettingsSection
