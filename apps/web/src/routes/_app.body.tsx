@@ -1,45 +1,54 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Page } from "@/components/page";
-import { PageTabs, useTab } from "@/components/page-tabs";
-import { Button } from "@/components/ui/button";
-import { Zone } from "@/components/zone";
+import { Scale } from "lucide-react";
+import { useTab } from "@/components/page-tabs";
+import { useProto } from "@/components/proto/use-proto";
+import { StateError } from "@/components/states/state-error";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BODY_TABS, BodyView } from "@/features/body/body-view";
 
 export const Route = createFileRoute("/_app/body")({
   staticData: { crumb: "Corps" },
   component: BodyPage,
 });
 
-const TABS = [
-  { value: "poids", label: "Poids" },
-  { value: "mensurations", label: "Mensurations" },
-] as const;
-
 function BodyPage() {
-  const tab = useTab(TABS.map((t) => t.value));
+  const tab = useTab(BODY_TABS.map((t) => t.value));
+  const { state } = useProto();
+  if (state === "nominal") return <BodyView tab={tab} />;
   return (
-    <Page
-      title="Corps"
-      tabs={<PageTabs tabs={TABS} />}
-      actions={<Button>{tab === "poids" ? "Noter mon poids" : "Noter une mesure"}</Button>}
-    >
-      {tab === "poids" ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Zone
-            title="Poids"
-            hint="Courbe, moyenne sur 7 jours, objectif en pointillés"
-            className="h-80 md:col-span-3"
-          />
-          <Zone title="Objectif" hint="Cible et avancement" className="h-56" />
-          <Zone title="Pesées" hint="Tableau des pesées" className="h-56 md:col-span-2" />
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          <Zone title="Bras" hint="Courbe" className="h-56" />
-          <Zone title="Taille" hint="Courbe" className="h-56" />
-          <Zone title="Cuisse" hint="Courbe" className="h-56" />
-          <Zone title="Poitrine" hint="Courbe" className="h-56" />
-        </div>
+    <BodyView tab={tab}>
+      {state === "chargement" && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {["a", "b", "c"].map((k) => (
+              <Skeleton key={k} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-80 rounded-xl" />
+        </>
       )}
-    </Page>
+      {state === "erreur" && <StateError title="Les mesures n'ont pas pu se charger" />}
+      {state === "vide" && (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Scale />
+            </EmptyMedia>
+            <EmptyTitle>Pas encore de pesée</EmptyTitle>
+            <EmptyDescription>
+              Notez votre poids le matin, à jeun : la moyenne sur 7 jours lissera les écarts d'un
+              jour à l'autre.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+    </BodyView>
   );
 }
