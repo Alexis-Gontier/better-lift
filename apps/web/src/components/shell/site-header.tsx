@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { mockUser } from "@/mocks/user";
@@ -18,33 +19,32 @@ import { UserMenuItems } from "./user-menu";
 export function SiteHeader() {
   const { setPaletteOpen, setHelpOpen } = useShellDialogs();
   return (
-    <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b bg-background px-3">
+    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
       <div className="flex flex-1 items-center gap-2">
-        <SidebarTrigger />
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
         <AppBreadcrumb />
       </div>
       <Button
         variant="outline"
-        size="sm"
-        className="w-full max-w-64 justify-between font-normal text-muted-foreground"
+        className="w-full max-w-sm justify-between text-muted-foreground"
         onClick={() => setPaletteOpen(true)}
       >
         <span className="flex items-center gap-2">
-          <Search /> Rechercher partout…
+          <Search /> Rechercher…
         </span>
         <KbdGroup>
           <Kbd>Ctrl</Kbd>
           <Kbd>K</Kbd>
         </KbdGroup>
       </Button>
-      <div className="flex flex-1 items-center justify-end gap-2">
+      <div className="flex flex-1 items-center justify-end gap-1">
         <ThemeToggle />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              className="size-8"
               aria-label="Raccourcis clavier"
               onClick={() => setHelpOpen(true)}
             >
@@ -55,9 +55,9 @@ export function SiteHeader() {
         </Tooltip>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 rounded-full" aria-label="Compte">
-              <Avatar className="size-8 border">
-                <AvatarFallback className="text-xs">{mockUser.initials}</AvatarFallback>
+            <Button variant="ghost" size="icon" className="rounded-full" aria-label="Compte">
+              <Avatar className="size-8">
+                <AvatarFallback>{mockUser.initials}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

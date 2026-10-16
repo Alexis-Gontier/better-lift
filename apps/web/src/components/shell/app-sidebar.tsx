@@ -1,5 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -12,20 +18,25 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { mockUser } from "@/mocks/user";
 import { isActive, NAV_GROUPS } from "./nav";
+import { UserMenuItems } from "./user-menu";
 
-/** Pas encore de logo : le nom en texte, masqué quand la barre est repliée. */
 export function AppSidebar() {
   const { pathname } = useLocation();
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="h-12 justify-center px-4">
-        <Link
-          to="/"
-          className="truncate font-semibold text-lg tracking-tight group-data-[collapsible=icon]:hidden"
-        >
-          better-lift
-        </Link>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              {/* Pas encore de logo (D229) : le nom seul, masqué quand la barre est repliée. */}
+              <Link to="/" className="group-data-[collapsible=icon]:invisible">
+                <span className="font-semibold text-base">better-lift</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         {NAV_GROUPS.map((group) => (
@@ -53,16 +64,23 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip="Paramètres"
-              isActive={isActive("/settings", pathname)}
-            >
-              <Link to="/settings/account">
-                <Settings />
-                <span>Paramètres</span>
-              </Link>
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg">
+                  <Avatar className="size-8 rounded-md">
+                    <AvatarFallback className="rounded-md">{mockUser.initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">{mockUser.name}</span>
+                    <span className="truncate text-muted-foreground text-xs">{mockUser.email}</span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="end" className="w-56">
+                <UserMenuItems />
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

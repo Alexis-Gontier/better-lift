@@ -11,9 +11,8 @@ export function ThemeToggle() {
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="size-8"
           aria-label="Changer de thème"
           onClick={() => {
             setTheme(next);

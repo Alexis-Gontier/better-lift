@@ -38,11 +38,6 @@ et D199 (style), qui seront repris après validation du wireframe.
   composant externe se fait valider avant installation (recherche sur shoogle.dev).
 - **D229 — Pas de logo pour l'instant.** Ni icône de site ni favicon : le nom « better-lift » en
   texte en tête de sidebar, masqué quand elle est repliée. L'identité viendra avec le style.
-- **D230 — Direction d'interface : la bibliothèque de voix d'ElevenLabs.** Sidebar plate (nom en
-  texte, entrées à icône, Paramètres en pied), header bas (fil d'Ariane, recherche étroite
-  « Rechercher partout… », boutons-icônes en contour, avatar), contenu **centré** (`max-w-6xl`)
-  sous un grand titre, onglets soulignés, barre de recherche large + Filtres + Tri, filtres en
-  pastilles, sections titrées (« Voix tendance › ») en grilles ou carrousels.
 - **D231 — shadcn : Radix, style Nova, curseur pointeur.** `components.json` en `radix-nova`
   (marges réduites, police Geist du preset), option `--pointer` de `init`. Radix plutôt que Base
   UI (défaut de shadcn depuis juillet 2026) : Kibo UI s'appuie dessus et Radix reste maintenu.
@@ -71,9 +66,8 @@ et D199 (style), qui seront repris après validation du wireframe.
 ```
 
 - **Sidebar** shadcn, `collapsible="icon"` (bloc `sidebar-07` + header collant de `sidebar-16`).
-  Repliée, chaque icône porte un tooltip. Tête : le nom en texte (D229). Pied : Paramètres
-  (D230). Le compte (Paramètres, Raccourcis, Déconnexion) est sur l'avatar du header. État
-  replié mémorisé (cookie du composant).
+  Repliée, chaque icône porte un tooltip. Tête : le nom en texte (D229). Pied : menu du compte
+  (Paramètres, Raccourcis, Déconnexion). État replié mémorisé (cookie du composant).
 - **Header** collant :
   - gauche : `SidebarTrigger`, séparateur, `Breadcrumb` ;
   - centre : faux champ « Rechercher… » + `Kbd` Ctrl K, qui ouvre un `CommandDialog` ;
