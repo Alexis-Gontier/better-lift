@@ -252,6 +252,9 @@ On construit par passes successives, chaque passe validée à l'écran avant la 
 5. **Détails** : éditeur de routine, import Hevy, interactions (glisser-déposer, menus
    contextuels).
 
+**Avancement au 2026-10-16** : les cinq passes sont faites. Restent ouverts le choix d'une
+variante par page (D234) et le contenu du header, vidé à la demande (§ 3).
+
 Le catalogue n'est pas figé : à chaque passe, on peut chercher d'autres composants (shoogle.dev,
 recherches web, applications de référence comme Hevy, Strong ou Liftosaur). Chaque nouveau
 composant externe est présenté et validé avant installation (D228).

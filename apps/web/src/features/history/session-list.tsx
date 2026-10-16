@@ -1,7 +1,16 @@
-import { Link } from "@tanstack/react-router";
-import { ChevronRight, History, Search, Trophy } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import {
+  ChevronRight,
+  ExternalLink,
+  History,
+  ListChecks,
+  Search,
+  Trash2,
+  Trophy,
+} from "lucide-react";
 import { useState } from "react";
 import { SelectableRow } from "@/components/list-detail";
+import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatKg, formatMinutes, formatMonth, formatWeekdayDay } from "@/lib/format";
 import { groupByMonth } from "@/mocks/history";
+import { mockRoutines } from "@/mocks/routines";
 import type { MockSession } from "@/mocks/sessions";
 
 const ALL = "toutes";
@@ -31,6 +41,28 @@ const fold = (t: string) =>
     .toLowerCase();
 
 export function SessionList({ sessions }: { sessions: MockSession[] }) {
+  const navigate = useNavigate();
+  /** Le clic droit sur une séance. Sans API, Supprimer ne fait encore rien. */
+  const sessionActions = (s: MockSession): RowAction[] => {
+    const routine = mockRoutines.find((r) => r.name === s.routine);
+    return [
+      {
+        label: "Ouvrir la séance",
+        icon: ExternalLink,
+        onSelect: () => navigate({ to: "/history/$id", params: { id: s.id } }),
+      },
+      ...(routine
+        ? [
+            {
+              label: "Voir la routine",
+              icon: ListChecks,
+              onSelect: () => navigate({ to: "/routines/$id", params: { id: routine.id } }),
+            },
+          ]
+        : []),
+      { label: "Supprimer", icon: Trash2, onSelect: () => {}, destructive: true, separated: true },
+    ];
+  };
   const [query, setQuery] = useState("");
   const [routine, setRoutine] = useState(ALL);
   const [pages, setPages] = useState(1);
@@ -99,33 +131,35 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
               {g.sessions.map((s, i) => (
                 <div key={s.id}>
                   {i > 0 && <Separator />}
-                  <SelectableRow
-                    id={s.id}
-                    className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
-                    renderLink={(className, children) => (
-                      <Link to="/history/$id" params={{ id: s.id }} className={className}>
-                        {children}
-                      </Link>
-                    )}
-                  >
-                    <span className="w-24 shrink-0 text-muted-foreground text-sm first-letter:uppercase">
-                      {formatWeekdayDay(s.date)}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate font-medium">{s.routine}</span>
-                    {s.records > 0 && (
-                      <Badge variant="outline">
-                        <Trophy data-icon="inline-start" />
-                        {s.records}
-                      </Badge>
-                    )}
-                    <span className="hidden w-16 shrink-0 text-right text-muted-foreground text-sm tabular-nums @xl:block">
-                      {formatMinutes(s.minutes)}
-                    </span>
-                    <span className="w-24 text-right text-sm tabular-nums">
-                      {formatKg(s.volume)}
-                    </span>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                  </SelectableRow>
+                  <RowMenu actions={sessionActions(s)}>
+                    <SelectableRow
+                      id={s.id}
+                      className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
+                      renderLink={(className, children) => (
+                        <Link to="/history/$id" params={{ id: s.id }} className={className}>
+                          {children}
+                        </Link>
+                      )}
+                    >
+                      <span className="w-24 shrink-0 text-muted-foreground text-sm first-letter:uppercase">
+                        {formatWeekdayDay(s.date)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate font-medium">{s.routine}</span>
+                      {s.records > 0 && (
+                        <Badge variant="outline">
+                          <Trophy data-icon="inline-start" />
+                          {s.records}
+                        </Badge>
+                      )}
+                      <span className="hidden w-16 shrink-0 text-right text-muted-foreground text-sm tabular-nums @xl:block">
+                        {formatMinutes(s.minutes)}
+                      </span>
+                      <span className="w-24 text-right text-sm tabular-nums">
+                        {formatKg(s.volume)}
+                      </span>
+                      <ChevronRight className="size-4 text-muted-foreground" />
+                    </SelectableRow>
+                  </RowMenu>
                 </div>
               ))}
             </Card>
