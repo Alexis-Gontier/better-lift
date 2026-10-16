@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, History, Search, Trophy } from "lucide-react";
 import { useState } from "react";
+import { SelectableRow } from "@/components/list-detail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -98,10 +99,14 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
               {g.sessions.map((s, i) => (
                 <div key={s.id}>
                   {i > 0 && <Separator />}
-                  <Link
-                    to="/history/$id"
-                    params={{ id: s.id }}
+                  <SelectableRow
+                    id={s.id}
                     className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
+                    renderLink={(className, children) => (
+                      <Link to="/history/$id" params={{ id: s.id }} className={className}>
+                        {children}
+                      </Link>
+                    )}
                   >
                     <span className="w-24 shrink-0 text-muted-foreground text-sm first-letter:uppercase">
                       {formatWeekdayDay(s.date)}
@@ -113,14 +118,14 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
                         {s.records}
                       </Badge>
                     )}
-                    <span className="hidden w-16 text-right text-muted-foreground text-sm tabular-nums sm:block">
+                    <span className="hidden w-16 shrink-0 text-right text-muted-foreground text-sm tabular-nums @xl:block">
                       {formatMinutes(s.minutes)}
                     </span>
                     <span className="w-24 text-right text-sm tabular-nums">
                       {formatKg(s.volume)}
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
-                  </Link>
+                  </SelectableRow>
                 </div>
               ))}
             </Card>

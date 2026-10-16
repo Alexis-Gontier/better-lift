@@ -11,6 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 type Selection = { selected: string | null; select: (id: string) => void };
 
@@ -142,5 +143,29 @@ export function ListDetail({
         </SheetContent>
       </Sheet>
     </SelectionContext.Provider>
+  );
+}
+
+type RowProps = {
+  id: string;
+  className: string;
+  children: ReactNode;
+  /** Le lien vers la page de l'élément, rendu hors liste | détail. */
+  renderLink: (className: string, children: ReactNode) => ReactNode;
+};
+
+/** Une ligne de liste : lien vers sa page (variante A), ou sélection (variantes B et C). */
+export function SelectableRow({ id, className, children, renderLink }: RowProps) {
+  const selection = useSelection();
+  if (!selection) return renderLink(className, children);
+  return (
+    <button
+      type="button"
+      data-selected={selection.selected === id}
+      onClick={() => selection.select(id)}
+      className={cn(className, "w-full text-left data-[selected=true]:bg-muted")}
+    >
+      {children}
+    </button>
   );
 }

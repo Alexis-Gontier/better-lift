@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Dumbbell, Search } from "lucide-react";
 import { useState } from "react";
+import { SelectableRow } from "@/components/list-detail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -143,10 +144,14 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
           {rows.map((e, i) => (
             <div key={e.slug}>
               {i > 0 && <Separator />}
-              <Link
-                to="/exercises/$slug"
-                params={{ slug: e.slug }}
+              <SelectableRow
+                id={e.slug}
                 className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
+                renderLink={(className, children) => (
+                  <Link to="/exercises/$slug" params={{ slug: e.slug }} className={className}>
+                    {children}
+                  </Link>
+                )}
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <Dumbbell className="size-4" />
@@ -158,17 +163,17 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
                   </span>
                 </div>
                 {e.custom && <Badge variant="secondary">Personnalisé</Badge>}
-                <div className="hidden w-32 flex-col items-end sm:flex">
+                <div className="hidden w-28 shrink-0 flex-col items-end @xl:flex">
                   <span className="text-sm tabular-nums">
                     {e.best1rm > 0 ? formatKg(Math.round(e.best1rm)) : "—"}
                   </span>
                   <span className="text-muted-foreground text-xs">1RM estimé</span>
                 </div>
-                <span className="hidden w-24 text-right text-muted-foreground text-xs md:block">
+                <span className="hidden w-20 shrink-0 text-right text-muted-foreground text-xs @2xl:block">
                   {formatDaysAgo(e.lastDone ? daysSince(e.lastDone, TODAY) : null)}
                 </span>
                 <ChevronRight className="size-4 text-muted-foreground" />
-              </Link>
+              </SelectableRow>
             </div>
           ))}
         </Card>

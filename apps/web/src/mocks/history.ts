@@ -34,7 +34,8 @@ export function sessionDetail(session: MockSession): SessionDetail {
   let recordsLeft = session.records;
   const exercises = (routine?.exercises ?? []).map((e) => {
     const sets: DoneSet[] = e.sets.map((set) => ({
-      kg: Math.max(0, set.kg + (rand() < 0.3 ? 2.5 : 0)),
+      // Au poids du corps (0 kg), pas de charge ajoutée.
+      kg: set.kg === 0 ? 0 : set.kg + (rand() < 0.3 ? 2.5 : 0),
       reps: Math.max(1, set.reps + (rand() < 0.25 ? -1 : 0)),
     }));
     const top = sets[0];

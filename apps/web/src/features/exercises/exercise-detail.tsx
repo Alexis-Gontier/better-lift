@@ -69,7 +69,11 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
               tickLine={false}
               axisLine={false}
               width={40}
-              domain={["dataMin - 5", goal ? goal.target + 5 : "dataMax + 5"]}
+              // Bornes rondes, aux 5 kg : sinon l'axe affiche « 123.3 ».
+              domain={[
+                (min: number) => Math.floor((min - 5) / 5) * 5,
+                (max: number) => Math.ceil((Math.max(max, goal?.target ?? 0) + 5) / 5) * 5,
+              ]}
             />
             <ChartTooltip
               content={
@@ -126,8 +130,8 @@ export function ExerciseSummary({
 }) {
   const best = records(history).best1rm.value;
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <div className="md:col-span-2">
+    <div className="grid gap-4 @3xl:grid-cols-3">
+      <div className="@3xl:col-span-2">
         <ProgressChart exercise={exercise} history={history} />
       </div>
       <Card>
@@ -152,7 +156,7 @@ export function ExerciseSummary({
           {exercise.note ?? "Aucune note. Notez un réglage de machine ou une consigne."}
         </CardContent>
       </Card>
-      <Card className="md:col-span-2">
+      <Card className="@3xl:col-span-2">
         <CardHeader>
           <CardTitle>Pourcentages du 1RM</CardTitle>
           <CardDescription>
@@ -162,7 +166,7 @@ export function ExerciseSummary({
           </CardDescription>
         </CardHeader>
         {best > 0 && (
-          <CardContent className="grid grid-cols-3 gap-x-6 gap-y-1 text-sm sm:grid-cols-4">
+          <CardContent className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm @lg:grid-cols-3 @3xl:grid-cols-4">
             {oneRmPercentages(best).map((r) => (
               <div key={r.percent} className="flex justify-between tabular-nums">
                 <span className="text-muted-foreground">{r.percent} %</span>
@@ -225,7 +229,7 @@ export function ExerciseRecords({ history }: { history: Performance[] }) {
   ];
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 @lg:grid-cols-3">
         {tiles.map((t) => (
           <Card key={t.label} size="sm">
             <CardHeader>
