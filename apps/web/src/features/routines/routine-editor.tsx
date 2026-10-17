@@ -1,13 +1,26 @@
-import { GripVertical, Minus, MoreHorizontal, Plus, Timer, Trash2, X } from "lucide-react";
+import {
+  ArrowDown,
+  GripVertical,
+  Link2,
+  Minus,
+  MoreHorizontal,
+  Plus,
+  Timer,
+  Trash2,
+  Unlink,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -35,7 +48,15 @@ import { exerciseBySlug } from "@/mocks/exercises";
 import { lastSets } from "@/mocks/generated-workouts";
 import { FOLDERS, type MockRoutineExercise, type MockSet } from "@/mocks/routines";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
-import type { Draft, DraftExercise } from "./routine-draft";
+import {
+  canLinkWithNext,
+  chainsIntoNext,
+  type Draft,
+  type DraftExercise,
+  linkWithNext,
+  normalizeSupersets,
+  unlink,
+} from "./routine-draft";
 
 /**
  * Champ « nu » (variante A, D239) : sans bordure tant qu'on ne le survole pas, il se lit
@@ -135,13 +156,21 @@ function SetField({
 function ExerciseEditor({
   exercise,
   bare,
+  chains,
   onChange,
   onRemove,
+  onLink,
+  onUnlink,
 }: {
   exercise: MockRoutineExercise;
   bare: boolean;
+  /** Enchaîné au suivant dans un superset : son repos ne compte pas. */
+  chains: boolean;
   onChange: (next: MockRoutineExercise) => void;
   onRemove: () => void;
+  /** Absent quand il n'y a pas de suivant à lier. */
+  onLink?: () => void;
+  onUnlink: () => void;
 }) {
   const info = exerciseBySlug(exercise.slug);
   const name = info?.name ?? exercise.slug;
@@ -172,44 +201,59 @@ function ExerciseEditor({
         <div className="flex items-center gap-3 p-3">
           <ExerciseThumb name={name} />
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate font-medium">
-              {name}
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-medium">{name}</span>
               {exercise.superset && (
-                <span className="font-normal text-muted-foreground text-xs">
-                  {" "}
-                  · superset {exercise.superset}
-                </span>
+                <Badge variant="secondary" className="shrink-0">
+                  <Link2 data-icon="inline-start" />
+                  Superset {exercise.superset}
+                </Badge>
               )}
             </span>
             <span className="truncate text-muted-foreground text-xs">
               {info?.muscle} · {info?.equipment}
             </span>
           </div>
-          <Select
-            value={String(exercise.restSeconds)}
-            onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
-          >
-            <SelectTrigger size="sm" aria-label="Repos" className={cn("w-32", bare && bareField)}>
-              <Timer className="text-muted-foreground" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {rests.map((r) => (
-                  <SelectItem key={r} value={String(r)}>
-                    {r === 0 ? "Sans repos" : formatRest(r)}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          {chains ? (
+            <span className="flex w-32 items-center gap-1.5 px-2.5 text-muted-foreground text-sm">
+              <ArrowDown className="size-4" /> Enchaîné
+            </span>
+          ) : (
+            <Select
+              value={String(exercise.restSeconds)}
+              onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
+            >
+              <SelectTrigger size="sm" aria-label="Repos" className={cn("w-32", bare && bareField)}>
+                <Timer className="text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {rests.map((r) => (
+                    <SelectItem key={r} value={String(r)}>
+                      {r === 0 ? "Sans repos" : formatRest(r)}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-sm" aria-label={`Actions : ${name}`}>
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem disabled={!onLink} onSelect={onLink}>
+                <Link2 /> Superset avec le suivant
+              </DropdownMenuItem>
+              {exercise.superset && (
+                <DropdownMenuItem onSelect={onUnlink}>
+                  <Unlink /> Retirer du superset
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={onRemove}>
                 <Trash2 /> Retirer l'exercice
               </DropdownMenuItem>
@@ -358,7 +402,10 @@ export function RoutineFields({
       {/* Réordonnables à la poignée, à la souris ou au clavier (Espace, flèches, Espace). */}
       <Sortable
         value={draft.exercises}
-        onValueChange={(exercises) => onChange((d) => ({ ...d, exercises }))}
+        // Un glisser peut couper un superset : la normalisation le défait ou le renomme.
+        onValueChange={(exercises) =>
+          onChange((d) => ({ ...d, exercises: normalizeSupersets(exercises) }))
+        }
         getItemValue={(e) => e.uid}
         className="flex flex-col gap-6"
       >
@@ -368,9 +415,19 @@ export function RoutineFields({
               exercise={e}
               bare={bare}
               onChange={(next) => setExercise(i, { ...next, uid: e.uid })}
+              chains={chainsIntoNext(draft.exercises, i)}
               onRemove={() =>
-                onChange((d) => ({ ...d, exercises: d.exercises.filter((_, j) => j !== i) }))
+                onChange((d) => ({
+                  ...d,
+                  exercises: normalizeSupersets(d.exercises.filter((_, j) => j !== i)),
+                }))
               }
+              onLink={
+                canLinkWithNext(draft.exercises, i)
+                  ? () => onChange((d) => ({ ...d, exercises: linkWithNext(d.exercises, i) }))
+                  : undefined
+              }
+              onUnlink={() => onChange((d) => ({ ...d, exercises: unlink(d.exercises, i) }))}
             />
           </SortableItem>
         ))}

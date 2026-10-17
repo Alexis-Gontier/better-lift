@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { MockRoutine } from "@/mocks/routines";
-import { canSave, emptyDraft, fromDraft, isDirty, toDraft } from "./routine-draft";
+import {
+  canLinkWithNext,
+  canSave,
+  chainsIntoNext,
+  emptyDraft,
+  fromDraft,
+  isDirty,
+  linkWithNext,
+  normalizeSupersets,
+  toDraft,
+  unlink,
+} from "./routine-draft";
 
 const routine: MockRoutine = {
   id: "1",
@@ -57,5 +68,57 @@ describe("brouillon de routine", () => {
     expect(canSave({ ...toDraft(routine), name: "  " })).toBe(false);
     expect(canSave({ ...toDraft(routine), exercises: [] })).toBe(false);
     expect(canSave(toDraft(routine))).toBe(true);
+  });
+});
+
+describe("supersets", () => {
+  const ex = (slug: string, superset?: string) => ({ slug, ...(superset ? { superset } : {}) });
+
+  it("lie un exercice au suivant", () => {
+    expect(linkWithNext([ex("a"), ex("b"), ex("c")], 0)).toEqual([
+      ex("a", "A"),
+      ex("b", "A"),
+      ex("c"),
+    ]);
+  });
+
+  it("agrandit un superset existant et renomme dans l'ordre", () => {
+    const list = [ex("a"), ex("b"), ex("c", "A"), ex("d", "A")];
+    expect(linkWithNext(list, 1)).toEqual([ex("a"), ex("b", "A"), ex("c", "A"), ex("d", "A")]);
+    expect(linkWithNext(list, 0)).toEqual([ex("a", "A"), ex("b", "A"), ex("c", "B"), ex("d", "B")]);
+  });
+
+  it("fusionne deux supersets voisins", () => {
+    const list = [ex("a", "A"), ex("b", "A"), ex("c", "B"), ex("d", "B")];
+    expect(linkWithNext(list, 1).map((e) => e.superset)).toEqual(["A", "A", "A", "A"]);
+  });
+
+  it("ne lie pas le dernier", () => {
+    expect(canLinkWithNext([ex("a"), ex("b")], 1)).toBe(false);
+    expect(canLinkWithNext([ex("a", "A"), ex("b", "A")], 0)).toBe(false);
+  });
+
+  it("délier le milieu coupe le groupe ; un exercice seul perd sa lettre", () => {
+    const list = [ex("a", "A"), ex("b", "A"), ex("c", "A")];
+    expect(unlink(list, 1)).toEqual([ex("a"), ex("b"), ex("c")]);
+    expect(unlink([ex("a", "A"), ex("b", "A"), ex("c", "A"), ex("d", "A")], 0)).toEqual([
+      ex("a"),
+      ex("b", "A"),
+      ex("c", "A"),
+      ex("d", "A"),
+    ]);
+  });
+
+  it("un glisser qui sépare un groupe le défait", () => {
+    expect(normalizeSupersets([ex("a", "A"), ex("x"), ex("b", "A")])).toEqual([
+      ex("a"),
+      ex("x"),
+      ex("b"),
+    ]);
+  });
+
+  it("seul le dernier d'un superset garde son repos", () => {
+    const list = [ex("a", "A"), ex("b", "A"), ex("c")];
+    expect([0, 1, 2].map((i) => chainsIntoNext(list, i))).toEqual([true, false, false]);
   });
 });

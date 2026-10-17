@@ -130,6 +130,12 @@ et D199 (style), qui seront repris après validation du wireframe.
   visibles au survol ou au focus seulement, sans les flèches natives ; *Ajouter une série* sur toute la largeur. Le *Number
   Field* de ReUI (D228) n'est pas installé : il tire `@base-ui/react` (écarté par D231) et
   réécrit `label.tsx`.
+- **D247 — Superset depuis le menu ⋯ de l'éditeur.** *Superset avec le suivant* (grisé sans
+  suivant, ou s'il est déjà lié) et *Retirer du superset*. Un superset est une suite CONTIGUË de
+  même lettre : après lier, délier, glisser ou retirer, `normalizeSupersets` défait un groupe
+  coupé, ôte la lettre d'un exercice seul et renomme A, B… dans l'ordre (testé). Chaque membre
+  porte l'étiquette « Superset A » ; seul le dernier garde son repos, les autres disent
+  « Enchaîné ».
 
 ## 3. Coquille
 
