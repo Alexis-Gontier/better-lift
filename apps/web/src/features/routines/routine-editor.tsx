@@ -1,5 +1,6 @@
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { ExerciseThumb } from "@/components/exercise-media";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,7 @@ function ExerciseEditor({
               <GripVertical className="size-4" />
             </button>
           </SortableItemHandle>
+          <ExerciseThumb name={info?.name ?? exercise.slug} />
           {info?.name ?? exercise.slug}
           {exercise.superset && (
             <span className="font-normal text-muted-foreground text-xs">

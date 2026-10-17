@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
+import { ExerciseThumb } from "@/components/exercise-media";
 import { InlineField } from "@/components/inline-field";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -189,16 +190,23 @@ function ExerciseDone({
     });
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>
-          <Link to="/exercises/$slug" params={{ slug: exercise.slug }} className="hover:underline">
-            {info?.name ?? exercise.slug}
-          </Link>
-        </CardTitle>
-        <CardDescription>
-          {info?.muscle}
-          {exercise.superset ? ` · superset ${exercise.superset}` : ""}
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center gap-3">
+        <ExerciseThumb name={info?.name ?? exercise.slug} />
+        <div className="flex flex-col gap-1">
+          <CardTitle>
+            <Link
+              to="/exercises/$slug"
+              params={{ slug: exercise.slug }}
+              className="hover:underline"
+            >
+              {info?.name ?? exercise.slug}
+            </Link>
+          </CardTitle>
+          <CardDescription>
+            {info?.muscle}
+            {exercise.superset ? ` · superset ${exercise.superset}` : ""}
+          </CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>

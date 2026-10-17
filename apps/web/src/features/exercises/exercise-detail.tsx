@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Pin } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
+import { ExerciseGif } from "@/components/exercise-media";
 import { InlineField } from "@/components/inline-field";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -143,39 +144,34 @@ export function ExerciseSummary({
   const best = records(history).best1rm.value;
   return (
     <div className="grid gap-4 @3xl:grid-cols-3">
-      <div className="@3xl:col-span-2">
-        <ProgressChart exercise={exercise} history={history} />
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Muscles</CardTitle>
-          <CardDescription>
-            {exercise.muscle}
-            {exercise.secondary?.length ? ` · ${exercise.secondary.join(", ")}` : ""}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-1 items-center">
-          <BodyMap primary={[exercise.muscle]} secondary={exercise.secondary} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Pin className="size-4" /> Note épinglée
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground text-sm">
+      {/* Épinglée : en tête, sur toute la largeur. */}
+      <Card size="sm" className="@3xl:col-span-3">
+        <CardContent className="flex items-start gap-3 text-muted-foreground text-sm">
+          <Pin className="mt-0.5 size-4 shrink-0 text-foreground" />
           {onNoteChange ? (
             <InlineField
               label="Note épinglée"
               multiline
               placeholder="Aucune note. Notez un réglage de machine ou une consigne."
               value={exercise.note ?? ""}
+              className="flex-1"
               onCommit={onNoteChange}
             />
           ) : (
             (exercise.note ?? "Aucune note. Notez un réglage de machine ou une consigne.")
           )}
+        </CardContent>
+      </Card>
+      <div className="@3xl:col-span-2">
+        <ProgressChart exercise={exercise} history={history} />
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Exécution</CardTitle>
+          <CardDescription>{exercise.equipment}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ExerciseGif name={exercise.name} />
         </CardContent>
       </Card>
       <Card className="@3xl:col-span-2">
@@ -197,6 +193,18 @@ export function ExerciseSummary({
             ))}
           </CardContent>
         )}
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Muscles</CardTitle>
+          <CardDescription>
+            {exercise.muscle}
+            {exercise.secondary?.length ? ` · ${exercise.secondary.join(", ")}` : ""}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-1 items-center">
+          <BodyMap primary={[exercise.muscle]} secondary={exercise.secondary} />
+        </CardContent>
       </Card>
     </div>
   );

@@ -110,6 +110,14 @@ et D199 (style), qui seront repris après validation du wireframe.
   - sans API, les enregistrements vivent dans des magasins en mémoire (`mocks/*-store.ts`,
     jusqu'au rechargement). Une séance corrigée relit son volume ; ses badges de record restent
     ceux d'origine — ils seront dérivés à la lecture au branchement.
+- **D243 — Routine : une seule façon de modifier, A** (tranché le 2026-10-17, révise D239 pour
+  les routines). La routine ouverte EST l'éditeur, en champs nus, avec son résumé chiffré en tête
+  (exercices, séries, durée et volume estimés, muscles), qui suit la saisie. B et C sont retirés
+  des routines ; `?v=` reste à comparer sur les séances.
+- **D244 — Médias d'exercice simulés** (`components/exercise-media.tsx`) : vignette carrée
+  (40 px, image fixe au branchement, `imageDe`) dans la liste des exercices, l'éditeur de routine
+  et le relevé d'une séance ; GIF carré dans la fiche, carte « Exécution » à côté de la courbe.
+  La note épinglée passe en tête de la fiche, sur toute la largeur.
 
 ## 3. Coquille
 
@@ -307,8 +315,8 @@ variante par page (D234) et le contenu du header, vidé à la demande (§ 3).
 6. **Liste | détail repensée** (D235–D241, 2026-10-17), étape par étape, un commit et une
    capture chacune : sélection dans le chemin et retrait des pages de détail ; variantes
    d'édition A/B/C d'une routine ; création par la liste ; variantes d'édition d'une séance ;
-   note d'exercice et exercice personnalisé. **Faite le 2026-10-17** ; reste à choisir A, B ou C
-   pour les routines et pour les séances (D239).
+   note d'exercice et exercice personnalisé. **Faite le 2026-10-17** ; routines en A (D243), reste à choisir A, B ou C
+   pour les séances (D239).
 
 Le catalogue n'est pas figé : à chaque passe, on peut chercher d'autres composants (shoogle.dev,
 recherches web, applications de référence comme Hevy, Strong ou Liftosaur). Chaque nouveau

@@ -2,6 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronRight, Dumbbell, History, Search, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
+import { ExerciseThumb } from "@/components/exercise-media";
 import { listLinkProps, selectedRowClass } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
@@ -193,9 +194,7 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
                   {...listLinkProps}
                   className={`flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50 ${selectedRowClass}`}
                 >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                    <Dumbbell className="size-4" />
-                  </div>
+                  <ExerciseThumb name={e.name} />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate font-medium">{e.name}</span>
                     <span className="text-muted-foreground text-xs">
