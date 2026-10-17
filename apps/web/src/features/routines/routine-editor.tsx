@@ -72,14 +72,17 @@ import {
  * d'emblée ce qui se modifie, sans le mur de bordures ; le focus pose l'anneau.
  */
 export const filled =
-  "border-transparent bg-muted/70 shadow-none hover:bg-muted dark:bg-input/40 dark:hover:bg-input/60";
+  "border-transparent bg-muted/70 shadow-none hover:bg-muted dark:bg-input/70 dark:hover:bg-input";
 
 /** Les repos proposés ; la valeur de la routine s'y ajoute si elle n'y est pas. */
 const RESTS = [0, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240, 300];
 
 /** Les colonnes d'une ligne de série : type, dernière fois, charge, répétitions, retrait. */
-// « Dernière fois » a une largeur fixe : les champs restent près de l'étiquette de série.
-const SET_GRID = "grid grid-cols-[2.25rem_6.5rem_8.5rem_8.5rem_1.75rem] items-center gap-3";
+// « Dernière fois » a une largeur fixe : les champs restent près de l'étiquette de série. Carte
+// trop étroite pour la loger, elle s'efface et les champs gardent leur place.
+const SET_GRID =
+  "grid grid-cols-[2.25rem_8.5rem_8.5rem_1.75rem] items-center gap-3 @[31rem]/sets:grid-cols-[2.25rem_6.5rem_8.5rem_8.5rem_1.75rem]";
+const LAST_TIME_COL = "hidden @[31rem]/sets:block";
 
 /** « 25 kg × 15 » : la série de même rang à la dernière séance, ou la dernière connue. */
 function lastTime(slug: string, i: number): string {
@@ -281,7 +284,7 @@ function ExerciseEditor({
             <ExerciseThumb name={name} />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="flex min-w-0 items-center gap-2">
-                <span className="truncate font-medium">{name}</span>
+                <span className="line-clamp-2 font-medium leading-snug">{name}</span>
                 {exercise.superset && (
                   <Badge variant="secondary" className="shrink-0">
                     <Link2 data-icon="inline-start" />
@@ -370,10 +373,10 @@ function ExerciseEditor({
             {/* Les filets courent sur toute la largeur de la carte, poignée exceptée. */}
             <Separator />
 
-            <div className="flex flex-col gap-1.5 p-3">
+            <div className="@container/sets flex flex-col gap-1.5 p-3">
               <div className={cn(SET_GRID, "px-1 text-muted-foreground text-xs")}>
                 <span>Série</span>
-                <span>Dernière fois</span>
+                <span className={LAST_TIME_COL}>Dernière fois</span>
                 <span>Charge</span>
                 <span>Répétitions</span>
                 <span />
@@ -386,7 +389,12 @@ function ExerciseEditor({
                     index={i}
                     onChange={(type) => setAt(i, { type })}
                   />
-                  <span className="truncate text-muted-foreground text-sm tabular-nums">
+                  <span
+                    className={cn(
+                      LAST_TIME_COL,
+                      "truncate text-muted-foreground text-sm tabular-nums",
+                    )}
+                  >
                     {lastTime(exercise.slug, i)}
                   </span>
                   <SetField

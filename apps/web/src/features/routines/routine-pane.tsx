@@ -115,31 +115,58 @@ const scrollBlock =
  */
 function EditorLayout({ main, aside }: { main: React.ReactNode; aside: React.ReactNode }) {
   const layout = useDefaultLayout({ id: "routine-editeur", storage: localStorage });
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const width = useWidth(box);
+  // Trop étroit pour deux colonnes (480 + 220 px) : la colonne de droite passe sous les exercices.
+  const stacked = width !== null && width < 720;
   return (
     // Le bloc porte la hauteur : le groupe impose `height: 100%` en style en ligne.
-    <div className="-mx-6 -mt-6 -mb-6 min-h-0 flex-1">
-      <ResizablePanelGroup
-        orientation="horizontal"
-        defaultLayout={layout.defaultLayout}
-        onLayoutChanged={layout.onLayoutChanged}
-      >
-        {/* 560 px : le tableau des séries a des colonnes fixes ; en dessous, il serait coupé. */}
-        <ResizablePanel id="exercices" defaultSize="70%" minSize="560px">
-          <ScrollArea className={scrollBlock}>
-            <div className="flex min-w-0 flex-col gap-3 px-6 pt-6 pb-24 *:shrink-0">{main}</div>
-          </ScrollArea>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel id="apercu" defaultSize="30%" minSize="220px" maxSize="50%">
-          <ScrollArea className={scrollBlock}>
-            <aside className="@container flex flex-col gap-4 px-6 pt-6 pb-24 *:shrink-0">
-              {aside}
-            </aside>
-          </ScrollArea>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+    <div ref={setBox} className="-mx-6 -mt-6 -mb-6 min-h-0 flex-1">
+      {stacked ? (
+        <ScrollArea className={scrollBlock}>
+          <div className="flex min-w-0 flex-col gap-3 px-6 pt-6 *:shrink-0">{main}</div>
+          <aside className="@container flex flex-col gap-4 px-6 pt-6 pb-24 *:shrink-0">
+            {aside}
+          </aside>
+        </ScrollArea>
+      ) : (
+        <ResizablePanelGroup
+          orientation="horizontal"
+          defaultLayout={layout.defaultLayout}
+          onLayoutChanged={layout.onLayoutChanged}
+        >
+          {/* 480 px : le tableau des séries, « Dernière fois » effacée ; en dessous, il serait coupé. */}
+          <ResizablePanel id="exercices" defaultSize="74%" minSize="480px">
+            <ScrollArea className={scrollBlock}>
+              <div className="flex min-w-0 flex-col gap-3 px-6 pt-6 pb-24 *:shrink-0">{main}</div>
+            </ScrollArea>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel id="apercu" defaultSize="26%" minSize="220px" maxSize="50%">
+            <ScrollArea className={scrollBlock}>
+              <aside className="@container flex flex-col gap-4 px-6 pt-6 pb-24 *:shrink-0">
+                {aside}
+              </aside>
+            </ScrollArea>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
     </div>
   );
+}
+
+/** La largeur d'un élément, suivie au redimensionnement ; `null` tant qu'il n'est pas monté. */
+function useWidth(el: HTMLElement | null): number | null {
+  const [width, setWidth] = useState<number | null>(null);
+  useEffect(() => {
+    if (!el) return;
+    const observer = new ResizeObserver((entries) =>
+      setWidth(entries[0]?.contentRect.width ?? null),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [el]);
+  return width;
 }
 
 const saved = () => toast.success("Routine enregistrée", { id: "routine-enregistree" });

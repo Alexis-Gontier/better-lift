@@ -68,6 +68,8 @@ export function ListDetailPage({
   detailScroll = "panel",
 }: Props) {
   const layout = useDefaultLayout({ id: `liste-detail-${storageId}`, storage: localStorage });
+  // Un détail en colonnes (l'éditeur de routine) a besoin de plus de place : la liste cède.
+  const listSize = detailScroll === "columns" ? 30 : 38;
   // Un autre élément repart du haut du panneau.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   // Arrivé par une adresse, l'élément ouvert peut être loin dans la liste : on le montre.
@@ -84,7 +86,7 @@ export function ListDetailPage({
         defaultLayout={layout.defaultLayout}
         onLayoutChanged={layout.onLayoutChanged}
       >
-        <ResizablePanel id="liste" defaultSize="38%" minSize="25%">
+        <ResizablePanel id="liste" defaultSize={`${listSize}%`} minSize="300px">
           <div className="flex h-full flex-col">
             <div className={cn("flex flex-col gap-3 px-6 pt-6", tabs ? "border-b" : "pb-2")}>
               <div className="flex min-h-9 items-center justify-between gap-3">
@@ -102,7 +104,7 @@ export function ListDetailPage({
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel id="detail" defaultSize="62%" minSize="35%">
+        <ResizablePanel id="detail" defaultSize={`${100 - listSize}%`} minSize="35%">
           {detailScroll === "columns" ? (
             <div key={pathname} className="@container flex h-full flex-col gap-6 p-6 *:shrink-0">
               {detail}

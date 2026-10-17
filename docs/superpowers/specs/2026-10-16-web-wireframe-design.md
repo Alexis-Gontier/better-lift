@@ -217,6 +217,14 @@ et D199 (style), qui seront repris après validation du wireframe.
   les routines sont des cartes séparées (8 px), plus des lignes collées sous filets. La routine
   ouverte prend un contour d'encre (`ring-2`, 30 %) et un fond léger : plus de liseré à gauche
   dans cette liste. Exercices et Historique gardent leurs lignes et leur liseré.
+- **D259 — L'éditeur de routine tient aux largeurs moyennes** (2026-10-18, critique en sombre).
+  La liste ne descend pas sous 300 px et part à 30 % quand le détail est en colonnes. Le détail
+  sous 720 px empile la colonne de droite sous les exercices, dans un seul défilement ; au-dessus,
+  exercices 74 % (480 px mini) et aperçu 26 %. Une carte d'exercice de moins de 31rem efface la
+  colonne « Dernière fois », les champs restent entiers. Le nom d'exercice passe sur deux lignes
+  au lieu d'être tronqué. Silhouette : corps sur un token `--body-map` (gris qui se détache de la
+  carte dans les deux thèmes), couleurs relues au changement de thème. En sombre, les champs
+  remplis (D250) montent d'un cran (`input/70`) pour se distinguer de la carte et du survol.
 
 ## 3. Coquille
 

@@ -20,6 +20,8 @@
   --muted: oklch(0.97 0 0);
   /* Plus foncé que le défaut shadcn (0,556) : 4,3:1 sur --muted ; ici ≥ 4,5:1 sur tout fond gris clair (D251). */
   --muted-foreground: oklch(0.52 0 0);
+  /* La silhouette des muscles : un corps qui se détache de la carte. */
+  --body-map: oklch(0.88 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -54,6 +56,7 @@
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
+  --body-map: oklch(0.38 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
