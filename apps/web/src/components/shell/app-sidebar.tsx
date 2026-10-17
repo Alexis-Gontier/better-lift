@@ -25,7 +25,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       {/* Le nom, aligné sur la hauteur du header ; masqué quand la barre est repliée. */}
       <SidebarHeader className="h-12 justify-center px-4">
-        <Link to="/" className="font-extrabold tracking-tight group-data-[collapsible=icon]:hidden">
+        <Link
+          to="/"
+          className="font-extrabold text-lg tracking-tight group-data-[collapsible=icon]:hidden"
+        >
           BETTER-LIFT.
         </Link>
       </SidebarHeader>
