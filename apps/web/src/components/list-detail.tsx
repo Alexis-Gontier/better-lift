@@ -43,6 +43,8 @@ type Props = {
   detail: ReactNode;
   /** La liste, ou l'état qui la remplace (chargement, vide, erreur). */
   children: ReactNode;
+  /** Sous la liste, fixe et séparé d'un filet : les créations (Routines, D257). */
+  footer?: ReactNode;
   /**
    * `panel` (défaut) : le panneau de détail défile d'un bloc, sa tête collée en haut.
    * `columns` : le panneau ne défile pas ; le détail découpe ses propres zones de défilement
@@ -62,6 +64,7 @@ export function ListDetailPage({
   storageId,
   detail,
   children,
+  footer,
   detailScroll = "panel",
 }: Props) {
   const layout = useDefaultLayout({ id: `liste-detail-${storageId}`, storage: localStorage });
@@ -95,6 +98,7 @@ export function ListDetailPage({
                 {children}
               </div>
             </ScrollArea>
+            {footer && <div className="flex shrink-0 gap-2 border-t px-6 py-3">{footer}</div>}
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />

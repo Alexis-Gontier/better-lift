@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { FolderPlus, Plus } from "lucide-react";
 import { ListDetailPage } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
@@ -8,7 +9,7 @@ import {
   RoutineListEmpty,
   RoutineListSkeleton,
 } from "@/features/routines/routine-list";
-import { useRoutines } from "@/mocks/routine-store";
+import { addFolder, useRoutines } from "@/mocks/routine-store";
 
 export const Route = createFileRoute("/_app/routines")({
   staticData: { crumb: "Routines" },
@@ -23,12 +24,19 @@ function RoutinesPage() {
     <ListDetailPage
       key={state}
       title="Routines"
-      actions={
-        <Button asChild>
-          <Link to="/routines/new" search>
-            Nouvelle routine
-          </Link>
-        </Button>
+      footer={
+        state === "nominal" && (
+          <>
+            <Button asChild className="flex-1">
+              <Link to="/routines/new" search>
+                <Plus data-icon="inline-start" /> Nouvelle routine
+              </Link>
+            </Button>
+            <Button variant="outline" onClick={addFolder}>
+              <FolderPlus data-icon="inline-start" /> Dossier
+            </Button>
+          </>
+        )
       }
       storageId="routines"
       // L'éditeur et sa colonne de droite défilent chacun de leur côté (D255).

@@ -25,7 +25,14 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUnsavedGuard } from "@/components/unsaved-guard";
-import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
+import {
+  deleteRoutine,
+  newRoutineId,
+  peekNextRoutineFolder,
+  saveRoutine,
+  setDraftName,
+  setNextRoutineFolder,
+} from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { type Draft, fromDraft, isDirty, saveBlocker, toDraft } from "./routine-draft";
 import { RoutineFields, RoutineNameInput } from "./routine-editor";
@@ -196,7 +203,12 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
  */
 export function RoutinePaneNew() {
   const navigate = useNavigate();
-  const [draft, setDraft] = useState<Draft>(() => toDraft(undefined));
+  // « Nouvelle routine ici » : la routine naît dans ce dossier ; on l'oublie une fois lu.
+  const [draft, setDraft] = useState<Draft>(() => {
+    const empty = toDraft(undefined);
+    return { ...empty, folder: peekNextRoutineFolder() ?? empty.folder };
+  });
+  useEffect(() => () => setNextRoutineFolder(null), []);
   const base = { id: "nouvelle", lastDone: null };
   const { guard, release } = useUnsavedGuard(isDirty(draft, undefined), "cette routine");
   useEffect(() => setDraftName(draft.name), [draft.name]);

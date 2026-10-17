@@ -201,6 +201,17 @@ et D199 (style), qui seront repris après validation du wireframe.
   exercices (70 %, **560 px au moins** — le tableau des séries a des colonnes fixes) et
   l'aperçu (30 %, de 220 px à 50 %), chacun dans la `ScrollArea` de shadcn. La poignée tient
   lieu de filet. Les mini-cartes passent à deux par ligne dès 13 rem de colonne.
+- **D257 — Liste des routines en dossiers** (2026-10-18, révise D251). Les dossiers sont des
+  sections repliables (nom, nombre, menu ⋯ : *Nouvelle routine ici*, *Renommer* sur place,
+  *Supprimer* — ses routines passent dans « Sans dossier », toast avec *Annuler*). « Sans
+  dossier » n'apparaît que s'il a des routines ; un dossier vide dit « Glissez une routine ici ».
+  Les pastilles de filtre disparaissent : la recherche ne montre que les dossiers qui ont un
+  résultat, dépliés. **Glisser sert à changer de dossier** (pas à réordonner) : poignée à gauche
+  de chaque ligne (`@dnd-kit/core`, déjà là par le *Sortable* de ReUI), dossier entier — tête
+  comprise, même replié — comme cible, ligne fantôme qui suit le pointeur, toast avec
+  *Annuler*. **La création passe en bas** de la liste, fixe et séparée d'un filet (prop `footer`
+  de `ListDetailPage`) : *Nouvelle routine* et *Dossier*. Les réglages d'une routine proposent
+  les dossiers du magasin et « Sans dossier ».
 
 ## 3. Coquille
 

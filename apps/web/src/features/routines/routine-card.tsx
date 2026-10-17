@@ -1,5 +1,6 @@
+import { useDraggable } from "@dnd-kit/core";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, ChevronRight, Copy, Trash2 } from "lucide-react";
+import { CalendarPlus, ChevronRight, Copy, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { listLinkProps, selectedRowClass } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
@@ -59,32 +60,73 @@ function routineActions(
   ];
 }
 
+/** Le contenu d'une ligne de routine : nom et muscles, durée et dernière fois. */
+function RowBody({ routine }: { routine: MockRoutine }) {
+  return (
+    <>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate font-medium">{routine.name}</span>
+        <span className="truncate text-muted-foreground text-xs">
+          {[plural(routine.exercises.length, "exercice"), ...routineMuscles(routine)].join(" · ")}
+        </span>
+      </div>
+      <div className="flex shrink-0 flex-col items-end">
+        <span className="text-sm tabular-nums">
+          ~{formatMinutes(estimateMinutes(routine.exercises))}
+        </span>
+        <span className="text-muted-foreground text-xs">
+          {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
+        </span>
+      </div>
+    </>
+  );
+}
+
 /**
- * Une routine dans la liste, en ligne compacte comme Exercices et Historique (D251) : le nom et
- * ses muscles, la durée estimée et la dernière fois. Le reste se lit dans le détail.
+ * Une routine dans la liste, en ligne compacte (D251) ; sa poignée la glisse dans un autre
+ * dossier (D257).
  */
 export function RoutineRow({ routine }: { routine: MockRoutine }) {
   const navigate = useNavigate();
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
+    id: routine.id,
+    data: { routine },
+  });
   return (
-    <RowMenu actions={routineActions(routine, navigate)}>
-      <Link to="/routines/$id" params={{ id: routine.id }} {...listLinkProps} className={rowClass}>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate font-medium">{routine.name}</span>
-          <span className="truncate text-muted-foreground text-xs">
-            {[plural(routine.exercises.length, "exercice"), ...routineMuscles(routine)].join(" · ")}
-          </span>
-        </div>
-        <div className="flex shrink-0 flex-col items-end">
-          <span className="text-sm tabular-nums">
-            ~{formatMinutes(estimateMinutes(routine.exercises))}
-          </span>
-          <span className="text-muted-foreground text-xs">
-            {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
-          </span>
-        </div>
-        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-      </Link>
-    </RowMenu>
+    <div ref={setNodeRef} className={cn("flex items-stretch", isDragging && "opacity-40")}>
+      {/* Un vrai bouton : sans focus possible, la poignée ne répondrait pas au clavier. */}
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        aria-label={`Changer de dossier : ${routine.name}`}
+        className="flex w-7 shrink-0 cursor-grab items-center justify-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
+      <RowMenu actions={routineActions(routine, navigate)}>
+        <Link
+          to="/routines/$id"
+          params={{ id: routine.id }}
+          {...listLinkProps}
+          className={cn(rowClass, "min-w-0 flex-1 pl-1")}
+        >
+          <RowBody routine={routine} />
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+        </Link>
+      </RowMenu>
+    </div>
+  );
+}
+
+/** La ligne qui suit le pointeur pendant un glisser. */
+export function RoutineRowPreview({ routine }: { routine: MockRoutine }) {
+  return (
+    <div className="flex cursor-grabbing items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-lg">
+      <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+      <RowBody routine={routine} />
+    </div>
   );
 }
 

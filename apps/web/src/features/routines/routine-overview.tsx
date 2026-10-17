@@ -13,10 +13,13 @@ import { formatDaysAgo, formatKg, formatMinutes } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
-import { FOLDERS, type MockRoutine } from "@/mocks/routines";
+import { useFolders } from "@/mocks/routine-store";
+import type { MockRoutine } from "@/mocks/routines";
 import { TODAY } from "@/mocks/today";
 import type { Draft } from "./routine-draft";
 import { filled } from "./routine-editor";
+
+const NO_FOLDER = "__sans-dossier";
 
 /** Les chiffres de la routine, une mini-carte chacun (D255) : ils suivent la saisie. */
 function Figures({ routine }: { routine: MockRoutine }) {
@@ -79,6 +82,7 @@ export function RoutineOverview({
   draft: Draft;
   onChange: (update: (d: Draft) => Draft) => void;
 }) {
+  const folders = useFolders();
   return (
     <>
       <Figures routine={routine} />
@@ -95,20 +99,22 @@ export function RoutineOverview({
           <CardTitle>Réglages</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
+          {/* Radix refuse une valeur vide : « Sans dossier » passe par une clé. */}
           <Select
-            value={draft.folder}
-            onValueChange={(folder) => onChange((d) => ({ ...d, folder }))}
+            value={folders.includes(draft.folder) ? draft.folder : NO_FOLDER}
+            onValueChange={(v) => onChange((d) => ({ ...d, folder: v === NO_FOLDER ? "" : v }))}
           >
             <SelectTrigger aria-label="Dossier" className={cn("w-full", filled)}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {FOLDERS.map((f) => (
+                {folders.map((f) => (
                   <SelectItem key={f} value={f}>
                     {f}
                   </SelectItem>
                 ))}
+                <SelectItem value={NO_FOLDER}>Sans dossier</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
