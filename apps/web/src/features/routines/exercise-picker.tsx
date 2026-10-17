@@ -39,14 +39,12 @@ export function newRoutineExercise(slug: string): MockRoutineExercise {
 function PickCard({
   exercise,
   rank,
-  present,
   disabled,
   onToggle,
 }: {
   exercise: MockExercise;
   /** Rang dans la sélection (1, 2…), ou 0 si elle n'est pas cochée. */
   rank: number;
-  present: boolean;
   disabled: boolean;
   onToggle: () => void;
 }) {
@@ -64,13 +62,12 @@ function PickCard({
     >
       <ExerciseThumb name={exercise.name} className="size-12" />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="line-clamp-2 font-medium leading-snug" title={exercise.name}>
+        <span className="truncate font-medium" title={exercise.name}>
           {exercise.name}
         </span>
         <span className="truncate text-muted-foreground text-xs">
           {exercise.muscle} · {exercise.equipment}
         </span>
-        {present && <span className="text-muted-foreground text-xs">Déjà dans la routine</span>}
       </span>
       {/* Le rang plutôt qu'une coche : les exercices s'ajoutent dans l'ordre où on les coche. */}
       <span
@@ -89,7 +86,7 @@ function PickCard({
 /**
  * Ajouter des exercices à une routine (D262) : le catalogue en cartes, une recherche sans accents
  * et un filtre par muscle ; on en coche plusieurs, ils s'ajoutent dans l'ordre coché. Ceux déjà
- * dans la routine restent cochables (on peut vouloir deux fois le même) mais le disent.
+ * dans la routine n'y figurent pas : toutes les cartes ont la même hauteur, rien à éviter.
  */
 export function ExercisePicker({
   open,
@@ -118,11 +115,20 @@ export function ExercisePicker({
   const shown = exercises
     .filter(
       (e) =>
+        !present.includes(e.slug) &&
         (muscle === ALL || e.muscle === muscle) &&
         (fold(e.name).includes(q) || fold(e.slug.replaceAll("-", " ")).includes(q)),
     )
     .sort((a, b) => a.name.localeCompare(b.name, "fr"));
   const full = picked.length >= room;
+  // Sans eux, une recherche peut ne rien rendre : le vide dit pourquoi.
+  const hiddenMatch =
+    shown.length === 0 &&
+    exercises.some(
+      (e) =>
+        present.includes(e.slug) &&
+        (fold(e.name).includes(q) || fold(e.slug.replaceAll("-", " ")).includes(q)),
+    );
 
   function close(next: boolean) {
     onOpenChange(next);
@@ -181,8 +187,14 @@ export function ExercisePicker({
           {shown.length === 0 ? (
             <Empty className="py-12">
               <EmptyHeader>
-                <EmptyTitle>Aucun exercice ne correspond</EmptyTitle>
-                <EmptyDescription>Essayez un autre mot, ou tous les muscles.</EmptyDescription>
+                <EmptyTitle>
+                  {hiddenMatch ? "Déjà dans la routine" : "Aucun exercice ne correspond"}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {hiddenMatch
+                    ? "Les exercices de la routine ne sont pas proposés à nouveau."
+                    : "Essayez un autre mot, ou tous les muscles."}
+                </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -192,7 +204,6 @@ export function ExercisePicker({
                   key={e.slug}
                   exercise={e}
                   rank={picked.indexOf(e.slug) + 1}
-                  present={present.includes(e.slug)}
                   disabled={full}
                   onToggle={() => toggle(e.slug)}
                 />

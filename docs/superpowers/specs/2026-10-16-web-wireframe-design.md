@@ -247,8 +247,8 @@ et D199 (style), qui seront repris après validation du wireframe.
   « Ajouter des exercices » ouvre un **dialogue en cartes** (vignette, nom, muscle · équipement),
   recherche sans accents sur le nom français ET le nom anglais, filtre par muscle ; on coche
   **plusieurs** exercices, chacun montre son **rang** et ils s'ajoutent dans cet ordre, ouverts,
-  la page descendant jusqu'au premier. « Déjà dans la routine » se lit sans bloquer (on peut
-  vouloir le même deux fois). Menu ⋯ d'une carte : **« Voir la fiche »**, une fenêtre (animation,
+  la page descendant jusqu'au premier. Les exercices **déjà dans la routine sont retirés** du
+  dialogue ; une recherche qui ne trouve qu'eux le dit (« Déjà dans la routine »). Menu ⋯ d'une carte : **« Voir la fiche »**, une fenêtre (animation,
   muscles, note épinglée, dernière fois) avec « Fiche complète » vers `/exercises/$slug`.
   **Petits écrans** : sous 760 px de contenu, la page liste | détail n'affiche qu'un panneau (la
   liste, ou l'élément ouvert ; le fil d'Ariane ramène à la liste) ; la liste ne dépasse pas 55 % ;
@@ -260,7 +260,9 @@ et D199 (style), qui seront repris après validation du wireframe.
   est notée (101 séries sur 101), 4 séries sans répétitions cibles, échauffements et dégressives
   présents, deux exercices en superset, repos de 90 à 180 s, nom d'exercice jusqu'à 82
   caractères. D'où : répétitions et charges cibles facultatives dans la maquette, résumé replié
-  sans « — kg », « Volume prévu » à « — » sans charge, nom long sur deux lignes avec infobulle.
+  sans « — kg », « Volume prévu » à « — » sans charge. **Les cartes gardent leur hauteur** : le
+  nom tient sur une ligne, coupé par « … » quand la place manque, entier dans l'infobulle — dans
+  l'éditeur comme dans le dialogue d'ajout.
   **Écarts encore ouverts avec le modèle** : le dossier et les notes d'une routine n'existent pas
   en base (migration à prévoir) ; `reposSec` nul signifie « repos par défaut » du profil, que
   l'éditeur ne propose pas ; un exercice archivé dans une routine n'a pas d'état ; l'unité est
