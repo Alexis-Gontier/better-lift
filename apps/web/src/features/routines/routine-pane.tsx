@@ -25,7 +25,7 @@ import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { RoutineFigures } from "./routine-detail";
-import { canSave, type Draft, fromDraft, isDirty, toDraft } from "./routine-draft";
+import { type Draft, fromDraft, isDirty, saveBlocker, toDraft } from "./routine-draft";
 import { RoutineFields, RoutineMeta, RoutineNameInput } from "./routine-editor";
 
 /** Le menu ⋯ de la routine : ce qui ne se modifie pas champ par champ. */
@@ -120,13 +120,17 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
         actions={
           dirty ? (
             <>
-              <span className="text-muted-foreground text-sm">Non enregistrée</span>
+              {/* Ce qui manque se lit à la place de l'état : le bouton grisé dit pourquoi (D252). */}
+              <span className="text-muted-foreground text-sm" id="routine-etat">
+                {saveBlocker(draft) ?? "Non enregistrée"}
+              </span>
               <Button variant="outline" size="sm" onClick={() => setDraft(toDraft(routine))}>
                 Annuler
               </Button>
               <Button
                 size="sm"
-                disabled={!canSave(draft)}
+                disabled={saveBlocker(draft) !== null}
+                aria-describedby="routine-etat"
                 onClick={() => {
                   saveRoutine(fromDraft(draft, routine));
                   saved();
@@ -187,7 +191,17 @@ export function RoutinePaneNew() {
             >
               Annuler
             </Button>
-            <Button size="sm" disabled={!canSave(draft)} onClick={create}>
+            {saveBlocker(draft) && (
+              <span className="text-muted-foreground text-sm" id="routine-manque">
+                {saveBlocker(draft)}
+              </span>
+            )}
+            <Button
+              size="sm"
+              disabled={saveBlocker(draft) !== null}
+              aria-describedby="routine-manque"
+              onClick={create}
+            >
               Créer
             </Button>
           </>

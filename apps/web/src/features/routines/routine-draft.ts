@@ -130,7 +130,8 @@ export const SET_TYPES: readonly {
 }[] = [
   { value: "warmup", label: "Échauffement", short: "W", tone: "text-amber-500" },
   { value: "normal", label: "Normale", short: "", tone: "text-foreground" },
-  { value: "failure", label: "Échec", short: "F", tone: "text-red-500" },
+  // Rose plutôt que rouge : le rouge appartient au danger (D36, D252).
+  { value: "failure", label: "Échec", short: "F", tone: "text-rose-600" },
   { value: "drop", label: "Dégressive", short: "D", tone: "text-sky-500" },
 ];
 
@@ -148,5 +149,33 @@ export function setLabels(sets: readonly { type?: SetType }[]): string[] {
   return sets.map((s) => {
     if (!s.type) return String(++n);
     return SET_TYPES.find((t) => t.value === s.type)?.short ?? "?";
+  });
+}
+
+/** Pourquoi la routine ne s'enregistre pas encore, ou `null` si elle le peut (D252). */
+export function saveBlocker(draft: Draft): string | null {
+  if (draft.name.trim() === "") return "Donnez-lui un nom";
+  if (draft.exercises.length === 0) return "Ajoutez au moins un exercice";
+  return null;
+}
+
+type PlannedSet = { kg: number | null; reps: number; type?: SetType };
+
+/** « Même charge partout » : la première série normale donne sa charge et ses répétitions aux autres séries normales. */
+export function copyFirstToAll<T extends PlannedSet>(sets: readonly T[]): T[] {
+  const first = sets.find((s) => !s.type);
+  if (!first) return [...sets];
+  return sets.map((s) => (s.type ? s : { ...s, kg: first.kg, reps: first.reps }));
+}
+
+/** « Recopier la dernière fois » : chaque série reprend la série de même rang de la dernière séance, ou la dernière connue. */
+export function fromLastTime<T extends PlannedSet>(
+  sets: readonly T[],
+  last: readonly (readonly [number | null, number])[] | undefined,
+): T[] {
+  if (!last || last.length === 0) return [...sets];
+  return sets.map((s, i) => {
+    const [kg, reps] = last[i] ?? last.at(-1) ?? [s.kg, s.reps];
+    return { ...s, kg, reps };
   });
 }

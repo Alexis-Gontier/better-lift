@@ -1,7 +1,9 @@
 import {
   ArrowDown,
   Check,
+  Copy,
   GripVertical,
+  History,
   Link2,
   Minus,
   MoreHorizontal,
@@ -51,8 +53,10 @@ import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
 import {
   canLinkWithNext,
   chainsIntoNext,
+  copyFirstToAll,
   type Draft,
   type DraftExercise,
+  fromLastTime,
   linkWithNext,
   normalizeSupersets,
   SET_TYPES,
@@ -301,7 +305,25 @@ function ExerciseEditor({
                   <MoreHorizontal />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuItem
+                  disabled={exercise.sets.length < 2}
+                  onSelect={() => onChange({ ...exercise, sets: copyFirstToAll(exercise.sets) })}
+                >
+                  <Copy /> Même charge partout
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!lastSets(exercise.slug)}
+                  onSelect={() =>
+                    onChange({
+                      ...exercise,
+                      sets: fromLastTime(exercise.sets, lastSets(exercise.slug)),
+                    })
+                  }
+                >
+                  <History /> Recopier la dernière fois
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem disabled={!onLink} onSelect={onLink}>
                   <Link2 /> Superset avec le suivant
                 </DropdownMenuItem>
@@ -405,7 +427,10 @@ export function RoutineNameInput({
       aria-label="Nom de la routine"
       placeholder="Sans nom"
       autoFocus={autoFocus}
-      className={cn("-ml-2 h-10 w-full max-w-xl px-2 font-medium text-2xl md:text-2xl", filled)}
+      className={cn(
+        "-ml-2 h-10 w-auto min-w-40 max-w-full px-2 font-medium text-2xl field-sizing-content md:text-2xl",
+        filled,
+      )}
       value={draft.name}
       onChange={(e) => onChange((d) => ({ ...d, name: e.target.value }))}
     />

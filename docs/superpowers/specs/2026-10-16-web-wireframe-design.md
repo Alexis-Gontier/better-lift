@@ -164,6 +164,14 @@ et D199 (style), qui seront repris après validation du wireframe.
   `oklch(0.556)` à `oklch(0.52)` en clair : le texte atténué tient 4,5:1 sur tout fond gris clair
   (le détecteur relevait 4,3:1, venu des touches Ctrl K et de l'avatar). Le panneau de détail
   garde 96 px en bas pour que la barre Proto ne cache rien.
+- **D252 — Ce qui reste de la critique** (2026-10-18). Un *Enregistrer* ou *Créer* grisé dit
+  pourquoi, à sa gauche et en `aria-describedby` : « Donnez-lui un nom », puis « Ajoutez au moins
+  un exercice » (`saveBlocker`, testé). Menu ⋯ d'un exercice : *Même charge partout* (la première
+  série normale donne charge et répétitions aux autres séries normales) et *Recopier la dernière
+  fois* (rang par rang, puis la dernière série connue), tous deux testés. Le F de l'échec passe
+  au rose (`rose-600`) : le rouge appartient au danger. Le nom s'ajuste à son texte
+  (`field-sizing: content`). *Ajouter une série* reste un bouton rempli : la demande « on doit
+  voir que ce sont des boutons » l'emporte sur la critique.
 
 ## 3. Coquille
 

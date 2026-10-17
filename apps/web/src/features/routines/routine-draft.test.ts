@@ -4,11 +4,14 @@ import {
   canLinkWithNext,
   canSave,
   chainsIntoNext,
+  copyFirstToAll,
   emptyDraft,
   fromDraft,
+  fromLastTime,
   isDirty,
   linkWithNext,
   normalizeSupersets,
+  saveBlocker,
   setLabels,
   toDraft,
   unlink,
@@ -131,5 +134,48 @@ describe("étiquettes des séries", () => {
 
   it("marque une série à l'échec", () => {
     expect(setLabels([{}, { type: "failure" }, {}])).toEqual(["1", "F", "2"]);
+  });
+});
+
+describe("raison d'un enregistrement impossible", () => {
+  it("demande un nom, puis un exercice", () => {
+    expect(saveBlocker(emptyDraft)).toBe("Donnez-lui un nom");
+    expect(saveBlocker({ ...emptyDraft, name: "Push" })).toBe("Ajoutez au moins un exercice");
+    expect(saveBlocker(toDraft(routine))).toBeNull();
+  });
+});
+
+describe("actions groupées sur les séries", () => {
+  it("donne la première série normale aux autres, sans toucher aux séries typées", () => {
+    const sets = [
+      { kg: 20, reps: 15, type: "warmup" as const },
+      { kg: 80, reps: 10 },
+      { kg: 75, reps: 8 },
+      { kg: 60, reps: 12, type: "drop" as const },
+    ];
+    expect(copyFirstToAll(sets).map((s) => [s.kg, s.reps])).toEqual([
+      [20, 15],
+      [80, 10],
+      [80, 10],
+      [60, 12],
+    ]);
+  });
+
+  it("recopie la dernière séance rang par rang, puis la dernière série connue", () => {
+    const sets = [
+      { kg: 0, reps: 10 },
+      { kg: 0, reps: 10 },
+      { kg: 0, reps: 10 },
+    ];
+    const last = [
+      [80, 10],
+      [82.5, 8],
+    ] as const;
+    expect(fromLastTime(sets, last).map((s) => [s.kg, s.reps])).toEqual([
+      [80, 10],
+      [82.5, 8],
+      [82.5, 8],
+    ]);
+    expect(fromLastTime(sets, undefined)).toEqual(sets);
   });
 });
