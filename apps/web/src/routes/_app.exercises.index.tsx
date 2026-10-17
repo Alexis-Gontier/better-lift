@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ListDetail } from "@/components/list-detail";
-import { Page } from "@/components/page";
+import { ListDetailPage } from "@/components/list-detail";
 import { PageTabs, useTab } from "@/components/page-tabs";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
@@ -23,46 +22,40 @@ const TABS = [
   { value: "mes-exercices", label: "Mes exercices" },
 ] as const;
 
-/** A : fiche sur sa page. B : liste | détail redimensionnable. C : fiche en panneau latéral. */
+/** Liste | détail sur toute la page (variante B retenue, D234). */
 function ExercisesPage() {
   const tab = useTab(TABS.map((t) => t.value));
-  const { state, variant } = useProto();
+  const { state } = useProto();
   const exercises = mockExercises.filter((e) => (tab === "catalogue" ? !e.custom : e.custom));
   return (
-    <Page
+    <ListDetailPage
+      key={`${tab}-${state}`}
       title="Exercices"
       tabs={<PageTabs tabs={TABS} />}
       actions={<Button>Exercice personnalisé</Button>}
+      storageId="exercices"
+      defaultSelected={state === "nominal" ? (exercises[0]?.slug ?? null) : null}
+      detail={(slug) => {
+        const exercise = exerciseBySlug(slug);
+        if (!exercise) return null;
+        return {
+          title: exercise.name,
+          subtitle: `${exercise.muscle} · ${exercise.equipment}`,
+          href: (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/exercises/$slug" params={{ slug }}>
+                Ouvrir la fiche
+              </Link>
+            </Button>
+          ),
+          body: <ExerciseSummary exercise={exercise} history={exerciseHistory(slug)} />,
+        };
+      }}
     >
       {state === "chargement" && <ExerciseListSkeleton />}
       {state === "erreur" && <StateError title="Les exercices n'ont pas pu se charger" />}
       {state === "vide" && <CustomExercisesEmpty />}
-      {state === "nominal" && (
-        <ListDetail
-          key={`${variant}-${tab}`}
-          variant={variant}
-          storageId="exercices"
-          defaultSelected={exercises[0]?.slug ?? null}
-          detail={(slug) => {
-            const exercise = exerciseBySlug(slug);
-            if (!exercise) return null;
-            return {
-              title: exercise.name,
-              subtitle: `${exercise.muscle} · ${exercise.equipment}`,
-              href: (
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/exercises/$slug" params={{ slug }}>
-                    Ouvrir la fiche
-                  </Link>
-                </Button>
-              ),
-              body: <ExerciseSummary exercise={exercise} history={exerciseHistory(slug)} />,
-            };
-          }}
-        >
-          <ExerciseList exercises={exercises} />
-        </ListDetail>
-      )}
-    </Page>
+      {state === "nominal" && <ExerciseList exercises={exercises} />}
+    </ListDetailPage>
   );
 }

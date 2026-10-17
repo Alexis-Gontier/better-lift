@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatDaysAgo, formatKg } from "@/lib/format";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { best1rmOf } from "@/mocks/exercise-stats";
@@ -96,20 +95,35 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
 
   return (
     <>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
+        <InputGroup>
+          <InputGroupInput
+            placeholder="Rechercher un exercice…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+        </InputGroup>
         <div className="flex flex-wrap gap-2">
-          <InputGroup className="min-w-64 flex-1">
-            <InputGroupInput
-              placeholder="Rechercher un exercice…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <InputGroupAddon>
-              <Search />
-            </InputGroupAddon>
-          </InputGroup>
+          <Select value={muscle} onValueChange={setMuscle}>
+            <SelectTrigger aria-label="Muscle">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value={ALL}>Tous les muscles</SelectItem>
+                {MUSCLES.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <Select value={equipment} onValueChange={setEquipment}>
-            <SelectTrigger className="w-44" aria-label="Équipement">
+            <SelectTrigger aria-label="Équipement">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -124,7 +138,7 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
             </SelectContent>
           </Select>
           <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
-            <SelectTrigger className="w-44" aria-label="Tri">
+            <SelectTrigger aria-label="Tri">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -135,22 +149,6 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
             </SelectContent>
           </Select>
         </div>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          spacing={2}
-          value={muscle}
-          onValueChange={(v) => setMuscle(v || ALL)}
-          className="flex-wrap"
-        >
-          <ToggleGroupItem value={ALL}>Tous les muscles</ToggleGroupItem>
-          {MUSCLES.map((m) => (
-            <ToggleGroupItem key={m} value={m}>
-              {m}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
       </div>
 
       {rows.length === 0 ? (
@@ -209,7 +207,7 @@ export function ExerciseListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
-      <Skeleton className="h-8 w-2/3 rounded-lg" />
+      <Skeleton className="h-9 rounded-lg" />
       <Skeleton className="h-[480px] rounded-xl" />
     </>
   );

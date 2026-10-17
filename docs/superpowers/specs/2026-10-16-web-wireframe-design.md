@@ -52,7 +52,9 @@ et D199 (style), qui seront repris après validation du wireframe.
   en aplat, en dernier), affichée seulement si la page a des onglets ou des actions.
 - **D234 — Variantes de la passe 4** (barre « Proto » ou `?v=`), pour choisir sur pièce :
   - Routines, Exercices, Historique (listes) — **A** détail sur sa page, **B** liste | détail
-    redimensionnable (largeur mémorisée), **C** détail en panneau latéral ;
+    redimensionnable (largeur mémorisée), **C** détail en panneau latéral. **Tranché le
+    2026-10-17 : B**, sur toute la surface sous l'en-tête (`ListDetailPage`) ; le titre, les
+    onglets et l'action vivent en tête de la liste, A et C sont retirés de ces pages ;
   - Accueil — **A** grille de cartes, **B** colonne principale + colonne latérale ;
   - Planning — **A/B** onglets Semaine et Mois, **C** agenda en liste ;
   - Progression — **A** quatre graphiques, **B** un grand graphique et un sélecteur de mesure ;

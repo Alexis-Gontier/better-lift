@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ListDetail } from "@/components/list-detail";
-import { Page } from "@/components/page";
+import { ListDetailPage } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
@@ -18,46 +17,42 @@ export const Route = createFileRoute("/_app/history/")({
   component: HistoryPage,
 });
 
-/** A : séance sur sa page. B : liste | détail redimensionnable. C : séance en panneau latéral. */
+/** Liste | détail sur toute la page (variante B retenue, D234). */
 function HistoryPage() {
-  const { state, variant } = useProto();
+  const { state } = useProto();
   return (
-    <Page title="Historique">
+    <ListDetailPage
+      key={state}
+      title="Historique"
+      storageId="historique"
+      defaultSelected={state === "nominal" ? (mockSessions[0]?.id ?? null) : null}
+      detail={(id) => {
+        const session = mockSessions.find((s) => s.id === id);
+        if (!session) return null;
+        const previous = previousOf(mockSessions, id);
+        return {
+          title: session.routine,
+          subtitle: formatDay(session.date),
+          href: (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/history/$id" params={{ id }}>
+                Ouvrir la séance
+              </Link>
+            </Button>
+          ),
+          body: (
+            <SessionDetailView
+              detail={sessionDetail(session)}
+              previous={previous ? sessionDetail(previous) : undefined}
+            />
+          ),
+        };
+      }}
+    >
       {state === "chargement" && <SessionListSkeleton />}
       {state === "erreur" && <StateError title="L'historique n'a pas pu se charger" />}
       {state === "vide" && <SessionListEmpty />}
-      {state === "nominal" && (
-        <ListDetail
-          key={variant}
-          variant={variant}
-          storageId="historique"
-          defaultSelected={mockSessions[0]?.id ?? null}
-          detail={(id) => {
-            const session = mockSessions.find((s) => s.id === id);
-            if (!session) return null;
-            const previous = previousOf(mockSessions, id);
-            return {
-              title: session.routine,
-              subtitle: formatDay(session.date),
-              href: (
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/history/$id" params={{ id }}>
-                    Ouvrir la séance
-                  </Link>
-                </Button>
-              ),
-              body: (
-                <SessionDetailView
-                  detail={sessionDetail(session)}
-                  previous={previous ? sessionDetail(previous) : undefined}
-                />
-              ),
-            };
-          }}
-        >
-          <SessionList sessions={mockSessions} />
-        </ListDetail>
-      )}
-    </Page>
+      {state === "nominal" && <SessionList sessions={mockSessions} />}
+    </ListDetailPage>
   );
 }
