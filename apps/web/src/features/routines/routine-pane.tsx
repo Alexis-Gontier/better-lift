@@ -24,9 +24,9 @@ import {
 import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
-import { RoutineFigures } from "./routine-detail";
 import { type Draft, fromDraft, isDirty, saveBlocker, toDraft } from "./routine-draft";
-import { RoutineFields, RoutineMeta, RoutineNameInput } from "./routine-editor";
+import { RoutineFields, RoutineNameInput } from "./routine-editor";
+import { RoutineOverview } from "./routine-overview";
 
 /** Le menu ⋯ de la routine : ce qui ne se modifie pas champ par champ. */
 function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () => void }) {
@@ -94,6 +94,22 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
   );
 }
 
+/**
+ * Deux colonnes dès que le panneau le permet (D253) : les exercices, et à droite l'aperçu et les
+ * réglages, collés sous la tête pendant le défilement. Étroit, l'aperçu passe sous les exercices.
+ */
+function EditorLayout({ main, aside }: { main: React.ReactNode; aside: React.ReactNode }) {
+  return (
+    <div className="grid items-start gap-6 @3xl:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="flex min-w-0 flex-col gap-3">{main}</div>
+      {/* Collée sous la tête, jamais plus haute que l'écran : elle défile seule si besoin. */}
+      <aside className="flex flex-col gap-4 @3xl:sticky @3xl:top-24 @3xl:max-h-[calc(100svh-9rem)] @3xl:overflow-y-auto @3xl:p-px">
+        {aside}
+      </aside>
+    </div>
+  );
+}
+
 const saved = () => toast.success("Routine enregistrée", { id: "routine-enregistree" });
 
 /**
@@ -104,19 +120,13 @@ const saved = () => toast.success("Routine enregistrée", { id: "routine-enregis
 export function RoutinePane({ routine }: { routine: MockRoutine }) {
   const [draft, setDraft] = useState<Draft>(() => toDraft(routine));
   const dirty = isDirty(draft, routine);
+  const base = routine;
   const { guard, release } = useUnsavedGuard(dirty, "cette routine");
 
   return (
     <>
       <DetailHeader
         title={<RoutineNameInput draft={draft} onChange={setDraft} />}
-        subtitle={
-          <RoutineMeta
-            draft={draft}
-            onChange={setDraft}
-            figures={<RoutineFigures routine={fromDraft(draft, routine)} />}
-          />
-        }
         actions={
           dirty ? (
             <>
@@ -144,7 +154,12 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
           )
         }
       />
-      <RoutineFields draft={draft} onChange={setDraft} />
+      <EditorLayout
+        main={<RoutineFields draft={draft} onChange={setDraft} />}
+        aside={
+          <RoutineOverview routine={fromDraft(draft, base)} draft={draft} onChange={setDraft} />
+        }
+      />
       {guard}
     </>
   );
@@ -157,6 +172,7 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
 export function RoutinePaneNew() {
   const navigate = useNavigate();
   const [draft, setDraft] = useState<Draft>(() => toDraft(undefined));
+  const base = { id: "nouvelle", lastDone: null };
   const { guard, release } = useUnsavedGuard(isDirty(draft, undefined), "cette routine");
   useEffect(() => setDraftName(draft.name), [draft.name]);
   useEffect(() => () => setDraftName(""), []);
@@ -173,15 +189,6 @@ export function RoutinePaneNew() {
     <>
       <DetailHeader
         title={<RoutineNameInput draft={draft} onChange={setDraft} autoFocus />}
-        subtitle={
-          <RoutineMeta
-            draft={draft}
-            onChange={setDraft}
-            figures={
-              <RoutineFigures routine={fromDraft(draft, { id: "nouvelle", lastDone: null })} />
-            }
-          />
-        }
         actions={
           <>
             <Button
@@ -207,7 +214,12 @@ export function RoutinePaneNew() {
           </>
         }
       />
-      <RoutineFields draft={draft} onChange={setDraft} />
+      <EditorLayout
+        main={<RoutineFields draft={draft} onChange={setDraft} />}
+        aside={
+          <RoutineOverview routine={fromDraft(draft, base)} draft={draft} onChange={setDraft} />
+        }
+      />
       {guard}
     </>
   );

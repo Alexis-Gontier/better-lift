@@ -1,6 +1,8 @@
 import {
   ArrowDown,
   Check,
+  ChevronRight,
+  ChevronsUpDown,
   Copy,
   GripVertical,
   History,
@@ -43,12 +45,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { formatLoad, formatRest } from "@/lib/format";
+import { formatLoad, formatRest, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { lastSets } from "@/mocks/generated-workouts";
-import { FOLDERS, type MockRoutineExercise, type MockSet } from "@/mocks/routines";
+import type { MockRoutineExercise, MockSet } from "@/mocks/routines";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
 import {
   canLinkWithNext,
@@ -61,6 +62,7 @@ import {
   normalizeSupersets,
   SET_TYPES,
   setLabels,
+  setsSummary,
   setTone,
   unlink,
 } from "./routine-draft";
@@ -69,7 +71,7 @@ import {
  * La marque d'un champ modifiable dans l'éditeur (D250) : un fond teinté, sans contour. On voit
  * d'emblée ce qui se modifie, sans le mur de bordures ; le focus pose l'anneau.
  */
-const filled =
+export const filled =
   "border-transparent bg-muted/70 shadow-none hover:bg-muted dark:bg-input/40 dark:hover:bg-input/60";
 
 /** Les repos proposés ; la valeur de la routine s'y ajoute si elle n'y est pas. */
@@ -215,6 +217,8 @@ function SetTypeButton({
 function ExerciseEditor({
   exercise,
   chains,
+  open,
+  onToggle,
   onChange,
   onRemove,
   onLink,
@@ -223,6 +227,9 @@ function ExerciseEditor({
   exercise: MockRoutineExercise;
   /** Enchaîné au suivant dans un superset : son repos ne compte pas. */
   chains: boolean;
+  /** Replié, la carte ne montre que sa tête et le résumé de ses séries (D253). */
+  open: boolean;
+  onToggle: () => void;
   onChange: (next: MockRoutineExercise) => void;
   onRemove: () => void;
   /** Absent quand il n'y a pas de suivant à lier. */
@@ -258,21 +265,38 @@ function ExerciseEditor({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-3 p-3">
-          <ExerciseThumb name={name} />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-medium">{name}</span>
-              {exercise.superset && (
-                <Badge variant="secondary" className="shrink-0">
-                  <Link2 data-icon="inline-start" />
-                  Superset {exercise.superset}
-                </Badge>
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-label={`${open ? "Replier" : "Déplier"} : ${name}`}
+            onClick={onToggle}
+            className="-m-1 flex min-w-0 flex-1 items-center gap-3 rounded-md p-1 text-left transition-colors hover:bg-muted/50"
+          >
+            <ChevronRight
+              className={cn(
+                "size-4 shrink-0 text-muted-foreground transition-transform",
+                open && "rotate-90",
               )}
+            />
+            <ExerciseThumb name={name} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="truncate font-medium">{name}</span>
+                {exercise.superset && (
+                  <Badge variant="secondary" className="shrink-0">
+                    <Link2 data-icon="inline-start" />
+                    Superset {exercise.superset}
+                  </Badge>
+                )}
+              </span>
+              {/* Replié, le résumé des séries remplace le tableau. */}
+              <span className="truncate text-muted-foreground text-xs">
+                {open
+                  ? `${info?.muscle} · ${info?.equipment}`
+                  : `${info?.muscle} · ${setsSummary(exercise.sets)}`}
+              </span>
             </span>
-            <span className="truncate text-muted-foreground text-xs">
-              {info?.muscle} · {info?.equipment}
-            </span>
-          </div>
+          </button>
           {/* Repos et menu vont ensemble : un seul petit écart entre eux. */}
           <div className="flex shrink-0 items-center gap-1.5">
             {chains ? (
@@ -341,72 +365,76 @@ function ExerciseEditor({
           </div>
         </div>
 
-        {/* Les filets courent sur toute la largeur de la carte, poignée exceptée. */}
-        <Separator />
+        {open && (
+          <>
+            {/* Les filets courent sur toute la largeur de la carte, poignée exceptée. */}
+            <Separator />
 
-        <div className="flex flex-col gap-1.5 p-3">
-          <div className={cn(SET_GRID, "px-1 text-muted-foreground text-xs")}>
-            <span>Série</span>
-            <span>Dernière fois</span>
-            <span>Charge</span>
-            <span>Répétitions</span>
-            <span />
-          </div>
-          {exercise.sets.map((set, i) => (
-            <div key={i} className={cn(SET_GRID, "rounded-md px-1")}>
-              <SetTypeButton
-                set={set}
-                label={labels[i] ?? String(i + 1)}
-                index={i}
-                onChange={(type) => setAt(i, { type })}
-              />
-              <span className="truncate text-muted-foreground text-sm tabular-nums">
-                {lastTime(exercise.slug, i)}
-              </span>
-              <SetField
-                label={`Charge de la série ${i + 1}`}
-                unit="kg"
-                step={2.5}
-                min={0}
-                value={set.kg === null ? "" : String(set.kg)}
-                onChange={(v) => setAt(i, { kg: v === "" ? null : Number(v) })}
-              />
-              <SetField
-                label={`Répétitions de la série ${i + 1}`}
-                unit="rép."
-                step={1}
-                min={1}
-                value={String(set.reps)}
-                onChange={(v) => setAt(i, { reps: Number(v) })}
-              />
+            <div className="flex flex-col gap-1.5 p-3">
+              <div className={cn(SET_GRID, "px-1 text-muted-foreground text-xs")}>
+                <span>Série</span>
+                <span>Dernière fois</span>
+                <span>Charge</span>
+                <span>Répétitions</span>
+                <span />
+              </div>
+              {exercise.sets.map((set, i) => (
+                <div key={i} className={cn(SET_GRID, "rounded-md px-1")}>
+                  <SetTypeButton
+                    set={set}
+                    label={labels[i] ?? String(i + 1)}
+                    index={i}
+                    onChange={(type) => setAt(i, { type })}
+                  />
+                  <span className="truncate text-muted-foreground text-sm tabular-nums">
+                    {lastTime(exercise.slug, i)}
+                  </span>
+                  <SetField
+                    label={`Charge de la série ${i + 1}`}
+                    unit="kg"
+                    step={2.5}
+                    min={0}
+                    value={set.kg === null ? "" : String(set.kg)}
+                    onChange={(v) => setAt(i, { kg: v === "" ? null : Number(v) })}
+                  />
+                  <SetField
+                    label={`Répétitions de la série ${i + 1}`}
+                    unit="rép."
+                    step={1}
+                    min={1}
+                    value={String(set.reps)}
+                    onChange={(v) => setAt(i, { reps: Number(v) })}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Retirer la série ${i + 1}`}
+                    className="text-muted-foreground/70 hover:text-foreground"
+                    disabled={exercise.sets.length === 1}
+                    onClick={() =>
+                      onChange({ ...exercise, sets: exercise.sets.filter((_, j) => j !== i) })
+                    }
+                  >
+                    <X />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <Separator />
+
+            <div className="p-3">
               <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Retirer la série ${i + 1}`}
-                className="text-muted-foreground/70 hover:text-foreground"
-                disabled={exercise.sets.length === 1}
-                onClick={() =>
-                  onChange({ ...exercise, sets: exercise.sets.filter((_, j) => j !== i) })
-                }
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                onClick={() => onChange({ ...exercise, sets: [...exercise.sets, { ...last }] })}
               >
-                <X />
+                <Plus data-icon="inline-start" /> Ajouter une série
               </Button>
             </div>
-          ))}
-        </div>
-
-        <Separator />
-
-        <div className="p-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="w-full"
-            onClick={() => onChange({ ...exercise, sets: [...exercise.sets, { ...last }] })}
-          >
-            <Plus data-icon="inline-start" /> Ajouter une série
-          </Button>
-        </div>
+          </>
+        )}
       </div>
     </Card>
   );
@@ -437,72 +465,10 @@ export function RoutineNameInput({
   );
 }
 
-/** Sous le nom : le dossier, puis ce que la routine représente, en une ligne. */
-export function RoutineMeta({
-  draft,
-  onChange,
-  figures,
-}: {
-  draft: Draft;
-  onChange: (update: (d: Draft) => Draft) => void;
-  figures: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <Select value={draft.folder} onValueChange={(folder) => onChange((d) => ({ ...d, folder }))}>
-        <SelectTrigger size="sm" aria-label="Dossier" className={cn("-ml-2", filled)}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {FOLDERS.map((f) => (
-              <SelectItem key={f} value={f}>
-                {f}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      {figures}
-    </div>
-  );
-}
-
-/** Les notes de la routine, repliées tant qu'il n'y en a pas (D250). */
-function RoutineNotes({
-  draft,
-  onChange,
-}: {
-  draft: Draft;
-  onChange: (update: (d: Draft) => Draft) => void;
-}) {
-  const [open, setOpen] = useState(draft.notes !== "");
-  if (!open)
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 self-start text-muted-foreground"
-        onClick={() => setOpen(true)}
-      >
-        <Plus data-icon="inline-start" /> Ajouter une note
-      </Button>
-    );
-  return (
-    <Textarea
-      aria-label="Notes de la routine"
-      placeholder="Échauffement, consignes…"
-      autoFocus={draft.notes === ""}
-      className={cn("min-h-16", filled)}
-      value={draft.notes}
-      onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value }))}
-    />
-  );
-}
-
 /**
- * Le corps de l'éditeur : les notes, puis les exercices à réordonner. Le nom et le dossier
- * vivent dans la tête du panneau ; le panneau décide quand on enregistre (D243, D250).
+ * Le corps de l'éditeur : les exercices à réordonner, repliés par défaut (D253). Le nom vit dans
+ * la tête du panneau, le dossier et les notes dans sa colonne de droite ; le panneau décide quand
+ * on enregistre (D243).
  */
 export function RoutineFields({
   draft,
@@ -512,13 +478,39 @@ export function RoutineFields({
   onChange: (update: (d: Draft) => Draft) => void;
 }) {
   const [picking, setPicking] = useState(false);
+  // Tout est replié à l'ouverture : la routine se lit en un écran. Un exercice ajouté s'ouvre.
+  const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set());
+  const allOpen = draft.exercises.length > 0 && draft.exercises.every((e) => opened.has(e.uid));
+  const toggle = (uid: string) =>
+    setOpened((o) => {
+      const next = new Set(o);
+      if (next.has(uid)) next.delete(uid);
+      else next.add(uid);
+      return next;
+    });
 
   const setExercise = (i: number, next: DraftExercise) =>
     onChange((d) => ({ ...d, exercises: d.exercises.map((e, j) => (j === i ? next : e)) }));
 
   return (
     <>
-      <RoutineNotes draft={draft} onChange={onChange} />
+      {draft.exercises.length > 0 && (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground text-sm">
+            {plural(draft.exercises.length, "exercice")}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              setOpened(allOpen ? new Set() : new Set(draft.exercises.map((e) => e.uid)))
+            }
+          >
+            <ChevronsUpDown data-icon="inline-start" />
+            {allOpen ? "Tout replier" : "Tout déplier"}
+          </Button>
+        </div>
+      )}
 
       {/* Réordonnables à la poignée, à la souris ou au clavier (Espace, flèches, Espace). */}
       <Sortable
@@ -528,12 +520,14 @@ export function RoutineFields({
           onChange((d) => ({ ...d, exercises: normalizeSupersets(exercises) }))
         }
         getItemValue={(e) => e.uid}
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-3"
       >
         {draft.exercises.map((e, i) => (
           <SortableItem key={e.uid} value={e.uid}>
             <ExerciseEditor
               exercise={e}
+              open={opened.has(e.uid)}
+              onToggle={() => toggle(e.uid)}
               onChange={(next) => setExercise(i, { ...next, uid: e.uid })}
               chains={chainsIntoNext(draft.exercises, i)}
               onRemove={() =>
@@ -560,15 +554,14 @@ export function RoutineFields({
       <ExercisePicker
         open={picking}
         onOpenChange={setPicking}
-        onPick={(slug) =>
+        onPick={(slug) => {
+          const uid = `${slug}-${draft.exercises.length}-${Date.now()}`;
+          setOpened((o) => new Set(o).add(uid));
           onChange((d) => ({
             ...d,
-            exercises: [
-              ...d.exercises,
-              { ...newRoutineExercise(slug), uid: `${slug}-${d.exercises.length}-${Date.now()}` },
-            ],
-          }))
-        }
+            exercises: [...d.exercises, { ...newRoutineExercise(slug), uid }],
+          }));
+        }}
       />
     </>
   );

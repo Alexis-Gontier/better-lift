@@ -172,6 +172,17 @@ et D199 (style), qui seront repris après validation du wireframe.
   au rose (`rose-600`) : le rouge appartient au danger. Le nom s'ajuste à son texte
   (`field-sizing: content`). *Ajouter une série* reste un bouton rempli : la demande « on doit
   voir que ce sont des boutons » l'emporte sur la critique.
+- **D253 — Éditeur de routine en deux colonnes, cartes repliables** (2026-10-18, révise D250).
+  La tête ne porte plus que le nom (modifiable) et les actions. **Les cartes d'exercice sont
+  repliées à l'ouverture** : la tête seule, avec le résumé des séries (`setsSummary`, testé :
+  « 3 × 12 · 10 kg », plages « 3 × 10–12 · 8–10 kg », « 1 W + 3 × 12 ») ; un clic sur la tête
+  (chevron) ouvre le tableau ; plusieurs ouvertes à la fois ; *Tout déplier / Tout replier* ;
+  un exercice ajouté s'ouvre seul ; réordonner se fait cartes fermées. **Colonne de droite**
+  (17 rem dès `@3xl`, collée sous la tête, bornée à l'écran et défilant seule ; sous les
+  exercices quand le panneau est étroit) : *Aperçu* — durée, séries, volume prévu, exercices,
+  silhouette des muscles travaillés (`bodyMuscles`), séries de travail par muscle en barres
+  (`setsByMuscle`, échauffements exclus, testés), dernière fois — puis *Réglages* : dossier et
+  notes. Tout suit la saisie.
 
 ## 3. Coquille
 

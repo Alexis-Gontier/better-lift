@@ -13,6 +13,7 @@ import {
   normalizeSupersets,
   saveBlocker,
   setLabels,
+  setsSummary,
   toDraft,
   unlink,
 } from "./routine-draft";
@@ -177,5 +178,37 @@ describe("actions groupées sur les séries", () => {
       [82.5, 8],
     ]);
     expect(fromLastTime(sets, undefined)).toEqual(sets);
+  });
+});
+
+describe("résumé d'un exercice replié", () => {
+  it("résume des séries identiques", () => {
+    expect(
+      setsSummary([
+        { kg: 10, reps: 12 },
+        { kg: 10, reps: 12 },
+        { kg: 10, reps: 12 },
+      ]),
+    ).toBe("3 × 12 · 10 kg");
+  });
+
+  it("donne des plages quand les séries varient", () => {
+    expect(
+      setsSummary([
+        { kg: 8, reps: 10 },
+        { kg: 10, reps: 12 },
+        { kg: 82.5, reps: 12 },
+      ]),
+    ).toBe("3 × 10–12 · 8–82,5 kg");
+  });
+
+  it("met les échauffements devant et tolère une charge non notée", () => {
+    expect(
+      setsSummary([
+        { kg: 5, reps: 15, type: "warmup" },
+        { kg: null, reps: 10 },
+        { kg: null, reps: 10 },
+      ]),
+    ).toBe("1 W + 2 × 10 · — kg");
   });
 });

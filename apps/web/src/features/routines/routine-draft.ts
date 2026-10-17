@@ -179,3 +179,27 @@ export function fromLastTime<T extends PlannedSet>(
     return { ...s, kg, reps };
   });
 }
+
+/** « 10–12 », ou une seule valeur ; `format` met en forme chaque borne. */
+function range(values: readonly number[], format: (n: number) => string): string {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  return min === max ? format(max) : `${format(min)}–${format(max)}`;
+}
+
+/**
+ * Le résumé d'un exercice replié (D253) : « 3 × 12 · 10 kg », des plages quand les séries
+ * varient (« 3 × 10–12 · 8–10 kg »), les échauffements devant (« 1 W + 3 × 12 »).
+ */
+export function setsSummary(sets: readonly PlannedSet[]): string {
+  const warmups = sets.filter((s) => s.type === "warmup").length;
+  const working = sets.filter((s) => s.type !== "warmup");
+  if (working.length === 0) return warmups > 0 ? `${warmups} W` : "Aucune série";
+  const reps = range(
+    working.map((s) => s.reps),
+    String,
+  );
+  const kgs = working.flatMap((s) => (s.kg === null ? [] : [s.kg]));
+  const load = kgs.length === 0 ? "— kg" : `${range(kgs, (n) => String(n).replace(".", ","))} kg`;
+  return `${warmups > 0 ? `${warmups} W + ` : ""}${working.length} × ${reps} · ${load}`;
+}
