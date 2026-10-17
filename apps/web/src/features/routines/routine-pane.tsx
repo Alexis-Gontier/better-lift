@@ -28,6 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { plural } from "@/lib/format";
+import { useWidth } from "@/lib/use-width";
 import {
   deleteRoutine,
   newRoutineId,
@@ -164,20 +165,6 @@ function EditorLayout({ main, aside }: { main: React.ReactNode; aside: React.Rea
       )}
     </div>
   );
-}
-
-/** La largeur d'un élément, suivie au redimensionnement ; `null` tant qu'il n'est pas monté. */
-function useWidth(el: HTMLElement | null): number | null {
-  const [width, setWidth] = useState<number | null>(null);
-  useEffect(() => {
-    if (!el) return;
-    const observer = new ResizeObserver((entries) =>
-      setWidth(entries[0]?.contentRect.width ?? null),
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [el]);
-  return width;
 }
 
 const saved = () => toast.success("Routine enregistrée", { id: "routine-enregistree" });

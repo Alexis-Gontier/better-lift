@@ -1,5 +1,5 @@
 import { useRouterState } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { useProto } from "@/components/proto/use-proto";
 import {
@@ -12,6 +12,7 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWidth } from "@/lib/use-width";
 import { cn } from "@/lib/utils";
 
 /**
@@ -78,52 +79,73 @@ export function ListDetailPage({
     list.current?.querySelector('[data-status="active"]')?.scrollIntoView({ block: "center" });
   }, []);
 
+  // Trop étroit pour deux panneaux (D262) : un seul, la liste ou l'élément ouvert ; le fil
+  // d'Ariane ramène à la liste.
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const width = useWidth(box);
+  const single = width !== null && width < NARROW;
+  const open = useRouterState({ select: (s) => !s.matches.at(-1)?.routeId.endsWith("/") });
+
+  const listPane = (
+    <div className="flex h-full flex-col">
+      <div className={cn("flex flex-col gap-3 px-6 pt-6", tabs ? "border-b" : "pb-2")}>
+        <div className="flex min-h-9 items-center justify-between gap-3">
+          <h1 className="font-medium text-2xl tracking-tight">{title}</h1>
+          <div className="flex items-center gap-2">{actions}</div>
+        </div>
+        {tabs && <div className="-ml-3 flex items-end gap-1">{tabs}</div>}
+      </div>
+      <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
+        <div ref={list} className="@container flex flex-col gap-4 px-6 pt-4 pb-6 *:shrink-0">
+          {children}
+        </div>
+      </ScrollArea>
+      {footer && <div className="flex shrink-0 gap-2 border-t px-6 py-3">{footer}</div>}
+    </div>
+  );
+  const detailPane =
+    detailScroll === "columns" ? (
+      <div key={pathname} className="@container flex h-full flex-col gap-6 p-6 *:shrink-0">
+        {detail}
+      </div>
+    ) : (
+      <ScrollArea key={pathname} className="h-full [&_[data-slot=scroll-area-viewport]>div]:block!">
+        <div className="@container flex min-h-[calc(100svh-3rem)] flex-col gap-6 p-6 pb-24 *:shrink-0">
+          {detail}
+        </div>
+      </ScrollArea>
+    );
+
   return (
     // La hauteur se pose sur un parent : le groupe impose `height: 100%` en style en ligne.
-    <div className="h-[calc(100svh-3rem)]">
-      <ResizablePanelGroup
-        orientation="horizontal"
-        defaultLayout={layout.defaultLayout}
-        onLayoutChanged={layout.onLayoutChanged}
-      >
-        <ResizablePanel id="liste" defaultSize={`${listSize}%`} minSize="300px">
-          <div className="flex h-full flex-col">
-            <div className={cn("flex flex-col gap-3 px-6 pt-6", tabs ? "border-b" : "pb-2")}>
-              <div className="flex min-h-9 items-center justify-between gap-3">
-                <h1 className="font-medium text-2xl tracking-tight">{title}</h1>
-                <div className="flex items-center gap-2">{actions}</div>
-              </div>
-              {tabs && <div className="-ml-3 flex items-end gap-1">{tabs}</div>}
-            </div>
-            <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
-              <div ref={list} className="@container flex flex-col gap-4 px-6 pt-4 pb-6 *:shrink-0">
-                {children}
-              </div>
-            </ScrollArea>
-            {footer && <div className="flex shrink-0 gap-2 border-t px-6 py-3">{footer}</div>}
-          </div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel id="detail" defaultSize={`${100 - listSize}%`} minSize="35%">
-          {detailScroll === "columns" ? (
-            <div key={pathname} className="@container flex h-full flex-col gap-6 p-6 *:shrink-0">
-              {detail}
-            </div>
-          ) : (
-            <ScrollArea
-              key={pathname}
-              className="h-full [&_[data-slot=scroll-area-viewport]>div]:block!"
-            >
-              <div className="@container flex min-h-[calc(100svh-3rem)] flex-col gap-6 p-6 pb-24 *:shrink-0">
-                {detail}
-              </div>
-            </ScrollArea>
-          )}
-        </ResizablePanel>
-      </ResizablePanelGroup>
+    <div ref={setBox} className="h-[calc(100svh-3rem)]">
+      {single ? (
+        open ? (
+          detailPane
+        ) : (
+          listPane
+        )
+      ) : (
+        <ResizablePanelGroup
+          orientation="horizontal"
+          defaultLayout={layout.defaultLayout}
+          onLayoutChanged={layout.onLayoutChanged}
+        >
+          <ResizablePanel id="liste" defaultSize={`${listSize}%`} minSize="300px" maxSize="55%">
+            {listPane}
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel id="detail" defaultSize={`${100 - listSize}%`} minSize="35%">
+            {detailPane}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
     </div>
   );
 }
+
+/** En dessous, liste et détail ne tiennent pas côte à côte (300 px + un détail lisible). */
+const NARROW = 760;
 
 type HeaderProps = {
   /** Le nom, ou le champ qui le modifie (variante C, D239). */

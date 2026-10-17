@@ -1,6 +1,7 @@
 import type {
   DragCancelEvent,
   DragEndEvent,
+  DraggableAttributes,
   DragStartEvent,
   DropAnimation,
   Modifiers,
@@ -49,6 +50,8 @@ import { createPortal } from "react-dom";
 // Sortable Item Context
 const SortableItemContext = createContext<{
   listeners: DraggableSyntheticListeners | undefined;
+  /** Rôle, tabIndex, description : posés sur la poignée, seule à répondre au clavier. */
+  attributes?: DraggableAttributes;
   isDragging?: boolean;
   disabled?: boolean;
 }>({
@@ -345,7 +348,9 @@ function SortableItem({
   const Comp = asChild ? Slot.Root : "div";
 
   return (
-    <SortableItemContext.Provider value={{ listeners, isDragging: isSortableDragging, disabled }}>
+    <SortableItemContext.Provider
+      value={{ listeners, attributes, isDragging: isSortableDragging, disabled }}
+    >
       <Comp
         data-slot="sortable-item"
         data-value={value}
@@ -353,7 +358,6 @@ function SortableItem({
         data-disabled={disabled}
         ref={setNodeRef}
         style={style}
-        {...attributes}
         className={cn(isSortableDragging && "z-50 opacity-50", disabled && "opacity-50", className)}
         {...props}
       >
@@ -375,7 +379,7 @@ function SortableItemHandle({
   children,
   ...props
 }: SortableItemHandleProps) {
-  const { listeners, isDragging, disabled } = useContext(SortableItemContext);
+  const { listeners, attributes, isDragging, disabled } = useContext(SortableItemContext);
 
   const Comp = asChild ? Slot.Root : "div";
 
@@ -384,6 +388,7 @@ function SortableItemHandle({
       data-slot="sortable-item-handle"
       data-dragging={isDragging}
       data-disabled={disabled}
+      {...attributes}
       {...listeners}
       className={cn(cursor && (isDragging ? "cursor-grabbing!" : "cursor-grab!"), className)}
       {...props}
