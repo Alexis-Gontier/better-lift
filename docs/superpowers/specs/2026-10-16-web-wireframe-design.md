@@ -226,13 +226,13 @@ et D199 (style), qui seront repris après validation du wireframe.
   carte dans les deux thèmes), couleurs relues au changement de thème. En sombre, les champs
   remplis (D250) montent d'un cran (`input/70`) pour se distinguer de la carte et du survol.
 - **D260 — Les états de `/routines` et le panneau sans routine ouverte** (2026-10-18). Rien
-  d'ouvert : une **vue d'ensemble** plutôt qu'une consigne, avec les compteurs (routines, dossiers),
-  « Pas faites depuis longtemps » (trois routines, jamais faite d'abord, chacune ouvre la routine),
-  les « Muscles couverts » par l'ensemble, et l'astuce du glisser vers un dossier. `vide` : la liste
+  d'ouvert : un état vide franc (« Aucune routine ouverte », choisir dans la liste ou créer, bouton
+  Nouvelle routine en contour). Une vue d'ensemble (routines à refaire, muscles couverts) a été
+  essayée puis retirée. `vide` : la liste
   le dit d'une ligne, la droite guide la première création en trois étapes et porte le bouton.
   `chargement` : les squelettes ont la forme réelle (recherche, deux dossiers et leurs cartes ;
-  l'éditeur avec son nom, ses cartes et sa colonne de droite). `erreur` : seule la liste le dit,
-  la droite reste vide ; « Réessayer » passe sous le message (pour toutes les pages), car dans une
+  l'éditeur avec son nom, ses cartes et sa colonne de droite) ; sans routine ouverte, la droite
+  attend la liste. `erreur` : seule la liste le dit, la droite reste vide ; « Réessayer » passe sous le message (pour toutes les pages), car dans une
   colonne étroite le titre glissait sous le bouton en coin.
 
 ## 3. Coquille
