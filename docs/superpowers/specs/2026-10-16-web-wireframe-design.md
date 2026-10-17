@@ -148,6 +148,14 @@ et D199 (style), qui seront repris après validation du wireframe.
   plutôt que l'« Abandon » de la traduction de Hevy. C'est la seule couleur du wireframe : elle
   porte un sens. Poignée 28 px, repos et menu ⋯ rapprochés, *Ajouter un exercice* sur toute la
   largeur.
+- **D250 — Éditeur de routine resserré** (suite de la critique du 2026-10-17, P1 n° 1 et 2).
+  Le nom se modifie dans la tête du panneau (plus de champ en double), le dossier est une liste
+  sous le nom, suivie des chiffres en une ligne (exercices · séries · durée · volume prévu ·
+  dernière fois) ; les notes sont repliées derrière *Ajouter une note*. Le premier exercice
+  passe de ~520 px à ~240 px du haut. **Un champ modifiable a un fond teinté, sans contour** :
+  nom, dossier, repos, charge, répétitions, type de série ; *Ajouter une série* en bouton
+  rempli ; ✕ en encre atténuée. « Dernière fois » a une largeur fixe : les champs restent près
+  de l'étiquette de série.
 
 ## 3. Coquille
 

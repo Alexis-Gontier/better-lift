@@ -98,7 +98,8 @@ export function ListDetailPage({ title, tabs, actions, storageId, detail, childr
 type HeaderProps = {
   /** Le nom, ou le champ qui le modifie (variante C, D239). */
   title: ReactNode;
-  subtitle?: string;
+  /** Une ligne de texte, ou des contrôles (le dossier d'une routine, D250). */
+  subtitle?: ReactNode;
   /** Actions à droite du titre ; l'action principale en dernier. */
   actions?: ReactNode;
   /** Onglets de l'élément ouvert (D236). */
@@ -118,9 +119,9 @@ export function DetailHeader({ title, subtitle, actions, tabs }: HeaderProps) {
       )}
     >
       <div className="flex min-h-9 items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h2 className="truncate font-medium text-2xl tracking-tight">{title}</h2>
-          {subtitle && <p className="text-muted-foreground text-sm">{subtitle}</p>}
+          {subtitle && <div className="text-muted-foreground text-sm">{subtitle}</div>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>

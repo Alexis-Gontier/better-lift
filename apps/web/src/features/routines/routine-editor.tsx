@@ -16,7 +16,7 @@ import { ExerciseThumb } from "@/components/exercise-media";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -62,11 +61,19 @@ import {
   unlink,
 } from "./routine-draft";
 
+/**
+ * La marque d'un champ modifiable dans l'éditeur (D250) : un fond teinté, sans contour. On voit
+ * d'emblée ce qui se modifie, sans le mur de bordures ; le focus pose l'anneau.
+ */
+const filled =
+  "border-transparent bg-muted/70 shadow-none hover:bg-muted dark:bg-input/40 dark:hover:bg-input/60";
+
 /** Les repos proposés ; la valeur de la routine s'y ajoute si elle n'y est pas. */
 const RESTS = [0, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240, 300];
 
 /** Les colonnes d'une ligne de série : type, dernière fois, charge, répétitions, retrait. */
-const SET_GRID = "grid grid-cols-[2.5rem_1fr_9rem_9rem_2rem] items-center gap-2";
+// « Dernière fois » a une largeur fixe : les champs restent près de l'étiquette de série.
+const SET_GRID = "grid grid-cols-[2.25rem_6.5rem_8.5rem_8.5rem_1.75rem] items-center gap-3";
 
 /** « 25 kg × 15 » : la série de même rang à la dernière séance, ou la dernière connue. */
 function lastTime(slug: string, i: number): string {
@@ -99,10 +106,11 @@ function SetField({
   onChange: (value: string) => void;
 }) {
   return (
-    <InputGroup className="w-36">
+    <InputGroup className={cn("w-34", filled)}>
       <InputGroupAddon>
         <InputGroupButton
           size="icon-xs"
+          className="text-muted-foreground"
           aria-label={`Moins : ${label}`}
           onClick={() => onChange(stepValue(value, -step, min))}
         >
@@ -117,7 +125,7 @@ function SetField({
         placeholder="—"
         aria-label={label}
         // Sans les flèches natives : les boutons − / + les remplacent.
-        className="text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="text-center font-medium tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
@@ -125,6 +133,7 @@ function SetField({
         <InputGroupText>{unit}</InputGroupText>
         <InputGroupButton
           size="icon-xs"
+          className="text-muted-foreground"
           aria-label={`Plus : ${label}`}
           onClick={() => onChange(stepValue(value, step, min))}
         >
@@ -162,13 +171,14 @@ function SetTypeButton({
   onChange: (type: MockSet["type"]) => void;
 }) {
   const current = set.type ?? "normal";
+  const typeName = SET_TYPES.find((t) => t.value === current)?.label ?? "Normale";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="secondary"
           size="icon-sm"
-          aria-label={`Type de la série ${index + 1}`}
+          aria-label={`Type de la série ${index + 1} : ${typeName}`}
           className={cn("font-semibold tabular-nums", setTone(set.type))}
         >
           {label}
@@ -270,7 +280,7 @@ function ExerciseEditor({
                 value={String(exercise.restSeconds)}
                 onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
               >
-                <SelectTrigger size="sm" aria-label="Repos" className="w-32">
+                <SelectTrigger size="sm" aria-label="Repos" className={cn("w-32", filled)}>
                   <Timer className="text-muted-foreground" />
                   <SelectValue />
                 </SelectTrigger>
@@ -351,7 +361,7 @@ function ExerciseEditor({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={`Retirer la série ${i + 1}`}
-                className="text-muted-foreground"
+                className="text-muted-foreground/70 hover:text-foreground"
                 disabled={exercise.sets.length === 1}
                 onClick={() =>
                   onChange({ ...exercise, sets: exercise.sets.filter((_, j) => j !== i) })
@@ -367,7 +377,7 @@ function ExerciseEditor({
 
         <div className="p-3">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="w-full"
             onClick={() => onChange({ ...exercise, sets: [...exercise.sets, { ...last }] })}
@@ -380,18 +390,101 @@ function ExerciseEditor({
   );
 }
 
+/** Le nom de la routine, modifiable dans la tête du panneau (D250) : pas de champ en double. */
+export function RoutineNameInput({
+  draft,
+  onChange,
+  autoFocus = false,
+}: {
+  draft: Draft;
+  onChange: (update: (d: Draft) => Draft) => void;
+  autoFocus?: boolean;
+}) {
+  return (
+    <Input
+      aria-label="Nom de la routine"
+      placeholder="Sans nom"
+      autoFocus={autoFocus}
+      className={cn("-ml-2 h-10 w-full max-w-xl px-2 font-medium text-2xl md:text-2xl", filled)}
+      value={draft.name}
+      onChange={(e) => onChange((d) => ({ ...d, name: e.target.value }))}
+    />
+  );
+}
+
+/** Sous le nom : le dossier, puis ce que la routine représente, en une ligne. */
+export function RoutineMeta({
+  draft,
+  onChange,
+  figures,
+}: {
+  draft: Draft;
+  onChange: (update: (d: Draft) => Draft) => void;
+  figures: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <Select value={draft.folder} onValueChange={(folder) => onChange((d) => ({ ...d, folder }))}>
+        <SelectTrigger size="sm" aria-label="Dossier" className={cn("-ml-2", filled)}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {FOLDERS.map((f) => (
+              <SelectItem key={f} value={f}>
+                {f}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      {figures}
+    </div>
+  );
+}
+
+/** Les notes de la routine, repliées tant qu'il n'y en a pas (D250). */
+function RoutineNotes({
+  draft,
+  onChange,
+}: {
+  draft: Draft;
+  onChange: (update: (d: Draft) => Draft) => void;
+}) {
+  const [open, setOpen] = useState(draft.notes !== "");
+  if (!open)
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-2 self-start text-muted-foreground"
+        onClick={() => setOpen(true)}
+      >
+        <Plus data-icon="inline-start" /> Ajouter une note
+      </Button>
+    );
+  return (
+    <Textarea
+      aria-label="Notes de la routine"
+      placeholder="Échauffement, consignes…"
+      autoFocus={draft.notes === ""}
+      className={cn("min-h-16", filled)}
+      value={draft.notes}
+      onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value }))}
+    />
+  );
+}
+
 /**
- * Les champs d'une routine : nom, dossier, notes, puis les exercices à réordonner. Ni en-tête
- * ni enregistrement : le panneau qui l'affiche décide quand on enregistre (D243).
+ * Le corps de l'éditeur : les notes, puis les exercices à réordonner. Le nom et le dossier
+ * vivent dans la tête du panneau ; le panneau décide quand on enregistre (D243, D250).
  */
 export function RoutineFields({
   draft,
   onChange,
-  autoFocusName = false,
 }: {
   draft: Draft;
   onChange: (update: (d: Draft) => Draft) => void;
-  autoFocusName?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
 
@@ -400,53 +493,7 @@ export function RoutineFields({
 
   return (
     <>
-      <Card>
-        <CardContent>
-          <FieldGroup>
-            <div className="grid gap-4 @lg:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor="routine-name">Nom</FieldLabel>
-                <Input
-                  id="routine-name"
-                  placeholder="Push A"
-                  autoFocus={autoFocusName}
-                  value={draft.name}
-                  onChange={(e) => onChange((d) => ({ ...d, name: e.target.value }))}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="routine-folder">Dossier</FieldLabel>
-                <Select
-                  value={draft.folder}
-                  onValueChange={(folder) => onChange((d) => ({ ...d, folder }))}
-                >
-                  <SelectTrigger id="routine-folder" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {FOLDERS.map((f) => (
-                        <SelectItem key={f} value={f}>
-                          {f}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            <Field>
-              <FieldLabel htmlFor="routine-notes">Notes</FieldLabel>
-              <Textarea
-                id="routine-notes"
-                placeholder="Échauffement, consignes…"
-                value={draft.notes}
-                onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value }))}
-              />
-            </Field>
-          </FieldGroup>
-        </CardContent>
-      </Card>
+      <RoutineNotes draft={draft} onChange={onChange} />
 
       {/* Réordonnables à la poignée, à la souris ou au clavier (Espace, flèches, Espace). */}
       <Sortable

@@ -24,9 +24,9 @@ import {
 import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
-import { RoutineSummary } from "./routine-detail";
+import { RoutineFigures } from "./routine-detail";
 import { canSave, type Draft, fromDraft, isDirty, toDraft } from "./routine-draft";
-import { RoutineFields } from "./routine-editor";
+import { RoutineFields, RoutineMeta, RoutineNameInput } from "./routine-editor";
 
 /** Le menu ⋯ de la routine : ce qui ne se modifie pas champ par champ. */
 function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () => void }) {
@@ -97,9 +97,9 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
 const saved = () => toast.success("Routine enregistrée", { id: "routine-enregistree" });
 
 /**
- * La routine ouverte, toujours modifiable (D243, variante A de D239) : le détail EST l'éditeur,
- * en champs nus. Annuler / Enregistrer prennent la place du menu dès que la copie diffère de la
- * routine enregistrée ; le résumé chiffré suit la saisie.
+ * La routine ouverte, toujours modifiable (D243, D250) : le détail EST l'éditeur ; le nom se
+ * modifie dans la tête, le dossier et les chiffres dessous. Annuler / Enregistrer prennent la
+ * place du menu dès que la copie diffère de la routine enregistrée.
  */
 export function RoutinePane({ routine }: { routine: MockRoutine }) {
   const [draft, setDraft] = useState<Draft>(() => toDraft(routine));
@@ -109,8 +109,14 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
   return (
     <>
       <DetailHeader
-        title={draft.name.trim() || "Sans nom"}
-        subtitle={draft.folder}
+        title={<RoutineNameInput draft={draft} onChange={setDraft} />}
+        subtitle={
+          <RoutineMeta
+            draft={draft}
+            onChange={setDraft}
+            figures={<RoutineFigures routine={fromDraft(draft, routine)} />}
+          />
+        }
         actions={
           dirty ? (
             <>
@@ -134,7 +140,6 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
           )
         }
       />
-      <RoutineSummary routine={fromDraft(draft, routine)} />
       <RoutineFields draft={draft} onChange={setDraft} />
       {guard}
     </>
@@ -163,8 +168,16 @@ export function RoutinePaneNew() {
   return (
     <>
       <DetailHeader
-        title={draft.name.trim() || "Nouvelle routine"}
-        subtitle={draft.folder}
+        title={<RoutineNameInput draft={draft} onChange={setDraft} autoFocus />}
+        subtitle={
+          <RoutineMeta
+            draft={draft}
+            onChange={setDraft}
+            figures={
+              <RoutineFigures routine={fromDraft(draft, { id: "nouvelle", lastDone: null })} />
+            }
+          />
+        }
         actions={
           <>
             <Button
@@ -180,7 +193,7 @@ export function RoutinePaneNew() {
           </>
         }
       />
-      <RoutineFields draft={draft} onChange={setDraft} autoFocusName />
+      <RoutineFields draft={draft} onChange={setDraft} />
       {guard}
     </>
   );

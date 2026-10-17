@@ -19,7 +19,7 @@ import type { MockRoutine } from "@/mocks/routines";
 import { TODAY } from "@/mocks/today";
 
 /** Les muscles d'une routine, sans doublon, dans l'ordre des exercices. */
-export function routineMuscles(routine: MockRoutine): string[] {
+function routineMuscles(routine: MockRoutine): string[] {
   const muscles = routine.exercises.map((e) => exerciseBySlug(e.slug)?.muscle ?? "");
   return [...new Set(muscles.filter(Boolean))];
 }
