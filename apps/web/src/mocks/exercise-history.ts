@@ -1,9 +1,9 @@
 import type { Performance } from "./exercise-stats";
-import { realWorkouts } from "./workouts";
+import { workouts } from "./generated-workouts";
 
-/** Les exécutions réelles d'un exercice, dans l'ordre chronologique (la plus ancienne d'abord). */
+/** Les exécutions d'un exercice, dans l'ordre chronologique (la plus ancienne d'abord). */
 export function exerciseHistory(slug: string): Performance[] {
-  return realWorkouts
+  return workouts
     .flatMap((w) =>
       w.exercises
         .filter((e) => e.slug === slug)

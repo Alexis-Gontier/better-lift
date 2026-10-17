@@ -1,5 +1,5 @@
+import { workouts } from "./generated-workouts";
 import { doneRecords, doneVolume, sessionDetail } from "./history";
-import { realWorkouts } from "./workouts";
 
 export type MockSession = {
   id: string;
@@ -11,10 +11,10 @@ export type MockSession = {
 };
 
 /**
- * Les séances réelles, la plus récente d'abord. Volume et records se déduisent des séries
+ * Les séances (vraies et inventées), la plus récente d'abord. Volume et records se déduisent des séries
  * faites : liste, détail et Accueil disent le même chiffre.
  */
-export const mockSessions: MockSession[] = realWorkouts.map((w) => {
+export const mockSessions: MockSession[] = workouts.map((w) => {
   const session: MockSession = {
     id: w.id,
     date: w.date,

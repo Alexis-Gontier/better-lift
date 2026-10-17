@@ -1,4 +1,4 @@
-import { lastSets } from "./workouts";
+import { lastSets, workouts } from "./generated-workouts";
 
 /** Une série ; charge `null` : pas encore de charge connue pour cet exercice. */
 export type MockSet = { kg: number | null; reps: number };
@@ -17,6 +17,9 @@ export type MockRoutine = {
   notes?: string;
   exercises: MockRoutineExercise[];
 };
+
+/** La date de la dernière séance d'une routine, ou `null` si elle n'a jamais été faite. */
+const lastDone = (name: string) => workouts.find((w) => w.routine === name)?.date ?? null;
 
 export const FOLDERS = ["Push Pull Legs", "Full body"] as const;
 
@@ -40,7 +43,7 @@ export const mockRoutines: MockRoutine[] = [
     id: "1",
     name: "Push",
     folder: "Push Pull Legs",
-    lastDone: "2026-10-13",
+    lastDone: lastDone("Push"),
     exercises: [
       exercise("lever-seated-fly", 90, [15, 15, 15]),
       exercise("lever-chest-press", 150, [10, 10, 10]),
@@ -55,7 +58,7 @@ export const mockRoutines: MockRoutine[] = [
     id: "2",
     name: "Pull",
     folder: "Push Pull Legs",
-    lastDone: "2026-07-26",
+    lastDone: lastDone("Pull"),
     exercises: [
       exercise("cable-one-arm-curl", 120, [12, 12, 12]),
       exercise("cable-hammer-curl-with-rope", 90, [10, 10, 10, 10]),
@@ -70,7 +73,7 @@ export const mockRoutines: MockRoutine[] = [
     id: "3",
     name: "Full body",
     folder: "Full body",
-    lastDone: null,
+    lastDone: lastDone("Full body"),
     exercises: [
       exercise("barbell-bench-press", 180, [6, 6, 6]),
       exercise("cable-pulldown", 150, [10, 10, 10]),
@@ -85,7 +88,7 @@ export const mockRoutines: MockRoutine[] = [
     id: "4",
     name: "Legs",
     folder: "Push Pull Legs",
-    lastDone: "2026-07-24",
+    lastDone: lastDone("Legs"),
     exercises: [
       exercise("sled-hack-squat", 180, [5, 5, 5, 5]),
       exercise("hack-calf-raise", 120, [15, 15, 15, 15]),

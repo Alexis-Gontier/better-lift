@@ -281,10 +281,3 @@ export const realWorkouts: RealWorkout[] = [
     ],
   },
 ];
-
-/** Les dernières séries faites d'un exercice, ou `undefined` s'il n'a jamais été fait. */
-export function lastSets(slug: string): RealSet[] | undefined {
-  return realWorkouts
-    .find((w) => w.exercises.some((e) => e.slug === slug))
-    ?.exercises.find((e) => e.slug === slug)?.sets;
-}

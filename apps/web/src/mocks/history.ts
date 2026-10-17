@@ -1,7 +1,8 @@
 import { estimate1rm } from "./exercise-stats";
+import { workouts } from "./generated-workouts";
 import { type MockRoutineExercise, type MockSet, mockRoutines } from "./routines";
 import type { MockSession } from "./sessions";
-import { type RealSet, realWorkouts } from "./workouts";
+import type { RealSet } from "./workouts";
 
 /** Une série faite ; `record` dit qu'elle a battu un record à ce moment-là. */
 type DoneSet = MockSet & { record?: boolean };
@@ -38,7 +39,7 @@ const oneRm = ([kg, reps]: RealSet) => (kg === null ? 0 : estimate1rm(kg, reps))
 const recordSets: Map<string, number> = (() => {
   const best = new Map<string, number>();
   const out = new Map<string, number>();
-  for (const w of [...realWorkouts].reverse()) {
+  for (const w of [...workouts].reverse()) {
     for (const e of w.exercises) {
       const values = e.sets.map(oneRm);
       const top = Math.max(...values);
@@ -57,7 +58,7 @@ const restOf = (slug: string) =>
 
 /** Les séries réellement faites, avec leurs records. */
 export function sessionDetail(session: MockSession): SessionDetail {
-  const workout = realWorkouts.find((w) => w.id === session.id);
+  const workout = workouts.find((w) => w.id === session.id);
   const exercises = (workout?.exercises ?? []).map((e) => {
     const record = recordSets.get(`${session.id}|${e.slug}`);
     return {
