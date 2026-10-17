@@ -64,8 +64,8 @@ et D199 (style), qui seront repris après validation du wireframe.
 
 ## 3. Coquille
 
-> **État au 2026-10-16** : sidebar et header **vidés** à la demande (il ne reste que la
-> structure et le bouton de repli). Le contenu décrit ci-dessous est la cible ; il revient pas à
+> **État au 2026-10-17** : sidebar réduite à ses liens (avec Paramètres), header réduit au
+> bouton de repli suivi du **fil d'Ariane** (le nom réel sur les pages de détail). Le contenu décrit ci-dessous est la cible ; il revient pas à
 > pas, validé élément par élément. La palette s'ouvre par Ctrl K.
 
 ```
