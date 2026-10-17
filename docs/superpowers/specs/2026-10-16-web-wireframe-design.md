@@ -183,6 +183,12 @@ et D199 (style), qui seront repris après validation du wireframe.
   silhouette des muscles travaillés (`bodyMuscles`), séries de travail par muscle en barres
   (`setsByMuscle`, échauffements exclus, testés), dernière fois — puis *Réglages* : dossier et
   notes. Tout suit la saisie.
+- **D254 — Colonne de droite en cartes, filet vertical, titre entier** (2026-10-18). Une carte
+  par sujet : *Chiffres* (avec la dernière fois), *Muscles travaillés*, *Réglages*. Un filet
+  vertical sépare les exercices de la colonne, de la tête au bas du panneau. Les cartes de la
+  colonne ne rétrécissent pas (`*:shrink-0`) quand sa hauteur est bornée. Le titre d'une
+  `DetailHeader` ne se coupe (`truncate`) que s'il est un texte : un titre-champ garde son bord
+  et son anneau de focus.
 
 ## 3. Coquille
 

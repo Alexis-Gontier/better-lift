@@ -100,12 +100,15 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
  */
 function EditorLayout({ main, aside }: { main: React.ReactNode; aside: React.ReactNode }) {
   return (
-    <div className="grid items-start gap-6 @3xl:grid-cols-[minmax(0,1fr)_17rem]">
-      <div className="flex min-w-0 flex-col gap-3">{main}</div>
-      {/* Collée sous la tête, jamais plus haute que l'écran : elle défile seule si besoin. */}
-      <aside className="flex flex-col gap-4 @3xl:sticky @3xl:top-24 @3xl:max-h-[calc(100svh-9rem)] @3xl:overflow-y-auto @3xl:p-px">
-        {aside}
-      </aside>
+    // Le filet de la colonne descend jusqu'au bas du panneau (son marge basse comprise).
+    <div className="grid gap-6 @3xl:-mb-24 @3xl:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="flex min-w-0 flex-col gap-3 self-start @3xl:pb-24">{main}</div>
+      <div className="@3xl:-my-6 @3xl:border-l @3xl:py-6 @3xl:pb-24 @3xl:pl-6">
+        {/* Collée sous la tête, jamais plus haute que l'écran : elle défile seule si besoin. */}
+        <aside className="flex flex-col gap-4 *:shrink-0 @3xl:sticky @3xl:top-24 @3xl:max-h-[calc(100svh-9rem)] @3xl:overflow-y-auto @3xl:p-px">
+          {aside}
+        </aside>
+      </div>
     </div>
   );
 }

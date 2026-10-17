@@ -1,5 +1,5 @@
 import { BodyMap } from "@/components/body-map";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -84,8 +84,8 @@ function Muscles({ routine }: { routine: MockRoutine }) {
 }
 
 /**
- * La colonne de droite de l'éditeur (D253) : ce que la routine représente — chiffres, muscles —
- * puis ses réglages, dossier et notes, qui ne pèsent plus en tête de l'éditeur.
+ * La colonne de droite de l'éditeur (D253, D254), une carte par sujet : les chiffres, les
+ * muscles travaillés, puis les réglages — dossier et notes —, qui ne pèsent plus en tête.
  */
 export function RoutineOverview({
   routine,
@@ -101,17 +101,25 @@ export function RoutineOverview({
     <>
       <Card size="sm">
         <CardHeader>
-          <CardTitle>Aperçu</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          <Figures routine={routine} />
-          <Muscles routine={routine} />
-          <p className="text-muted-foreground text-xs">
+          <CardTitle>Chiffres</CardTitle>
+          <CardDescription>
             Dernière fois :{" "}
             {formatDaysAgo(
               routine.lastDone ? daysSince(routine.lastDone, TODAY) : null,
             ).toLowerCase()}
-          </p>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Figures routine={routine} />
+        </CardContent>
+      </Card>
+      <Card size="sm">
+        <CardHeader>
+          <CardTitle>Muscles travaillés</CardTitle>
+          <CardDescription>Séries de travail, échauffements exclus</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Muscles routine={routine} />
         </CardContent>
       </Card>
       <Card size="sm">

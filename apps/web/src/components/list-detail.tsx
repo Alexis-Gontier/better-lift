@@ -124,7 +124,15 @@ export function DetailHeader({ title, subtitle, actions, tabs }: HeaderProps) {
     >
       <div className="flex min-h-9 items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h2 className="truncate font-medium text-2xl tracking-tight">{title}</h2>
+          <h2
+            className={cn(
+              "font-medium text-2xl tracking-tight",
+              // Un texte se coupe en « … » ; un champ garde son bord et son anneau de focus.
+              typeof title === "string" && "truncate",
+            )}
+          >
+            {title}
+          </h2>
           {subtitle && <div className="text-muted-foreground text-sm">{subtitle}</div>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

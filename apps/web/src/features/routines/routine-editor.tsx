@@ -456,7 +456,7 @@ export function RoutineNameInput({
       placeholder="Sans nom"
       autoFocus={autoFocus}
       className={cn(
-        "-ml-2 h-10 w-auto min-w-40 max-w-full px-2 font-medium text-2xl field-sizing-content md:text-2xl",
+        "h-11 w-auto min-w-40 max-w-full px-2 font-medium text-2xl field-sizing-content md:text-2xl",
         filled,
       )}
       value={draft.name}
