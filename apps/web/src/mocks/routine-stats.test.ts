@@ -5,7 +5,6 @@ import {
   estimateMinutes,
   groupSupersets,
   plannedVolume,
-  setsByMuscle,
 } from "./routine-stats";
 import type { MockRoutineExercise } from "./routines";
 
@@ -56,18 +55,6 @@ describe("muscles d'une routine", () => {
     slug,
     restSeconds: 90,
     sets: types.map((type) => ({ kg: 10, reps: 10, ...(type ? { type } : {}) })),
-  });
-
-  it("compte les séries de travail par muscle, sans les échauffements", () => {
-    const exercises = [
-      ex("curl", ["warmup", undefined, undefined]),
-      ex("tirage", [undefined, undefined, undefined]),
-      ex("inconnu", [undefined]),
-    ];
-    expect(setsByMuscle(exercises, infoOf)).toEqual([
-      { muscle: "Grand dorsal", sets: 3 },
-      { muscle: "Biceps", sets: 2 },
-    ]);
   });
 
   it("ne colore en secondaire que ce qui n'est pas déjà principal", () => {

@@ -189,6 +189,13 @@ et D199 (style), qui seront repris après validation du wireframe.
   colonne ne rétrécissent pas (`*:shrink-0`) quand sa hauteur est bornée. Le titre d'une
   `DetailHeader` ne se coupe (`truncate`) que s'il est un texte : un titre-champ garde son bord
   et son anneau de focus.
+- **D255 — Deux défilements, mini-cartes, silhouette seule** (2026-10-18, révise D253–D254).
+  `ListDetailPage` prend `detailScroll="columns"` sur Routines : le panneau ne défile plus d'un
+  bloc ; sous la tête fixe, les exercices et la colonne de droite ont chacun leur défilement
+  (`overscroll-contain`) ; étroit, une seule colonne défile. Les chiffres sont des mini-cartes
+  (durée, séries, volume prévu, exercices, puis la dernière fois sur toute la largeur), hors de
+  toute carte englobante. *Muscles travaillés* ne garde que la silhouette, plus petite : la liste
+  des séries par muscle (`setsByMuscle`) est retirée.
 
 ## 3. Coquille
 

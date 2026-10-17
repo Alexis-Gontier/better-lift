@@ -95,20 +95,18 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
 }
 
 /**
- * Deux colonnes dès que le panneau le permet (D253) : les exercices, et à droite l'aperçu et les
- * réglages, collés sous la tête pendant le défilement. Étroit, l'aperçu passe sous les exercices.
+ * Sous la tête fixe, deux colonnes qui défilent chacune de leur côté (D255) : les exercices, et à
+ * droite les chiffres, les muscles et les réglages. Étroit, une seule colonne qui défile.
  */
 function EditorLayout({ main, aside }: { main: React.ReactNode; aside: React.ReactNode }) {
   return (
-    // Le filet de la colonne descend jusqu'au bas du panneau (son marge basse comprise).
-    <div className="grid gap-6 @3xl:-mb-24 @3xl:grid-cols-[minmax(0,1fr)_18rem]">
-      <div className="flex min-w-0 flex-col gap-3 self-start @3xl:pb-24">{main}</div>
-      <div className="@3xl:-my-6 @3xl:border-l @3xl:py-6 @3xl:pb-24 @3xl:pl-6">
-        {/* Collée sous la tête, jamais plus haute que l'écran : elle défile seule si besoin. */}
-        <aside className="flex flex-col gap-4 *:shrink-0 @3xl:sticky @3xl:top-24 @3xl:max-h-[calc(100svh-9rem)] @3xl:overflow-y-auto @3xl:p-px">
-          {aside}
-        </aside>
+    <div className="-mx-6 -mt-6 -mb-6 grid min-h-0 flex-1 overflow-y-auto @3xl:grid-cols-[minmax(0,1fr)_18rem] @3xl:grid-rows-[minmax(0,1fr)] @3xl:overflow-hidden">
+      <div className="flex min-w-0 flex-col gap-3 px-6 pt-6 pb-6 *:shrink-0 @3xl:overflow-y-auto @3xl:overscroll-contain @3xl:pb-24">
+        {main}
       </div>
+      <aside className="flex flex-col gap-4 px-6 pb-24 *:shrink-0 @3xl:overflow-y-auto @3xl:overscroll-contain @3xl:border-l @3xl:pt-6">
+        {aside}
+      </aside>
     </div>
   );
 }

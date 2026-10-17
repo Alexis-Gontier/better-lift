@@ -1,5 +1,5 @@
 import { BodyMap } from "@/components/body-map";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -12,73 +12,52 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatDaysAgo, formatKg, formatMinutes } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
-import {
-  bodyMuscles,
-  daysSince,
-  estimateMinutes,
-  plannedVolume,
-  setsByMuscle,
-} from "@/mocks/routine-stats";
+import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
 import { FOLDERS, type MockRoutine } from "@/mocks/routines";
 import { TODAY } from "@/mocks/today";
 import type { Draft } from "./routine-draft";
 import { filled } from "./routine-editor";
 
-/** Les chiffres de la routine, en tuiles (D253) : ils suivent la saisie. */
+/** Les chiffres de la routine, une mini-carte chacun (D255) : ils suivent la saisie. */
 function Figures({ routine }: { routine: MockRoutine }) {
   const sets = routine.exercises.reduce((n, e) => n + e.sets.length, 0);
   const figures = [
-    { label: "Durée estimée", value: `~${formatMinutes(estimateMinutes(routine.exercises))}` },
+    { label: "Durée", value: `~${formatMinutes(estimateMinutes(routine.exercises))}` },
     { label: "Séries", value: String(sets) },
     { label: "Volume prévu", value: formatKg(plannedVolume(routine.exercises)) },
     { label: "Exercices", value: String(routine.exercises.length) },
   ];
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+    <div className="grid grid-cols-2 gap-2">
       {figures.map((f) => (
-        <div key={f.label} className="flex flex-col gap-0.5">
+        <Card key={f.label} size="sm" className="gap-0.5 px-3">
           <span className="text-muted-foreground text-xs">{f.label}</span>
-          <span className="font-semibold text-lg tabular-nums">{f.value}</span>
-        </div>
+          <span className="font-semibold tabular-nums">{f.value}</span>
+        </Card>
       ))}
+      <Card size="sm" className="col-span-2 flex-row items-baseline justify-between gap-2 px-3">
+        <span className="text-muted-foreground text-xs">Dernière fois</span>
+        <span className="font-medium text-sm">
+          {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
+        </span>
+      </Card>
     </div>
   );
 }
 
-/** Ce que la routine fait travailler : la silhouette, puis les séries par muscle en barres. */
+/** Ce que la routine fait travailler : la silhouette seule, en petit (D255). */
 function Muscles({ routine }: { routine: MockRoutine }) {
   const { primary, secondary } = bodyMuscles(routine.exercises, exerciseBySlug);
-  const rows = setsByMuscle(routine.exercises, exerciseBySlug);
-  const max = Math.max(1, ...rows.map((r) => r.sets));
-  if (rows.length === 0)
+  if (primary.length === 0)
     return (
       <p className="text-muted-foreground text-sm">
         Ajoutez un exercice pour voir les muscles travaillés.
       </p>
     );
   return (
-    <div className="flex flex-col gap-4">
-      {/* Hauteur explicite : la silhouette prendrait sinon toute la colonne. */}
-      <div className="mx-auto h-44 w-full max-w-52">
-        <BodyMap primary={primary} secondary={secondary} />
-      </div>
-      <ul className="flex flex-col gap-2">
-        {rows.map((r) => (
-          <li
-            key={r.muscle}
-            className="grid grid-cols-[6.5rem_1fr_1.5rem] items-center gap-2 text-sm"
-          >
-            <span className="truncate">{r.muscle}</span>
-            <span className="h-1.5 rounded-full bg-muted">
-              <span
-                className="block h-full rounded-full bg-foreground/70"
-                style={{ width: `${(r.sets / max) * 100}%` }}
-              />
-            </span>
-            <span className="text-right text-muted-foreground tabular-nums">{r.sets}</span>
-          </li>
-        ))}
-      </ul>
+    // Hauteur explicite : la silhouette prendrait sinon toute la colonne.
+    <div className="mx-auto h-36 w-full max-w-44">
+      <BodyMap primary={primary} secondary={secondary} />
     </div>
   );
 }
@@ -99,24 +78,10 @@ export function RoutineOverview({
 }) {
   return (
     <>
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle>Chiffres</CardTitle>
-          <CardDescription>
-            Dernière fois :{" "}
-            {formatDaysAgo(
-              routine.lastDone ? daysSince(routine.lastDone, TODAY) : null,
-            ).toLowerCase()}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Figures routine={routine} />
-        </CardContent>
-      </Card>
+      <Figures routine={routine} />
       <Card size="sm">
         <CardHeader>
           <CardTitle>Muscles travaillés</CardTitle>
-          <CardDescription>Séries de travail, échauffements exclus</CardDescription>
         </CardHeader>
         <CardContent>
           <Muscles routine={routine} />

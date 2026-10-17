@@ -43,13 +43,27 @@ type Props = {
   detail: ReactNode;
   /** La liste, ou l'état qui la remplace (chargement, vide, erreur). */
   children: ReactNode;
+  /**
+   * `panel` (défaut) : le panneau de détail défile d'un bloc, sa tête collée en haut.
+   * `columns` : le panneau ne défile pas ; le détail découpe ses propres zones de défilement
+   * sous une tête fixe (l'éditeur de routine et sa colonne de droite, D255).
+   */
+  detailScroll?: "panel" | "columns";
 };
 
 /**
  * Page liste | détail sur toute la surface sous l'en-tête (D234, D235). Montée par la route
  * parente : la liste reste en place d'un élément à l'autre, seul le détail change.
  */
-export function ListDetailPage({ title, tabs, actions, storageId, detail, children }: Props) {
+export function ListDetailPage({
+  title,
+  tabs,
+  actions,
+  storageId,
+  detail,
+  children,
+  detailScroll = "panel",
+}: Props) {
   const layout = useDefaultLayout({ id: `liste-detail-${storageId}`, storage: localStorage });
   // Un autre élément repart du haut du panneau.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -85,14 +99,20 @@ export function ListDetailPage({ title, tabs, actions, storageId, detail, childr
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel id="detail" defaultSize="62%" minSize="35%">
-          <ScrollArea
-            key={pathname}
-            className="h-full [&_[data-slot=scroll-area-viewport]>div]:block!"
-          >
-            <div className="@container flex min-h-[calc(100svh-3rem)] flex-col gap-6 p-6 pb-24 *:shrink-0">
+          {detailScroll === "columns" ? (
+            <div key={pathname} className="@container flex h-full flex-col gap-6 p-6 *:shrink-0">
               {detail}
             </div>
-          </ScrollArea>
+          ) : (
+            <ScrollArea
+              key={pathname}
+              className="h-full [&_[data-slot=scroll-area-viewport]>div]:block!"
+            >
+              <div className="@container flex min-h-[calc(100svh-3rem)] flex-col gap-6 p-6 pb-24 *:shrink-0">
+                {detail}
+              </div>
+            </ScrollArea>
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

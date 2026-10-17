@@ -31,6 +31,8 @@ function RoutinesPage() {
         </Button>
       }
       storageId="routines"
+      // L'éditeur et sa colonne de droite défilent chacun de leur côté (D255).
+      detailScroll="columns"
       detail={<Outlet />}
     >
       {state === "chargement" && <RoutineListSkeleton />}
