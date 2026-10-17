@@ -9,6 +9,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useState } from "react";
+import { DragScroll } from "@/components/drag-scroll";
 import { SelectableRow } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
@@ -90,22 +91,24 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
             <Search />
           </InputGroupAddon>
         </InputGroup>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          spacing={2}
-          value={routine}
-          onValueChange={(v) => setRoutine(v || ALL)}
-          className="flex-wrap"
-        >
-          <ToggleGroupItem value={ALL}>Toutes les routines</ToggleGroupItem>
-          {routines.map((r) => (
-            <ToggleGroupItem key={r} value={r}>
-              {r}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <DragScroll>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
+            spacing={2}
+            value={routine}
+            onValueChange={(v) => setRoutine(v || ALL)}
+            className="w-max"
+          >
+            <ToggleGroupItem value={ALL}>Toutes les routines</ToggleGroupItem>
+            {routines.map((r) => (
+              <ToggleGroupItem key={r} value={r}>
+                {r}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </DragScroll>
       </div>
 
       {groups.length === 0 && (

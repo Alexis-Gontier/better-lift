@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ListChecks, Search } from "lucide-react";
 import { useState } from "react";
+import { DragScroll } from "@/components/drag-scroll";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -54,22 +55,24 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
             <Search />
           </InputGroupAddon>
         </InputGroup>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          spacing={2}
-          value={folder}
-          onValueChange={(v) => setFolder(v || ALL)}
-          className="flex-wrap"
-        >
-          <ToggleGroupItem value={ALL}>Tous les dossiers</ToggleGroupItem>
-          {FOLDERS.map((f) => (
-            <ToggleGroupItem key={f} value={f}>
-              {f}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <DragScroll>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
+            spacing={2}
+            value={folder}
+            onValueChange={(v) => setFolder(v || ALL)}
+            className="w-max"
+          >
+            <ToggleGroupItem value={ALL}>Tous les dossiers</ToggleGroupItem>
+            {FOLDERS.map((f) => (
+              <ToggleGroupItem key={f} value={f}>
+                {f}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </DragScroll>
       </div>
       {shown.length === 0 ? (
         <Empty className="border border-dashed">
