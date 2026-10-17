@@ -8,32 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { APPEARANCES, type Appearance, setAppearance, useAppearance } from "@/lib/theme";
 import { SettingsSection, useDraft } from "./settings-section";
-
-type Appearance = "clair" | "sombre" | "systeme";
-const THEME_KEY = "better-lift-theme"; // la clé que lit le script de `index.html`
-
-function currentAppearance(): Appearance {
-  try {
-    const t = localStorage.getItem(THEME_KEY);
-    return t === "dark" ? "sombre" : t === "light" ? "clair" : "systeme";
-  } catch {
-    return "systeme";
-  }
-}
-
-/** Le thème s'applique sur-le-champ ; « Système » suit la préférence de l'appareil. */
-function applyAppearance(a: Appearance) {
-  const dark =
-    a === "sombre" || (a === "systeme" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.classList.toggle("dark", dark);
-  try {
-    if (a === "systeme") localStorage.removeItem(THEME_KEY);
-    else localStorage.setItem(THEME_KEY, a === "sombre" ? "dark" : "light");
-  } catch {
-    // Stockage indisponible : le choix vaut pour la session.
-  }
-}
 
 function Units() {
   const { draft, setDraft, dirty, save } = useDraft({
@@ -102,23 +78,21 @@ function Units() {
 }
 
 function AppearanceSection() {
-  const { draft, setDraft } = useDraft<Appearance>(currentAppearance());
+  const appearance = useAppearance();
   return (
     <SettingsSection title="Apparence" description="Appliquée tout de suite, sur cet appareil.">
       <ToggleGroup
         type="single"
         variant="outline"
-        value={draft}
-        onValueChange={(v) => {
-          if (!v) return;
-          setDraft(v as Appearance);
-          applyAppearance(v as Appearance);
-        }}
+        value={appearance}
+        onValueChange={(v) => v && setAppearance(v as Appearance)}
         className="justify-start"
       >
-        <ToggleGroupItem value="clair">Clair</ToggleGroupItem>
-        <ToggleGroupItem value="sombre">Sombre</ToggleGroupItem>
-        <ToggleGroupItem value="systeme">Système</ToggleGroupItem>
+        {APPEARANCES.map((a) => (
+          <ToggleGroupItem key={a.value} value={a.value}>
+            {a.label}
+          </ToggleGroupItem>
+        ))}
       </ToggleGroup>
     </SettingsSection>
   );
