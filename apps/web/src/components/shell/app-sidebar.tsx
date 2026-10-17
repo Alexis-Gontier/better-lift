@@ -43,6 +43,8 @@ export function AppSidebar() {
                     asChild
                     tooltip={item.title}
                     isActive={isActive(item.to, pathname)}
+                    // Gris par défaut, noir sur la page courante ; même graisse dans les deux cas.
+                    className="font-normal text-muted-foreground data-active:font-normal data-active:text-foreground"
                   >
                     <Link to={item.to}>
                       <item.icon />
