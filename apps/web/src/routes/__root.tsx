@@ -1,6 +1,7 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { ProtoBar } from "@/components/proto/proto-bar";
 import { parseProtoSearch } from "@/components/proto/proto-search";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 declare module "@tanstack/react-router" {
@@ -20,6 +21,8 @@ function Root() {
     <TooltipProvider delayDuration={0}>
       <Outlet />
       <ProtoBar />
+      {/* Au centre : la barre de prototypage occupe le coin droit. */}
+      <Toaster position="bottom-center" />
     </TooltipProvider>
   );
 }
