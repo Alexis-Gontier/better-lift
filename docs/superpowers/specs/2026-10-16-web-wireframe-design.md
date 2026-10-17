@@ -122,6 +122,13 @@ et D199 (style), qui seront repris après validation du wireframe.
   déclare `staticData.proto` : ses variantes, nommées (« Calendrier », « Agenda » plutôt que A, C),
   et si elle répond aux quatre états (`states`, posé une fois sur `_app`). Fusion du parent à
   l'enfant. Sans variante, pas de boutons ; sans rien à changer (pages d'auth), pas de barre.
+- **D246 — Carte d'exercice de l'éditeur de routine.** Poignée de glisser sur toute la hauteur à
+  gauche (colonne séparée par un filet) ; en tête la vignette, le nom, le muscle, le repos en
+  `Select` (valeurs usuelles, « Sans repos ») et le menu ⋯ (Retirer) ; un filet sur toute la
+  largeur ; puis les séries : Série · Dernière fois · Charge (kg) · Répétitions, en `InputGroup`
+  avec l'unité, sans les flèches natives ; *Ajouter une série* sur toute la largeur. Le *Number
+  Field* de ReUI (D228) n'est pas installé : il tire `@base-ui/react` (écarté par D231) et
+  réécrit `label.tsx`.
 
 ## 3. Coquille
 

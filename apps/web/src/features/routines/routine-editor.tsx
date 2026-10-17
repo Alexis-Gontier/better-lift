@@ -1,11 +1,23 @@
-import { GripVertical, Plus, Trash2, X } from "lucide-react";
+import { GripVertical, MoreHorizontal, Plus, Timer, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import {
   Select,
   SelectContent,
@@ -14,9 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { formatLoad, formatRest } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
+import { lastSets } from "@/mocks/generated-workouts";
 import { FOLDERS, type MockRoutineExercise, type MockSet } from "@/mocks/routines";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
 import type { Draft, DraftExercise } from "./routine-draft";
@@ -28,6 +43,60 @@ import type { Draft, DraftExercise } from "./routine-draft";
 const bareField =
   "border-transparent bg-transparent shadow-none hover:border-input focus-visible:border-ring dark:bg-transparent";
 
+/** Le même effet sur un groupe (champ + unité) : la bordure est celle du groupe. */
+const bareGroup = "border-transparent hover:border-input dark:bg-transparent";
+
+/** Les repos proposés ; la valeur de la routine s'y ajoute si elle n'y est pas. */
+const RESTS = [0, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240, 300];
+
+/** « 25 kg × 15 » : la série de même rang à la dernière séance, ou la dernière connue. */
+function lastTime(slug: string, i: number): string {
+  const last = lastSets(slug);
+  const set = last?.[i] ?? last?.at(-1);
+  return set ? `${formatLoad(set[0])} × ${set[1]}` : "—";
+}
+
+function SetField({
+  value,
+  unit,
+  label,
+  bare,
+  step,
+  onChange,
+}: {
+  value: string;
+  unit: string;
+  label: string;
+  bare: boolean;
+  step: number;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <InputGroup className={cn("w-28", bare && bareGroup)}>
+      <InputGroupInput
+        type="number"
+        inputMode="decimal"
+        min={0}
+        step={step}
+        placeholder="—"
+        aria-label={label}
+        // Sans les flèches natives : elles chevauchent l'unité au survol.
+        className="tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <InputGroupAddon align="inline-end">
+        <InputGroupText>{unit}</InputGroupText>
+      </InputGroupAddon>
+    </InputGroup>
+  );
+}
+
+/**
+ * Une carte d'exercice de l'éditeur : la poignée sur toute la hauteur à gauche ; en tête la
+ * vignette, le nom, le repos et le menu ⋯ ; un filet sur toute la largeur ; puis les séries,
+ * face à la dernière fois.
+ */
 function ExerciseEditor({
   exercise,
   bare,
@@ -40,108 +109,138 @@ function ExerciseEditor({
   onRemove: () => void;
 }) {
   const info = exerciseBySlug(exercise.slug);
+  const name = info?.name ?? exercise.slug;
   const setAt = (i: number, patch: Partial<MockSet>) =>
     onChange({
       ...exercise,
       sets: exercise.sets.map((s, j) => (j === i ? { ...s, ...patch } : s)),
     });
   const last = exercise.sets.at(-1) ?? { kg: null, reps: 10 };
-  const field = bare ? bareField : undefined;
+  const rests = RESTS.includes(exercise.restSeconds)
+    ? RESTS
+    : [...RESTS, exercise.restSeconds].sort((x, y) => x - y);
+
   return (
-    <Card size="sm">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {/* Un vrai bouton : sans focus possible, la poignée ne répondrait pas au clavier. */}
-          <SortableItemHandle asChild>
-            <button
-              type="button"
-              aria-label="Déplacer l'exercice"
-              className="flex rounded text-muted-foreground hover:text-foreground"
-            >
-              <GripVertical className="size-4" />
-            </button>
-          </SortableItemHandle>
-          <ExerciseThumb name={info?.name ?? exercise.slug} />
-          {info?.name ?? exercise.slug}
-          {exercise.superset && (
-            <span className="font-normal text-muted-foreground text-xs">
-              · superset {exercise.superset}
+    <Card size="sm" className="flex-row gap-0 py-0">
+      {/* Un vrai bouton : sans focus possible, la poignée ne répondrait pas au clavier. */}
+      <SortableItemHandle asChild>
+        <button
+          type="button"
+          aria-label={`Déplacer : ${name}`}
+          className="flex w-8 shrink-0 cursor-grab items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
+        >
+          <GripVertical className="size-4" />
+        </button>
+      </SortableItemHandle>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-3 p-3">
+          <ExerciseThumb name={name} />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate font-medium">
+              {name}
+              {exercise.superset && (
+                <span className="font-normal text-muted-foreground text-xs">
+                  {" "}
+                  · superset {exercise.superset}
+                </span>
+              )}
             </span>
-          )}
-        </CardTitle>
-        <CardAction>
-          <Button variant="ghost" size="icon-sm" aria-label="Retirer l'exercice" onClick={onRemove}>
-            <Trash2 />
-          </Button>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        <div className="grid grid-cols-[3rem_7rem_7rem_2rem] items-center gap-2 text-muted-foreground text-xs">
-          <span>Série</span>
-          <span>Charge (kg)</span>
-          <span>Répétitions</span>
-          <span />
-        </div>
-        {exercise.sets.map((set, i) => (
-          <div key={i} className="grid grid-cols-[3rem_7rem_7rem_2rem] items-center gap-2">
-            <span className="text-muted-foreground text-sm tabular-nums">{i + 1}</span>
-            <Input
-              type="number"
-              inputMode="decimal"
-              step={2.5}
-              min={0}
-              placeholder="—"
-              className={field}
-              value={set.kg ?? ""}
-              aria-label={`Charge de la série ${i + 1}`}
-              onChange={(e) =>
-                setAt(i, { kg: e.target.value === "" ? null : Number(e.target.value) })
-              }
-            />
-            <Input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              className={field}
-              value={set.reps}
-              aria-label={`Répétitions de la série ${i + 1}`}
-              onChange={(e) => setAt(i, { reps: Number(e.target.value) })}
-            />
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Retirer la série ${i + 1}`}
-              disabled={exercise.sets.length === 1}
-              onClick={() =>
-                onChange({ ...exercise, sets: exercise.sets.filter((_, j) => j !== i) })
-              }
-            >
-              <X />
-            </Button>
+            <span className="truncate text-muted-foreground text-xs">
+              {info?.muscle} · {info?.equipment}
+            </span>
           </div>
-        ))}
-        <div className="flex items-center justify-between gap-2 pt-1">
+          <Select
+            value={String(exercise.restSeconds)}
+            onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
+          >
+            <SelectTrigger size="sm" aria-label="Repos" className={cn("w-32", bare && bareField)}>
+              <Timer className="text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {rests.map((r) => (
+                  <SelectItem key={r} value={String(r)}>
+                    {r === 0 ? "Sans repos" : formatRest(r)}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon-sm" aria-label={`Actions : ${name}`}>
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem variant="destructive" onSelect={onRemove}>
+                <Trash2 /> Retirer l'exercice
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Le filet court sur toute la largeur de la carte, poignée exceptée. */}
+        <Separator />
+
+        <div className="flex flex-col gap-1 p-3">
+          <div className="grid grid-cols-[2.5rem_1fr_7rem_7rem_2rem] items-center gap-2 px-1 text-muted-foreground text-xs">
+            <span>Série</span>
+            <span>Dernière fois</span>
+            <span>Charge</span>
+            <span>Répétitions</span>
+            <span />
+          </div>
+          {exercise.sets.map((set, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-[2.5rem_1fr_7rem_7rem_2rem] items-center gap-2 rounded-md px-1 hover:bg-muted/40"
+            >
+              <span className="text-muted-foreground text-sm tabular-nums">{i + 1}</span>
+              <span className="truncate text-muted-foreground text-sm tabular-nums">
+                {lastTime(exercise.slug, i)}
+              </span>
+              <SetField
+                label={`Charge de la série ${i + 1}`}
+                unit="kg"
+                step={2.5}
+                bare={bare}
+                value={set.kg === null ? "" : String(set.kg)}
+                onChange={(v) => setAt(i, { kg: v === "" ? null : Number(v) })}
+              />
+              <SetField
+                label={`Répétitions de la série ${i + 1}`}
+                unit="rép."
+                step={1}
+                bare={bare}
+                value={String(set.reps)}
+                onChange={(v) => setAt(i, { reps: Number(v) })}
+              />
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Retirer la série ${i + 1}`}
+                disabled={exercise.sets.length === 1}
+                onClick={() =>
+                  onChange({ ...exercise, sets: exercise.sets.filter((_, j) => j !== i) })
+                }
+              >
+                <X />
+              </Button>
+            </div>
+          ))}
           <Button
-            variant={bare ? "ghost" : "outline"}
+            variant="ghost"
             size="sm"
+            className="mt-1 w-full text-muted-foreground"
             onClick={() => onChange({ ...exercise, sets: [...exercise.sets, { ...last }] })}
           >
             <Plus data-icon="inline-start" /> Ajouter une série
           </Button>
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            Repos (s)
-            <Input
-              type="number"
-              min={0}
-              step={15}
-              className={cn("w-20", field)}
-              aria-label="Repos en secondes"
-              value={exercise.restSeconds}
-              onChange={(e) => onChange({ ...exercise, restSeconds: Number(e.target.value) })}
-            />
-          </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
