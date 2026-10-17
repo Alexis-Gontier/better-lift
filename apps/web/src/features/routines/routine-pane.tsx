@@ -1,6 +1,6 @@
 import { useBlocker, useNavigate } from "@tanstack/react-router";
 import { MoreHorizontal } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { InlineField } from "@/components/inline-field";
 import { DetailHeader } from "@/components/list-detail";
@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteRoutine, newRoutineId, saveRoutine } from "@/mocks/routine-store";
+import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { RoutineDetail } from "./routine-detail";
 import { canSave, type Draft, fromDraft, isDirty, toDraft } from "./routine-draft";
@@ -273,6 +273,8 @@ export function RoutinePaneNew({ bare }: { bare: boolean }) {
   const navigate = useNavigate();
   const [draft, setDraft] = useState<Draft>(() => toDraft(undefined));
   const { guard, release } = useUnsavedGuard(isDirty(draft, undefined));
+  useEffect(() => setDraftName(draft.name), [draft.name]);
+  useEffect(() => () => setDraftName(""), []);
 
   function create() {
     const routine = fromDraft(draft, { id: newRoutineId(), lastDone: null });

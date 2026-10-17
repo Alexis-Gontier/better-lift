@@ -11,9 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatDaysAgo, formatMinutes } from "@/lib/format";
+import { formatDaysAgo, formatMinutes, plural } from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { daysSince, estimateMinutes } from "@/mocks/routine-stats";
+import { useDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { TODAY } from "@/mocks/today";
 
@@ -40,7 +41,7 @@ export function RoutineCard({ routine }: { routine: MockRoutine }) {
       <CardHeader>
         <CardTitle>{routine.name}</CardTitle>
         <CardDescription>
-          {routine.exercises.length} exercices · ~
+          {plural(routine.exercises.length, "exercice")} · ~
           {formatMinutes(estimateMinutes(routine.exercises))}
         </CardDescription>
       </CardHeader>
@@ -63,5 +64,22 @@ export function RoutineCard({ routine }: { routine: MockRoutine }) {
         {card}
       </Link>
     </RowMenu>
+  );
+}
+
+/** La ligne de la routine en cours de création, en tête de liste (D238) : elle suit le nom tapé. */
+export function DraftRoutineCard() {
+  const name = useDraftName();
+  return (
+    <Link to="/routines/new" {...listLinkProps} className="group">
+      <Card className="h-full border-dashed group-data-[status=active]:ring-2 group-data-[status=active]:ring-foreground/30">
+        <CardHeader>
+          <CardTitle className={name.trim() ? undefined : "text-muted-foreground"}>
+            {name.trim() || "Sans nom"}
+          </CardTitle>
+          <CardDescription>Brouillon · pas encore enregistrée</CardDescription>
+        </CardHeader>
+      </Card>
+    </Link>
   );
 }

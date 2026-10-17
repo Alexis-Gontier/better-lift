@@ -41,3 +41,22 @@ export function deleteRoutine(id: string) {
 export function newRoutineId(): string {
   return `new-${Date.now().toString(36)}`;
 }
+
+/** Le nom de la routine en cours de création : la ligne brouillon de la liste le suit (D238). */
+let draftName = "";
+const draftListeners = new Set<() => void>();
+
+export function setDraftName(name: string) {
+  if (name === draftName) return;
+  draftName = name;
+  for (const l of draftListeners) l();
+}
+
+function subscribeDraft(listener: () => void) {
+  draftListeners.add(listener);
+  return () => draftListeners.delete(listener);
+}
+
+export function useDraftName(): string {
+  return useSyncExternalStore(subscribeDraft, () => draftName);
+}

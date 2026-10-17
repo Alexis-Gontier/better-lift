@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { ListChecks, Search } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { FOLDERS, type MockRoutine } from "@/mocks/routines";
-import { RoutineCard } from "./routine-card";
+import { DraftRoutineCard, RoutineCard } from "./routine-card";
 
 const ALL = "tous";
 
@@ -38,6 +38,7 @@ function matches(routine: MockRoutine, query: string): boolean {
 export function RoutineList({ routines }: { routines: MockRoutine[] }) {
   const [query, setQuery] = useState("");
   const [folder, setFolder] = useState<string>(ALL);
+  const creating = useRouterState({ select: (s) => s.location.pathname === "/routines/new" });
   const shown = routines.filter(
     (r) => (folder === ALL || r.folder === folder) && matches(r, query),
   );
@@ -74,7 +75,7 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
           </ToggleGroup>
         </DragScroll>
       </div>
-      {shown.length === 0 ? (
+      {shown.length === 0 && !creating ? (
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyTitle>Aucune routine ne correspond</EmptyTitle>
@@ -83,6 +84,7 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
         </Empty>
       ) : (
         <div className="grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
+          {creating && <DraftRoutineCard />}
           {shown.map((r) => (
             <RoutineCard key={r.id} routine={r} />
           ))}
