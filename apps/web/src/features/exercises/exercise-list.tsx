@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Dumbbell, ExternalLink, History, Search, Trophy } from "lucide-react";
 import { useState } from "react";
+import { DragScroll } from "@/components/drag-scroll";
 import { SelectableRow } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
@@ -106,49 +107,51 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
             <Search />
           </InputGroupAddon>
         </InputGroup>
-        <div className="flex flex-wrap gap-2">
-          <Select value={muscle} onValueChange={setMuscle}>
-            <SelectTrigger aria-label="Muscle">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={ALL}>Tous les muscles</SelectItem>
-                {MUSCLES.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Select value={equipment} onValueChange={setEquipment}>
-            <SelectTrigger aria-label="Équipement">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={ALL}>Tout équipement</SelectItem>
-                {EQUIPMENTS.map((e) => (
-                  <SelectItem key={e} value={e}>
-                    {e}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
-            <SelectTrigger aria-label="Tri">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="nom">Par nom</SelectItem>
-                <SelectItem value="recent">Faits récemment</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+        <DragScroll>
+          <div className="flex w-max gap-2">
+            <Select value={muscle} onValueChange={setMuscle}>
+              <SelectTrigger aria-label="Muscle">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={ALL}>Tous les muscles</SelectItem>
+                  {MUSCLES.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Select value={equipment} onValueChange={setEquipment}>
+              <SelectTrigger aria-label="Équipement">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={ALL}>Tout équipement</SelectItem>
+                  {EQUIPMENTS.map((e) => (
+                    <SelectItem key={e} value={e}>
+                      {e}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
+              <SelectTrigger aria-label="Tri">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="nom">Par nom</SelectItem>
+                  <SelectItem value="recent">Faits récemment</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </DragScroll>
       </div>
 
       {rows.length === 0 ? (

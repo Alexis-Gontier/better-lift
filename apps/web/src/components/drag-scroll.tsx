@@ -38,9 +38,12 @@ export function DragScroll({ className, children }: { className?: string; childr
         className,
       )}
       onScroll={(e) => updateFade(e.currentTarget)}
-      onPointerDown={(e) => {
+      onPointerDownCapture={(e) => {
         if (e.pointerType !== "mouse" || e.button !== 0 || !ref.current) return;
         drag.current = { active: true, moved: false, x: e.clientX, left: ref.current.scrollLeft };
+        // Un Select Radix s'ouvre à l'appui de la souris et capte la suite : on le prive de
+        // l'appui, il s'ouvre alors au clic — que le glisser annule s'il a eu lieu.
+        if ((e.target as HTMLElement).closest("[data-slot=select-trigger]")) e.stopPropagation();
       }}
       onPointerMove={(e) => {
         const d = drag.current;
