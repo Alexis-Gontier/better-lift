@@ -51,6 +51,7 @@ export function CommandPalette({ open: paletteOpen, onOpenChange: setPaletteOpen
 
   return (
     <CommandDialog
+      className="top-[15%] sm:max-w-2xl"
       open={paletteOpen}
       onOpenChange={setPaletteOpen}
       title="Recherche"
@@ -58,7 +59,7 @@ export function CommandPalette({ open: paletteOpen, onOpenChange: setPaletteOpen
     >
       <Command>
         <CommandInput placeholder="Rechercher une page, une action…" />
-        <CommandList>
+        <CommandList className="max-h-[min(28rem,60vh)]">
           <CommandEmpty>Aucun résultat.</CommandEmpty>
           <CommandGroup heading="Aller à">
             {NAV_GROUPS.flatMap((g) => g.items).map((item) => (
