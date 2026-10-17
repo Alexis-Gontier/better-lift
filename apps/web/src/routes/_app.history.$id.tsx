@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Page } from "@/components/page";
+import { DetailEmpty, DetailHeader, DetailSkeleton } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import {
@@ -14,29 +14,26 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SessionDetailView } from "@/features/history/session-detail";
+import { formatDay } from "@/lib/format";
 import { previousOf, sessionDetail } from "@/mocks/history";
+import { mockRoutines } from "@/mocks/routines";
 import { mockSessions } from "@/mocks/sessions";
 
 export const Route = createFileRoute("/_app/history/$id")({
   staticData: { crumb: "Détail" },
-  component: SessionPage,
+  component: SessionPane,
 });
 
+/** Sans API, supprimer referme simplement la séance. */
 function DeleteButton() {
   const navigate = useNavigate();
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline">Supprimer</Button>
+        <Button variant="outline" size="sm">
+          Supprimer
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -47,7 +44,10 @@ function DeleteButton() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={() => navigate({ to: "/history" })}>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => navigate({ to: "/history", search: true })}
+          >
             Supprimer
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -56,45 +56,46 @@ function DeleteButton() {
   );
 }
 
-function SessionPage() {
+/** La séance ouverte, dans le panneau de droite (D235). */
+function SessionPane() {
   const { id } = Route.useParams();
   const { state } = useProto();
   const session = mockSessions.find((s) => s.id === id);
 
-  if (!session || state === "vide") {
+  if (state === "chargement") return <DetailSkeleton />;
+  if (state === "erreur") return <StateError title="La séance n'a pas pu se charger" />;
+  if (!session || state === "vide")
     return (
-      <Page title="Séance introuvable">
-        <Empty className="border border-dashed">
-          <EmptyHeader>
-            <EmptyTitle>Cette séance n'existe pas</EmptyTitle>
-            <EmptyDescription>Elle a peut-être été supprimée.</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <Button variant="outline" asChild>
-              <Link to="/history">Retour à l'historique</Link>
-            </Button>
-          </EmptyContent>
-        </Empty>
-      </Page>
+      <DetailEmpty
+        title="Cette séance n'existe pas"
+        description="Elle a peut-être été supprimée."
+      />
     );
-  }
 
   const previous = previousOf(mockSessions, id);
+  const routine = mockRoutines.find((r) => r.name === session.routine);
   return (
-    <Page title={session.routine} actions={<DeleteButton />}>
-      {state === "chargement" && (
-        <>
-          <Skeleton className="h-48 rounded-xl" />
-          <Skeleton className="h-64 rounded-xl" />
-        </>
-      )}
-      {state === "erreur" && <StateError title="La séance n'a pas pu se charger" />}
-      {state === "nominal" && (
-        <SessionDetailView
-          detail={sessionDetail(session)}
-          previous={previous ? sessionDetail(previous) : undefined}
-        />
-      )}
-    </Page>
+    <>
+      <DetailHeader
+        title={session.routine}
+        subtitle={formatDay(session.date)}
+        actions={
+          <>
+            {routine && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/routines/$id" params={{ id: routine.id }}>
+                  Voir la routine
+                </Link>
+              </Button>
+            )}
+            <DeleteButton />
+          </>
+        }
+      />
+      <SessionDetailView
+        detail={sessionDetail(session)}
+        previous={previous ? sessionDetail(previous) : undefined}
+      />
+    </>
   );
 }

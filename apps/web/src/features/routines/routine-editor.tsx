@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
-import { Page } from "@/components/page";
+import { DetailHeader } from "@/components/list-detail";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,25 +178,32 @@ export function RoutineEditor({ routine }: { routine?: MockRoutine }) {
   }
 
   return (
-    <Page
-      title={routine ? "Modifier la routine" : "Nouvelle routine"}
-      actions={
-        <>
-          <Button variant="outline" asChild>
-            {routine ? (
-              <Link to="/routines/$id" params={{ id: routine.id }}>
-                Annuler
-              </Link>
-            ) : (
-              <Link to="/routines">Annuler</Link>
-            )}
-          </Button>
-          <Button onClick={save} disabled={!draft.name.trim() || draft.exercises.length === 0}>
-            Enregistrer
-          </Button>
-        </>
-      }
-    >
+    <>
+      <DetailHeader
+        title={routine ? routine.name : "Nouvelle routine"}
+        actions={
+          <>
+            <Button variant="outline" size="sm" asChild>
+              {routine ? (
+                <Link to="/routines/$id" params={{ id: routine.id }} search>
+                  Annuler
+                </Link>
+              ) : (
+                <Link to="/routines" search>
+                  Annuler
+                </Link>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              onClick={save}
+              disabled={!draft.name.trim() || draft.exercises.length === 0}
+            >
+              Enregistrer
+            </Button>
+          </>
+        }
+      />
       <Card>
         <CardContent>
           <FieldGroup>
@@ -307,6 +314,6 @@ export function RoutineEditor({ routine }: { routine?: MockRoutine }) {
           </CommandList>
         </Command>
       </CommandDialog>
-    </Page>
+    </>
   );
 }

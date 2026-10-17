@@ -1,79 +1,49 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Page } from "@/components/page";
+import { DetailEmpty, DetailHeader, DetailSkeleton } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
-import { RoutineDetail, RoutineDetailCompact } from "@/features/routines/routine-detail";
+import { RoutineDetail } from "@/features/routines/routine-detail";
 import { routineById } from "@/mocks/routines";
 
 export const Route = createFileRoute("/_app/routines/$id")({
   staticData: { crumb: "Détail" },
-  component: RoutinePage,
+  component: RoutinePane,
 });
 
-function RoutinePage() {
+/** La routine ouverte, dans le panneau de droite (D235). */
+function RoutinePane() {
   const { id } = Route.useParams();
-  const { state, variant } = useProto();
+  const { state } = useProto();
   const routine = routineById(id);
 
-  if (!routine || state === "vide") {
+  if (state === "chargement") return <DetailSkeleton />;
+  if (state === "erreur") return <StateError title="La routine n'a pas pu se charger" />;
+  if (!routine || state === "vide")
     return (
-      <Page title="Routine introuvable">
-        <Empty className="border border-dashed">
-          <EmptyHeader>
-            <EmptyTitle>Cette routine n'existe pas</EmptyTitle>
-            <EmptyDescription>Elle a peut-être été supprimée.</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <Button variant="outline" asChild>
-              <Link to="/routines">Retour aux routines</Link>
-            </Button>
-          </EmptyContent>
-        </Empty>
-      </Page>
+      <DetailEmpty
+        title="Cette routine n'existe pas"
+        description="Elle a peut-être été supprimée."
+      />
     );
-  }
 
   return (
-    <Page
-      title={routine.name}
-      actions={
-        <>
-          <Button variant="outline">Dupliquer</Button>
-          <Button variant="outline" asChild>
-            <Link to="/planning">Planifier</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/routines/$id/edit" params={{ id }}>
-              Modifier
-            </Link>
-          </Button>
-        </>
-      }
-    >
-      {state === "chargement" && (
-        <>
-          <Skeleton className="h-36 rounded-xl" />
-          <Skeleton className="h-64 rounded-xl" />
-          <Skeleton className="h-64 rounded-xl" />
-        </>
-      )}
-      {state === "erreur" && <StateError title="La routine n'a pas pu se charger" />}
-      {/* A : une carte par exercice. B : un tableau compact. */}
-      {state === "nominal" &&
-        (variant === "a" ? (
-          <RoutineDetail routine={routine} />
-        ) : (
-          <RoutineDetailCompact routine={routine} />
-        ))}
-    </Page>
+    <>
+      <DetailHeader
+        title={routine.name}
+        subtitle={routine.folder}
+        actions={
+          <>
+            <Button variant="outline" size="sm">
+              Dupliquer
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/planning">Planifier</Link>
+            </Button>
+          </>
+        }
+      />
+      <RoutineDetail routine={routine} />
+    </>
   );
 }

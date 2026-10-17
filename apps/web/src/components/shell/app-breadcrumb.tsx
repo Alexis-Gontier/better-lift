@@ -34,24 +34,11 @@ function detailLabel(routeId: string, params: Params, fallback: string): string 
 export function AppBreadcrumb() {
   const crumbs = useMatches()
     .filter((m) => m.staticData.crumb)
-    .flatMap((m) => {
-      const params = m.params as Params;
-      const crumb = {
-        id: m.id,
-        label: detailLabel(m.routeId, params, m.staticData.crumb as string),
-        pathname: m.pathname,
-      };
-      // L'édition est détachée du détail (`$id_`) : on remet la routine entre les deux.
-      if (m.routeId.endsWith("/routines/$id_/edit") && params.id) {
-        const routine = routineById(params.id);
-        if (routine)
-          return [
-            { id: `${m.id}-routine`, label: routine.name, pathname: `/routines/${params.id}` },
-            crumb,
-          ];
-      }
-      return [crumb];
-    });
+    .map((m) => ({
+      id: m.id,
+      label: detailLabel(m.routeId, m.params as Params, m.staticData.crumb as string),
+      pathname: m.pathname,
+    }));
 
   return (
     <Breadcrumb>

@@ -1,16 +1,8 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ChevronRight,
-  ExternalLink,
-  History,
-  ListChecks,
-  Search,
-  Trash2,
-  Trophy,
-} from "lucide-react";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { ChevronRight, History, ListChecks, Search, Trash2, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
-import { SelectableRow } from "@/components/list-detail";
+import { listLinkProps, selectedRowClass } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,11 +39,6 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
   const sessionActions = (s: MockSession): RowAction[] => {
     const routine = mockRoutines.find((r) => r.name === s.routine);
     return [
-      {
-        label: "Ouvrir la séance",
-        icon: ExternalLink,
-        onSelect: () => navigate({ to: "/history/$id", params: { id: s.id } }),
-      },
       ...(routine
         ? [
             {
@@ -66,7 +53,12 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
   };
   const [query, setQuery] = useState("");
   const [routine, setRoutine] = useState(ALL);
-  const [pages, setPages] = useState(1);
+  // Une séance ouverte par son adresse doit être visible : on déplie jusqu'à son mois.
+  const { id: openId } = useParams({ strict: false });
+  const [pages, setPages] = useState(() => {
+    const index = groupByMonth(sessions).findIndex((g) => g.sessions.some((s) => s.id === openId));
+    return Math.max(1, Math.ceil((index + 1) / MONTHS_PER_PAGE));
+  });
   const routines = [...new Set(sessions.map((s) => s.routine))].sort((a, b) =>
     a.localeCompare(b, "fr"),
   );
@@ -135,14 +127,11 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
                 <div key={s.id}>
                   {i > 0 && <Separator />}
                   <RowMenu actions={sessionActions(s)}>
-                    <SelectableRow
-                      id={s.id}
-                      className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
-                      renderLink={(className, children) => (
-                        <Link to="/history/$id" params={{ id: s.id }} className={className}>
-                          {children}
-                        </Link>
-                      )}
+                    <Link
+                      to="/history/$id"
+                      params={{ id: s.id }}
+                      {...listLinkProps}
+                      className={`flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50 ${selectedRowClass}`}
                     >
                       <span className="w-24 shrink-0 text-muted-foreground text-sm first-letter:uppercase">
                         {formatWeekdayDay(s.date)}
@@ -161,7 +150,7 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
                         {formatKg(s.volume)}
                       </span>
                       <ChevronRight className="size-4 text-muted-foreground" />
-                    </SelectableRow>
+                    </Link>
                   </RowMenu>
                 </div>
               ))}

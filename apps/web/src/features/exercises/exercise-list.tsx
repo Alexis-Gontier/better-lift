@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Dumbbell, ExternalLink, History, Search, Trophy } from "lucide-react";
+import { ChevronRight, Dumbbell, History, Search, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
-import { SelectableRow } from "@/components/list-detail";
+import { listLinkProps, selectedRowClass } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,11 +57,6 @@ function toRow(e: MockExercise): Row {
 export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
   const navigate = useNavigate();
   const exerciseActions = (slug: string): RowAction[] => [
-    {
-      label: "Ouvrir la fiche",
-      icon: ExternalLink,
-      onSelect: () => navigate({ to: "/exercises/$slug", params: { slug } }),
-    },
     {
       label: "Voir l'historique",
       icon: History,
@@ -167,14 +162,11 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
             <div key={e.slug}>
               {i > 0 && <Separator />}
               <RowMenu actions={exerciseActions(e.slug)}>
-                <SelectableRow
-                  id={e.slug}
-                  className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
-                  renderLink={(className, children) => (
-                    <Link to="/exercises/$slug" params={{ slug: e.slug }} className={className}>
-                      {children}
-                    </Link>
-                  )}
+                <Link
+                  to="/exercises/$slug"
+                  params={{ slug: e.slug }}
+                  {...listLinkProps}
+                  className={`flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50 ${selectedRowClass}`}
                 >
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                     <Dumbbell className="size-4" />
@@ -196,7 +188,7 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
                     {formatDaysAgo(e.lastDone ? daysSince(e.lastDone, TODAY) : null)}
                   </span>
                   <ChevronRight className="size-4 text-muted-foreground" />
-                </SelectableRow>
+                </Link>
               </RowMenu>
             </div>
           ))}

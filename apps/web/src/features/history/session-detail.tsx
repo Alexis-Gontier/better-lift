@@ -10,21 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  formatDay,
-  formatDelta,
-  formatKg,
-  formatLoad,
-  formatMinutes,
-  formatShortDay,
-} from "@/lib/format";
+import { formatDelta, formatKg, formatLoad, formatMinutes, formatShortDay } from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { type DoneExercise, doneVolume, type SessionDetail } from "@/mocks/history";
-import { mockRoutines } from "@/mocks/routines";
 
 function Summary({ detail, previous }: { detail: SessionDetail; previous?: SessionDetail }) {
   const { session } = detail;
-  const routine = mockRoutines.find((r) => r.name === session.routine);
   const volume = doneVolume(detail);
   const sets = detail.exercises.reduce((n, e) => n + e.sets.length, 0);
   const items = [
@@ -35,20 +26,6 @@ function Summary({ detail, previous }: { detail: SessionDetail; previous?: Sessi
   ];
   return (
     <Card>
-      <CardHeader>
-        <CardDescription className="first-letter:uppercase">
-          {formatDay(session.date)}
-        </CardDescription>
-        <CardTitle>
-          {routine ? (
-            <Link to="/routines/$id" params={{ id: routine.id }} className="hover:underline">
-              {session.routine}
-            </Link>
-          ) : (
-            session.routine
-          )}
-        </CardTitle>
-      </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4 @xl:grid-cols-4">
           {items.map((i) => (

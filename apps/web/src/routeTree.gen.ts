@@ -35,7 +35,6 @@ import { Route as AppSettingsAccountRouteImport } from './routes/_app.settings.a
 import { Route as AppSettingsDataRouteImport } from './routes/_app.settings.data'
 import { Route as AppSettingsPreferencesRouteImport } from './routes/_app.settings.preferences'
 import { Route as AppSettingsTrainingRouteImport } from './routes/_app.settings.training'
-import { Route as AppRoutinesIdEditRouteImport } from './routes/_app.routines.$id_.edit'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -165,11 +164,6 @@ const AppSettingsTrainingRoute = AppSettingsTrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => AppSettingsRoute,
 } as any)
-const AppRoutinesIdEditRoute = AppRoutinesIdEditRouteImport.update({
-  id: '/$id_/edit',
-  path: '/$id/edit',
-  getParentRoute: () => AppRoutinesRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -196,7 +190,6 @@ export interface FileRoutesByFullPath {
   '/history/': typeof AppHistoryIndexRoute
   '/routines/': typeof AppRoutinesIndexRoute
   '/settings/': typeof AppSettingsIndexRoute
-  '/routines/$id/edit': typeof AppRoutinesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -219,7 +212,6 @@ export interface FileRoutesByTo {
   '/history': typeof AppHistoryIndexRoute
   '/routines': typeof AppRoutinesIndexRoute
   '/settings': typeof AppSettingsIndexRoute
-  '/routines/$id/edit': typeof AppRoutinesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -249,7 +241,6 @@ export interface FileRoutesById {
   '/_app/history/': typeof AppHistoryIndexRoute
   '/_app/routines/': typeof AppRoutinesIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
-  '/_app/routines/$id_/edit': typeof AppRoutinesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -278,7 +269,6 @@ export interface FileRouteTypes {
     | '/history/'
     | '/routines/'
     | '/settings/'
-    | '/routines/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -301,7 +291,6 @@ export interface FileRouteTypes {
     | '/history'
     | '/routines'
     | '/settings'
-    | '/routines/$id/edit'
   id:
     | '__root__'
     | '/_app'
@@ -330,7 +319,6 @@ export interface FileRouteTypes {
     | '/_app/history/'
     | '/_app/routines/'
     | '/_app/settings/'
-    | '/_app/routines/$id_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -522,13 +510,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsTrainingRouteImport
       parentRoute: typeof AppSettingsRoute
     }
-    '/_app/routines/$id_/edit': {
-      id: '/_app/routines/$id_/edit'
-      path: '/$id/edit'
-      fullPath: '/routines/$id/edit'
-      preLoaderRoute: typeof AppRoutinesIdEditRouteImport
-      parentRoute: typeof AppRoutinesRoute
-    }
   }
 }
 
@@ -564,14 +545,12 @@ interface AppRoutinesRouteChildren {
   AppRoutinesIdRoute: typeof AppRoutinesIdRoute
   AppRoutinesNewRoute: typeof AppRoutinesNewRoute
   AppRoutinesIndexRoute: typeof AppRoutinesIndexRoute
-  AppRoutinesIdEditRoute: typeof AppRoutinesIdEditRoute
 }
 
 const AppRoutinesRouteChildren: AppRoutinesRouteChildren = {
   AppRoutinesIdRoute: AppRoutinesIdRoute,
   AppRoutinesNewRoute: AppRoutinesNewRoute,
   AppRoutinesIndexRoute: AppRoutinesIndexRoute,
-  AppRoutinesIdEditRoute: AppRoutinesIdEditRoute,
 }
 
 const AppRoutinesRouteWithChildren = AppRoutinesRoute._addFileChildren(

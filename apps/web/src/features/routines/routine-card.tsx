@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, Copy, ExternalLink, Pencil, Trash2 } from "lucide-react";
-import { useSelection } from "@/components/list-detail";
+import { CalendarPlus, Copy, Trash2 } from "lucide-react";
+import { listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,18 +24,8 @@ export function routineMuscles(routine: MockRoutine): string[] {
 }
 
 /** Le clic droit sur une routine. Sans API, Dupliquer et Supprimer ne font encore rien. */
-function routineActions(id: string, navigate: ReturnType<typeof useNavigate>): RowAction[] {
+function routineActions(navigate: ReturnType<typeof useNavigate>): RowAction[] {
   return [
-    {
-      label: "Ouvrir",
-      icon: ExternalLink,
-      onSelect: () => navigate({ to: "/routines/$id", params: { id } }),
-    },
-    {
-      label: "Modifier",
-      icon: Pencil,
-      onSelect: () => navigate({ to: "/routines/$id/edit", params: { id } }),
-    },
     { label: "Planifier", icon: CalendarPlus, onSelect: () => navigate({ to: "/planning" }) },
     { label: "Dupliquer", icon: Copy, onSelect: () => {} },
     { label: "Supprimer", icon: Trash2, onSelect: () => {}, destructive: true, separated: true },
@@ -45,9 +35,8 @@ function routineActions(id: string, navigate: ReturnType<typeof useNavigate>): R
 export function RoutineCard({ routine }: { routine: MockRoutine }) {
   const navigate = useNavigate();
   const muscles = routineMuscles(routine);
-  const selection = useSelection();
   const card = (
-    <Card className="h-full transition-colors group-hover:bg-muted/40 group-data-[selected=true]:ring-2 group-data-[selected=true]:ring-foreground/30">
+    <Card className="h-full transition-colors group-hover:bg-muted/40 group-data-[status=active]:ring-2 group-data-[status=active]:ring-foreground/30">
       <CardHeader>
         <CardTitle>{routine.name}</CardTitle>
         <CardDescription>
@@ -68,24 +57,11 @@ export function RoutineCard({ routine }: { routine: MockRoutine }) {
       </CardFooter>
     </Card>
   );
-  // En liste | détail, la carte sélectionne ; sinon elle mène à la page de la routine.
-  const menu = routineActions(routine.id, navigate);
   return (
-    <RowMenu actions={menu}>
-      {selection ? (
-        <button
-          type="button"
-          className="group text-left"
-          data-selected={selection.selected === routine.id}
-          onClick={() => selection.select(routine.id)}
-        >
-          {card}
-        </button>
-      ) : (
-        <Link to="/routines/$id" params={{ id: routine.id }} className="group">
-          {card}
-        </Link>
-      )}
+    <RowMenu actions={routineActions(navigate)}>
+      <Link to="/routines/$id" params={{ id: routine.id }} {...listLinkProps} className="group">
+        {card}
+      </Link>
     </RowMenu>
   );
 }
