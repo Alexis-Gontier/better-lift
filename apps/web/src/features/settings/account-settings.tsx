@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { mockAccount } from "@/mocks/account";
 import { SettingsSection, useDraft } from "./settings-section";
 
 const TIMEZONES = ["Europe/Paris", "Europe/Brussels", "Europe/Zurich", "America/Montreal"];
@@ -57,11 +58,7 @@ const SESSIONS = [
 ];
 
 function Profile() {
-  const { draft, setDraft, dirty, save } = useDraft({
-    name: "Alexis Gontier",
-    email: "alexis@example.com",
-    timezone: "Europe/Paris",
-  });
+  const { draft, setDraft, dirty, save } = useDraft(mockAccount);
   return (
     <SettingsSection
       title="Profil"

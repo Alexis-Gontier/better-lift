@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { useState } from "react";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { CommandPalette } from "@/components/shell/command-palette";
 import { SiteHeader } from "@/components/shell/site-header";
@@ -9,16 +10,17 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
+  const [paletteOpen, setPaletteOpen] = useState(false);
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader onSearch={() => setPaletteOpen(true)} />
         <main className="flex flex-1 flex-col">
           <Outlet />
         </main>
       </SidebarInset>
-      <CommandPalette />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </SidebarProvider>
   );
 }

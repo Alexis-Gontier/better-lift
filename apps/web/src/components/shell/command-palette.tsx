@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { CalendarPlus, FileUp, type LucideIcon, Plus, Scale } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Command,
   CommandDialog,
@@ -23,9 +23,14 @@ const ACTIONS: { label: string; to: To; icon: LucideIcon }[] = [
   { label: "Importer depuis Hevy", to: "/settings/data", icon: FileUp },
 ];
 
-export function CommandPalette() {
+type Props = {
+  open: boolean;
+  onOpenChange: (open: boolean | ((open: boolean) => boolean)) => void;
+};
+
+/** L'état d'ouverture vit dans la mise en page : le bouton du header l'ouvre aussi. */
+export function CommandPalette({ open: paletteOpen, onOpenChange: setPaletteOpen }: Props) {
   const navigate = useNavigate();
-  const [paletteOpen, setPaletteOpen] = useState(false);
 
   // Ctrl K (Cmd K sur Mac) ouvre la recherche, même sans bouton visible.
   useEffect(() => {
@@ -37,7 +42,7 @@ export function CommandPalette() {
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [setPaletteOpen]);
 
   function go(to: To) {
     setPaletteOpen(false);
