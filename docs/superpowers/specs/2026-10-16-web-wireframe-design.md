@@ -196,6 +196,11 @@ et D199 (style), qui seront repris après validation du wireframe.
   (durée, séries, volume prévu, exercices, puis la dernière fois sur toute la largeur), hors de
   toute carte englobante. *Muscles travaillés* ne garde que la silhouette, plus petite : la liste
   des séries par muscle (`setsByMuscle`) est retirée.
+- **D256 — Exercices | aperçu redimensionnables, en `ScrollArea`** (2026-10-18, révise D255).
+  Sous la tête fixe, un `ResizablePanelGroup` (largeur mémorisée, `routine-editeur`) : les
+  exercices (70 %, **560 px au moins** — le tableau des séries a des colonnes fixes) et
+  l'aperçu (30 %, de 220 px à 50 %), chacun dans la `ScrollArea` de shadcn. La poignée tient
+  lieu de filet. Les mini-cartes passent à deux par ligne dès 13 rem de colonne.
 
 ## 3. Coquille
 

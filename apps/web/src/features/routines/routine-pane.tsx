@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useDefaultLayout } from "react-resizable-panels";
 import { toast } from "sonner";
 import { DetailHeader } from "@/components/list-detail";
 import {
@@ -21,6 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
@@ -94,19 +97,40 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
   );
 }
 
+/** Défilement du contenu d'une `ScrollArea` : il s'étire en largeur au lieu de couper sinon. */
+const scrollBlock =
+  "h-full [&_[data-slot=scroll-area-viewport]]:overscroll-contain [&_[data-slot=scroll-area-viewport]>div]:block!";
+
 /**
- * Sous la tête fixe, deux colonnes qui défilent chacune de leur côté (D255) : les exercices, et à
- * droite les chiffres, les muscles et les réglages. Étroit, une seule colonne qui défile.
+ * Sous la tête fixe, deux panneaux redimensionnables qui défilent chacun dans sa `ScrollArea`
+ * (D255) : les exercices, et à droite les chiffres, les muscles et les réglages. La largeur est
+ * mémorisée, comme celle de la liste | détail.
  */
 function EditorLayout({ main, aside }: { main: React.ReactNode; aside: React.ReactNode }) {
+  const layout = useDefaultLayout({ id: "routine-editeur", storage: localStorage });
   return (
-    <div className="-mx-6 -mt-6 -mb-6 grid min-h-0 flex-1 overflow-y-auto @3xl:grid-cols-[minmax(0,1fr)_18rem] @3xl:grid-rows-[minmax(0,1fr)] @3xl:overflow-hidden">
-      <div className="flex min-w-0 flex-col gap-3 px-6 pt-6 pb-6 *:shrink-0 @3xl:overflow-y-auto @3xl:overscroll-contain @3xl:pb-24">
-        {main}
-      </div>
-      <aside className="flex flex-col gap-4 px-6 pb-24 *:shrink-0 @3xl:overflow-y-auto @3xl:overscroll-contain @3xl:border-l @3xl:pt-6">
-        {aside}
-      </aside>
+    // Le bloc porte la hauteur : le groupe impose `height: 100%` en style en ligne.
+    <div className="-mx-6 -mt-6 -mb-6 min-h-0 flex-1">
+      <ResizablePanelGroup
+        orientation="horizontal"
+        defaultLayout={layout.defaultLayout}
+        onLayoutChanged={layout.onLayoutChanged}
+      >
+        {/* 560 px : le tableau des séries a des colonnes fixes ; en dessous, il serait coupé. */}
+        <ResizablePanel id="exercices" defaultSize="70%" minSize="560px">
+          <ScrollArea className={scrollBlock}>
+            <div className="flex min-w-0 flex-col gap-3 px-6 pt-6 pb-24 *:shrink-0">{main}</div>
+          </ScrollArea>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel id="apercu" defaultSize="30%" minSize="220px" maxSize="50%">
+          <ScrollArea className={scrollBlock}>
+            <aside className="@container flex flex-col gap-4 px-6 pt-6 pb-24 *:shrink-0">
+              {aside}
+            </aside>
+          </ScrollArea>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }

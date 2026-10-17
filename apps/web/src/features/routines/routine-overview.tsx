@@ -28,14 +28,17 @@ function Figures({ routine }: { routine: MockRoutine }) {
     { label: "Exercices", value: String(routine.exercises.length) },
   ];
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid gap-2 @[13rem]:grid-cols-2">
       {figures.map((f) => (
         <Card key={f.label} size="sm" className="gap-0.5 px-3">
           <span className="text-muted-foreground text-xs">{f.label}</span>
           <span className="font-semibold tabular-nums">{f.value}</span>
         </Card>
       ))}
-      <Card size="sm" className="col-span-2 flex-row items-baseline justify-between gap-2 px-3">
+      <Card
+        size="sm"
+        className="flex-row items-baseline justify-between gap-2 px-3 @[13rem]:col-span-2"
+      >
         <span className="text-muted-foreground text-xs">Dernière fois</span>
         <span className="font-medium text-sm">
           {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
