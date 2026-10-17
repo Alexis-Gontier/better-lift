@@ -2,8 +2,9 @@ import { useDraggable } from "@dnd-kit/core";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { CalendarPlus, ChevronRight, Copy, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { listLinkProps, selectedRowClass } from "@/components/list-detail";
+import { listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
+import { Card } from "@/components/ui/card";
 import { formatDaysAgo, formatMinutes, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
@@ -18,9 +19,15 @@ function routineMuscles(routine: MockRoutine): string[] {
   return [...new Set(muscles.filter(Boolean))];
 }
 
-const rowClass = cn(
-  "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40",
-  selectedRowClass,
+const rowClass = "flex items-center gap-3 px-4 py-3";
+
+/**
+ * Une routine est une carte à part (D258) ; ouverte, elle prend un contour d'encre et un fond
+ * léger — pas de liseré : la carte entière dit la sélection.
+ */
+const cardClass = cn(
+  "flex-row items-stretch gap-0 overflow-hidden py-0 transition-colors hover:bg-muted/40",
+  "has-[[data-status=active]]:bg-muted/40 has-[[data-status=active]]:ring-2 has-[[data-status=active]]:ring-foreground/30",
 );
 
 /** Le clic droit sur une routine : les mêmes actions que son menu ⋯. */
@@ -93,7 +100,7 @@ export function RoutineRow({ routine }: { routine: MockRoutine }) {
     data: { routine },
   });
   return (
-    <div ref={setNodeRef} className={cn("flex items-stretch", isDragging && "opacity-40")}>
+    <Card ref={setNodeRef} className={cn(cardClass, isDragging && "opacity-40")}>
       {/* Un vrai bouton : sans focus possible, la poignée ne répondrait pas au clavier. */}
       <button
         ref={setActivatorNodeRef}
@@ -116,7 +123,7 @@ export function RoutineRow({ routine }: { routine: MockRoutine }) {
           <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
         </Link>
       </RowMenu>
-    </div>
+    </Card>
   );
 }
 
@@ -134,7 +141,11 @@ export function RoutineRowPreview({ routine }: { routine: MockRoutine }) {
 export function DraftRoutineRow() {
   const name = useDraftName();
   return (
-    <Link to="/routines/new" {...listLinkProps} className={cn(rowClass, "border-b border-dashed")}>
+    <Link
+      to="/routines/new"
+      {...listLinkProps}
+      className={cn(rowClass, "rounded-xl border border-dashed data-[status=active]:bg-muted/40")}
+    >
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={name.trim() ? "truncate font-medium" : "text-muted-foreground"}>
           {name.trim() || "Sans nom"}

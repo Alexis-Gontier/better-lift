@@ -21,7 +21,6 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +38,6 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
@@ -186,14 +184,12 @@ function FolderSection({
             Glissez une routine ici
           </div>
         ) : (
-          <Card className="gap-0 py-0">
-            {routines.map((r, i) => (
-              <div key={r.id}>
-                {i > 0 && <Separator />}
-                <RoutineRow routine={r} />
-              </div>
+          // Une carte par routine, séparées (D258).
+          <div className="flex flex-col gap-2">
+            {routines.map((r) => (
+              <RoutineRow key={r.id} routine={r} />
             ))}
-          </Card>
+          </div>
         ))}
     </section>
   );
@@ -248,11 +244,7 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
         </InputGroupAddon>
       </InputGroup>
 
-      {creating && (
-        <Card className="gap-0 py-0">
-          <DraftRoutineRow />
-        </Card>
-      )}
+      {creating && <DraftRoutineRow />}
 
       {searching && groups.length === 0 ? (
         <Empty className="border border-dashed">

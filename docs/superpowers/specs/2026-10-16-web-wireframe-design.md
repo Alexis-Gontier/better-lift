@@ -212,6 +212,10 @@ et D199 (style), qui seront repris après validation du wireframe.
   *Annuler*. **La création passe en bas** de la liste, fixe et séparée d'un filet (prop `footer`
   de `ListDetailPage`) : *Nouvelle routine* et *Dossier*. Les réglages d'une routine proposent
   les dossiers du magasin et « Sans dossier ».
+- **D258 — Une carte par routine** (2026-10-18, révise D251 pour les routines). Dans un dossier,
+  les routines sont des cartes séparées (8 px), plus des lignes collées sous filets. La routine
+  ouverte prend un contour d'encre (`ring-2`, 30 %) et un fond léger : plus de liseré à gauche
+  dans cette liste. Exercices et Historique gardent leurs lignes et leur liseré.
 
 ## 3. Coquille
 
