@@ -1,6 +1,6 @@
-import { useBlocker, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { MoreHorizontal } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InlineField } from "@/components/inline-field";
 import { DetailHeader } from "@/components/list-detail";
@@ -22,49 +22,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { deleteRoutine, newRoutineId, saveRoutine, setDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { RoutineDetail } from "./routine-detail";
 import { canSave, type Draft, fromDraft, isDirty, toDraft } from "./routine-draft";
 import { RoutineFields } from "./routine-editor";
-
-/**
- * Quitter une routine modifiée et non enregistrée demande confirmation. `release` lève le
- * garde avant une navigation voulue (après suppression, par exemple).
- */
-function useUnsavedGuard(dirty: boolean): { guard: ReactNode; release: () => void } {
-  const blocking = useRef(dirty);
-  blocking.current = dirty;
-  const blocker = useBlocker({
-    shouldBlockFn: () => blocking.current,
-    enableBeforeUnload: () => blocking.current,
-    withResolver: true,
-  });
-  const guard = (
-    <AlertDialog open={blocker.status === "blocked"}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Quitter sans enregistrer ?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Les modifications de cette routine seront perdues.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => blocker.reset?.()}>Rester</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={() => blocker.proceed?.()}>
-            Quitter
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-  return {
-    guard,
-    release: () => {
-      blocking.current = false;
-    },
-  };
-}
 
 /** Le menu ⋯ de la routine : ce qui ne se modifie pas champ par champ. */
 function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () => void }) {
@@ -141,7 +104,7 @@ const saved = () => toast.success("Routine enregistrée", { id: "routine-enregis
 export function RoutinePaneAlwaysEditable({ routine }: { routine: MockRoutine }) {
   const [draft, setDraft] = useState<Draft>(() => toDraft(routine));
   const dirty = isDirty(draft, routine);
-  const { guard, release } = useUnsavedGuard(dirty);
+  const { guard, release } = useUnsavedGuard(dirty, "cette routine");
 
   return (
     <>
@@ -181,7 +144,7 @@ export function RoutinePaneAlwaysEditable({ routine }: { routine: MockRoutine })
 export function RoutinePaneReadThenEdit({ routine }: { routine: MockRoutine }) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const dirty = draft !== null && isDirty(draft, routine);
-  const { guard, release } = useUnsavedGuard(dirty);
+  const { guard, release } = useUnsavedGuard(dirty, "cette routine");
 
   if (!draft)
     return (
@@ -272,7 +235,7 @@ export function RoutinePaneInline({ routine }: { routine: MockRoutine }) {
 export function RoutinePaneNew({ bare }: { bare: boolean }) {
   const navigate = useNavigate();
   const [draft, setDraft] = useState<Draft>(() => toDraft(undefined));
-  const { guard, release } = useUnsavedGuard(isDirty(draft, undefined));
+  const { guard, release } = useUnsavedGuard(isDirty(draft, undefined), "cette routine");
   useEffect(() => setDraftName(draft.name), [draft.name]);
   useEffect(() => () => setDraftName(""), []);
 

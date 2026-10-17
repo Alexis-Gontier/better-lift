@@ -22,24 +22,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDaysAgo, formatKg, formatLoad, formatMinutes, formatRest } from "@/lib/format";
+import { parseCount, parseKg } from "@/lib/parse";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { daysSince, estimateMinutes, groupSupersets, plannedVolume } from "@/mocks/routine-stats";
 import type { MockRoutine, MockRoutineExercise, MockSet } from "@/mocks/routines";
 import { TODAY } from "@/mocks/today";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
 import { routineMuscles } from "./routine-card";
-
-/** « 82,5 » ou « 82.5 » ; vide : pas de charge notée. */
-function parseKg(text: string): number | null {
-  const n = Number(text.replace(",", ".").trim());
-  return text.trim() === "" || Number.isNaN(n) ? null : Math.max(0, n);
-}
-
-/** Un entier positif, ou la valeur d'avant si la saisie n'en est pas un. */
-function parseCount(text: string, fallback: number): number {
-  const n = Number.parseInt(text, 10);
-  return Number.isNaN(n) || n < 0 ? fallback : n;
-}
 
 function Summary({
   routine,
