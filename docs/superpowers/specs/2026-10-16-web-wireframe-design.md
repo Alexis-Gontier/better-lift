@@ -95,6 +95,21 @@ et D199 (style), qui seront repris après validation du wireframe.
 - **D241 — Le gabarit liste | détail n'est pas étendu.** Accueil, Planning et Progression sont
   des vues d'ensemble, pas des collections ; Paramètres a déjà sa navigation. Seul candidat
   écarté pour l'instant : Corps › Mensurations.
+- **D242 — Détails tranchés en construisant la passe 6** :
+  - la tête du panneau de détail (`DetailHeader`) est **collante** : Annuler / Enregistrer
+    restent à portée sur une longue routine ;
+  - **créer est un formulaire dans toutes les variantes** : tant que la routine n'a ni nom ni
+    exercice, il n'y a rien à enregistrer champ par champ ; bouton *Créer*, pas *Enregistrer* ;
+  - quitter un élément modifié non enregistré (A, B, création) ouvre « Quitter sans
+    enregistrer ? » (`useUnsavedGuard`, sur `useBlocker` du routeur) ;
+  - les retouches champ par champ et les suppressions s'annoncent par un toast `sonner`
+    (en bas au centre, la barre Proto tient le coin droit) qui propose *Annuler* ;
+  - la ligne ouverte défile dans la vue à l'arrivée par une adresse ; l'Historique se déplie
+    jusqu'au mois de la séance ouverte ; l'onglet de la liste des exercices suit l'exercice ouvert ;
+  - sans aucun élément (`?etat=vide`), le panneau reste vierge : il n'y a rien à choisir ;
+  - sans API, les enregistrements vivent dans des magasins en mémoire (`mocks/*-store.ts`,
+    jusqu'au rechargement). Une séance corrigée relit son volume ; ses badges de record restent
+    ceux d'origine — ils seront dérivés à la lecture au branchement.
 
 ## 3. Coquille
 
@@ -292,7 +307,8 @@ variante par page (D234) et le contenu du header, vidé à la demande (§ 3).
 6. **Liste | détail repensée** (D235–D241, 2026-10-17), étape par étape, un commit et une
    capture chacune : sélection dans le chemin et retrait des pages de détail ; variantes
    d'édition A/B/C d'une routine ; création par la liste ; variantes d'édition d'une séance ;
-   note d'exercice et exercice personnalisé.
+   note d'exercice et exercice personnalisé. **Faite le 2026-10-17** ; reste à choisir A, B ou C
+   pour les routines et pour les séances (D239).
 
 Le catalogue n'est pas figé : à chaque passe, on peut chercher d'autres composants (shoogle.dev,
 recherches web, applications de référence comme Hevy, Strong ou Liftosaur). Chaque nouveau
