@@ -194,7 +194,8 @@ et D199 (style), qui seront repris après validation du wireframe.
   bloc ; sous la tête fixe, les exercices et la colonne de droite ont chacun leur défilement
   (`overscroll-contain`) ; étroit, une seule colonne défile. Les chiffres sont des mini-cartes
   (durée, séries, volume prévu, exercices, puis la dernière fois sur toute la largeur), hors de
-  toute carte englobante. *Muscles travaillés* ne garde que la silhouette, plus petite : la liste
+  toute carte englobante. *Muscles travaillés* ne garde que la silhouette, en petit (96 px de
+  haut) : la liste
   des séries par muscle (`setsByMuscle`) est retirée.
 - **D256 — Exercices | aperçu redimensionnables, en `ScrollArea`** (2026-10-18, révise D255).
   Sous la tête fixe, un `ResizablePanelGroup` (largeur mémorisée, `routine-editeur`) : les

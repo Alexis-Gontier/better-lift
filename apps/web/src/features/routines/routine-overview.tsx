@@ -62,7 +62,7 @@ function Muscles({ routine }: { routine: MockRoutine }) {
     );
   return (
     // Hauteur explicite : la silhouette prendrait sinon toute la colonne.
-    <div className="mx-auto h-36 w-full max-w-44">
+    <div className="mx-auto h-24 w-full max-w-32">
       <BodyMap primary={primary} secondary={secondary} />
     </div>
   );
