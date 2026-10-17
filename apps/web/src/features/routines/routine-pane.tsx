@@ -135,7 +135,7 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
         }
       />
       <RoutineSummary routine={fromDraft(draft, routine)} />
-      <RoutineFields draft={draft} onChange={setDraft} bare />
+      <RoutineFields draft={draft} onChange={setDraft} />
       {guard}
     </>
   );
@@ -180,7 +180,7 @@ export function RoutinePaneNew() {
           </>
         }
       />
-      <RoutineFields draft={draft} onChange={setDraft} bare autoFocusName />
+      <RoutineFields draft={draft} onChange={setDraft} autoFocusName />
       {guard}
     </>
   );

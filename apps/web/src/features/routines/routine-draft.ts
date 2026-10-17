@@ -1,4 +1,9 @@
-import { FOLDERS, type MockRoutine, type MockRoutineExercise } from "@/mocks/routines";
+import {
+  FOLDERS,
+  type MockRoutine,
+  type MockRoutineExercise,
+  type SetType,
+} from "@/mocks/routines";
 
 /** Un exercice du brouillon porte un identifiant stable : le glisser-déposer en a besoin. */
 export type DraftExercise = MockRoutineExercise & { uid: string };
@@ -111,4 +116,24 @@ export function unlink<T extends Linkable>(exercises: readonly T[], i: number): 
 export function chainsIntoNext(exercises: readonly Linkable[], i: number): boolean {
   const e = exercises[i];
   return !!e?.superset && exercises[i + 1]?.superset === e.superset;
+}
+
+/** Les types de série proposés, dans l'ordre du menu ; `short` est l'étiquette de la ligne. */
+export const SET_TYPES: readonly { value: SetType | "normal"; label: string; short: string }[] = [
+  { value: "normal", label: "Normale", short: "" },
+  { value: "warmup", label: "Échauffement", short: "É" },
+  { value: "drop", label: "Dégressive", short: "D" },
+  { value: "failure", label: "Jusqu'à l'échec", short: "X" },
+];
+
+/**
+ * L'étiquette de chaque série, comme dans Hevy : É, D ou X pour une série typée, et un numéro
+ * pour les séries normales, comptées entre elles (É, 1, 2, D → É 1 2 D).
+ */
+export function setLabels(sets: readonly { type?: SetType }[]): string[] {
+  let n = 0;
+  return sets.map((s) => {
+    if (!s.type) return String(++n);
+    return SET_TYPES.find((t) => t.value === s.type)?.short ?? "?";
+  });
 }

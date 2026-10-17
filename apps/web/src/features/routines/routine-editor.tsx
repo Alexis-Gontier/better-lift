@@ -1,5 +1,6 @@
 import {
   ArrowDown,
+  Check,
   GripVertical,
   Link2,
   Minus,
@@ -20,6 +21,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -55,21 +57,16 @@ import {
   type DraftExercise,
   linkWithNext,
   normalizeSupersets,
+  SET_TYPES,
+  setLabels,
   unlink,
 } from "./routine-draft";
 
-/**
- * Champ « nu » (variante A, D239) : sans bordure tant qu'on ne le survole pas, il se lit
- * comme du texte ; au survol et au focus, il redevient un champ.
- */
-const bareField =
-  "border-transparent bg-transparent shadow-none hover:border-input focus-visible:border-ring dark:bg-transparent";
-
-/** Le même effet sur un groupe (champ + unité) : la bordure est celle du groupe. */
-const bareGroup = "border-transparent hover:border-input dark:bg-transparent";
-
 /** Les repos proposés ; la valeur de la routine s'y ajoute si elle n'y est pas. */
 const RESTS = [0, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240, 300];
+
+/** Les colonnes d'une ligne de série : type, dernière fois, charge, répétitions, retrait. */
+const SET_GRID = "grid grid-cols-[2.5rem_1fr_9rem_9rem_2rem] items-center gap-2";
 
 /** « 25 kg × 15 » : la série de même rang à la dernière séance, ou la dernière connue. */
 function lastTime(slug: string, i: number): string {
@@ -85,15 +82,11 @@ export function stepValue(value: string, delta: number, min: number): string {
   return String(Math.max(min, Math.round((n + delta) * 100) / 100));
 }
 
-/**
- * Une valeur de série : − / + autour du champ, l'unité à côté du nombre. En champs nus, les
- * boutons n'apparaissent qu'au survol ou au focus : la ligne se lit comme du texte.
- */
+/** Une valeur de série : − / + autour du champ, l'unité à côté du nombre (D246). */
 function SetField({
   value,
   unit,
   label,
-  bare,
   step,
   min,
   onChange,
@@ -101,21 +94,16 @@ function SetField({
   value: string;
   unit: string;
   label: string;
-  bare: boolean;
   step: number;
   min: number;
   onChange: (value: string) => void;
 }) {
-  const reveal = bare
-    ? "opacity-0 transition-opacity group-hover/input-group:opacity-100 group-focus-within/input-group:opacity-100"
-    : undefined;
   return (
-    <InputGroup className={cn("w-36", bare && bareGroup)}>
+    <InputGroup className="w-36">
       <InputGroupAddon>
         <InputGroupButton
           size="icon-xs"
           aria-label={`Moins : ${label}`}
-          className={reveal}
           onClick={() => onChange(stepValue(value, -step, min))}
         >
           <Minus />
@@ -138,7 +126,6 @@ function SetField({
         <InputGroupButton
           size="icon-xs"
           aria-label={`Plus : ${label}`}
-          className={reveal}
           onClick={() => onChange(stepValue(value, step, min))}
         >
           <Plus />
@@ -148,14 +135,58 @@ function SetField({
   );
 }
 
+/** Le type d'une série, choisi sur son étiquette (É, 1, 2, D, X), comme dans Hevy (D248). */
+function SetTypeButton({
+  set,
+  label,
+  index,
+  onChange,
+}: {
+  set: MockSet;
+  label: string;
+  index: number;
+  onChange: (type: MockSet["type"]) => void;
+}) {
+  const current = set.type ?? "normal";
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          aria-label={`Type de la série ${index + 1}`}
+          className={cn("tabular-nums", set.type && "font-semibold")}
+        >
+          {label}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-52">
+        <DropdownMenuLabel>Type de série</DropdownMenuLabel>
+        {SET_TYPES.map((t) => (
+          <DropdownMenuItem
+            key={t.value}
+            onSelect={() => onChange(t.value === "normal" ? undefined : t.value)}
+          >
+            <span className="w-4 text-center font-semibold text-muted-foreground">
+              {t.short || "1"}
+            </span>
+            {t.label}
+            {t.value === current && <Check className="ml-auto" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /**
- * Une carte d'exercice de l'éditeur : la poignée sur toute la hauteur à gauche ; en tête la
- * vignette, le nom, le repos et le menu ⋯ ; un filet sur toute la largeur ; puis les séries,
- * face à la dernière fois.
+ * Une carte d'exercice de l'éditeur (D246) : la poignée sur toute la hauteur à gauche ; en tête
+ * la vignette, le nom, le repos et le menu ⋯ ; un filet ; les séries, face à la dernière fois ;
+ * un filet ; *Ajouter une série*. Les champs et les boutons se voient d'emblée : on lit la
+ * carte comme un formulaire.
  */
 function ExerciseEditor({
   exercise,
-  bare,
   chains,
   onChange,
   onRemove,
@@ -163,7 +194,6 @@ function ExerciseEditor({
   onUnlink,
 }: {
   exercise: MockRoutineExercise;
-  bare: boolean;
   /** Enchaîné au suivant dans un superset : son repos ne compte pas. */
   chains: boolean;
   onChange: (next: MockRoutineExercise) => void;
@@ -179,7 +209,9 @@ function ExerciseEditor({
       ...exercise,
       sets: exercise.sets.map((s, j) => (j === i ? { ...s, ...patch } : s)),
     });
-  const last = exercise.sets.at(-1) ?? { kg: null, reps: 10 };
+  // La série ajoutée reprend la dernière, sans son type : une série normale de plus.
+  const { type: _type, ...last } = exercise.sets.at(-1) ?? { kg: null, reps: 10 };
+  const labels = setLabels(exercise.sets);
   const rests = RESTS.includes(exercise.restSeconds)
     ? RESTS
     : [...RESTS, exercise.restSeconds].sort((x, y) => x - y);
@@ -191,9 +223,9 @@ function ExerciseEditor({
         <button
           type="button"
           aria-label={`Déplacer : ${name}`}
-          className="flex w-8 shrink-0 cursor-grab items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
+          className="flex w-5 shrink-0 cursor-grab items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
         >
-          <GripVertical className="size-4" />
+          <GripVertical className="size-3.5" />
         </button>
       </SortableItemHandle>
 
@@ -223,7 +255,7 @@ function ExerciseEditor({
               value={String(exercise.restSeconds)}
               onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
             >
-              <SelectTrigger size="sm" aria-label="Repos" className={cn("w-32", bare && bareField)}>
+              <SelectTrigger size="sm" aria-label="Repos" className="w-32">
                 <Timer className="text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -240,7 +272,7 @@ function ExerciseEditor({
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label={`Actions : ${name}`}>
+              <Button variant="outline" size="icon-sm" aria-label={`Actions : ${name}`}>
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
@@ -261,11 +293,11 @@ function ExerciseEditor({
           </DropdownMenu>
         </div>
 
-        {/* Le filet court sur toute la largeur de la carte, poignée exceptée. */}
+        {/* Les filets courent sur toute la largeur de la carte, poignée exceptée. */}
         <Separator />
 
-        <div className="flex flex-col gap-1 p-3">
-          <div className="grid grid-cols-[2.5rem_1fr_9rem_9rem_2rem] items-center gap-2 px-1 text-muted-foreground text-xs">
+        <div className="flex flex-col gap-1.5 p-3">
+          <div className={cn(SET_GRID, "px-1 text-muted-foreground text-xs")}>
             <span>Série</span>
             <span>Dernière fois</span>
             <span>Charge</span>
@@ -273,11 +305,13 @@ function ExerciseEditor({
             <span />
           </div>
           {exercise.sets.map((set, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-[2.5rem_1fr_9rem_9rem_2rem] items-center gap-2 rounded-md px-1 hover:bg-muted/40"
-            >
-              <span className="text-muted-foreground text-sm tabular-nums">{i + 1}</span>
+            <div key={i} className={cn(SET_GRID, "rounded-md px-1")}>
+              <SetTypeButton
+                set={set}
+                label={labels[i] ?? String(i + 1)}
+                index={i}
+                onChange={(type) => setAt(i, { type })}
+              />
               <span className="truncate text-muted-foreground text-sm tabular-nums">
                 {lastTime(exercise.slug, i)}
               </span>
@@ -286,7 +320,6 @@ function ExerciseEditor({
                 unit="kg"
                 step={2.5}
                 min={0}
-                bare={bare}
                 value={set.kg === null ? "" : String(set.kg)}
                 onChange={(v) => setAt(i, { kg: v === "" ? null : Number(v) })}
               />
@@ -295,7 +328,6 @@ function ExerciseEditor({
                 unit="rép."
                 step={1}
                 min={1}
-                bare={bare}
                 value={String(set.reps)}
                 onChange={(v) => setAt(i, { reps: Number(v) })}
               />
@@ -303,6 +335,7 @@ function ExerciseEditor({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={`Retirer la série ${i + 1}`}
+                className="text-muted-foreground"
                 disabled={exercise.sets.length === 1}
                 onClick={() =>
                   onChange({ ...exercise, sets: exercise.sets.filter((_, j) => j !== i) })
@@ -312,10 +345,15 @@ function ExerciseEditor({
               </Button>
             </div>
           ))}
+        </div>
+
+        <Separator />
+
+        <div className="p-3">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="mt-1 w-full text-muted-foreground"
+            className="w-full"
             onClick={() => onChange({ ...exercise, sets: [...exercise.sets, { ...last }] })}
           >
             <Plus data-icon="inline-start" /> Ajouter une série
@@ -328,21 +366,18 @@ function ExerciseEditor({
 
 /**
  * Les champs d'une routine : nom, dossier, notes, puis les exercices à réordonner. Ni en-tête
- * ni enregistrement : la variante qui l'affiche décide quand et comment on enregistre (D239).
+ * ni enregistrement : le panneau qui l'affiche décide quand on enregistre (D243).
  */
 export function RoutineFields({
   draft,
   onChange,
-  bare = false,
   autoFocusName = false,
 }: {
   draft: Draft;
   onChange: (update: (d: Draft) => Draft) => void;
-  bare?: boolean;
   autoFocusName?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
-  const field = bare ? bareField : undefined;
 
   const setExercise = (i: number, next: DraftExercise) =>
     onChange((d) => ({ ...d, exercises: d.exercises.map((e, j) => (j === i ? next : e)) }));
@@ -359,7 +394,6 @@ export function RoutineFields({
                   id="routine-name"
                   placeholder="Push A"
                   autoFocus={autoFocusName}
-                  className={field}
                   value={draft.name}
                   onChange={(e) => onChange((d) => ({ ...d, name: e.target.value }))}
                 />
@@ -370,7 +404,7 @@ export function RoutineFields({
                   value={draft.folder}
                   onValueChange={(folder) => onChange((d) => ({ ...d, folder }))}
                 >
-                  <SelectTrigger id="routine-folder" className={cn("w-full", field)}>
+                  <SelectTrigger id="routine-folder" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -390,7 +424,6 @@ export function RoutineFields({
               <Textarea
                 id="routine-notes"
                 placeholder="Échauffement, consignes…"
-                className={field}
                 value={draft.notes}
                 onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value }))}
               />
@@ -413,7 +446,6 @@ export function RoutineFields({
           <SortableItem key={e.uid} value={e.uid}>
             <ExerciseEditor
               exercise={e}
-              bare={bare}
               onChange={(next) => setExercise(i, { ...next, uid: e.uid })}
               chains={chainsIntoNext(draft.exercises, i)}
               onRemove={() =>

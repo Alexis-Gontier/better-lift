@@ -9,6 +9,7 @@ import {
   isDirty,
   linkWithNext,
   normalizeSupersets,
+  setLabels,
   toDraft,
   unlink,
 } from "./routine-draft";
@@ -120,5 +121,15 @@ describe("supersets", () => {
   it("seul le dernier d'un superset garde son repos", () => {
     const list = [ex("a", "A"), ex("b", "A"), ex("c")];
     expect([0, 1, 2].map((i) => chainsIntoNext(list, i))).toEqual([true, false, false]);
+  });
+});
+
+describe("étiquettes des séries", () => {
+  it("numérote les séries normales entre elles", () => {
+    expect(setLabels([{ type: "warmup" }, {}, {}, { type: "drop" }])).toEqual(["É", "1", "2", "D"]);
+  });
+
+  it("marque une série à l'échec", () => {
+    expect(setLabels([{}, { type: "failure" }, {}])).toEqual(["1", "X", "2"]);
   });
 });

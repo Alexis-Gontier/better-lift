@@ -136,6 +136,13 @@ et D199 (style), qui seront repris après validation du wireframe.
   coupé, ôte la lettre d'un exercice seul et renomme A, B… dans l'ordre (testé). Chaque membre
   porte l'étiquette « Superset A » ; seul le dernier garde son repos, les autres disent
   « Enchaîné ».
+- **D248 — Éditeur de routine lisible comme un formulaire** (révise D243 et D246, 2026-10-17).
+  Plus de champs nus : champs, − / + et listes se voient d'emblée, les boutons ont leur contour
+  (menu ⋯, *Ajouter une série*). Poignée plus étroite (20 px). Un filet au-dessus d'*Ajouter
+  une série*, qui prend toute la largeur. **Type de série comme dans Hevy** : l'étiquette de la
+  ligne est un bouton qui ouvre Normale · Échauffement (É) · Dégressive (D) · Jusqu'à l'échec
+  (X) ; les séries normales sont numérotées entre elles (`setLabels`, testé : É 1 2 D). Une
+  série ajoutée est normale. `MockSet.type` absent = série normale.
 
 ## 3. Coquille
 
