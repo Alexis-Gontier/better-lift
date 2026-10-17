@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { formatShortDay } from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
-import { routineById } from "@/mocks/routines";
+import { useRoutines } from "@/mocks/routine-store";
+import type { MockRoutine } from "@/mocks/routines";
 import { mockSessions } from "@/mocks/sessions";
 
 type Params = { id?: string; slug?: string };
@@ -19,9 +20,14 @@ type Params = { id?: string; slug?: string };
  * Le libellé d'une page de détail est son nom (« Push A ») plutôt que « Détail ».
  * Lu dans les données factices ; il viendra de l'API au branchement.
  */
-function detailLabel(routeId: string, params: Params, fallback: string): string {
+function detailLabel(
+  routeId: string,
+  params: Params,
+  fallback: string,
+  routines: MockRoutine[],
+): string {
   if (routeId.endsWith("/routines/$id") && params.id)
-    return routineById(params.id)?.name ?? fallback;
+    return routines.find((r) => r.id === params.id)?.name ?? fallback;
   if (routeId.endsWith("/exercises/$slug") && params.slug)
     return exerciseBySlug(params.slug)?.name ?? fallback;
   if (routeId.endsWith("/history/$id") && params.id) {
@@ -32,11 +38,13 @@ function detailLabel(routeId: string, params: Params, fallback: string): string 
 }
 
 export function AppBreadcrumb() {
+  // Lue dans le magasin : une routine renommée change aussitôt de libellé.
+  const routines = useRoutines();
   const crumbs = useMatches()
     .filter((m) => m.staticData.crumb)
     .map((m) => ({
       id: m.id,
-      label: detailLabel(m.routeId, m.params as Params, m.staticData.crumb as string),
+      label: detailLabel(m.routeId, m.params as Params, m.staticData.crumb as string, routines),
       pathname: m.pathname,
     }));
 

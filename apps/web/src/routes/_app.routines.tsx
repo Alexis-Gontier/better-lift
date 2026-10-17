@@ -8,7 +8,7 @@ import {
   RoutineListEmpty,
   RoutineListSkeleton,
 } from "@/features/routines/routine-list";
-import { mockRoutines } from "@/mocks/routines";
+import { useRoutines } from "@/mocks/routine-store";
 
 export const Route = createFileRoute("/_app/routines")({
   staticData: { crumb: "Routines" },
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_app/routines")({
 /** La liste reste montée ; la routine ouverte est la route enfant (D235). */
 function RoutinesPage() {
   const { state } = useProto();
+  const routines = useRoutines();
   return (
     <ListDetailPage
       key={state}
@@ -35,7 +36,7 @@ function RoutinesPage() {
       {state === "chargement" && <RoutineListSkeleton />}
       {state === "erreur" && <StateError title="Les routines n'ont pas pu se charger" />}
       {state === "vide" && <RoutineListEmpty />}
-      {state === "nominal" && <RoutineList routines={mockRoutines} />}
+      {state === "nominal" && <RoutineList routines={routines} />}
     </ListDetailPage>
   );
 }

@@ -96,7 +96,8 @@ export function ListDetailPage({ title, tabs, actions, storageId, detail, childr
 }
 
 type HeaderProps = {
-  title: string;
+  /** Le nom, ou le champ qui le modifie (variante C, D239). */
+  title: ReactNode;
   subtitle?: string;
   /** Actions à droite du titre ; l'action principale en dernier. */
   actions?: ReactNode;
@@ -104,10 +105,18 @@ type HeaderProps = {
   tabs?: ReactNode;
 };
 
-/** La tête du panneau de détail : nom de l'élément, actions, puis ses onglets. */
+/**
+ * La tête du panneau de détail : nom de l'élément, actions, puis ses onglets. Collée en haut
+ * du panneau : Annuler / Enregistrer restent à portée sur une longue routine.
+ */
 export function DetailHeader({ title, subtitle, actions, tabs }: HeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-3", tabs && "-mx-6 border-b px-6")}>
+    <div
+      className={cn(
+        "sticky top-0 z-10 -mx-6 -mt-6 flex flex-col gap-3 border-b bg-background px-6 pt-6",
+        !tabs && "pb-4",
+      )}
+    >
       <div className="flex min-h-9 items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col">
           <h2 className="truncate font-medium text-2xl tracking-tight">{title}</h2>

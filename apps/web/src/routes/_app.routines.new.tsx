@@ -1,7 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RoutineEditor } from "@/features/routines/routine-editor";
+import { useProto } from "@/components/proto/use-proto";
+import { RoutinePaneNew } from "@/features/routines/routine-pane";
 
 export const Route = createFileRoute("/_app/routines/new")({
   staticData: { crumb: "Nouvelle" },
-  component: () => <RoutineEditor />,
+  component: NewRoutinePane,
 });
+
+function NewRoutinePane() {
+  const { variant } = useProto();
+  return <RoutinePaneNew bare={variant === "a"} />;
+}
