@@ -23,7 +23,12 @@ export function AppSidebar() {
   const { pathname } = useLocation();
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader />
+      {/* Le nom, aligné sur la hauteur du header ; masqué quand la barre est repliée. */}
+      <SidebarHeader className="h-12 justify-center px-4">
+        <Link to="/" className="font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
+          BETTER-LIFT.
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
         {NAV_GROUPS.map((group) => (
           <SidebarGroup key={group.label ?? group.items[0]?.to}>
