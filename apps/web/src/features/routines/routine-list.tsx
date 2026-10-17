@@ -8,16 +8,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  ChevronRight,
-  ListChecks,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { ChevronRight, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,14 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -285,35 +270,28 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
   );
 }
 
+/** La liste pendant le chargement : la recherche, puis deux dossiers et leurs cartes. */
 export function RoutineListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
-      <Skeleton className="h-5 w-40 rounded" />
-      <Skeleton className="h-48 rounded-xl" />
-      <Skeleton className="h-5 w-32 rounded" />
-      <Skeleton className="h-16 rounded-xl" />
+      {[3, 1].map((count, f) => (
+        <div key={f} className="flex flex-col gap-2">
+          <Skeleton className="my-1 h-5 w-36 rounded" />
+          {Array.from({ length: count }, (_, i) => (
+            <Skeleton key={i} className="h-[3.875rem] rounded-xl" />
+          ))}
+        </div>
+      ))}
     </>
   );
 }
 
+/** Aucune routine : la liste le dit d'une ligne, le panneau de droite guide la création (D260). */
 export function RoutineListEmpty() {
   return (
-    <Empty className="border border-dashed">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <ListChecks />
-        </EmptyMedia>
-        <EmptyTitle>Pas encore de routine</EmptyTitle>
-        <EmptyDescription>
-          Une routine prépare une séance : ses exercices, ses séries et ses temps de repos.
-        </EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button asChild>
-          <Link to="/routines/new">Créer une routine</Link>
-        </Button>
-      </EmptyContent>
-    </Empty>
+    <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
+      Aucune routine pour l'instant.
+    </p>
   );
 }

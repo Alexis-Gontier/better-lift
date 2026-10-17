@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DetailEmpty, DetailSkeleton } from "@/components/list-detail";
+import { DetailEmpty } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import { RoutinePane } from "@/features/routines/routine-pane";
+import { RoutinePaneSkeleton } from "@/features/routines/routines-home";
 import { useRoutine } from "@/mocks/routine-store";
 
 export const Route = createFileRoute("/_app/routines/$id")({
@@ -16,7 +17,7 @@ function RoutineRoute() {
   const { state } = useProto();
   const routine = useRoutine(id);
 
-  if (state === "chargement") return <DetailSkeleton />;
+  if (state === "chargement") return <RoutinePaneSkeleton />;
   if (state === "erreur") return <StateError title="La routine n'a pas pu se charger" />;
   if (!routine || state === "vide")
     return (
