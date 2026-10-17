@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { formatKg, formatNumber, formatShortDay } from "@/lib/format";
+import { formatKg, formatNumber, formatShortDay, plural } from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { sessionDetail } from "@/mocks/history";
 import { inPeriod, muscleStats, PERIODS, type Period, weeklySeries } from "@/mocks/progress";
@@ -45,7 +45,7 @@ export function ProgressCharts({ period, single = false }: { period: Period; sin
   const details = sessions.map((s) => ({
     exercises: sessionDetail(s).exercises.map((e) => ({
       muscle: exerciseBySlug(e.slug)?.muscle ?? "Autre",
-      volume: e.sets.reduce((sum, x) => sum + x.kg * x.reps, 0),
+      volume: e.sets.reduce((sum, x) => sum + (x.kg ?? 0) * x.reps, 0),
     })),
   }));
   const muscles = muscleStats(details, weeks);
@@ -70,7 +70,7 @@ export function ProgressCharts({ period, single = false }: { period: Period; sin
                 dataKey="muscle"
                 tickLine={false}
                 axisLine={false}
-                width={80}
+                width={110}
               />
               <ChartTooltip
                 content={<ChartTooltipContent formatter={(v) => formatKg(Number(v))} />}
@@ -163,8 +163,8 @@ export function ProgressCharts({ period, single = false }: { period: Period; sin
         <CardHeader>
           <CardTitle>Nombre de séances</CardTitle>
           <CardDescription>
-            {sessions.length} séances, {formatNumber(sessions.length / weeks)} par semaine en
-            moyenne
+            {plural(sessions.length, "séance")}, {formatNumber(sessions.length / weeks)} par semaine
+            en moyenne
           </CardDescription>
         </CardHeader>
         <CardContent>

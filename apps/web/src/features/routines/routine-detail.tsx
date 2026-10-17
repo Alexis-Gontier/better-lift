@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDaysAgo, formatKg, formatMinutes, formatRest } from "@/lib/format";
+import { formatDaysAgo, formatKg, formatLoad, formatMinutes, formatRest } from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { daysSince, estimateMinutes, groupSupersets, plannedVolume } from "@/mocks/routine-stats";
 import type { MockRoutine, MockRoutineExercise } from "@/mocks/routines";
@@ -87,9 +87,7 @@ function ExerciseBlock({ exercise }: { exercise: MockRoutineExercise }) {
           {exercise.sets.map((set, i) => (
             <TableRow key={i}>
               <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-              <TableCell className="tabular-nums">
-                {set.kg === 0 ? "Poids du corps" : formatKg(set.kg)}
-              </TableCell>
+              <TableCell className="tabular-nums">{formatLoad(set.kg)}</TableCell>
               <TableCell className="tabular-nums">{set.reps}</TableCell>
             </TableRow>
           ))}
@@ -131,7 +129,8 @@ export function RoutineDetail({ routine }: { routine: MockRoutine }) {
 
 /** « 80–85 kg » : la plage des charges d'un exercice, ou une seule valeur. */
 function loadRange(e: MockRoutineExercise): string {
-  const kgs = e.sets.map((s) => s.kg);
+  const kgs = e.sets.flatMap((s) => (s.kg === null ? [] : [s.kg]));
+  if (kgs.length === 0) return "—";
   const min = Math.min(...kgs);
   const max = Math.max(...kgs);
   if (max === 0) return "Poids du corps";

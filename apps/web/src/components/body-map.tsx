@@ -4,12 +4,20 @@ import Model, { type Muscle } from "react-body-highlighter";
 /** Nos groupes musculaires, traduits dans le vocabulaire de la silhouette. */
 const MUSCLE_MAP: Record<string, Muscle[]> = {
   Pectoraux: ["chest"],
+  "Haut des pectoraux": ["chest"],
   Épaules: ["front-deltoids", "back-deltoids"],
+  Deltoïdes: ["front-deltoids", "back-deltoids"],
+  "Deltoïdes postérieurs": ["back-deltoids"],
   Triceps: ["triceps"],
   Biceps: ["biceps"],
-  Dos: ["upper-back", "trapezius", "lower-back"],
+  "Avant-bras": ["forearm"],
+  "Grand dorsal": ["upper-back"],
+  "Haut du dos": ["upper-back", "trapezius"],
+  Trapèzes: ["trapezius"],
+  Rhomboïdes: ["upper-back"],
   Quadriceps: ["quadriceps"],
-  Ischios: ["hamstring"],
+  "Ischio-jambiers": ["hamstring"],
+  Adducteurs: ["adductor"],
   Fessiers: ["gluteal"],
   Mollets: ["calves", "left-soleus", "right-soleus"],
 };

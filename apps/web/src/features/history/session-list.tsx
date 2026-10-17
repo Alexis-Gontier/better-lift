@@ -27,7 +27,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { formatKg, formatMinutes, formatMonth, formatWeekdayDay } from "@/lib/format";
+import { formatKg, formatMinutes, formatMonth, formatWeekdayDay, plural } from "@/lib/format";
 import { groupByMonth } from "@/mocks/history";
 import { mockRoutines } from "@/mocks/routines";
 import type { MockSession } from "@/mocks/sessions";
@@ -127,7 +127,7 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
             <div className="flex items-baseline justify-between">
               <h2 className="font-medium first-letter:uppercase">{formatMonth(g.month)}</h2>
               <span className="text-muted-foreground text-xs tabular-nums">
-                {g.sessions.length} séances · {formatKg(volume)}
+                {plural(g.sessions.length, "séance")} · {formatKg(volume)}
               </span>
             </div>
             <Card className="gap-0 py-0">

@@ -35,13 +35,26 @@ describe("sessionDetail", () => {
     expect(sessionDetail(session)).toEqual(sessionDetail(session));
   });
 
-  it("reprend les exercices de la routine", () => {
-    const detail = sessionDetail(s("42", "2026-10-15", "Push A"));
-    expect(detail.exercises.map((e) => e.slug)).toEqual([
-      "developpe-couche",
-      "developpe-militaire",
-      "elevations-laterales",
-      "extension-triceps-poulie",
+  it("reprend les séries réellement faites", () => {
+    const detail = sessionDetail(s("hevy-2026-07-24", "2026-07-24", "Legs"));
+    expect(detail.exercises[0]?.slug).toBe("sled-hack-squat");
+    expect(detail.exercises[0]?.sets).toEqual([
+      { kg: 20, reps: 5 },
+      { kg: 20, reps: 5 },
+      { kg: 20, reps: 5 },
+      { kg: 20, reps: 5 },
     ]);
+  });
+
+  it("ne marque pas de record la première fois qu'un exercice est fait", () => {
+    const detail = sessionDetail(s("hevy-2026-07-23", "2026-07-23", "Push"));
+    expect(detail.exercises.flatMap((e) => e.sets).some((x) => x.record)).toBe(false);
+  });
+
+  it("marque la meilleure série qui bat les séances précédentes", () => {
+    // 29 juillet : 85 × 7 au développé machine bat les 70 × 10 du 23.
+    const detail = sessionDetail(s("hevy-2026-07-29", "2026-07-29", "Push"));
+    const press = detail.exercises.find((e) => e.slug === "lever-chest-press");
+    expect(press?.sets.map((x) => x.record ?? false)).toEqual([true, false, false]);
   });
 });

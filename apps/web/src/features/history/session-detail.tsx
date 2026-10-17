@@ -10,7 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDay, formatDelta, formatKg, formatMinutes, formatShortDay } from "@/lib/format";
+import {
+  formatDay,
+  formatDelta,
+  formatKg,
+  formatLoad,
+  formatMinutes,
+  formatShortDay,
+} from "@/lib/format";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { type DoneExercise, doneVolume, type SessionDetail } from "@/mocks/history";
 import { mockRoutines } from "@/mocks/routines";
@@ -103,9 +110,7 @@ function ExerciseDone({ exercise }: { exercise: DoneExercise }) {
             {exercise.sets.map((set, i) => (
               <TableRow key={`${i}-${set.kg}-${set.reps}`}>
                 <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-                <TableCell className="tabular-nums">
-                  {set.kg === 0 ? "Poids du corps" : formatKg(set.kg)}
-                </TableCell>
+                <TableCell className="tabular-nums">{formatLoad(set.kg)}</TableCell>
                 <TableCell className="tabular-nums">{set.reps}</TableCell>
                 <TableCell className="text-right">
                   {set.record && (

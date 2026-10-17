@@ -110,9 +110,11 @@ function ExerciseEditor({
               inputMode="decimal"
               step={2.5}
               min={0}
-              value={set.kg}
+              value={set.kg ?? ""}
               aria-label={`Charge de la série ${i + 1}`}
-              onChange={(e) => setAt(i, { kg: Number(e.target.value) })}
+              onChange={(e) =>
+                setAt(i, { kg: e.target.value === "" ? null : Number(e.target.value) })
+              }
             />
             <Input
               type="number"

@@ -15,7 +15,12 @@ const shortDay = new Intl.DateTimeFormat("fr-FR", {
 const asDate = (date: string) => new Date(`${date}T00:00:00Z`);
 
 export const formatNumber = (n: number) => number.format(n);
+/** « 1 séance », « 2 séances » : le nom au pluriel au-delà de un. */
+export const plural = (n: number, word: string) => `${number.format(n)} ${word}${n > 1 ? "s" : ""}`;
 export const formatKg = (n: number) => `${number.format(n)} kg`;
+/** La charge d'une série : « — » si elle n'a pas été notée, « Poids du corps » à 0 kg. */
+export const formatLoad = (kg: number | null) =>
+  kg === null ? "—" : kg === 0 ? "Poids du corps" : formatKg(kg);
 export const formatDay = (date: string) => day.format(asDate(date));
 export const formatShortDay = (date: string) => shortDay.format(asDate(date));
 

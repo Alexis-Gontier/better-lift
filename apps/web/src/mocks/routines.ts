@@ -1,4 +1,7 @@
-export type MockSet = { kg: number; reps: number };
+import { lastSets } from "./workouts";
+
+/** Une série ; charge `null` : pas encore de charge connue pour cet exercice. */
+export type MockSet = { kg: number | null; reps: number };
 export type MockRoutineExercise = {
   slug: string;
   sets: MockSet[];
@@ -15,99 +18,80 @@ export type MockRoutine = {
   exercises: MockRoutineExercise[];
 };
 
-export const FOLDERS = ["Push", "Pull", "Jambes", "Haut du corps"] as const;
+export const FOLDERS = ["Push Pull Legs", "Full body"] as const;
 
-const sets = (kg: number, reps: number, n = 3): MockSet[] =>
-  Array.from({ length: n }, () => ({ kg, reps }));
+/**
+ * Un exercice de routine tel qu'en prod : répétitions visées et repos. La prod ne fixe pas de
+ * charge ; on reprend, série par série, celle de la dernière fois (la dernière série connue
+ * au-delà), comme le « précédent » de Hevy. Les séries d'échauffement sont omises.
+ */
+function exercise(slug: string, restSeconds: number, reps: number[]): MockRoutineExercise {
+  const last = lastSets(slug);
+  return {
+    slug,
+    restSeconds,
+    sets: reps.map((r, i) => ({ kg: (last?.[i] ?? last?.at(-1))?.[0] ?? null, reps: r })),
+  };
+}
 
+/** Les routines du compte de prod, dans leur ordre. */
 export const mockRoutines: MockRoutine[] = [
   {
     id: "1",
-    name: "Push A",
-    folder: "Push",
-    lastDone: "2026-10-09",
-    notes: "Échauffement épaules avant le développé.",
+    name: "Push",
+    folder: "Push Pull Legs",
+    lastDone: "2026-10-13",
     exercises: [
-      {
-        slug: "developpe-couche",
-        sets: [{ kg: 80, reps: 8 }, ...sets(85, 6, 3)],
-        restSeconds: 150,
-      },
-      { slug: "developpe-militaire", sets: sets(45, 8), restSeconds: 120 },
-      { slug: "elevations-laterales", sets: sets(10, 15), restSeconds: 60, superset: "A" },
-      { slug: "extension-triceps-poulie", sets: sets(25, 12), restSeconds: 60, superset: "A" },
+      exercise("lever-seated-fly", 90, [15, 15, 15]),
+      exercise("lever-chest-press", 150, [10, 10, 10]),
+      exercise("dumbbell-incline-bench-press", 120, [10, 10, 10]),
+      exercise("lever-seated-dip", 120, [15, 10, 6]),
+      exercise("dumbbell-lateral-raise", 105, [12, 12, 12, 12, 12, 12, 12, 12]),
+      exercise("barbell-lying-triceps-extension-skull-crusher", 90, [10, 10, 10]),
+      exercise("lever-military-press", 105, [12, 12, 12]),
     ],
   },
   {
     id: "2",
-    name: "Pull A",
-    folder: "Pull",
-    lastDone: "2026-10-10",
+    name: "Pull",
+    folder: "Push Pull Legs",
+    lastDone: "2026-07-26",
     exercises: [
-      { slug: "tractions", sets: sets(0, 8, 4), restSeconds: 120 },
-      { slug: "rowing", sets: sets(70, 8), restSeconds: 120 },
-      { slug: "face-pull", sets: sets(20, 15), restSeconds: 60 },
-      { slug: "curl-biceps", sets: sets(14, 10), restSeconds: 60 },
+      exercise("cable-one-arm-curl", 120, [12, 12, 12]),
+      exercise("cable-hammer-curl-with-rope", 90, [10, 10, 10, 10]),
+      exercise("cable-pulldown", 120, [10, 10, 10]),
+      exercise("cable-seated-one-arm-alternate-row", 105, [12, 12, 12]),
+      exercise("lever-t-bar-row", 120, [8, 8, 8, 8, 8]),
+      exercise("cable-straight-arm-pulldown", 90, [15, 15, 15]),
+      exercise("lever-seated-reverse-fly", 90, [10, 10, 10]),
     ],
   },
   {
     id: "3",
-    name: "Jambes A",
-    folder: "Jambes",
-    lastDone: "2026-10-11",
+    name: "Full body",
+    folder: "Full body",
+    lastDone: null,
     exercises: [
-      { slug: "squat", sets: [{ kg: 100, reps: 5 }, ...sets(115, 5, 3)], restSeconds: 180 },
-      { slug: "presse-cuisses", sets: sets(180, 10), restSeconds: 120 },
-      { slug: "leg-curl", sets: sets(45, 12), restSeconds: 90, superset: "A" },
-      { slug: "mollets-debout", sets: sets(60, 15), restSeconds: 90, superset: "A" },
+      exercise("barbell-bench-press", 180, [6, 6, 6]),
+      exercise("cable-pulldown", 150, [10, 10, 10]),
+      exercise("cable-pushdown-with-rope-attachment", 105, [10, 10, 10, 10]),
+      exercise("cable-hammer-curl-with-rope", 105, [10, 10, 10, 10]),
+      exercise("lever-seated-dip", 120, [15, 10, 6]),
+      exercise("dumbbell-lateral-raise", 105, [12, 12, 12, 12, 12, 12, 12, 12]),
+      exercise("barbell-seated-overhead-press", 90, [12, 12, 12]),
     ],
   },
   {
     id: "4",
-    name: "Push B",
-    folder: "Push",
-    lastDone: "2026-10-02",
+    name: "Legs",
+    folder: "Push Pull Legs",
+    lastDone: "2026-07-24",
     exercises: [
-      { slug: "developpe-incline-halteres", sets: sets(30, 10, 4), restSeconds: 120 },
-      { slug: "dips", sets: sets(10, 10), restSeconds: 90 },
-      { slug: "developpe-militaire", sets: sets(40, 10), restSeconds: 90 },
-      { slug: "elevations-laterales", sets: sets(10, 15), restSeconds: 60 },
-      { slug: "extension-triceps-poulie", sets: sets(25, 12), restSeconds: 60 },
-      { slug: "face-pull", sets: sets(20, 15), restSeconds: 60 },
-    ],
-  },
-  {
-    id: "5",
-    name: "Pull B",
-    folder: "Pull",
-    lastDone: "2026-10-03",
-    exercises: [
-      { slug: "souleve-de-terre", sets: sets(140, 5), restSeconds: 180 },
-      { slug: "tirage-vertical", sets: sets(60, 10), restSeconds: 90 },
-      { slug: "curl-biceps", sets: sets(14, 12), restSeconds: 60 },
-    ],
-  },
-  {
-    id: "6",
-    name: "Haut du corps",
-    folder: "Haut du corps",
-    lastDone: "2026-10-03",
-    exercises: [
-      { slug: "developpe-couche", sets: sets(80, 8), restSeconds: 120 },
-      { slug: "rowing", sets: sets(70, 8), restSeconds: 120 },
-      { slug: "developpe-militaire", sets: sets(40, 10), restSeconds: 90 },
-      { slug: "tractions", sets: sets(0, 8), restSeconds: 90 },
-    ],
-  },
-  {
-    id: "7",
-    name: "Jambes B",
-    folder: "Jambes",
-    lastDone: null,
-    exercises: [
-      { slug: "souleve-de-terre", sets: sets(120, 6), restSeconds: 180 },
-      { slug: "presse-cuisses", sets: sets(160, 12), restSeconds: 120 },
-      { slug: "mollets-debout", sets: sets(60, 15, 4), restSeconds: 60 },
+      exercise("sled-hack-squat", 180, [5, 5, 5, 5]),
+      exercise("hack-calf-raise", 120, [15, 15, 15, 15]),
+      exercise("lever-seated-leg-curl", 105, [10, 10, 10, 10]),
+      exercise("lever-leg-extension", 90, [15, 15, 15, 15]),
+      exercise("lever-seated-hip-adduction", 90, [12, 12, 12]),
     ],
   },
 ];

@@ -1,25 +1,28 @@
 import type { Planned } from "./calendar";
-import { mockRoutines } from "./routines";
+import { exerciseBySlug } from "./exercises";
+import { estimateMinutes } from "./routine-stats";
+import { mockRoutines, routineById } from "./routines";
 import { mockSessions } from "./sessions";
 import { addDays, startOfWeek } from "./stats";
 import { TODAY } from "./today";
 
-/** La routine planifiée aujourd'hui (passe 3 : une seule, fixe). */
+/** La routine planifiée aujourd'hui (vendredi) : Legs, d'après la semaine type. */
+const todayRoutine = routineById("4");
 export const mockToday = {
   routineId: "4",
-  routine: "Push B",
-  exercises: 6,
-  minutes: 65,
-  muscles: ["Pectoraux", "Épaules", "Triceps"],
+  routine: todayRoutine?.name ?? "Legs",
+  exercises: todayRoutine?.exercises.length ?? 0,
+  minutes: estimateMinutes(todayRoutine?.exercises ?? []),
+  muscles: [
+    ...new Set(todayRoutine?.exercises.map((e) => exerciseBySlug(e.slug)?.muscle ?? "") ?? []),
+  ].filter(Boolean),
 };
 
-/** Semaine type : jour (0 = lundi) → routine. */
+/** Semaine type : jour (0 = lundi) → routine. Push le mardi, Pull le jeudi, Legs le vendredi. */
 const TEMPLATE: [number, string][] = [
-  [0, "1"],
-  [1, "2"],
-  [3, "3"],
+  [1, "1"],
+  [3, "2"],
   [4, "4"],
-  [5, "5"],
 ];
 
 /** À partir d'aujourd'hui : la semaine type, sur quatre semaines. */
@@ -32,7 +35,7 @@ const future: Planned[] = Array.from({ length: 5 }, (_, w) =>
   .flat()
   .filter((p) => p.date >= TODAY);
 
-/** Avant aujourd'hui : ce qui a été fait était planifié, plus deux séances manquées. */
+/** Avant aujourd'hui : ce qui a été fait était planifié, plus le Pull de jeudi, manqué. */
 const past: Planned[] = [
   ...mockSessions
     .filter((s) => s.date < TODAY && s.date >= addDays(TODAY, -42))
@@ -41,8 +44,7 @@ const past: Planned[] = [
       date: s.date,
       routineId: mockRoutines.find((r) => r.name === s.routine)?.id ?? "1",
     })),
-  { id: "p-manquee-1", date: "2026-10-14", routineId: "3" },
-  { id: "p-manquee-2", date: "2026-10-07", routineId: "5" },
+  { id: "p-manquee-1", date: "2026-10-15", routineId: "2" },
 ];
 
 export const mockPlanned: Planned[] = [...past, ...future];

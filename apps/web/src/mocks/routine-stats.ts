@@ -4,7 +4,10 @@ import type { MockRoutineExercise } from "./routines";
 const SET_SECONDS = 45;
 
 export function plannedVolume(exercises: MockRoutineExercise[]): number {
-  return exercises.reduce((sum, e) => sum + e.sets.reduce((s, set) => s + set.kg * set.reps, 0), 0);
+  return exercises.reduce(
+    (sum, e) => sum + e.sets.reduce((s, set) => s + (set.kg ?? 0) * set.reps, 0),
+    0,
+  );
 }
 
 /** Durée estimée : effort + repos de chaque série, arrondie aux 5 minutes supérieures. */

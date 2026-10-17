@@ -37,7 +37,7 @@ const chartConfig = {
   heaviest: { label: "Meilleure charge", color: "var(--chart-4)" },
 } satisfies ChartConfig;
 
-const setsText = (p: Performance) => p.sets.map((s) => `${s.kg} × ${s.reps}`).join(" · ");
+const setsText = (p: Performance) => p.sets.map((s) => `${s.kg ?? "—"} × ${s.reps}`).join(" · ");
 
 function ProgressChart({ exercise, history }: { exercise: MockExercise; history: Performance[] }) {
   const goal = mockGoals.find((g) => g.slug === exercise.slug);
@@ -46,76 +46,84 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
     oneRm: Math.round(best1rmOf(p) * 10) / 10,
     heaviest: heaviestOf(p),
   }));
+  // Sans aucune charge notée (curl à la poulie fait sans noter le poids), pas de courbe.
+  const charged = data.some((d) => d.heaviest > 0);
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle>Progression</CardTitle>
         <CardDescription>
-          {goal ? `Objectif : ${formatKg(goal.target)} en pointillés` : "Six derniers mois"}
+          {goal ? `Objectif : ${formatKg(goal.target)} en pointillés` : "Toutes les séances"}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
-          <LineChart data={data} margin={{ left: 0, right: 8 }}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={formatShortDay}
-              minTickGap={32}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={40}
-              // Bornes rondes, aux 5 kg : sinon l'axe affiche « 123.3 ».
-              domain={[
-                (min: number) => Math.floor((min - 5) / 5) * 5,
-                (max: number) => Math.ceil((Math.max(max, goal?.target ?? 0) + 5) / 5) * 5,
-              ]}
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(d) => formatShortDay(String(d))}
-                  formatter={(v, name) => (
-                    <span className="flex w-full justify-between gap-4">
-                      <span className="text-muted-foreground">
-                        {chartConfig[name as keyof typeof chartConfig]?.label}
-                      </span>
-                      <span className="tabular-nums">{formatKg(Number(v))}</span>
-                    </span>
-                  )}
-                />
-              }
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-            {goal && (
-              <ReferenceLine
-                y={goal.target}
-                stroke="var(--muted-foreground)"
-                strokeDasharray="4 4"
+        {!charged ? (
+          <p className="flex h-64 items-center justify-center text-center text-muted-foreground text-sm">
+            Aucune charge notée : la courbe apparaîtra à la première série chargée.
+          </p>
+        ) : (
+          <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
+            <LineChart data={data} margin={{ left: 0, right: 8 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatShortDay}
+                minTickGap={32}
               />
-            )}
-            <Line
-              dataKey="oneRm"
-              type="monotone"
-              stroke="var(--color-oneRm)"
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-            <Line
-              dataKey="heaviest"
-              type="stepAfter"
-              stroke="var(--color-heaviest)"
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ChartContainer>
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={40}
+                // Bornes rondes, aux 5 kg : sinon l'axe affiche « 123.3 ».
+                domain={[
+                  (min: number) => Math.max(0, Math.floor((min - 5) / 5) * 5),
+                  (max: number) => Math.ceil((Math.max(max, goal?.target ?? 0) + 5) / 5) * 5,
+                ]}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(d) => formatShortDay(String(d))}
+                    formatter={(v, name) => (
+                      <span className="flex w-full justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          {chartConfig[name as keyof typeof chartConfig]?.label}
+                        </span>
+                        <span className="tabular-nums">{formatKg(Number(v))}</span>
+                      </span>
+                    )}
+                  />
+                }
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+              {goal && (
+                <ReferenceLine
+                  y={goal.target}
+                  stroke="var(--muted-foreground)"
+                  strokeDasharray="4 4"
+                />
+              )}
+              <Line
+                dataKey="oneRm"
+                type="monotone"
+                stroke="var(--color-oneRm)"
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                dataKey="heaviest"
+                type="stepAfter"
+                stroke="var(--color-heaviest)"
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

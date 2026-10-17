@@ -9,11 +9,12 @@ export function estimate1rm(kg: number, reps: number): number {
   return reps <= 1 ? kg : kg * (1 + reps / 30);
 }
 
+// Une charge non notée (`null`) compte pour 0 : elle ne bat aucun record.
 export const sessionVolume = (p: Performance) =>
-  p.sets.reduce((s, set) => s + set.kg * set.reps, 0);
+  p.sets.reduce((s, set) => s + (set.kg ?? 0) * set.reps, 0);
 export const best1rmOf = (p: Performance) =>
-  Math.max(0, ...p.sets.map((s) => estimate1rm(s.kg, s.reps)));
-export const heaviestOf = (p: Performance) => Math.max(0, ...p.sets.map((s) => s.kg));
+  Math.max(0, ...p.sets.map((s) => estimate1rm(s.kg ?? 0, s.reps)));
+export const heaviestOf = (p: Performance) => Math.max(0, ...p.sets.map((s) => s.kg ?? 0));
 
 function bestBy(history: Performance[], measure: (p: Performance) => number): Dated {
   return history.reduce<Dated>(
@@ -37,7 +38,7 @@ export function records(history: Performance[]) {
 export function bestByReps(history: Performance[]): Map<number, number> {
   const best = new Map<number, number>();
   for (const p of history)
-    for (const s of p.sets) best.set(s.reps, Math.max(best.get(s.reps) ?? 0, s.kg));
+    for (const s of p.sets) best.set(s.reps, Math.max(best.get(s.reps) ?? 0, s.kg ?? 0));
   return best;
 }
 
