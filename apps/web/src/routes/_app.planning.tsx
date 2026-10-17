@@ -16,7 +16,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PLANNING_TABS, PlanningView } from "@/features/planning/planning-view";
 
 export const Route = createFileRoute("/_app/planning")({
-  staticData: { crumb: "Planning" },
+  staticData: {
+    crumb: "Planning",
+    proto: {
+      variants: [
+        { value: "a", label: "Calendrier" },
+        { value: "c", label: "Agenda" },
+      ],
+    },
+  },
   component: PlanningPage,
 });
 

@@ -26,7 +26,15 @@ import { RecordsTable } from "@/features/progress/records-table";
 import { PERIODS, type Period } from "@/mocks/progress";
 
 export const Route = createFileRoute("/_app/progress")({
-  staticData: { crumb: "Progression" },
+  staticData: {
+    crumb: "Progression",
+    proto: {
+      variants: [
+        { value: "a", label: "Grille" },
+        { value: "b", label: "Un graphique" },
+      ],
+    },
+  },
   component: ProgressPage,
 });
 

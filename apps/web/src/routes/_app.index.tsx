@@ -12,7 +12,15 @@ import { WeeklyVolumeChart } from "@/features/home/weekly-volume-chart";
 import { WeightCard } from "@/features/home/weight-card";
 
 export const Route = createFileRoute("/_app/")({
-  staticData: { crumb: "Accueil" },
+  staticData: {
+    crumb: "Accueil",
+    proto: {
+      variants: [
+        { value: "a", label: "Grille" },
+        { value: "b", label: "Deux colonnes" },
+      ],
+    },
+  },
   component: HomePage,
 });
 

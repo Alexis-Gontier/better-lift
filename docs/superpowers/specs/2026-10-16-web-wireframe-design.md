@@ -118,6 +118,10 @@ et D199 (style), qui seront repris après validation du wireframe.
   (40 px, image fixe au branchement, `imageDe`) dans la liste des exercices, l'éditeur de routine
   et le relevé d'une séance ; GIF carré dans la fiche, carte « Exécution » à côté de la courbe.
   La note épinglée passe en tête de la fiche, sur toute la largeur.
+- **D245 — La barre « Proto » ne montre que ce que la page propose** (révise D223). Chaque route
+  déclare `staticData.proto` : ses variantes, nommées (« Calendrier », « Agenda » plutôt que A, C),
+  et si elle répond aux quatre états (`states`, posé une fois sur `_app`). Fusion du parent à
+  l'enfant. Sans variante, pas de boutons ; sans rien à changer (pages d'auth), pas de barre.
 
 ## 3. Coquille
 

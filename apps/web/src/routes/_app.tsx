@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/shell/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/_app")({
+  // Toutes les pages de l'application répondent aux quatre états.
+  staticData: { proto: { states: true } },
   component: AppLayout,
 });
 

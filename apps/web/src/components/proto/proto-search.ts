@@ -1,8 +1,17 @@
-export const VARIANTS = ["a", "b", "c"] as const;
+const VARIANTS = ["a", "b", "c"] as const;
 export const PROTO_STATES = ["nominal", "vide", "chargement", "erreur"] as const;
 
 export type Variant = (typeof VARIANTS)[number];
 export type ProtoState = (typeof PROTO_STATES)[number];
+/**
+ * Ce qu'une route propose à la barre de prototypage : ses variantes, nommées, et si elle
+ * répond aux quatre états. Fusionné du parent à l'enfant (l'enfant l'emporte).
+ */
+export type ProtoOptions = {
+  variants?: readonly { value: Variant; label: string }[];
+  states?: boolean;
+};
+
 type ProtoSearch = { v?: Variant; etat?: ProtoState; onglet?: string };
 
 function isOneOf<T extends string>(list: readonly T[], value: unknown): value is T {

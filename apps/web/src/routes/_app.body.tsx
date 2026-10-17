@@ -14,7 +14,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BODY_TABS, BodyView } from "@/features/body/body-view";
 
 export const Route = createFileRoute("/_app/body")({
-  staticData: { crumb: "Corps" },
+  staticData: {
+    crumb: "Corps",
+    proto: {
+      variants: [
+        { value: "a", label: "Empilé" },
+        { value: "b", label: "Côte à côte" },
+      ],
+    },
+  },
   component: BodyPage,
 });
 

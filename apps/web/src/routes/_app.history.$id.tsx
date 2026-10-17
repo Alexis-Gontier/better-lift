@@ -11,7 +11,16 @@ import { previousOf } from "@/mocks/history";
 import { detailOf, useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/history/$id")({
-  staticData: { crumb: "Détail" },
+  staticData: {
+    crumb: "Détail",
+    proto: {
+      variants: [
+        { value: "a", label: "Toujours modifiable" },
+        { value: "b", label: "Corriger" },
+        { value: "c", label: "Champ par champ" },
+      ],
+    },
+  },
   component: SessionPane,
 });
 

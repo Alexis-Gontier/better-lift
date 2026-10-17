@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { ProtoBar } from "@/components/proto/proto-bar";
-import { parseProtoSearch } from "@/components/proto/proto-search";
+import { type ProtoOptions, parseProtoSearch } from "@/components/proto/proto-search";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -8,6 +8,8 @@ declare module "@tanstack/react-router" {
   interface StaticDataRouteOption {
     /** Libellé de la route dans le fil d'Ariane. */
     crumb?: string;
+    /** Ce que la barre de prototypage propose sur cette page (D223, D245). */
+    proto?: ProtoOptions;
   }
 }
 
