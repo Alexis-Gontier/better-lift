@@ -5,9 +5,11 @@ export type SetType = "warmup" | "drop" | "failure";
 
 /** Une série ; charge `null` : pas encore de charge connue pour cet exercice. */
 export type MockSet = { kg: number | null; reps: number; type?: SetType };
+/** Une série prévue : charge et répétitions cibles facultatives, comme en base (`RoutineSerie`). */
+export type PlannedSet = Omit<MockSet, "reps"> & { reps: number | null };
 export type MockRoutineExercise = {
   slug: string;
-  sets: MockSet[];
+  sets: PlannedSet[];
   restSeconds: number;
   /** Lettre du superset : les exercices qui la partagent s'enchaînent. */
   superset?: string;

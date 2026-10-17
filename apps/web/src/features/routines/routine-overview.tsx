@@ -41,7 +41,9 @@ function Figures({ routine, saved }: { routine: MockRoutine; saved?: MockRoutine
     },
     {
       label: "Volume prévu",
-      value: formatKg(plannedVolume(routine.exercises)),
+      // En base, aucune charge cible n'est notée : sans charge, pas de volume à annoncer.
+      value:
+        plannedVolume(routine.exercises) === 0 ? "—" : formatKg(plannedVolume(routine.exercises)),
       now: plannedVolume(routine.exercises),
       was: saved && plannedVolume(saved.exercises),
       unit: " kg",

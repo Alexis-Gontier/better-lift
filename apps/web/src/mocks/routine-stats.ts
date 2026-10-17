@@ -5,7 +5,7 @@ const SET_SECONDS = 45;
 
 export function plannedVolume(exercises: MockRoutineExercise[]): number {
   return exercises.reduce(
-    (sum, e) => sum + e.sets.reduce((s, set) => s + (set.kg ?? 0) * set.reps, 0),
+    (sum, e) => sum + e.sets.reduce((s, set) => s + (set.kg ?? 0) * (set.reps ?? 0), 0),
     0,
   );
 }

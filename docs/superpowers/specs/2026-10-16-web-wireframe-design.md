@@ -243,6 +243,29 @@ et D199 (style), qui seront repris après validation du wireframe.
   Ctrl S enregistre. Les cartes touchées portent « Modifié » ou « Nouveau » ; les chiffres de
   droite montrent leur écart avec la version enregistrée. Quitter propose Rester, Ne pas
   enregistrer, Enregistrer (sans ce dernier quand l'élément n'est pas enregistrable).
+- **D262 — Ajout d'exercices, fiche rapide, petits écrans, bornes réelles** (2026-10-18).
+  « Ajouter des exercices » ouvre un **dialogue en cartes** (vignette, nom, muscle · équipement),
+  recherche sans accents sur le nom français ET le nom anglais, filtre par muscle ; on coche
+  **plusieurs** exercices, chacun montre son **rang** et ils s'ajoutent dans cet ordre, ouverts,
+  la page descendant jusqu'au premier. « Déjà dans la routine » se lit sans bloquer (on peut
+  vouloir le même deux fois). Menu ⋯ d'une carte : **« Voir la fiche »**, une fenêtre (animation,
+  muscles, note épinglée, dernière fois) avec « Fiche complète » vers `/exercises/$slug`.
+  **Petits écrans** : sous 760 px de contenu, la page liste | détail n'affiche qu'un panneau (la
+  liste, ou l'élément ouvert ; le fil d'Ariane ramène à la liste) ; la liste ne dépasse pas 55 % ;
+  une carte d'exercice de moins de 28rem cache sa vignette et compacte son repos. La poignée
+  porte seule le rôle de déplacement (la carte n'est plus un arrêt de tabulation).
+  **Bornes de `routineSaisie`** (shared) : 50 exercices, 20 séries, 1 000 kg, 999 répétitions,
+  nom de 120 caractères ; les boutons d'ajout le disent quand la borne est atteinte.
+  **Contrôle sur les données de production** (lecture seule, agrégats) : aucune charge cible n'y
+  est notée (101 séries sur 101), 4 séries sans répétitions cibles, échauffements et dégressives
+  présents, deux exercices en superset, repos de 90 à 180 s, nom d'exercice jusqu'à 82
+  caractères. D'où : répétitions et charges cibles facultatives dans la maquette, résumé replié
+  sans « — kg », « Volume prévu » à « — » sans charge, nom long sur deux lignes avec infobulle.
+  **Écarts encore ouverts avec le modèle** : le dossier et les notes d'une routine n'existent pas
+  en base (migration à prévoir) ; `reposSec` nul signifie « repos par défaut » du profil, que
+  l'éditeur ne propose pas ; un exercice archivé dans une routine n'a pas d'état ; l'unité est
+  figée en kg alors que l'affichage passe par `formaterCharge` ; l'ordre en base est un
+  `position` global, à étendre au dossier ; la durée estimée devra venir de `shared`.
 
 ## 3. Coquille
 

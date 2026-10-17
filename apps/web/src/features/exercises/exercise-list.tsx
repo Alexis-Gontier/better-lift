@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { fold } from "@/lib/fold";
 import { formatDaysAgo, formatKg } from "@/lib/format";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { best1rmOf } from "@/mocks/exercise-stats";
@@ -37,12 +38,6 @@ import { TODAY } from "@/mocks/today";
 
 const ALL = "tous";
 type Sort = "nom" | "recent";
-
-const fold = (t: string) =>
-  t
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
 
 type Row = MockExercise & { lastDone: string | null; best1rm: number };
 

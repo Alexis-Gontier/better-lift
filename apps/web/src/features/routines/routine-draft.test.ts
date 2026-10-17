@@ -210,7 +210,22 @@ describe("résumé d'un exercice replié", () => {
         { kg: null, reps: 10 },
         { kg: null, reps: 10 },
       ]),
-    ).toBe("1 W + 2 × 10 · — kg");
+    ).toBe("1 W + 2 × 10");
+  });
+
+  it("résume des séries sans répétitions cibles, comme la base en contient", () => {
+    expect(
+      setsSummary([
+        { kg: null, reps: null },
+        { kg: null, reps: null },
+      ]),
+    ).toBe("2 séries");
+    expect(
+      setsSummary([
+        { kg: 20, reps: 12 },
+        { kg: 20, reps: null },
+      ]),
+    ).toBe("2 × 12 · 20 kg");
   });
 });
 

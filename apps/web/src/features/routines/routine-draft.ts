@@ -1,3 +1,4 @@
+import { plural } from "@/lib/format";
 import {
   FOLDERS,
   type MockRoutine,
@@ -159,7 +160,7 @@ export function saveBlocker(draft: Draft): string | null {
   return null;
 }
 
-type PlannedSet = { kg: number | null; reps: number; type?: SetType };
+type PlannedSet = { kg: number | null; reps: number | null; type?: SetType };
 
 /** « Même charge partout » : la première série normale donne sa charge et ses répétitions aux autres séries normales. */
 export function copyFirstToAll<T extends PlannedSet>(sets: readonly T[]): T[] {
@@ -195,13 +196,15 @@ export function setsSummary(sets: readonly PlannedSet[]): string {
   const warmups = sets.filter((s) => s.type === "warmup").length;
   const working = sets.filter((s) => s.type !== "warmup");
   if (working.length === 0) return warmups > 0 ? `${warmups} W` : "Aucune série";
-  const reps = range(
-    working.map((s) => s.reps),
-    String,
-  );
+  // Comme en base, une cible peut manquer : on résume ce qui est noté, sans « — » inutile.
+  const repsNoted = working.flatMap((s) => (s.reps === null ? [] : [s.reps]));
   const kgs = working.flatMap((s) => (s.kg === null ? [] : [s.kg]));
-  const load = kgs.length === 0 ? "— kg" : `${range(kgs, (n) => String(n).replace(".", ","))} kg`;
-  return `${warmups > 0 ? `${warmups} W + ` : ""}${working.length} × ${reps} · ${load}`;
+  const count =
+    repsNoted.length === 0
+      ? plural(working.length, "série")
+      : `${working.length} × ${range(repsNoted, String)}`;
+  const load = kgs.length === 0 ? "" : ` · ${range(kgs, (n) => String(n).replace(".", ","))} kg`;
+  return `${warmups > 0 ? `${warmups} W + ` : ""}${count}${load}`;
 }
 
 /** Ce que le brouillon change à la routine enregistrée (D261) : de quoi marquer et compter. */

@@ -6,6 +6,7 @@ import {
   Copy,
   GripVertical,
   History,
+  Info,
   Link2,
   Minus,
   MoreHorizontal,
@@ -49,8 +50,9 @@ import { formatLoad, formatRest, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { lastSets } from "@/mocks/generated-workouts";
-import type { MockRoutineExercise, MockSet } from "@/mocks/routines";
+import type { MockRoutineExercise, PlannedSet } from "@/mocks/routines";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
+import { ExerciseQuickView } from "./exercise-quick-view";
 import {
   type ChangeSummary,
   canLinkWithNext,
@@ -92,11 +94,14 @@ function lastTime(slug: string, i: number): string {
   return set ? `${formatLoad(set[0])} × ${set[1]}` : "—";
 }
 
-/** Le pas suivant, sans dérive des flottants (2,5 + 2,5 + 2,5…) ni passage sous le minimum. */
-export function stepValue(value: string, delta: number, min: number): string {
+/** Les bornes de la saisie, celles de `routineSaisie` dans `shared` : l'API refuserait au-delà. */
+const LIMITS = { sets: 20, exercises: 50, kg: 1000, reps: 999, name: 120 } as const;
+
+/** Le pas suivant, sans dérive des flottants (2,5 + 2,5 + 2,5…) ni sortie des bornes. */
+export function stepValue(value: string, delta: number, min: number, max = Infinity): string {
   const n = value.trim() === "" ? (delta > 0 ? 0 : min) : Number(value);
   if (Number.isNaN(n)) return value;
-  return String(Math.max(min, Math.round((n + delta) * 100) / 100));
+  return String(Math.min(max, Math.max(min, Math.round((n + delta) * 100) / 100)));
 }
 
 /** Une valeur de série : − / + autour du champ, l'unité à côté du nombre (D246). */
@@ -106,6 +111,7 @@ function SetField({
   label,
   step,
   min,
+  max,
   onChange,
 }: {
   value: string;
@@ -113,8 +119,14 @@ function SetField({
   label: string;
   step: number;
   min: number;
+  max: number;
   onChange: (value: string) => void;
 }) {
+  // Une saisie hors bornes est ramenée dedans : 1200 kg devient 1000.
+  const clamp = (v: string) =>
+    v.trim() === "" || Number.isNaN(Number(v))
+      ? v
+      : String(Math.min(max, Math.max(min, Number(v))));
   return (
     <InputGroup className={cn("w-34", filled)}>
       <InputGroupAddon>
@@ -122,7 +134,7 @@ function SetField({
           size="icon-xs"
           className="text-muted-foreground"
           aria-label={`Moins : ${label}`}
-          onClick={() => onChange(stepValue(value, -step, min))}
+          onClick={() => onChange(stepValue(value, -step, min, max))}
         >
           <Minus />
         </InputGroupButton>
@@ -131,13 +143,14 @@ function SetField({
         type="number"
         inputMode="decimal"
         min={min}
+        max={max}
         step={step}
         placeholder="—"
         aria-label={label}
         // Sans les flèches natives : les boutons − / + les remplacent.
         className="text-center font-medium tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(clamp(e.target.value))}
       />
       <InputGroupAddon align="inline-end">
         <InputGroupText>{unit}</InputGroupText>
@@ -145,7 +158,7 @@ function SetField({
           size="icon-xs"
           className="text-muted-foreground"
           aria-label={`Plus : ${label}`}
-          onClick={() => onChange(stepValue(value, step, min))}
+          onClick={() => onChange(stepValue(value, step, min, max))}
         >
           <Plus />
         </InputGroupButton>
@@ -175,10 +188,10 @@ function SetTypeButton({
   index,
   onChange,
 }: {
-  set: MockSet;
+  set: PlannedSet;
   label: string;
   index: number;
-  onChange: (type: MockSet["type"]) => void;
+  onChange: (type: PlannedSet["type"]) => void;
 }) {
   const current = set.type ?? "normal";
   const typeName = SET_TYPES.find((t) => t.value === current)?.label ?? "Normale";
@@ -227,8 +240,12 @@ function ExerciseEditor({
   onRemove,
   onLink,
   onUnlink,
+  onView,
   mark,
+  uid,
 }: {
+  /** Repère la carte dans la page : on y fait défiler après un ajout. */
+  uid: string;
   exercise: MockRoutineExercise;
   /** Ce que l'exercice a de différent de la routine enregistrée (D261). */
   mark?: "Modifié" | "Nouveau";
@@ -242,10 +259,12 @@ function ExerciseEditor({
   /** Absent quand il n'y a pas de suivant à lier. */
   onLink?: () => void;
   onUnlink: () => void;
+  /** Ouvre la fiche de l'exercice dans une fenêtre (D262). */
+  onView: () => void;
 }) {
   const info = exerciseBySlug(exercise.slug);
   const name = info?.name ?? exercise.slug;
-  const setAt = (i: number, patch: Partial<MockSet>) =>
+  const setAt = (i: number, patch: Partial<PlannedSet>) =>
     onChange({
       ...exercise,
       sets: exercise.sets.map((s, j) => (j === i ? { ...s, ...patch } : s)),
@@ -258,7 +277,7 @@ function ExerciseEditor({
     : [...RESTS, exercise.restSeconds].sort((x, y) => x - y);
 
   return (
-    <Card size="sm" className="flex-row gap-0 py-0">
+    <Card size="sm" className="flex-row gap-0 py-0" data-exercise={uid}>
       {/* Un vrai bouton : sans focus possible, la poignée ne répondrait pas au clavier. */}
       <SortableItemHandle asChild>
         <button
@@ -270,7 +289,8 @@ function ExerciseEditor({
         </button>
       </SortableItemHandle>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      {/* Conteneur : une carte étroite (liste élargie, petit écran) se resserre d'elle-même. */}
+      <div className="@container/ex flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-3 p-3">
           <button
             type="button"
@@ -285,10 +305,12 @@ function ExerciseEditor({
                 open && "rotate-90",
               )}
             />
-            <ExerciseThumb name={name} />
+            <ExerciseThumb name={name} className="hidden @[28rem]/ex:flex" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="flex min-w-0 items-center gap-2">
-                <span className="line-clamp-2 font-medium leading-snug">{name}</span>
+                <span className="line-clamp-2 font-medium leading-snug" title={name}>
+                  {name}
+                </span>
                 {mark && (
                   <Badge variant="outline" className="shrink-0">
                     {mark}
@@ -312,7 +334,7 @@ function ExerciseEditor({
           {/* Repos et menu vont ensemble : un seul petit écart entre eux. */}
           <div className="flex shrink-0 items-center gap-1.5">
             {chains ? (
-              <span className="flex w-32 items-center gap-1.5 px-2.5 text-muted-foreground text-sm">
+              <span className="flex items-center gap-1.5 px-2.5 text-muted-foreground text-sm @[28rem]/ex:w-32">
                 <ArrowDown className="size-4" /> Enchaîné
               </span>
             ) : (
@@ -320,8 +342,12 @@ function ExerciseEditor({
                 value={String(exercise.restSeconds)}
                 onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
               >
-                <SelectTrigger size="sm" aria-label="Repos" className={cn("w-32", filled)}>
-                  <Timer className="text-muted-foreground" />
+                <SelectTrigger
+                  size="sm"
+                  aria-label="Repos"
+                  className={cn("w-auto @[28rem]/ex:w-32", filled)}
+                >
+                  <Timer className="hidden text-muted-foreground @[28rem]/ex:block" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -342,6 +368,10 @@ function ExerciseEditor({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuItem onSelect={onView}>
+                  <Info /> Voir la fiche
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   disabled={exercise.sets.length < 2}
                   onSelect={() => onChange({ ...exercise, sets: copyFirstToAll(exercise.sets) })}
@@ -411,6 +441,7 @@ function ExerciseEditor({
                     unit="kg"
                     step={2.5}
                     min={0}
+                    max={LIMITS.kg}
                     value={set.kg === null ? "" : String(set.kg)}
                     onChange={(v) => setAt(i, { kg: v === "" ? null : Number(v) })}
                   />
@@ -419,8 +450,9 @@ function ExerciseEditor({
                     unit="rép."
                     step={1}
                     min={1}
-                    value={String(set.reps)}
-                    onChange={(v) => setAt(i, { reps: Number(v) })}
+                    max={LIMITS.reps}
+                    value={set.reps === null ? "" : String(set.reps)}
+                    onChange={(v) => setAt(i, { reps: v === "" ? null : Number(v) })}
                   />
                   <Button
                     variant="ghost"
@@ -445,9 +477,13 @@ function ExerciseEditor({
                 variant="secondary"
                 size="sm"
                 className="w-full"
+                disabled={exercise.sets.length >= LIMITS.sets}
                 onClick={() => onChange({ ...exercise, sets: [...exercise.sets, { ...last }] })}
               >
-                <Plus data-icon="inline-start" /> Ajouter une série
+                <Plus data-icon="inline-start" />
+                {exercise.sets.length >= LIMITS.sets
+                  ? `${LIMITS.sets} séries au plus`
+                  : "Ajouter une série"}
               </Button>
             </div>
           </>
@@ -470,6 +506,7 @@ export function RoutineNameInput({
   return (
     <Input
       aria-label="Nom de la routine"
+      maxLength={LIMITS.name}
       placeholder="Sans nom"
       autoFocus={autoFocus}
       className={cn(
@@ -498,6 +535,8 @@ export function RoutineFields({
   onChange: (update: (d: Draft) => Draft) => void;
 }) {
   const [picking, setPicking] = useState(false);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const room = LIMITS.exercises - draft.exercises.length;
   // Tout est replié à l'ouverture : la routine se lit en un écran. Un exercice ajouté s'ouvre.
   const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set());
   const allOpen = draft.exercises.length > 0 && draft.exercises.every((e) => opened.has(e.uid));
@@ -562,6 +601,8 @@ export function RoutineFields({
                   : undefined
               }
               onUnlink={() => onChange((d) => ({ ...d, exercises: unlink(d.exercises, i) }))}
+              onView={() => setViewing(e.slug)}
+              uid={e.uid}
               mark={
                 changes?.added.has(e.uid)
                   ? "Nouveau"
@@ -574,22 +615,38 @@ export function RoutineFields({
         ))}
       </Sortable>
 
-      <Button variant="outline" className="w-full" onClick={() => setPicking(true)}>
-        <Plus data-icon="inline-start" /> Ajouter un exercice
+      <Button
+        variant="outline"
+        className="w-full"
+        disabled={room <= 0}
+        onClick={() => setPicking(true)}
+      >
+        <Plus data-icon="inline-start" />
+        {room <= 0 ? `${LIMITS.exercises} exercices au plus` : "Ajouter des exercices"}
       </Button>
 
       <ExercisePicker
         open={picking}
         onOpenChange={setPicking}
-        onPick={(slug) => {
-          const uid = `${slug}-${draft.exercises.length}-${Date.now()}`;
-          setOpened((o) => new Set(o).add(uid));
-          onChange((d) => ({
-            ...d,
-            exercises: [...d.exercises, { ...newRoutineExercise(slug), uid }],
+        present={draft.exercises.map((e) => e.slug)}
+        room={room}
+        onPick={(slugs) => {
+          // Les exercices ajoutés s'ouvrent : on règle leurs séries dans la foulée.
+          const added = slugs.map((slug, k) => ({
+            ...newRoutineExercise(slug),
+            uid: `${slug}-${Date.now()}-${k}`,
           }));
+          setOpened((o) => new Set([...o, ...added.map((e) => e.uid)]));
+          onChange((d) => ({ ...d, exercises: [...d.exercises, ...added] }));
+          // Ajoutés en bas, hors de vue d'une longue routine : on y descend.
+          setTimeout(() =>
+            document
+              .querySelector(`[data-exercise="${added[0]?.uid}"]`)
+              ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          );
         }}
       />
+      <ExerciseQuickView slug={viewing} onOpenChange={(o) => !o && setViewing(null)} />
     </>
   );
 }
