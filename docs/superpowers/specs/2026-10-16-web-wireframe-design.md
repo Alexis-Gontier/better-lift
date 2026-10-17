@@ -126,7 +126,8 @@ et D199 (style), qui seront repris après validation du wireframe.
   gauche (colonne séparée par un filet) ; en tête la vignette, le nom, le muscle, le repos en
   `Select` (valeurs usuelles, « Sans repos ») et le menu ⋯ (Retirer) ; un filet sur toute la
   largeur ; puis les séries : Série · Dernière fois · Charge (kg) · Répétitions, en `InputGroup`
-  avec l'unité, sans les flèches natives ; *Ajouter une série* sur toute la largeur. Le *Number
+  avec l'unité et des boutons − / + maison (pas de 2,5 kg ou 1 répétition, `stepValue`, testé),
+  visibles au survol ou au focus seulement, sans les flèches natives ; *Ajouter une série* sur toute la largeur. Le *Number
   Field* de ReUI (D228) n'est pas installé : il tire `@base-ui/react` (écarté par D231) et
   réécrit `label.tsx`.
 

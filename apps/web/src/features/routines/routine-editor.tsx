@@ -1,4 +1,4 @@
-import { GripVertical, MoreHorizontal, Plus, Timer, Trash2, X } from "lucide-react";
+import { GripVertical, Minus, MoreHorizontal, Plus, Timer, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
@@ -56,12 +57,24 @@ function lastTime(slug: string, i: number): string {
   return set ? `${formatLoad(set[0])} × ${set[1]}` : "—";
 }
 
+/** Le pas suivant, sans dérive des flottants (2,5 + 2,5 + 2,5…) ni passage sous le minimum. */
+export function stepValue(value: string, delta: number, min: number): string {
+  const n = value.trim() === "" ? (delta > 0 ? 0 : min) : Number(value);
+  if (Number.isNaN(n)) return value;
+  return String(Math.max(min, Math.round((n + delta) * 100) / 100));
+}
+
+/**
+ * Une valeur de série : − / + autour du champ, l'unité à côté du nombre. En champs nus, les
+ * boutons n'apparaissent qu'au survol ou au focus : la ligne se lit comme du texte.
+ */
 function SetField({
   value,
   unit,
   label,
   bare,
   step,
+  min,
   onChange,
 }: {
   value: string;
@@ -69,24 +82,46 @@ function SetField({
   label: string;
   bare: boolean;
   step: number;
+  min: number;
   onChange: (value: string) => void;
 }) {
+  const reveal = bare
+    ? "opacity-0 transition-opacity group-hover/input-group:opacity-100 group-focus-within/input-group:opacity-100"
+    : undefined;
   return (
-    <InputGroup className={cn("w-28", bare && bareGroup)}>
+    <InputGroup className={cn("w-36", bare && bareGroup)}>
+      <InputGroupAddon>
+        <InputGroupButton
+          size="icon-xs"
+          aria-label={`Moins : ${label}`}
+          className={reveal}
+          onClick={() => onChange(stepValue(value, -step, min))}
+        >
+          <Minus />
+        </InputGroupButton>
+      </InputGroupAddon>
       <InputGroupInput
         type="number"
         inputMode="decimal"
-        min={0}
+        min={min}
         step={step}
         placeholder="—"
         aria-label={label}
-        // Sans les flèches natives : elles chevauchent l'unité au survol.
-        className="tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        // Sans les flèches natives : les boutons − / + les remplacent.
+        className="text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
       <InputGroupAddon align="inline-end">
         <InputGroupText>{unit}</InputGroupText>
+        <InputGroupButton
+          size="icon-xs"
+          aria-label={`Plus : ${label}`}
+          className={reveal}
+          onClick={() => onChange(stepValue(value, step, min))}
+        >
+          <Plus />
+        </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>
   );
@@ -186,7 +221,7 @@ function ExerciseEditor({
         <Separator />
 
         <div className="flex flex-col gap-1 p-3">
-          <div className="grid grid-cols-[2.5rem_1fr_7rem_7rem_2rem] items-center gap-2 px-1 text-muted-foreground text-xs">
+          <div className="grid grid-cols-[2.5rem_1fr_9rem_9rem_2rem] items-center gap-2 px-1 text-muted-foreground text-xs">
             <span>Série</span>
             <span>Dernière fois</span>
             <span>Charge</span>
@@ -196,7 +231,7 @@ function ExerciseEditor({
           {exercise.sets.map((set, i) => (
             <div
               key={i}
-              className="grid grid-cols-[2.5rem_1fr_7rem_7rem_2rem] items-center gap-2 rounded-md px-1 hover:bg-muted/40"
+              className="grid grid-cols-[2.5rem_1fr_9rem_9rem_2rem] items-center gap-2 rounded-md px-1 hover:bg-muted/40"
             >
               <span className="text-muted-foreground text-sm tabular-nums">{i + 1}</span>
               <span className="truncate text-muted-foreground text-sm tabular-nums">
@@ -206,6 +241,7 @@ function ExerciseEditor({
                 label={`Charge de la série ${i + 1}`}
                 unit="kg"
                 step={2.5}
+                min={0}
                 bare={bare}
                 value={set.kg === null ? "" : String(set.kg)}
                 onChange={(v) => setAt(i, { kg: v === "" ? null : Number(v) })}
@@ -214,6 +250,7 @@ function ExerciseEditor({
                 label={`Répétitions de la série ${i + 1}`}
                 unit="rép."
                 step={1}
+                min={1}
                 bare={bare}
                 value={String(set.reps)}
                 onChange={(v) => setAt(i, { reps: Number(v) })}
