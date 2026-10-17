@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { formatShortDay } from "@/lib/format";
+import { useExercises } from "@/mocks/exercise-store";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { useRoutines } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
@@ -40,6 +41,8 @@ function detailLabel(
 export function AppBreadcrumb() {
   // Lue dans le magasin : une routine renommée change aussitôt de libellé.
   const routines = useRoutines();
+  // Abonné aux exercices : un exercice personnalisé renommé change aussi de libellé.
+  useExercises();
   const crumbs = useMatches()
     .filter((m) => m.staticData.crumb)
     .map((m) => ({

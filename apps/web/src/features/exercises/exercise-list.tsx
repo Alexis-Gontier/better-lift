@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronRight, Dumbbell, History, Search, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDaysAgo, formatKg } from "@/lib/format";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { best1rmOf } from "@/mocks/exercise-stats";
+import { useExerciseDraftName } from "@/mocks/exercise-store";
 import { EQUIPMENTS, type MockExercise, MUSCLES } from "@/mocks/exercises";
 import { daysSince } from "@/mocks/routine-stats";
 import { TODAY } from "@/mocks/today";
@@ -54,7 +55,30 @@ function toRow(e: MockExercise): Row {
   };
 }
 
+/** La ligne de l'exercice en cours de création, en tête de liste (D238). */
+function DraftExerciseRow() {
+  const name = useExerciseDraftName();
+  return (
+    <Link
+      to="/exercises/new"
+      {...listLinkProps}
+      className={`flex items-center gap-4 border-b border-dashed px-4 py-3 ${selectedRowClass}`}
+    >
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+        <Dumbbell className="size-4" />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className={name.trim() ? "truncate font-medium" : "text-muted-foreground"}>
+          {name.trim() || "Sans nom"}
+        </span>
+        <span className="text-muted-foreground text-xs">Brouillon · pas encore enregistré</span>
+      </div>
+    </Link>
+  );
+}
+
 export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
+  const creating = useRouterState({ select: (s) => s.location.pathname === "/exercises/new" });
   const navigate = useNavigate();
   const exerciseActions = (slug: string): RowAction[] => [
     {
@@ -149,7 +173,7 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
         </DragScroll>
       </div>
 
-      {rows.length === 0 ? (
+      {rows.length === 0 && !creating ? (
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyTitle>Aucun exercice ne correspond</EmptyTitle>
@@ -158,6 +182,7 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
         </Empty>
       ) : (
         <Card className="gap-0 py-0">
+          {creating && <DraftExerciseRow />}
           {rows.map((e, i) => (
             <div key={e.slug}>
               {i > 0 && <Separator />}
@@ -221,7 +246,11 @@ export function CustomExercisesEmpty() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button>Créer un exercice</Button>
+        <Button asChild>
+          <Link to="/exercises/new" search>
+            Créer un exercice
+          </Link>
+        </Button>
       </EmptyContent>
     </Empty>
   );

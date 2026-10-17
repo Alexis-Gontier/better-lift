@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Pin } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
+import { InlineField } from "@/components/inline-field";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -132,9 +133,12 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
 export function ExerciseSummary({
   exercise,
   history,
+  onNoteChange,
 }: {
   exercise: MockExercise;
   history: Performance[];
+  /** La note se modifie au clic et s'enregistre en la quittant (D240). */
+  onNoteChange?: (note: string) => void;
 }) {
   const best = records(history).best1rm.value;
   return (
@@ -161,7 +165,17 @@ export function ExerciseSummary({
           </CardTitle>
         </CardHeader>
         <CardContent className="text-muted-foreground text-sm">
-          {exercise.note ?? "Aucune note. Notez un réglage de machine ou une consigne."}
+          {onNoteChange ? (
+            <InlineField
+              label="Note épinglée"
+              multiline
+              placeholder="Aucune note. Notez un réglage de machine ou une consigne."
+              value={exercise.note ?? ""}
+              onCommit={onNoteChange}
+            />
+          ) : (
+            (exercise.note ?? "Aucune note. Notez un réglage de machine ou une consigne.")
+          )}
         </CardContent>
       </Card>
       <Card className="@3xl:col-span-2">
