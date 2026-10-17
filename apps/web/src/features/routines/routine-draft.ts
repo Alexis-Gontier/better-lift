@@ -118,17 +118,30 @@ export function chainsIntoNext(exercises: readonly Linkable[], i: number): boole
   return !!e?.superset && exercises[i + 1]?.superset === e.superset;
 }
 
-/** Les types de série proposés, dans l'ordre du menu ; `short` est l'étiquette de la ligne. */
-export const SET_TYPES: readonly { value: SetType | "normal"; label: string; short: string }[] = [
-  { value: "normal", label: "Normale", short: "" },
-  { value: "warmup", label: "Échauffement", short: "É" },
-  { value: "drop", label: "Dégressive", short: "D" },
-  { value: "failure", label: "Jusqu'à l'échec", short: "X" },
+/**
+ * Les types de série, dans l'ordre du menu de Hevy ; `short` est l'étiquette de la ligne et
+ * `tone` sa couleur (seule couleur du wireframe : elle porte un sens, D249).
+ */
+export const SET_TYPES: readonly {
+  value: SetType | "normal";
+  label: string;
+  short: string;
+  tone: string;
+}[] = [
+  { value: "warmup", label: "Échauffement", short: "W", tone: "text-amber-500" },
+  { value: "normal", label: "Normale", short: "", tone: "text-foreground" },
+  { value: "failure", label: "Échec", short: "F", tone: "text-red-500" },
+  { value: "drop", label: "Dégressive", short: "D", tone: "text-sky-500" },
 ];
 
+/** La couleur de l'étiquette d'une série. */
+export function setTone(type: SetType | undefined): string {
+  return SET_TYPES.find((t) => t.value === (type ?? "normal"))?.tone ?? "text-foreground";
+}
+
 /**
- * L'étiquette de chaque série, comme dans Hevy : É, D ou X pour une série typée, et un numéro
- * pour les séries normales, comptées entre elles (É, 1, 2, D → É 1 2 D).
+ * L'étiquette de chaque série, comme dans Hevy : W, F ou D pour une série typée, et un numéro
+ * pour les séries normales, comptées entre elles (W, 1, 2, D → W 1 2 D).
  */
 export function setLabels(sets: readonly { type?: SetType }[]): string[] {
   let n = 0;

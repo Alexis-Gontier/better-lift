@@ -21,7 +21,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -59,6 +58,7 @@ import {
   normalizeSupersets,
   SET_TYPES,
   setLabels,
+  setTone,
   unlink,
 } from "./routine-draft";
 
@@ -135,7 +135,21 @@ function SetField({
   );
 }
 
-/** Le type d'une série, choisi sur son étiquette (É, 1, 2, D, X), comme dans Hevy (D248). */
+/** Une étiquette de série dans sa case, en couleur selon son type (W, 1, F, D). */
+function SetBadge({ label, tone }: { label: string; tone: string }) {
+  return (
+    <span
+      className={cn(
+        "flex size-7 shrink-0 items-center justify-center rounded-md border font-semibold text-sm tabular-nums",
+        tone,
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+/** Le type d'une série, choisi sur son étiquette, comme dans Hevy (D248, D249). */
 function SetTypeButton({
   set,
   label,
@@ -155,21 +169,20 @@ function SetTypeButton({
           variant="outline"
           size="icon-sm"
           aria-label={`Type de la série ${index + 1}`}
-          className={cn("tabular-nums", set.type && "font-semibold")}
+          className={cn("font-semibold tabular-nums", setTone(set.type))}
         >
           {label}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
-        <DropdownMenuLabel>Type de série</DropdownMenuLabel>
         {SET_TYPES.map((t) => (
           <DropdownMenuItem
             key={t.value}
+            className="gap-3 py-1.5"
             onSelect={() => onChange(t.value === "normal" ? undefined : t.value)}
           >
-            <span className="w-4 text-center font-semibold text-muted-foreground">
-              {t.short || "1"}
-            </span>
+            {/* La série normale montre son numéro réel, comme dans Hevy. */}
+            <SetBadge label={t.short || (current === "normal" ? label : "1")} tone={t.tone} />
             {t.label}
             {t.value === current && <Check className="ml-auto" />}
           </DropdownMenuItem>
@@ -223,9 +236,9 @@ function ExerciseEditor({
         <button
           type="button"
           aria-label={`Déplacer : ${name}`}
-          className="flex w-5 shrink-0 cursor-grab items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
+          className="flex w-7 shrink-0 cursor-grab items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
         >
-          <GripVertical className="size-3.5" />
+          <GripVertical className="size-4" />
         </button>
       </SortableItemHandle>
 
@@ -246,51 +259,54 @@ function ExerciseEditor({
               {info?.muscle} · {info?.equipment}
             </span>
           </div>
-          {chains ? (
-            <span className="flex w-32 items-center gap-1.5 px-2.5 text-muted-foreground text-sm">
-              <ArrowDown className="size-4" /> Enchaîné
-            </span>
-          ) : (
-            <Select
-              value={String(exercise.restSeconds)}
-              onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
-            >
-              <SelectTrigger size="sm" aria-label="Repos" className="w-32">
-                <Timer className="text-muted-foreground" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {rests.map((r) => (
-                    <SelectItem key={r} value={String(r)}>
-                      {r === 0 ? "Sans repos" : formatRest(r)}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon-sm" aria-label={`Actions : ${name}`}>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem disabled={!onLink} onSelect={onLink}>
-                <Link2 /> Superset avec le suivant
-              </DropdownMenuItem>
-              {exercise.superset && (
-                <DropdownMenuItem onSelect={onUnlink}>
-                  <Unlink /> Retirer du superset
+          {/* Repos et menu vont ensemble : un seul petit écart entre eux. */}
+          <div className="flex shrink-0 items-center gap-1.5">
+            {chains ? (
+              <span className="flex w-32 items-center gap-1.5 px-2.5 text-muted-foreground text-sm">
+                <ArrowDown className="size-4" /> Enchaîné
+              </span>
+            ) : (
+              <Select
+                value={String(exercise.restSeconds)}
+                onValueChange={(v) => onChange({ ...exercise, restSeconds: Number(v) })}
+              >
+                <SelectTrigger size="sm" aria-label="Repos" className="w-32">
+                  <Timer className="text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {rests.map((r) => (
+                      <SelectItem key={r} value={String(r)}>
+                        {r === 0 ? "Sans repos" : formatRest(r)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon-sm" aria-label={`Actions : ${name}`}>
+                  <MoreHorizontal />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem disabled={!onLink} onSelect={onLink}>
+                  <Link2 /> Superset avec le suivant
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onSelect={onRemove}>
-                <Trash2 /> Retirer l'exercice
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {exercise.superset && (
+                  <DropdownMenuItem onSelect={onUnlink}>
+                    <Unlink /> Retirer du superset
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onSelect={onRemove}>
+                  <Trash2 /> Retirer l'exercice
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Les filets courent sur toute la largeur de la carte, poignée exceptée. */}
@@ -465,7 +481,7 @@ export function RoutineFields({
         ))}
       </Sortable>
 
-      <Button variant="outline" className="self-start" onClick={() => setPicking(true)}>
+      <Button variant="outline" className="w-full" onClick={() => setPicking(true)}>
         <Plus data-icon="inline-start" /> Ajouter un exercice
       </Button>
 

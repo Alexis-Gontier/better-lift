@@ -126,10 +126,10 @@ describe("supersets", () => {
 
 describe("étiquettes des séries", () => {
   it("numérote les séries normales entre elles", () => {
-    expect(setLabels([{ type: "warmup" }, {}, {}, { type: "drop" }])).toEqual(["É", "1", "2", "D"]);
+    expect(setLabels([{ type: "warmup" }, {}, {}, { type: "drop" }])).toEqual(["W", "1", "2", "D"]);
   });
 
   it("marque une série à l'échec", () => {
-    expect(setLabels([{}, { type: "failure" }, {}])).toEqual(["1", "X", "2"]);
+    expect(setLabels([{}, { type: "failure" }, {}])).toEqual(["1", "F", "2"]);
   });
 });

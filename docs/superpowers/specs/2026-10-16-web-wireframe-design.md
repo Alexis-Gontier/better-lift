@@ -143,6 +143,11 @@ et D199 (style), qui seront repris après validation du wireframe.
   ligne est un bouton qui ouvre Normale · Échauffement (É) · Dégressive (D) · Jusqu'à l'échec
   (X) ; les séries normales sont numérotées entre elles (`setLabels`, testé : É 1 2 D). Une
   série ajoutée est normale. `MockSet.type` absent = série normale.
+- **D249 — Types de série en couleur, comme Hevy** (révise D248). Ordre et lettres de Hevy :
+  W Échauffement (ambre), 1 Normale, F Échec (rouge), D Dégressive (bleu) — « Dégressive »
+  plutôt que l'« Abandon » de la traduction de Hevy. C'est la seule couleur du wireframe : elle
+  porte un sens. Poignée 28 px, repos et menu ⋯ rapprochés, *Ajouter un exercice* sur toute la
+  largeur.
 
 ## 3. Coquille
 
