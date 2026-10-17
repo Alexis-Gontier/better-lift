@@ -156,6 +156,14 @@ et D199 (style), qui seront repris après validation du wireframe.
   nom, dossier, repos, charge, répétitions, type de série ; *Ajouter une série* en bouton
   rempli ; ✕ en encre atténuée. « Dernière fois » a une largeur fixe : les champs restent près
   de l'étiquette de série.
+- **D251 — Liste des routines en lignes, sélection par liseré, contraste** (suite de la critique,
+  P2). Les routines s'alignent sur Exercices et Historique : une ligne (nom ; nombre d'exercices
+  et muscles ; durée estimée et dernière fois), dans une carte à filets ; le clic droit duplique
+  et supprime pour de bon (toast avec *Annuler*). La ligne ouverte, dans les trois listes, prend
+  un fond léger (`muted/50`) et un liseré d'encre de 3 px à gauche. `--muted-foreground` passe de
+  `oklch(0.556)` à `oklch(0.52)` en clair : le texte atténué tient 4,5:1 sur tout fond gris clair
+  (le détecteur relevait 4,3:1, venu des touches Ctrl K et de l'avatar). Le panneau de détail
+  garde 96 px en bas pour que la barre Proto ne cache rien.
 
 ## 3. Coquille
 

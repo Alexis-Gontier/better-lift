@@ -3,6 +3,7 @@ import { ListChecks, Search } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Empty,
   EmptyContent,
@@ -12,11 +13,12 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { FOLDERS, type MockRoutine } from "@/mocks/routines";
-import { DraftRoutineCard, RoutineCard } from "./routine-card";
+import { DraftRoutineRow, RoutineRow } from "./routine-card";
 
 const ALL = "tous";
 
@@ -83,12 +85,15 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
-          {creating && <DraftRoutineCard />}
-          {shown.map((r) => (
-            <RoutineCard key={r.id} routine={r} />
+        <Card className="gap-0 py-0">
+          {creating && <DraftRoutineRow />}
+          {shown.map((r, i) => (
+            <div key={r.id}>
+              {i > 0 && <Separator />}
+              <RoutineRow routine={r} />
+            </div>
           ))}
-        </div>
+        </Card>
       )}
     </>
   );
@@ -98,11 +103,8 @@ export function RoutineListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
-      <div className="grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-3">
-        {["a", "b", "c", "d", "e", "f"].map((k) => (
-          <Skeleton key={k} className="h-40 rounded-xl" />
-        ))}
-      </div>
+      <Skeleton className="h-7 w-64 rounded-lg" />
+      <Skeleton className="h-72 rounded-xl" />
     </>
   );
 }

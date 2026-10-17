@@ -24,8 +24,12 @@ export const listLinkProps = {
   activeOptions: { includeSearch: false },
 } as const;
 
-/** La marque de la ligne ouverte. */
-export const selectedRowClass = "data-[status=active]:bg-muted";
+/**
+ * La marque de la ligne ouverte : un fond léger et un liseré d'encre à gauche. Le fond reste
+ * clair pour que le texte atténué y garde 4,5:1 (D251) ; le liseré dit la sélection.
+ */
+export const selectedRowClass =
+  "data-[status=active]:bg-muted/50 data-[status=active]:shadow-[inset_3px_0_0_var(--foreground)]";
 
 type Props = {
   title: string;
@@ -85,7 +89,7 @@ export function ListDetailPage({ title, tabs, actions, storageId, detail, childr
             key={pathname}
             className="h-full [&_[data-slot=scroll-area-viewport]>div]:block!"
           >
-            <div className="@container flex min-h-[calc(100svh-3rem)] flex-col gap-6 p-6 *:shrink-0">
+            <div className="@container flex min-h-[calc(100svh-3rem)] flex-col gap-6 p-6 pb-24 *:shrink-0">
               {detail}
             </div>
           </ScrollArea>

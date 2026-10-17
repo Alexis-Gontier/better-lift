@@ -1,20 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, Copy, Trash2 } from "lucide-react";
-import { listLinkProps } from "@/components/list-detail";
+import { CalendarPlus, ChevronRight, Copy, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { listLinkProps, selectedRowClass } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { formatDaysAgo, formatMinutes, plural } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { daysSince, estimateMinutes } from "@/mocks/routine-stats";
-import { useDraftName } from "@/mocks/routine-store";
+import { deleteRoutine, newRoutineId, saveRoutine, useDraftName } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { TODAY } from "@/mocks/today";
 
@@ -24,62 +17,88 @@ function routineMuscles(routine: MockRoutine): string[] {
   return [...new Set(muscles.filter(Boolean))];
 }
 
-/** Le clic droit sur une routine. Sans API, Dupliquer et Supprimer ne font encore rien. */
-function routineActions(navigate: ReturnType<typeof useNavigate>): RowAction[] {
+const rowClass = cn(
+  "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40",
+  selectedRowClass,
+);
+
+/** Le clic droit sur une routine : les mêmes actions que son menu ⋯. */
+function routineActions(
+  routine: MockRoutine,
+  navigate: ReturnType<typeof useNavigate>,
+): RowAction[] {
   return [
     { label: "Planifier", icon: CalendarPlus, onSelect: () => navigate({ to: "/planning" }) },
-    { label: "Dupliquer", icon: Copy, onSelect: () => {} },
-    { label: "Supprimer", icon: Trash2, onSelect: () => {}, destructive: true, separated: true },
+    {
+      label: "Dupliquer",
+      icon: Copy,
+      onSelect: () => {
+        const copy = {
+          ...routine,
+          id: newRoutineId(),
+          name: `${routine.name} (copie)`,
+          lastDone: null,
+        };
+        saveRoutine(copy);
+        navigate({ to: "/routines/$id", params: { id: copy.id }, search: true });
+        toast.success(`« ${copy.name} » créée`);
+      },
+    },
+    {
+      label: "Supprimer",
+      icon: Trash2,
+      destructive: true,
+      separated: true,
+      onSelect: () => {
+        deleteRoutine(routine.id);
+        toast(`« ${routine.name} » supprimée`, {
+          action: { label: "Annuler", onClick: () => saveRoutine(routine) },
+        });
+      },
+    },
   ];
 }
 
-export function RoutineCard({ routine }: { routine: MockRoutine }) {
+/**
+ * Une routine dans la liste, en ligne compacte comme Exercices et Historique (D251) : le nom et
+ * ses muscles, la durée estimée et la dernière fois. Le reste se lit dans le détail.
+ */
+export function RoutineRow({ routine }: { routine: MockRoutine }) {
   const navigate = useNavigate();
-  const muscles = routineMuscles(routine);
-  const card = (
-    <Card className="h-full transition-colors group-hover:bg-muted/40 group-data-[status=active]:ring-2 group-data-[status=active]:ring-foreground/30">
-      <CardHeader>
-        <CardTitle>{routine.name}</CardTitle>
-        <CardDescription>
-          {plural(routine.exercises.length, "exercice")} · ~
-          {formatMinutes(estimateMinutes(routine.exercises))}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-wrap gap-1.5">
-        {muscles.slice(0, 3).map((m) => (
-          <Badge key={m} variant="secondary">
-            {m}
-          </Badge>
-        ))}
-        {muscles.length > 3 && <Badge variant="outline">+{muscles.length - 3}</Badge>}
-      </CardContent>
-      <CardFooter className="text-muted-foreground text-xs">
-        {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
-      </CardFooter>
-    </Card>
-  );
   return (
-    <RowMenu actions={routineActions(navigate)}>
-      <Link to="/routines/$id" params={{ id: routine.id }} {...listLinkProps} className="group">
-        {card}
+    <RowMenu actions={routineActions(routine, navigate)}>
+      <Link to="/routines/$id" params={{ id: routine.id }} {...listLinkProps} className={rowClass}>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate font-medium">{routine.name}</span>
+          <span className="truncate text-muted-foreground text-xs">
+            {[plural(routine.exercises.length, "exercice"), ...routineMuscles(routine)].join(" · ")}
+          </span>
+        </div>
+        <div className="flex shrink-0 flex-col items-end">
+          <span className="text-sm tabular-nums">
+            ~{formatMinutes(estimateMinutes(routine.exercises))}
+          </span>
+          <span className="text-muted-foreground text-xs">
+            {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
+          </span>
+        </div>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
       </Link>
     </RowMenu>
   );
 }
 
 /** La ligne de la routine en cours de création, en tête de liste (D238) : elle suit le nom tapé. */
-export function DraftRoutineCard() {
+export function DraftRoutineRow() {
   const name = useDraftName();
   return (
-    <Link to="/routines/new" {...listLinkProps} className="group">
-      <Card className="h-full border-dashed group-data-[status=active]:ring-2 group-data-[status=active]:ring-foreground/30">
-        <CardHeader>
-          <CardTitle className={name.trim() ? undefined : "text-muted-foreground"}>
-            {name.trim() || "Sans nom"}
-          </CardTitle>
-          <CardDescription>Brouillon · pas encore enregistrée</CardDescription>
-        </CardHeader>
-      </Card>
+    <Link to="/routines/new" {...listLinkProps} className={cn(rowClass, "border-b border-dashed")}>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className={name.trim() ? "truncate font-medium" : "text-muted-foreground"}>
+          {name.trim() || "Sans nom"}
+        </span>
+        <span className="text-muted-foreground text-xs">Brouillon · pas encore enregistrée</span>
+      </div>
     </Link>
   );
 }
