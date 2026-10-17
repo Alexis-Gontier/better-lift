@@ -1,27 +1,14 @@
-import { useSyncExternalStore } from "react";
 import { type MockRoutine, mockRoutines } from "./routines";
+import { signal } from "./signal";
 
 /**
  * Les routines modifiables du wireframe, en mémoire jusqu'au rechargement. Sans API, c'est ici
  * qu'un enregistrement atterrit : la liste, le détail et le fil d'Ariane le voient aussitôt.
  * Remplacé au branchement par TanStack Query.
  */
-let routines: MockRoutine[] = mockRoutines;
-const listeners = new Set<() => void>();
+const routines = signal<MockRoutine[]>(mockRoutines);
 
-function commit(next: MockRoutine[]) {
-  routines = next;
-  for (const l of listeners) l();
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-export function useRoutines(): MockRoutine[] {
-  return useSyncExternalStore(subscribe, () => routines);
-}
+export const useRoutines = routines.use;
 
 export function useRoutine(id: string): MockRoutine | undefined {
   return useRoutines().find((r) => r.id === id);
@@ -29,12 +16,13 @@ export function useRoutine(id: string): MockRoutine | undefined {
 
 /** Remplace la routine de même identifiant, ou l'ajoute en tête si elle est nouvelle. */
 export function saveRoutine(routine: MockRoutine) {
-  const known = routines.some((r) => r.id === routine.id);
-  commit(known ? routines.map((r) => (r.id === routine.id ? routine : r)) : [routine, ...routines]);
+  const all = routines.get();
+  const known = all.some((r) => r.id === routine.id);
+  routines.set(known ? all.map((r) => (r.id === routine.id ? routine : r)) : [routine, ...all]);
 }
 
 export function deleteRoutine(id: string) {
-  commit(routines.filter((r) => r.id !== id));
+  routines.set(routines.get().filter((r) => r.id !== id));
 }
 
 /** Un identifiant qui ne heurte ni les routines de prod (« 1 », « 2 »…) ni les autres créées. */
@@ -43,20 +31,6 @@ export function newRoutineId(): string {
 }
 
 /** Le nom de la routine en cours de création : la ligne brouillon de la liste le suit (D238). */
-let draftName = "";
-const draftListeners = new Set<() => void>();
-
-export function setDraftName(name: string) {
-  if (name === draftName) return;
-  draftName = name;
-  for (const l of draftListeners) l();
-}
-
-function subscribeDraft(listener: () => void) {
-  draftListeners.add(listener);
-  return () => draftListeners.delete(listener);
-}
-
-export function useDraftName(): string {
-  return useSyncExternalStore(subscribeDraft, () => draftName);
-}
+const draftName = signal("");
+export const setDraftName = draftName.set;
+export const useDraftName = draftName.use;
