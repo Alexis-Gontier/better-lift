@@ -7,7 +7,7 @@ import {
   SessionListEmpty,
   SessionListSkeleton,
 } from "@/features/history/session-list";
-import { mockSessions } from "@/mocks/sessions";
+import { useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/history")({
   staticData: { crumb: "Historique" },
@@ -17,12 +17,13 @@ export const Route = createFileRoute("/_app/history")({
 /** La liste reste montée ; la séance ouverte est la route enfant (D235). */
 function HistoryPage() {
   const { state } = useProto();
+  const sessions = useSessions();
   return (
     <ListDetailPage key={state} title="Historique" storageId="historique" detail={<Outlet />}>
       {state === "chargement" && <SessionListSkeleton />}
       {state === "erreur" && <StateError title="L'historique n'a pas pu se charger" />}
       {state === "vide" && <SessionListEmpty />}
-      {state === "nominal" && <SessionList sessions={mockSessions} />}
+      {state === "nominal" && <SessionList sessions={sessions} />}
     </ListDetailPage>
   );
 }

@@ -1,66 +1,29 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { DetailEmpty, DetailHeader, DetailSkeleton } from "@/components/list-detail";
+import { createFileRoute } from "@tanstack/react-router";
+import { DetailEmpty, DetailSkeleton } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { SessionDetailView } from "@/features/history/session-detail";
-import { formatDay } from "@/lib/format";
-import { previousOf, sessionDetail } from "@/mocks/history";
-import { mockRoutines } from "@/mocks/routines";
-import { mockSessions } from "@/mocks/sessions";
+  SessionPaneAlwaysEditable,
+  SessionPaneInline,
+  SessionPaneReadThenEdit,
+} from "@/features/history/session-pane";
+import { previousOf } from "@/mocks/history";
+import { detailOf, useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/history/$id")({
   staticData: { crumb: "Détail" },
   component: SessionPane,
 });
 
-/** Sans API, supprimer referme simplement la séance. */
-function DeleteButton() {
-  const navigate = useNavigate();
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Supprimer
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer cette séance ?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Ses séries et les records qu'elle portait disparaîtront. C'est définitif.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={() => navigate({ to: "/history", search: true })}
-          >
-            Supprimer
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
-/** La séance ouverte, dans le panneau de droite (D235). */
+/**
+ * La séance ouverte, dans le panneau de droite (D235), corrigée là où on la lit : A toujours
+ * modifiable, B lecture puis Corriger, C champ par champ (D239).
+ */
 function SessionPane() {
   const { id } = Route.useParams();
-  const { state } = useProto();
-  const session = mockSessions.find((s) => s.id === id);
+  const { state, variant } = useProto();
+  const sessions = useSessions();
+  const session = sessions.find((s) => s.id === id);
 
   if (state === "chargement") return <DetailSkeleton />;
   if (state === "erreur") return <StateError title="La séance n'a pas pu se charger" />;
@@ -72,30 +35,12 @@ function SessionPane() {
       />
     );
 
-  const previous = previousOf(mockSessions, id);
-  const routine = mockRoutines.find((r) => r.name === session.routine);
-  return (
-    <>
-      <DetailHeader
-        title={session.routine}
-        subtitle={formatDay(session.date)}
-        actions={
-          <>
-            {routine && (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/routines/$id" params={{ id: routine.id }}>
-                  Voir la routine
-                </Link>
-              </Button>
-            )}
-            <DeleteButton />
-          </>
-        }
-      />
-      <SessionDetailView
-        detail={sessionDetail(session)}
-        previous={previous ? sessionDetail(previous) : undefined}
-      />
-    </>
-  );
+  const detail = detailOf(session);
+  const before = previousOf(sessions, id);
+  const previous = before ? detailOf(before) : undefined;
+  // `key` : d'une séance à l'autre, le brouillon repart de zéro.
+  if (variant === "b")
+    return <SessionPaneReadThenEdit key={id} detail={detail} previous={previous} />;
+  if (variant === "c") return <SessionPaneInline key={id} detail={detail} previous={previous} />;
+  return <SessionPaneAlwaysEditable key={id} detail={detail} previous={previous} />;
 }
