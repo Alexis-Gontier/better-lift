@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDaysAgo, formatKg, formatMinutes } from "@/lib/format";
+import { formatDaysAgo, formatDelta, formatKg, formatMinutes } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
@@ -22,20 +22,51 @@ import { filled } from "./routine-editor";
 const NO_FOLDER = "__sans-dossier";
 
 /** Les chiffres de la routine, une mini-carte chacun (D255) : ils suivent la saisie. */
-function Figures({ routine }: { routine: MockRoutine }) {
-  const sets = routine.exercises.reduce((n, e) => n + e.sets.length, 0);
+function Figures({ routine, saved }: { routine: MockRoutine; saved?: MockRoutine }) {
+  const sets = (r: MockRoutine) => r.exercises.reduce((n, e) => n + e.sets.length, 0);
+  // Chaque chiffre garde sa valeur enregistrée : l'écart se lit tant que rien n'est enregistré.
   const figures = [
-    { label: "Durée", value: `~${formatMinutes(estimateMinutes(routine.exercises))}` },
-    { label: "Séries", value: String(sets) },
-    { label: "Volume prévu", value: formatKg(plannedVolume(routine.exercises)) },
-    { label: "Exercices", value: String(routine.exercises.length) },
+    {
+      label: "Durée",
+      value: `~${formatMinutes(estimateMinutes(routine.exercises))}`,
+      now: estimateMinutes(routine.exercises),
+      was: saved && estimateMinutes(saved.exercises),
+      unit: " min",
+    },
+    {
+      label: "Séries",
+      value: String(sets(routine)),
+      now: sets(routine),
+      was: saved && sets(saved),
+    },
+    {
+      label: "Volume prévu",
+      value: formatKg(plannedVolume(routine.exercises)),
+      now: plannedVolume(routine.exercises),
+      was: saved && plannedVolume(saved.exercises),
+      unit: " kg",
+    },
+    {
+      label: "Exercices",
+      value: String(routine.exercises.length),
+      now: routine.exercises.length,
+      was: saved?.exercises.length,
+    },
   ];
   return (
     <div className="grid gap-2 @[13rem]:grid-cols-2">
       {figures.map((f) => (
         <Card key={f.label} size="sm" className="gap-0.5 px-3">
           <span className="text-muted-foreground text-xs">{f.label}</span>
-          <span className="font-semibold tabular-nums">{f.value}</span>
+          <span className="flex flex-wrap items-baseline gap-x-1.5">
+            <span className="font-semibold tabular-nums">{f.value}</span>
+            {f.was !== undefined && Math.round(f.was) !== Math.round(f.now) && (
+              <span className="text-muted-foreground text-xs tabular-nums">
+                {formatDelta(f.now, f.was)}
+                {f.unit}
+              </span>
+            )}
+          </span>
         </Card>
       ))}
       <Card
@@ -74,18 +105,21 @@ function Muscles({ routine }: { routine: MockRoutine }) {
  */
 export function RoutineOverview({
   routine,
+  saved,
   draft,
   onChange,
 }: {
   /** La routine telle que saisie : les chiffres suivent la saisie. */
   routine: MockRoutine;
+  /** La version enregistrée : chaque chiffre montre son écart avec elle. */
+  saved?: MockRoutine;
   draft: Draft;
   onChange: (update: (d: Draft) => Draft) => void;
 }) {
   const folders = useFolders();
   return (
     <>
-      <Figures routine={routine} />
+      <Figures routine={routine} saved={saved} />
       <Card size="sm">
         <CardHeader>
           <CardTitle>Muscles travaillés</CardTitle>

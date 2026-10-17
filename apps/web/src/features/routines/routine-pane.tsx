@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { MoreHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { MoreHorizontal, Redo2, Undo2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { toast } from "sonner";
 import { DetailHeader } from "@/components/list-detail";
@@ -22,9 +22,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Kbd } from "@/components/ui/kbd";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUnsavedGuard } from "@/components/unsaved-guard";
+import { plural } from "@/lib/format";
 import {
   deleteRoutine,
   newRoutineId,
@@ -34,7 +37,15 @@ import {
   setNextRoutineFolder,
 } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
-import { type Draft, fromDraft, isDirty, saveBlocker, toDraft } from "./routine-draft";
+import { useDraftHistory } from "./draft-history";
+import {
+  changeSummary,
+  type Draft,
+  fromDraft,
+  isDirty,
+  saveBlocker,
+  toDraft,
+} from "./routine-draft";
 import { RoutineFields, RoutineNameInput } from "./routine-editor";
 import { RoutineOverview } from "./routine-overview";
 
@@ -171,52 +182,165 @@ function useWidth(el: HTMLElement | null): number | null {
 
 const saved = () => toast.success("Routine enregistrée", { id: "routine-enregistree" });
 
+/** Ctrl (⌘ sur Mac) Z annule, Ctrl Maj Z ou Ctrl Y rétablit, Ctrl S enregistre (D261). */
+function useEditorKeys(keys: { undo: () => void; redo: () => void; save: () => void }) {
+  const latest = useRef(keys);
+  latest.current = keys;
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const key = e.key.toLowerCase();
+      // Une fenêtre ouverte (sélecteur d'exercice, confirmation) garde ses touches.
+      if (document.querySelector("[role=dialog], [role=alertdialog]")) return;
+      if (key === "z" && !e.shiftKey) latest.current.undo();
+      else if ((key === "z" && e.shiftKey) || key === "y") latest.current.redo();
+      else if (key === "s") latest.current.save();
+      else return;
+      e.preventDefault();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+}
+
+/** Annuler / rétablir le dernier pas, avec le raccourci dans l'infobulle. */
+function HistoryButtons({
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+}: {
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+}) {
+  const buttons = [
+    {
+      label: "Annuler la dernière modification",
+      keys: "Ctrl Z",
+      icon: Undo2,
+      on: onUndo,
+      can: canUndo,
+    },
+    { label: "Rétablir", keys: "Ctrl Y", icon: Redo2, on: onRedo, can: canRedo },
+  ];
+  return (
+    <div className="flex items-center">
+      {buttons.map((b) => (
+        <Tooltip key={b.keys}>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={b.label}
+              aria-keyshortcuts={b.keys.replace(" ", "+")}
+              disabled={!b.can}
+              onClick={b.on}
+            >
+              <b.icon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {b.label} <Kbd>{b.keys}</Kbd>
+          </TooltipContent>
+        </Tooltip>
+      ))}
+    </div>
+  );
+}
+
 /**
  * La routine ouverte, toujours modifiable (D243, D250) : le détail EST l'éditeur ; le nom se
- * modifie dans la tête, le dossier et les chiffres dessous. Annuler / Enregistrer prennent la
- * place du menu dès que la copie diffère de la routine enregistrée.
+ * modifie dans la tête, le dossier et les chiffres dessous. Modifiée (D261), la tête montre
+ * l'historique, le nombre de modifications, « Tout annuler » et « Enregistrer » ; les cartes
+ * touchées portent « Modifié » ou « Nouveau », les chiffres leur écart.
  */
 export function RoutinePane({ routine }: { routine: MockRoutine }) {
-  const [draft, setDraft] = useState<Draft>(() => toDraft(routine));
+  const history = useDraftHistory<Draft>(() => toDraft(routine));
+  const { draft, set: setDraft } = history;
   const dirty = isDirty(draft, routine);
-  const base = routine;
-  const { guard, release } = useUnsavedGuard(dirty, "cette routine");
+  const changes = changeSummary(draft, routine);
+  const blocker = saveBlocker(draft);
+  const save = () => {
+    if (!dirty || blocker) return;
+    saveRoutine(fromDraft(draft, routine));
+    saved();
+  };
+  const { guard, release } = useUnsavedGuard(dirty, "cette routine", blocker ? undefined : save);
+  useEditorKeys({ undo: history.undo, redo: history.redo, save });
+
+  function discard() {
+    // Un pas d'historique comme un autre : « Rétablir » ou Ctrl Z le défait.
+    setDraft(toDraft(routine));
+    toast("Modifications annulées", {
+      id: "routine-annulee",
+      action: { label: "Rétablir", onClick: history.undo },
+    });
+  }
 
   return (
     <>
       <DetailHeader
         title={<RoutineNameInput draft={draft} onChange={setDraft} />}
-        actions={
-          dirty ? (
-            <>
-              {/* Ce qui manque se lit à la place de l'état : le bouton grisé dit pourquoi (D252). */}
-              <span className="text-muted-foreground text-sm" id="routine-etat">
-                {saveBlocker(draft) ?? "Non enregistrée"}
-              </span>
-              <Button variant="outline" size="sm" onClick={() => setDraft(toDraft(routine))}>
-                Annuler
-              </Button>
-              <Button
-                size="sm"
-                disabled={saveBlocker(draft) !== null}
-                aria-describedby="routine-etat"
-                onClick={() => {
-                  saveRoutine(fromDraft(draft, routine));
-                  saved();
-                }}
-              >
-                Enregistrer
-              </Button>
-            </>
-          ) : (
-            <RoutineMenu routine={routine} release={release} />
+        // Sous le nom plutôt qu'entre les boutons : la tête tient aux largeurs moyennes. Ce qui
+        // manque se lit à la place du compte, et dit pourquoi Enregistrer est grisé (D252).
+        subtitle={
+          dirty && (
+            <span className="flex items-center gap-1.5 whitespace-nowrap px-2" id="routine-etat">
+              {!blocker && <span className="size-1.5 shrink-0 rounded-full bg-foreground" />}
+              {blocker ??
+                `${plural(changes.count, "modification")} non enregistrée${changes.count > 1 ? "s" : ""}`}
+            </span>
           )
+        }
+        actions={
+          <>
+            {(history.canUndo || history.canRedo) && (
+              <HistoryButtons
+                canUndo={history.canUndo}
+                canRedo={history.canRedo}
+                onUndo={history.undo}
+                onRedo={history.redo}
+              />
+            )}
+            {dirty ? (
+              <>
+                <Button variant="outline" size="sm" onClick={discard}>
+                  Tout annuler
+                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      disabled={blocker !== null}
+                      aria-describedby="routine-etat"
+                      aria-keyshortcuts="Control+S"
+                      onClick={save}
+                    >
+                      Enregistrer
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <Kbd>Ctrl S</Kbd>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : (
+              <RoutineMenu routine={routine} release={release} />
+            )}
+          </>
         }
       />
       <EditorLayout
-        main={<RoutineFields draft={draft} onChange={setDraft} />}
+        main={<RoutineFields draft={draft} onChange={setDraft} changes={changes} />}
         aside={
-          <RoutineOverview routine={fromDraft(draft, base)} draft={draft} onChange={setDraft} />
+          <RoutineOverview
+            routine={fromDraft(draft, routine)}
+            saved={dirty ? routine : undefined}
+            draft={draft}
+            onChange={setDraft}
+          />
         }
       />
       {guard}

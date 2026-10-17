@@ -234,6 +234,15 @@ et D199 (style), qui seront repris après validation du wireframe.
   l'éditeur avec son nom, ses cartes et sa colonne de droite) ; sans routine ouverte, la droite
   attend la liste. `erreur` : seule la liste le dit, la droite reste vide ; « Réessayer » passe sous le message (pour toutes les pages), car dans une
   colonne étroite le titre glissait sous le bouton en coin.
+- **D261 — Une routine modifiée** (2026-10-18, critique de l'éditeur). Les modifications ont un
+  **historique** : ↶ / ↷ dans la tête, Ctrl Z, Ctrl Maj Z ou Ctrl Y ; des changements à moins de
+  800 ms l'un de l'autre (une saisie, des « + » répétés) font un seul pas. Sous le nom :
+  « • N modifications non enregistrées » (un exercice touché, ajouté ou retiré, le nom, le
+  dossier, les notes, l'ordre comptent chacun pour un), ou ce qui empêche d'enregistrer (D252).
+  « Annuler » devient **« Tout annuler »**, un pas d'historique rattrapable (toast « Rétablir »).
+  Ctrl S enregistre. Les cartes touchées portent « Modifié » ou « Nouveau » ; les chiffres de
+  droite montrent leur écart avec la version enregistrée. Quitter propose Rester, Ne pas
+  enregistrer, Enregistrer (sans ce dernier quand l'élément n'est pas enregistrable).
 
 ## 3. Coquille
 

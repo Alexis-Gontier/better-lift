@@ -18,6 +18,8 @@ import {
 export function useUnsavedGuard(
   dirty: boolean,
   what: string,
+  /** Enregistre avant de partir ; absent quand l'élément n'est pas enregistrable. */
+  save?: () => void,
 ): { guard: ReactNode; release: () => void } {
   const blocking = useRef(dirty);
   blocking.current = dirty;
@@ -30,16 +32,29 @@ export function useUnsavedGuard(
     <AlertDialog open={blocker.status === "blocked"}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Quitter sans enregistrer ?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {save ? "Enregistrer avant de quitter ?" : "Quitter sans enregistrer ?"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Les modifications de {what} seront perdues.
+            {save ? "Sans enregistrement, les" : "Les"} modifications de {what} seront perdues.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => blocker.reset?.()}>Rester</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={() => blocker.proceed?.()}>
-            Quitter
+            {save ? "Ne pas enregistrer" : "Quitter"}
           </AlertDialogAction>
+          {save && (
+            <AlertDialogAction
+              onClick={() => {
+                save();
+                blocking.current = false;
+                blocker.proceed?.();
+              }}
+            >
+              Enregistrer
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

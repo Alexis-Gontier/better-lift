@@ -203,3 +203,42 @@ export function setsSummary(sets: readonly PlannedSet[]): string {
   const load = kgs.length === 0 ? "— kg" : `${range(kgs, (n) => String(n).replace(".", ","))} kg`;
   return `${warmups > 0 ? `${warmups} W + ` : ""}${working.length} × ${reps} · ${load}`;
 }
+
+/** Ce que le brouillon change à la routine enregistrée (D261) : de quoi marquer et compter. */
+export type ChangeSummary = {
+  /** Exercices déjà là, dont un réglage a bougé. */
+  changed: ReadonlySet<string>;
+  /** Exercices ajoutés depuis l'ouverture. */
+  added: ReadonlySet<string>;
+  removed: number;
+  /** Le nom, le dossier, les notes, l'ordre : un changement chacun. */
+  others: number;
+  count: number;
+};
+
+export function changeSummary(draft: Draft, routine: MockRoutine | undefined): ChangeSummary {
+  const saved = toDraft(routine);
+  const before = new Map(saved.exercises.map((e) => [e.uid, JSON.stringify({ ...e, uid: "" })]));
+  const changed = new Set<string>();
+  const added = new Set<string>();
+  for (const e of draft.exercises) {
+    const was = before.get(e.uid);
+    if (was === undefined) added.add(e.uid);
+    else if (was !== JSON.stringify({ ...e, uid: "" })) changed.add(e.uid);
+  }
+  const kept = draft.exercises.filter((e) => before.has(e.uid)).map((e) => e.uid);
+  const removed = before.size - kept.length;
+  const order = saved.exercises.map((e) => e.uid).filter((uid) => kept.includes(uid));
+  const others =
+    Number(draft.name.trim() !== saved.name.trim()) +
+    Number(draft.folder !== saved.folder) +
+    Number(draft.notes.trim() !== saved.notes.trim()) +
+    Number(kept.join() !== order.join());
+  return {
+    changed,
+    added,
+    removed,
+    others,
+    count: changed.size + added.size + removed + others,
+  };
+}

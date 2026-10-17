@@ -52,6 +52,7 @@ import { lastSets } from "@/mocks/generated-workouts";
 import type { MockRoutineExercise, MockSet } from "@/mocks/routines";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
 import {
+  type ChangeSummary,
   canLinkWithNext,
   chainsIntoNext,
   copyFirstToAll,
@@ -226,8 +227,11 @@ function ExerciseEditor({
   onRemove,
   onLink,
   onUnlink,
+  mark,
 }: {
   exercise: MockRoutineExercise;
+  /** Ce que l'exercice a de différent de la routine enregistrée (D261). */
+  mark?: "Modifié" | "Nouveau";
   /** Enchaîné au suivant dans un superset : son repos ne compte pas. */
   chains: boolean;
   /** Replié, la carte ne montre que sa tête et le résumé de ses séries (D253). */
@@ -285,6 +289,11 @@ function ExerciseEditor({
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="flex min-w-0 items-center gap-2">
                 <span className="line-clamp-2 font-medium leading-snug">{name}</span>
+                {mark && (
+                  <Badge variant="outline" className="shrink-0">
+                    {mark}
+                  </Badge>
+                )}
                 {exercise.superset && (
                   <Badge variant="secondary" className="shrink-0">
                     <Link2 data-icon="inline-start" />
@@ -481,8 +490,11 @@ export function RoutineNameInput({
 export function RoutineFields({
   draft,
   onChange,
+  changes,
 }: {
   draft: Draft;
+  /** Absent à la création : tout y est nouveau, rien à marquer. */
+  changes?: ChangeSummary;
   onChange: (update: (d: Draft) => Draft) => void;
 }) {
   const [picking, setPicking] = useState(false);
@@ -550,6 +562,13 @@ export function RoutineFields({
                   : undefined
               }
               onUnlink={() => onChange((d) => ({ ...d, exercises: unlink(d.exercises, i) }))}
+              mark={
+                changes?.added.has(e.uid)
+                  ? "Nouveau"
+                  : changes?.changed.has(e.uid)
+                    ? "Modifié"
+                    : undefined
+              }
             />
           </SortableItem>
         ))}

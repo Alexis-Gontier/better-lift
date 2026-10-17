@@ -4,6 +4,7 @@ import {
   canLinkWithNext,
   canSave,
   chainsIntoNext,
+  changeSummary,
   copyFirstToAll,
   emptyDraft,
   fromDraft,
@@ -210,5 +211,38 @@ describe("résumé d'un exercice replié", () => {
         { kg: null, reps: 10 },
       ]),
     ).toBe("1 W + 2 × 10 · — kg");
+  });
+});
+
+describe("ce que le brouillon change", () => {
+  it("ne compte rien sur une routine intacte", () => {
+    expect(changeSummary(toDraft(routine), routine).count).toBe(0);
+  });
+
+  it("marque l'exercice modifié, l'ajouté, le retiré et le nom", () => {
+    const d = toDraft(routine);
+    const [first] = d.exercises;
+    if (!first) throw new Error("fixture");
+    const next = {
+      ...d,
+      name: "Push lourd",
+      exercises: [
+        { ...first, restSeconds: 120 },
+        { uid: "neuf", slug: "dips", restSeconds: 90, sets: [{ kg: null, reps: 10 }] },
+      ],
+    };
+    const s = changeSummary(next, routine);
+    expect([...s.changed]).toEqual([first.uid]);
+    expect([...s.added]).toEqual(["neuf"]);
+    expect(s.removed).toBe(1);
+    expect(s.others).toBe(1);
+    expect(s.count).toBe(4);
+  });
+
+  it("compte un nouvel ordre pour un seul changement", () => {
+    const d = toDraft(routine);
+    const s = changeSummary({ ...d, exercises: [...d.exercises].reverse() }, routine);
+    expect(s.changed.size).toBe(0);
+    expect(s.count).toBe(1);
   });
 });
