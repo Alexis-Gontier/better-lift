@@ -63,6 +63,38 @@ et D199 (style), qui seront repris après validation du wireframe.
   - Exercice (Résumé) — **A** courbe en tête, **B** silhouette et chiffres en tête.
   Les autres pages n'ont qu'une variante. Les grilles des listes et des détails suivent la
   largeur de leur conteneur (requêtes de conteneur), pas celle de la fenêtre.
+- **D235 — L'élément ouvert vit dans le chemin, plus de page de détail séparée.**
+  `_app.routines.tsx`, `_app.exercises.tsx` et `_app.history.tsx` montent `ListDetailPage` et
+  la liste ; le détail est la route enfant (`$id`, `$slug`, `new`), rendue par `<Outlet />`. La
+  liste reste montée d'un élément à l'autre : ses filtres (état local) tiennent. Les lignes sont
+  de simples `Link` (`data-status=active` marque la sélection) ; `SelectableRow` et
+  `useSelection` disparaissent. Tout lien vers un élément (Accueil, Planning, palette, fil
+  d'Ariane) ouvre donc la liste | détail. Sans élément (`/routines`), le panneau dit
+  « Choisissez… » : pas de redirection vers le premier, l'adresse reste honnête.
+- **D236 — Les onglets d'une fiche vivent dans l'en-tête du panneau de droite** (`?onglet=`,
+  Résumé · Historique · Records pour un exercice). L'onglet de la liste des exercices (Catalogue ·
+  Mes exercices) devient un état local, initialisé d'après l'exercice ouvert.
+- **D237 — Variantes de détail tranchées** (pour libérer `?v=`) : routine en **cartes** (l'édition
+  en a besoin), Résumé d'exercice **courbe en tête** (A). `RoutineDetailCompact` et
+  `ExerciseSummaryHero` sont retirés.
+- **D238 — Plus de page de modification.** `/routines/$id/edit` est supprimée ; on modifie là où
+  on lit. Créer passe par la liste : « Nouvelle routine » (`/routines/new`) ou « Exercice
+  personnalisé » (`/exercises/new`) insère une ligne brouillon « Sans nom » en tête de liste,
+  sélectionnée, et ouvre le panneau vide, le curseur dans le nom. Rien n'est créé avant le
+  premier enregistrement ; Annuler retire la ligne.
+- **D239 — Trois façons de modifier, à comparer par `?v=`** sur une routine et sur une séance :
+  **A** toujours modifiable (champs nus, barre Annuler / Enregistrer en pied de panneau dès qu'il
+  y a un changement) ; **B** lecture, puis bouton *Modifier* qui bascule le panneau sur place
+  (Annuler / Terminer) ; **C** champ par champ (clic sur une valeur, enregistrée en la quittant,
+  toast avec *Annuler* ; la structure par le menu ⋯ et des contrôles au survol). Sur une séance,
+  on corrige charges, répétitions, note et durée ; ajouter ou retirer un exercice d'une séance
+  passée reste hors périmètre. Pressenti : A pour les routines, C pour les séances.
+- **D240 — Fiche d'exercice : seule la note se modifie**, au clic, enregistrée en la quittant. Un
+  exercice du catalogue n'est jamais modifiable ; un exercice personnalisé a, en plus, un court
+  formulaire (nom, muscle, équipement).
+- **D241 — Le gabarit liste | détail n'est pas étendu.** Accueil, Planning et Progression sont
+  des vues d'ensemble, pas des collections ; Paramètres a déjà sa navigation. Seul candidat
+  écarté pour l'instant : Corps › Mensurations.
 
 ## 3. Coquille
 
@@ -153,7 +185,7 @@ Variantes : semaine en colonnes de jours (a), mois en grille (b), agenda en list
 - **Détail** : en-tête (nom, dossier, durée et volume estimés, badges des muscles ciblés),
   exercices avec séries cibles (charge × répétitions, repos), supersets groupés, dernière
   exécution ; actions *Modifier*, *Planifier*, *Dupliquer*, *Supprimer*.
-- **Éditeur** `/routines/new`, `/routines/$id/edit` (pleine largeur, hors liste | détail) : nom,
+- **Éditeur** (révisé par D238 : dans le panneau de détail, plus de page à part) : nom,
   dossier, exercices en `Sortable`, ajout par une recherche d'exercices, séries en
   `Number Field`, regroupement en superset, notes.
 
@@ -256,6 +288,11 @@ On construit par passes successives, chaque passe validée à l'écran avant la 
 
 **Avancement au 2026-10-16** : les cinq passes sont faites. Restent ouverts le choix d'une
 variante par page (D234) et le contenu du header, vidé à la demande (§ 3).
+
+6. **Liste | détail repensée** (D235–D241, 2026-10-17), étape par étape, un commit et une
+   capture chacune : sélection dans le chemin et retrait des pages de détail ; variantes
+   d'édition A/B/C d'une routine ; création par la liste ; variantes d'édition d'une séance ;
+   note d'exercice et exercice personnalisé.
 
 Le catalogue n'est pas figé : à chaque passe, on peut chercher d'autres composants (shoogle.dev,
 recherches web, applications de référence comme Hevy, Strong ou Liftosaur). Chaque nouveau
