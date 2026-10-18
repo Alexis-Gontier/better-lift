@@ -360,6 +360,25 @@ et D199 (style), qui seront repris après validation du wireframe.
   seul : l'apparence s'applique tout de suite (réglage d'appareil, seul endroit où se règle le thème), le
   mot de passe se change par son propre bouton, les sessions se déconnectent, la suppression
   passe par sa confirmation. Données n'a rien à enregistrer.
+- **D272 — Les Paramètres collent à Better Auth et à la base** (2026-10-18, contrôle sur
+  `apps/api/src/auth.ts`, le schéma Prisma et la doc Better Auth). **Compte** : le nom seul se
+  modifie (`updateUser`) ; l'e-mail se lit — `changeEmail` est désactivé et rien n'envoie
+  d'e-mail. Le mot de passe passe par `changePassword` : l'actuel, le nouveau deux fois (8 à 128
+  caractères, les bornes par défaut), et « Déconnecter mes autres appareils »
+  (`revokeOtherSessions`), coché par défaut. Les sessions montrent ce que rend `listSessions` :
+  l'appareil lu dans l'agent (« Chrome sur Windows », « Application mobile (Android) »), la date
+  d'ouverture et d'expiration ; plus de ville ni de « il y a 2 h », que la session ne porte pas.
+  Une se ferme (`revokeSession`), toutes les autres d'un coup (`revokeOtherSessions`). Supprimer
+  le compte se confirme au mot de passe (`deleteUser`). **Le fuseau horaire quitte le Profil**
+  pour Préférences › Région et formats : il découpe les jours et les semaines, c'est un réglage
+  de région, pas d'identité. **Entraînement** gagne l'objectif par semaine (1 à 7 ou aucun) et
+  un repos par défaut qui peut être « Aucun » : les deux existent en base (`Preferences`).
+  **Écarts à combler avant de brancher** : activer `user.deleteUser` dans la config Better Auth ;
+  `changeEmail` et un envoi d'e-mails si l'on veut changer d'adresse ; en base, rien ne porte
+  encore le fuseau (fixé à Europe/Paris), l'unité (fixée en kg), le format de date, le premier
+  jour de la semaine, l'effort RPE, l'incrément, la barre, les disques ni la formule du 1RM
+  (Epley partout dans `shared`) ; côté API, ni import Hevy, ni export JSON, ni suppression des
+  données (seul l'export CSV des séances existe).
 
 ## 3. Coquille
 
