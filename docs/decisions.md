@@ -83,7 +83,8 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 
 - **D30** — La liste blanche mord sur `databaseHooks.user.create.before` : valable pour tout
   chemin de création, présent ou futur. Le garde par route ne sert qu'au message lisible.
-- **D31** — E-mail et mot de passe seulement ; GitHub reporté.
+- **D31** — E-mail et mot de passe seulement. Pas de connexion GitHub ni d'autre fournisseur
+  (tranché le 19 octobre 2026).
 - **D35** — `estAutorisee` est une fonction pure de `shared`, testée.
 - **D100** — Mobile : la garde ne renvoie à la connexion que sur une absence de session
   confirmée, jamais sur une erreur de lecture (hors ligne en salle).
