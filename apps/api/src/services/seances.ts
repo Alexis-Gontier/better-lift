@@ -17,7 +17,7 @@ import {
   type TypeRecord,
   type TypeSerie,
 } from "@better-lift/shared";
-import { imageDe } from "./exercices.js";
+import { CHAMPS_RESUME, imageDe, versResume as versResumeExercice } from "./exercices.js";
 import { SlugInconnu } from "./routines.js";
 
 /**
@@ -396,7 +396,7 @@ export const depotLecture: DepotLectureSeances = {
         },
       },
     });
-    return resumerExercicesFaits(
+    const chiffres = resumerExercicesFaits(
       lignes.map((l) => ({
         slug: l.exercice.exercise.slug,
         date: l.exercice.seance.debut.toISOString(),
@@ -406,6 +406,18 @@ export const depotLecture: DepotLectureSeances = {
         faite: l.faite,
       })),
     );
+    // La ligne du catalogue de chacun, en une lecture : la page les liste sans le catalogue.
+    const exercices = await prisma.exercise.findMany({
+      where: { slug: { in: chiffres.map((c) => c.slug) } },
+      select: CHAMPS_RESUME,
+    });
+    const parSlug = new Map(exercices.map((e) => [e.slug, versResumeExercice(e)]));
+    return chiffres
+      .flatMap(({ slug, ...c }) => {
+        const resume = parSlug.get(slug);
+        return resume ? [{ ...resume, ...c }] : [];
+      })
+      .sort((a, b) => b.derniereFois.localeCompare(a.derniereFois));
   },
 
   async lister(userId, page, taille, routineId) {

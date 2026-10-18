@@ -1,4 +1,4 @@
-import type { HistoriqueExercice } from "@better-lift/shared";
+import type { ExerciceFait, HistoriqueExercice } from "@better-lift/shared";
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
 import type { LireSession } from "../middlewares/session.js";
@@ -19,7 +19,16 @@ const historique: HistoriqueExercice = [
   },
 ];
 
-const fait = { slug: "bench", derniereFois: "2026-10-03T17:00:00.000Z", meilleur1Rm: 99.2 };
+const fait: ExerciceFait = {
+  slug: "bench",
+  nom: "Développé couché",
+  groupe: "CHEST",
+  equipement: "barbell",
+  image: null,
+  recherche: "developpe couche bench press",
+  derniereFois: "2026-10-03T17:00:00.000Z",
+  meilleur1Rm: 99.2,
+};
 
 /** Seule alice a un historique, et seul « bench » existe. */
 const lecture = {
