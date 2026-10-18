@@ -292,10 +292,12 @@ export function anterieurA(h: Historique, debut: Date): Historique {
 }
 
 export type DepotLectureSeances = {
+  /** La plus récente d'abord ; avec `routineId`, celles de cette routine seulement (D311). */
   lister(
     userId: string,
     page: number,
     taille: number,
+    routineId?: string,
   ): Promise<{ seances: SeanceFil[]; total: number }>;
   lire(userId: string, id: string): Promise<SeanceDetail | null>;
   /** Toutes les séries du compte, pour l'export (D128), dans l'ordre des séances. */
@@ -377,16 +379,18 @@ export async function historique(userId: string, exerciseIds: string[], avant?: 
 }
 
 export const depotLecture: DepotLectureSeances = {
-  async lister(userId, page, taille) {
+  async lister(userId, page, taille, routineId) {
+    // Le filtre `userId` reste : la routine d'autrui ne rend rien.
+    const where = { userId, ...(routineId ? { routineId } : {}) };
     const [lignes, total] = await Promise.all([
       prisma.seance.findMany({
-        where: { userId },
+        where,
         orderBy: { debut: "desc" },
         skip: (page - 1) * taille,
         take: taille,
         select: LECTURE_SEANCE,
       }),
-      prisma.seance.count({ where: { userId } }),
+      prisma.seance.count({ where }),
     ]);
     // Un seul historique pour la page entière, découpé ensuite séance par séance :
     // le nombre de records d'une ligne est celui que montrerait son détail.

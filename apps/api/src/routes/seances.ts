@@ -9,6 +9,8 @@ import type { DepotLectureSeances, DepotSeances } from "../services/seances.js";
 const pagination = z.object({
   page: z.coerce.number().int().min(1).default(1),
   taille: z.coerce.number().int().min(1).max(100).default(30),
+  // Les séances d'une routine (D311) : ses stats se calculent dessus.
+  routine: z.string().min(1).max(40).optional(),
 });
 
 // « a,b,c » : une liste de slugs dans un seul paramètre d'URL.
@@ -42,9 +44,9 @@ export function routesSeances(
     new Hono()
       .use(exigerSession(lireSession))
       .get("/", zValidator("query", pagination), async (c) => {
-        const { page, taille } = c.req.valid("query");
+        const { page, taille, routine } = c.req.valid("query");
         return c.json(
-          { ...(await lecture.lister(c.get("userId"), page, taille)), page, taille },
+          { ...(await lecture.lister(c.get("userId"), page, taille, routine)), page, taille },
           200,
         );
       })
