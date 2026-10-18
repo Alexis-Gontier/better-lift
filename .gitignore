@@ -27,3 +27,6 @@ packages/db/src/generated/
 # Artefacts du MCP Playwright (captures de vérification manuelle)
 .playwright-mcp/
 .vercel
+
+# Rapports de critique de la skill impeccable (locaux)
+.impeccable/
