@@ -17,13 +17,12 @@ export function RecordRow({ event }: { event: RecordEvent }) {
       className="flex items-center gap-3 border-t px-4 py-2.5 transition-colors hover:bg-muted/40"
     >
       <Trophy className="size-4 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 flex-1 truncate text-sm">
-        {exerciseBySlug(event.slug)?.name ?? event.slug}
+      {/* La date sous le nom : dans une colonne étroite, le nom garde la place. */}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm">{exerciseBySlug(event.slug)?.name ?? event.slug}</span>
+        <span className="text-muted-foreground text-xs">{formatShortDay(event.date)}</span>
       </span>
       <span className="shrink-0 text-sm tabular-nums">{setText(event)}</span>
-      <span className="w-16 shrink-0 text-right text-muted-foreground text-xs">
-        {formatShortDay(event.date)}
-      </span>
       <ArrowUpRight className="size-4 shrink-0 text-muted-foreground" />
     </Link>
   );

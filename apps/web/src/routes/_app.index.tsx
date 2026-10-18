@@ -4,25 +4,36 @@ import { Page } from "@/components/page";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
+import { HomeFeed } from "@/features/home/home-feed";
+import { HomePinned } from "@/features/home/home-pinned";
 import { HomeEmpty, HomeSkeleton } from "@/features/home/home-states";
-import { RecentRecords, RecentSessions } from "@/features/home/recent-lists";
-import { WeightCard } from "@/features/home/weight-card";
+import { HomeToBeat } from "@/features/home/home-to-beat";
+import { RecordsStrip } from "@/features/home/records-strip";
 
 export const Route = createFileRoute("/_app/")({
-  staticData: { crumb: "Accueil" },
+  staticData: {
+    crumb: "Accueil",
+    proto: {
+      variants: [
+        { value: "a", label: "Épinglés" },
+        { value: "b", label: "Fil des records" },
+        { value: "c", label: "À battre" },
+      ],
+    },
+  },
   component: HomePage,
 });
 
-/** L'Accueil, en attendant sa refonte autour des records (D277). */
+/** L'Accueil parle de records (D277) : la ligne de tête, puis la variante choisie. */
 function HomePage() {
-  const { state } = useProto();
+  const { state, variant } = useProto();
   return (
     <Page
       title="Accueil"
       actions={
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/progress">
-            Voir la progression <ArrowUpRight data-icon="inline-end" />
+          <Link to="/records">
+            Tous les records <ArrowUpRight data-icon="inline-end" />
           </Link>
         </Button>
       }
@@ -31,13 +42,12 @@ function HomePage() {
       {state === "erreur" && <StateError title="L'accueil n'a pas pu se charger" />}
       {state === "vide" && <HomeEmpty />}
       {state === "nominal" && (
-        <div className="grid items-start gap-4 @3xl:grid-cols-3">
-          <RecentSessions />
-          <RecentRecords />
-          <div className="flex flex-col gap-4">
-            <WeightCard />
-          </div>
-        </div>
+        <>
+          <RecordsStrip />
+          {variant === "a" && <HomePinned />}
+          {variant === "b" && <HomeFeed />}
+          {variant === "c" && <HomeToBeat />}
+        </>
       )}
     </Page>
   );
