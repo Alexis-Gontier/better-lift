@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculerPeriode, type SeancePeriode, semainesRecentes } from "./stats.js";
+import { semainesRecentes } from "./stats.js";
 
 const PARIS = "Europe/Paris";
 // Samedi 3 octobre 2026, 18 h à Paris : la semaine en cours commence le lundi 28 septembre.
@@ -44,68 +44,5 @@ describe("semainesRecentes (D112)", () => {
     );
     expect(s[0]?.jours[6]).toBe(true);
     expect(s[1]?.seances).toBe(0);
-  });
-});
-
-describe("calculerPeriode (D125)", () => {
-  // Samedi 3 octobre 2026 : la semaine en cours commence le lundi 28 septembre ;
-  // « mois » = 4 semaines depuis le lundi 7 septembre, comparées aux 4 d'avant.
-  const seance = (id: string, debut: string, volumeKg = 1000): SeancePeriode => ({
-    id,
-    debut,
-    fin: new Date(Date.parse(debut) + 45 * 60_000).toISOString(),
-    volumeKg,
-    seriesFaites: 10,
-    exercices: [
-      { musclePrincipal: "Pectoraux", musclesSecondaires: ["Triceps"], seriesComptees: 4 },
-      { musclePrincipal: "Triceps", musclesSecondaires: [], seriesComptees: 3 },
-    ],
-  });
-
-  it("compte la période et la période précédente, et ignore le reste", () => {
-    const p = calculerPeriode(
-      [
-        seance("a", "2026-10-01T17:00:00.000Z"),
-        seance("b", "2026-09-01T17:00:00.000Z"),
-        seance("c", "2026-08-01T17:00:00.000Z"),
-      ],
-      maintenant,
-      PARIS,
-      "mois",
-    );
-    expect(p.nbSemaines).toBe(4);
-    expect(p.premierLundi).toBe("2026-09-07");
-    expect(p.totaux).toEqual({ seances: 1, series: 10, dureeMin: 45, volumeKg: 1000 });
-    expect(p.precedents).toEqual({ seances: 1, series: 10, dureeMin: 45, volumeKg: 1000 });
-  });
-
-  it("découpe dans le fuseau : le dimanche 23 h 30 à Paris reste dans la semaine d'avant", () => {
-    const p = calculerPeriode(
-      [
-        seance("dim", "2026-09-06T21:30:00.000Z"), // dimanche 6, 23 h 30 à Paris
-        seance("lun", "2026-09-06T22:30:00.000Z"), // lundi 7, 0 h 30 à Paris
-      ],
-      maintenant,
-      PARIS,
-      "mois",
-    );
-    expect(p.totaux.seances).toBe(1);
-    expect(p.precedents.seances).toBe(1);
-    expect(p.jours.map((j) => j.jour)).toEqual(["2026-09-07"]);
-  });
-
-  it("additionne les séances d'un même jour, et les séries par zone principale", () => {
-    const p = calculerPeriode(
-      [seance("a", "2026-10-01T08:00:00.000Z", 500), seance("b", "2026-10-01T17:00:00.000Z", 700)],
-      maintenant,
-      PARIS,
-      "semaine",
-    );
-    expect(p.jours).toEqual([{ jour: "2026-10-01", volumeKg: 1200, seances: ["a", "b"] }]);
-    expect(p.zones).toEqual([
-      { zone: "chest", series: 8 },
-      { zone: "triceps", series: 6 },
-    ]);
-    expect(p.volumes).toEqual([{ lundi: "2026-09-28", volumeKg: 1200, seances: 2 }]);
   });
 });

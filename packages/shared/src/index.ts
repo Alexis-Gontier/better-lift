@@ -107,15 +107,7 @@ export {
   validerSerie,
   versEnvoi,
 } from "./seance.js";
-export {
-  type Bilan,
-  calculerPeriode,
-  PERIODES,
-  type Periode,
-  type RecordRecent,
-  SEMAINES_PERIODE,
-  type StatsPeriode,
-} from "./stats.js";
+export type { Bilan } from "./stats.js";
 export {
   defaireGroupe,
   deplacerAvecGroupes,
