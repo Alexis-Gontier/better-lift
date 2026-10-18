@@ -1,4 +1,4 @@
-import { Dumbbell, History, House, ListChecks, type LucideIcon, Settings } from "lucide-react";
+import { Dumbbell, History, House, ListChecks, type LucideIcon } from "lucide-react";
 import type { FileRouteTypes } from "@/routeTree.gen";
 
 type NavItem = { title: string; to: FileRouteTypes["to"]; icon: LucideIcon };
@@ -14,5 +14,4 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Historique", to: "/history", icon: History },
     ],
   },
-  { label: null, items: [{ title: "Paramètres", to: "/settings", icon: Settings }] },
 ];

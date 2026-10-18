@@ -123,15 +123,17 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   le calendrier, les graphiques et les dernières séances partent, avec `mocks/dashboard.ts`.
   L'historique git les garde.
 
+- **D289 — Paramètres quitte la barre latérale** (2026-10-18). On y va par le menu du compte
+  (l'avatar, en haut à droite) ou par la palette (« Paramètres » parmi les actions).
+
 ## 3. Barre latérale
 
 ```
 Accueil
 ENTRAÎNEMENT   Routines · Exercices · Historique
-Paramètres
 ```
 
-(Révisé par D285 : le groupe Analyse est parti.)
+(Révisé par D285 : le groupe Analyse est parti ; par D289 : Paramètres aussi.)
 
 Records prend l'icône `Trophy`. La palette perd « Planifier » et gagne « Aller à Records ».
 

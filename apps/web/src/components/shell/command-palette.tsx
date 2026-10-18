@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { FileUp, type LucideIcon, Plus } from "lucide-react";
+import { FileUp, type LucideIcon, Plus, Settings } from "lucide-react";
 import { useEffect } from "react";
 import {
   Command,
@@ -19,6 +19,8 @@ type To = FileRouteTypes["to"];
 const ACTIONS: { label: string; to: To; icon: LucideIcon }[] = [
   { label: "Nouvelle routine", to: "/routines/new", icon: Plus },
   { label: "Importer depuis Hevy", to: "/settings/data", icon: FileUp },
+  // Hors de la barre latérale : le menu du compte et la palette y mènent.
+  { label: "Paramètres", to: "/settings", icon: Settings },
 ];
 
 type Props = {
