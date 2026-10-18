@@ -5,7 +5,6 @@ import {
   movingAverage,
   type SessionLike,
   startOfWeek,
-  weeklyCount,
   weeklyVolume,
   weekStreak,
 } from "./stats";
@@ -68,16 +67,5 @@ describe("dailyActivity", () => {
 describe("movingAverage", () => {
   it("moyenne les N dernières valeurs disponibles", () => {
     expect(movingAverage([2, 4, 6, 8], 2)).toEqual([2, 3, 5, 7]);
-  });
-});
-
-describe("weeklyCount", () => {
-  it("compte les éléments par semaine, la plus ancienne d'abord, les vides à 0", () => {
-    const items = [{ date: "2026-10-13" }, { date: "2026-10-14" }, { date: "2026-09-29" }];
-    expect(weeklyCount(items, TODAY, 3)).toEqual([
-      { week: "2026-09-28", count: 1 },
-      { week: "2026-10-05", count: 0 },
-      { week: "2026-10-12", count: 2 },
-    ]);
   });
 });

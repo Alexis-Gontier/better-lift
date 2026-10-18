@@ -85,6 +85,10 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   leur 1RM au départ des 3 mois), **Routines** (séances par routine sur 3 mois, la dernière),
   **Corps** (poids moyen sur 90 jours, objectif en pointillés).
 
+- **D283 — L'Accueil est vide** (2026-10-18, révise D282). Tuiles et cartes partent : elles
+  doublaient Records, Progression et Corps. La page ne garde que son titre ; son contenu viendra
+  quand l'usage dira ce qui y sert.
+
 ## 3. Barre latérale
 
 ```
@@ -111,8 +115,8 @@ Un commit et une capture par étape, chacune validée à l'écran avant la suiva
 6. **Détail de routine** (D280).
 7. **Corps** (D281).
 
-**Avancement** : les sept étapes sont faites (2026-10-18). Le choix d'une variante
-de l'Accueil est tranché par D282 : un résumé à graphiques.
+**Avancement** : les sept étapes sont faites (2026-10-18). L'Accueil, après trois variantes (D277)
+puis un résumé à graphiques (D282), est vide (D283).
 
 ## 5. Vérification
 

@@ -46,8 +46,6 @@ export const INSIGHTS: Insight[] = mockExercises.flatMap((e) => {
   ];
 });
 
-export const insightOf = (slug: string) => INSIGHTS.find((i) => i.slug === slug);
-
 /** Tous les records battus, le plus récent d'abord. */
 export function useRecordEvents(): RecordEvent[] {
   return recordEvents(useSessions().map(sessionDetail));
