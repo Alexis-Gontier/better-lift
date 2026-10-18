@@ -89,6 +89,13 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   doublaient Records, Progression et Corps. La page ne garde que son titre ; son contenu viendra
   quand l'usage dira ce qui y sert.
 
+- **D284 — Records se lit en graphiques** (2026-10-18, révise D278). Records par semaine en
+  barres avec le total et son écart ; par muscle, la silhouette et des barres ; « À portée » en
+  jauges de 90 à 100 % du record ; « En stagnation » en barres de jours sans record ; le palmarès
+  en cartes à courbe du 1RM (un point par record, la cible en pointillés), triables par record
+  récent, 1RM ou muscle et filtrées par muscle ; la chronologie en nuage de points, un clic ouvre
+  la séance. Le tableau et la liste groupée par semaine partent.
+
 ## 3. Barre latérale
 
 ```
