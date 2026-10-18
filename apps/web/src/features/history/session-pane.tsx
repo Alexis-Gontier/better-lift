@@ -1,6 +1,9 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
+import { ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DetailColumns } from "@/components/detail-columns";
+import { useEditable } from "@/components/editable";
 import { DetailHeader } from "@/components/list-detail";
 import {
   AlertDialog,
@@ -11,186 +14,123 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useUnsavedGuard } from "@/components/unsaved-guard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDay } from "@/lib/format";
 import type { SessionDetail } from "@/mocks/history";
-import { mockRoutines } from "@/mocks/routines";
+import { useRoutines } from "@/mocks/routine-store";
 import { saveSession } from "@/mocks/session-store";
-import { SessionDetailView } from "./session-detail";
+import { changedExercises, sessionChangeCount } from "./session-draft";
+import { SessionExercises, SessionOverview } from "./session-editor";
 
-type Props = { detail: SessionDetail; previous?: SessionDetail };
-
-/** Sans API, supprimer referme simplement la séance. */
-function DeleteButton({ release }: { release?: () => void }) {
+/** Le menu ⋯ de la séance : la routine d'origine, puis Supprimer. Sans API, supprimer la referme. */
+function SessionMenu({ detail, release }: { detail: SessionDetail; release: () => void }) {
   const navigate = useNavigate();
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Supprimer
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer cette séance ?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Ses séries et les records qu'elle portait disparaîtront. C'est définitif.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={() => {
-              release?.();
-              navigate({ to: "/history", search: true });
-            }}
-          >
-            Supprimer
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
-/** Les actions de lecture : la routine d'origine, puis Supprimer. */
-function ReadActions({ detail, release }: { detail: SessionDetail; release?: () => void }) {
-  const routine = mockRoutines.find((r) => r.name === detail.session.routine);
+  const routine = useRoutines().find((r) => r.name === detail.session.routine);
+  const [confirming, setConfirming] = useState(false);
   return (
     <>
-      {routine && (
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/routines/$id" params={{ id: routine.id }}>
-            Voir la routine
-          </Link>
-        </Button>
-      )}
-      <DeleteButton release={release} />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon-sm" aria-label="Actions de la séance">
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-52">
+          {routine && (
+            <DropdownMenuItem
+              onSelect={() => navigate({ to: "/routines/$id", params: { id: routine.id } })}
+            >
+              <ListChecks /> Voir la routine
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
+            <Trash2 /> Supprimer
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette séance ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ses séries et les records qu'elle portait disparaîtront. C'est définitif.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                release();
+                navigate({ to: "/history", search: true });
+                toast("Séance supprimée");
+              }}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
 
-const fingerprint = (d: SessionDetail) =>
-  JSON.stringify({ minutes: d.session.minutes, notes: d.notes ?? "", exercises: d.exercises });
-
-const saved = () => toast.success("Séance corrigée", { id: "seance-corrigee" });
-
-/** A — toujours modifiable (D239) : champs nus ; Annuler / Enregistrer dès qu'il y a un écart. */
-export function SessionPaneAlwaysEditable({ detail, previous }: Props) {
-  const [draft, setDraft] = useState(detail);
-  const dirty = fingerprint(draft) !== fingerprint(detail);
-  const { guard, release } = useUnsavedGuard(dirty, "cette séance");
+/**
+ * La séance ouverte, toujours corrigeable comme une routine (D263, tranche D239 pour A) : les
+ * exercices à gauche, chiffres, muscles et note à droite ; modifiée, la tête montre l'historique,
+ * le compte, « Tout annuler » et « Enregistrer ».
+ */
+export function SessionPane({
+  detail,
+  previous,
+}: {
+  detail: SessionDetail;
+  previous?: SessionDetail;
+}) {
+  const edit = useEditable<SessionDetail>({
+    initial: () => detail,
+    isDirty: (d) => sessionChangeCount(d, detail) > 0,
+    count: (d) => sessionChangeCount(d, detail),
+    onSave: saveSession,
+    what: "cette séance",
+    savedMessage: "Séance corrigée",
+  });
+  const { draft, setDraft } = edit;
   return (
     <>
       <DetailHeader
         title={detail.session.routine}
-        subtitle={formatDay(detail.session.date)}
-        actions={
-          dirty ? (
-            <>
-              <span className="text-muted-foreground text-sm">Non enregistrée</span>
-              <Button variant="outline" size="sm" onClick={() => setDraft(detail)}>
-                Annuler
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  saveSession(draft);
-                  saved();
-                }}
-              >
-                Enregistrer
-              </Button>
-            </>
-          ) : (
-            <ReadActions detail={detail} release={release} />
-          )
+        // La date reste lisible pendant une correction : le compte se met à côté.
+        subtitle={
+          <span className="flex flex-wrap items-center gap-x-1">
+            {formatDay(detail.session.date)}
+            {edit.status}
+          </span>
         }
+        actions={edit.actions(<SessionMenu detail={detail} release={edit.release} />)}
       />
-      <SessionDetailView
-        detail={draft}
-        previous={previous}
-        edit={{ mode: "bare", onChange: setDraft }}
-      />
-      {guard}
-    </>
-  );
-}
-
-/** B — lecture, puis *Corriger* bascule le panneau sur place (D239). */
-export function SessionPaneReadThenEdit({ detail, previous }: Props) {
-  const [draft, setDraft] = useState<SessionDetail | null>(null);
-  const dirty = draft !== null && fingerprint(draft) !== fingerprint(detail);
-  const { guard, release } = useUnsavedGuard(dirty, "cette séance");
-  return (
-    <>
-      <DetailHeader
-        title={detail.session.routine}
-        subtitle={draft ? "Correction" : formatDay(detail.session.date)}
-        actions={
-          draft ? (
-            <>
-              <Button variant="outline" size="sm" onClick={() => setDraft(null)}>
-                Annuler
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (dirty) {
-                    saveSession(draft);
-                    saved();
-                  }
-                  setDraft(null);
-                }}
-              >
-                Terminer
-              </Button>
-            </>
-          ) : (
-            <>
-              <ReadActions detail={detail} release={release} />
-              <Button size="sm" onClick={() => setDraft(detail)}>
-                Corriger
-              </Button>
-            </>
-          )
+      <DetailColumns
+        id="seance-detail"
+        main={
+          <SessionExercises
+            draft={draft}
+            previous={previous}
+            changed={changedExercises(draft, detail)}
+            onChange={setDraft}
+          />
         }
+        aside={<SessionOverview draft={draft} previous={previous} onChange={setDraft} />}
       />
-      <SessionDetailView
-        detail={draft ?? detail}
-        previous={previous}
-        edit={draft ? { mode: "field", onChange: setDraft } : undefined}
-      />
-      {guard}
-    </>
-  );
-}
-
-/** C — champ par champ (D239) : un clic sur une valeur, enregistrée en la quittant. */
-export function SessionPaneInline({ detail, previous }: Props) {
-  const commit = (next: SessionDetail) => {
-    saveSession(next);
-    toast.success("Enregistré", {
-      id: "seance-corrigee",
-      action: { label: "Annuler", onClick: () => saveSession(detail) },
-    });
-  };
-  return (
-    <>
-      <DetailHeader
-        title={detail.session.routine}
-        subtitle={formatDay(detail.session.date)}
-        actions={<ReadActions detail={detail} />}
-      />
-      <SessionDetailView
-        detail={detail}
-        previous={previous}
-        edit={{ mode: "inline", onChange: commit }}
-      />
+      {edit.guard}
     </>
   );
 }

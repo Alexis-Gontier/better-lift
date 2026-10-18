@@ -1,40 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DetailEmpty, DetailSkeleton } from "@/components/list-detail";
+import { DetailColumnsSkeleton } from "@/components/detail-columns";
+import { DetailEmpty } from "@/components/list-detail";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
-import {
-  SessionPaneAlwaysEditable,
-  SessionPaneInline,
-  SessionPaneReadThenEdit,
-} from "@/features/history/session-pane";
+import { SessionPane } from "@/features/history/session-pane";
 import { previousOf } from "@/mocks/history";
 import { detailOf, useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/history/$id")({
-  staticData: {
-    crumb: "Détail",
-    proto: {
-      variants: [
-        { value: "a", label: "Toujours modifiable" },
-        { value: "b", label: "Corriger" },
-        { value: "c", label: "Champ par champ" },
-      ],
-    },
-  },
-  component: SessionPane,
+  staticData: { crumb: "Détail" },
+  component: SessionRoute,
 });
 
-/**
- * La séance ouverte, dans le panneau de droite (D235), corrigée là où on la lit : A toujours
- * modifiable, B lecture puis Corriger, C champ par champ (D239).
- */
-function SessionPane() {
+/** La séance ouverte, dans le panneau de droite (D235), corrigée là où on la lit (D263). */
+function SessionRoute() {
   const { id } = Route.useParams();
-  const { state, variant } = useProto();
+  const { state } = useProto();
   const sessions = useSessions();
   const session = sessions.find((s) => s.id === id);
 
-  if (state === "chargement") return <DetailSkeleton />;
+  if (state === "chargement") return <DetailColumnsSkeleton />;
   if (state === "erreur") return <StateError title="La séance n'a pas pu se charger" />;
   if (!session || state === "vide")
     return (
@@ -44,12 +29,13 @@ function SessionPane() {
       />
     );
 
-  const detail = detailOf(session);
   const before = previousOf(sessions, id);
-  const previous = before ? detailOf(before) : undefined;
   // `key` : d'une séance à l'autre, le brouillon repart de zéro.
-  if (variant === "b")
-    return <SessionPaneReadThenEdit key={id} detail={detail} previous={previous} />;
-  if (variant === "c") return <SessionPaneInline key={id} detail={detail} previous={previous} />;
-  return <SessionPaneAlwaysEditable key={id} detail={detail} previous={previous} />;
+  return (
+    <SessionPane
+      key={id}
+      detail={detailOf(session)}
+      previous={before ? detailOf(before) : undefined}
+    />
+  );
 }
