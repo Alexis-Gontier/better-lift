@@ -144,6 +144,7 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
           <RoutineOverview
             routine={fromDraft(draft, routine)}
             saved={edit.dirty ? routine : undefined}
+            stats={routine}
             draft={draft}
             onChange={setDraft}
           />

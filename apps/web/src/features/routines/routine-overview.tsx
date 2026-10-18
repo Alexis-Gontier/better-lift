@@ -14,10 +14,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatDaysAgo, formatDelta, formatKg, formatMinutes, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
+import { sessionDetail } from "@/mocks/history";
+import { strengthTrend } from "@/mocks/progress";
+import { routineRuns } from "@/mocks/routine-history";
 import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
 import { useFolders } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
 import { useSessions } from "@/mocks/session-store";
+import { addDays } from "@/mocks/stats";
 import { TODAY } from "@/mocks/today";
 import type { Draft } from "./routine-draft";
 import { filled } from "./routine-editor";
@@ -102,12 +106,51 @@ function Muscles({ routine }: { routine: MockRoutine }) {
 }
 
 /**
+ * La routine dans le temps, en bref (D280) : séances, volume moyen et sa tendance, records et
+ * réalisation sur trois mois ; « Analyser » ouvre le détail dans Progression.
+ */
+function RoutineStats({ routine }: { routine: MockRoutine }) {
+  const from = addDays(TODAY, -91);
+  const details = useSessions()
+    .filter((s) => s.date >= from)
+    .map(sessionDetail);
+  const runs = routineRuns(routine, details);
+  if (runs.length === 0) return null;
+  const avg = (f: (r: (typeof runs)[number]) => number) =>
+    runs.reduce((n, r) => n + f(r), 0) / runs.length;
+  const trend = strengthTrend(runs.map((r) => ({ date: r.date, value: r.volume })));
+  const rows: SummaryRow[] = [
+    { label: "Séances sur 3 mois", value: String(runs.length) },
+    {
+      label: "Volume moyen",
+      value: formatKg(Math.round(avg((r) => r.volume))),
+      delta: trend
+        ? `${trend.change > 0 ? "+" : trend.change < 0 ? "−" : "±"}${Math.abs(Math.round(trend.change))} %`
+        : undefined,
+    },
+    { label: "Durée moyenne", value: formatMinutes(Math.round(avg((r) => r.minutes))) },
+    { label: "Records battus", value: String(runs.reduce((n, r) => n + r.records, 0)) },
+    { label: "Réalisation", value: `${Math.round(avg((r) => r.completion) * 100)} %` },
+    {
+      label: "Séance par séance",
+      value: (
+        <Link to="/progress" search={{ routine: routine.id }} className="hover:underline">
+          Analyser
+        </Link>
+      ),
+    },
+  ];
+  return <SummaryCard title="Stats" rows={rows} />;
+}
+
+/**
  * La colonne de droite de l'éditeur (D253, D254), une carte par sujet : les chiffres, les
  * muscles travaillés, puis les réglages — dossier et notes —, qui ne pèsent plus en tête.
  */
 export function RoutineOverview({
   routine,
   saved,
+  stats,
   draft,
   onChange,
 }: {
@@ -115,6 +158,8 @@ export function RoutineOverview({
   routine: MockRoutine;
   /** La version enregistrée : chaque chiffre montre son écart avec elle. */
   saved?: MockRoutine;
+  /** La routine enregistrée, pour ses stats (D280) ; absente à la création. */
+  stats?: MockRoutine;
   draft: Draft;
   onChange: (update: (d: Draft) => Draft) => void;
 }) {
@@ -122,6 +167,7 @@ export function RoutineOverview({
   return (
     <>
       <Summary routine={routine} saved={saved} />
+      {stats && <RoutineStats routine={stats} />}
       <Card size="sm">
         <CardHeader>
           <CardTitle>Muscles travaillés</CardTitle>
