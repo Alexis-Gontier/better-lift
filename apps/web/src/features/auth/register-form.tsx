@@ -13,7 +13,8 @@ import {
 } from "./auth-card";
 
 /**
- * Inscription par `signUp.email` : nom, e-mail, mot de passe. L'API n'accepte que les adresses
+ * Inscription par `signUp.email` : nom, e-mail, mot de passe saisi deux fois (la confirmation
+ * ne vit que dans l'interface, Better Auth n'en reçoit qu'un). L'API n'accepte que les adresses
  * de `SIGNUP_ALLOWLIST` : c'est l'échec qu'on montre.
  */
 export function RegisterForm() {
@@ -21,8 +22,12 @@ export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [again, setAgain] = useState("");
   const { submit, pending, failed } = useFakeSubmit(() => navigate({ to: "/" }));
   const tooShort = password.length > 0 && password.length < PASSWORD.min;
+  const mismatch = again.length > 0 && again !== password;
+  const valid =
+    name.trim() !== "" && email !== "" && password.length >= PASSWORD.min && again === password;
   return (
     <AuthCard
       title="Créer un compte"
@@ -77,11 +82,19 @@ export function RegisterForm() {
             />
             <FieldDescription>Au moins {PASSWORD.min} caractères.</FieldDescription>
           </Field>
-          <SubmitButton
-            pending={pending}
-            disabled={name.trim() === "" || email === "" || password.length < PASSWORD.min}
-            pendingLabel="Création…"
-          >
+          <Field data-invalid={mismatch}>
+            <FieldLabel htmlFor="again-password">Confirmer le mot de passe</FieldLabel>
+            <PasswordInput
+              id="again-password"
+              autoComplete="new-password"
+              required
+              aria-invalid={mismatch}
+              value={again}
+              onChange={(e) => setAgain(e.target.value)}
+            />
+            {mismatch && <FieldDescription>Les deux saisies diffèrent.</FieldDescription>}
+          </Field>
+          <SubmitButton pending={pending} disabled={!valid} pendingLabel="Création…">
             Créer le compte
           </SubmitButton>
         </FieldGroup>
