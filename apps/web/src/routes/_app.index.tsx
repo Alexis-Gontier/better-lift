@@ -13,7 +13,17 @@ import { HomeSkeleton, HomeStats } from "@/features/home/home-stats";
 import { useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/")({
-  staticData: { crumb: "Accueil" },
+  staticData: {
+    crumb: "Accueil",
+    // La rangée de tête en trois mises en forme, le temps de choisir.
+    proto: {
+      variants: [
+        { value: "a", label: "Bandeau" },
+        { value: "b", label: "Tuiles" },
+        { value: "c", label: "Éditorial" },
+      ],
+    },
+  },
   component: HomePage,
 });
 
@@ -22,7 +32,7 @@ export const Route = createFileRoute("/_app/")({
  * d'assiduité, le volume par semaine, puis les dernières séances et les séances par routine.
  */
 function HomePage() {
-  const { state } = useProto();
+  const { state, variant } = useProto();
   const sessions = useSessions();
   return (
     <Page title="Accueil">
@@ -35,7 +45,7 @@ function HomePage() {
       )}
       {state === "nominal" && (
         <>
-          <HomeStats sessions={sessions} />
+          <HomeStats sessions={sessions} variant={variant} />
           <ActivityCalendar sessions={sessions} />
           <VolumeChart sessions={sessions} />
           <div className="grid gap-4 @4xl:grid-cols-3">
