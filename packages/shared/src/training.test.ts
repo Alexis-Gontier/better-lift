@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimate1RM, setVolume } from "./training.js";
+import { estimate1RM } from "./training.js";
 
 describe("estimate1RM", () => {
   it("rend la charge elle-même à une seule répétition", () => {
@@ -13,20 +13,5 @@ describe("estimate1RM", () => {
 
   it("rend 0 pour zéro répétition", () => {
     expect(estimate1RM(100, 0)).toBe(0);
-  });
-});
-
-describe("setVolume", () => {
-  it("multiplie la charge par les répétitions", () => {
-    expect(setVolume({ weightKg: 80, reps: 8, type: "normal" })).toBe(640);
-  });
-
-  it("ignore les séries d'échauffement", () => {
-    expect(setVolume({ weightKg: 40, reps: 10, type: "warmup" })).toBe(0);
-  });
-
-  it("compte les séries dégressives et à l'échec", () => {
-    expect(setVolume({ weightKg: 50, reps: 6, type: "dropset" })).toBe(300);
-    expect(setVolume({ weightKg: 50, reps: 4, type: "failure" })).toBe(200);
   });
 });

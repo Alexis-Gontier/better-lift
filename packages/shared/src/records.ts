@@ -18,7 +18,7 @@ export type SerieHisto = {
   faite: boolean;
 };
 
-export const TYPES_RECORD = ["CHARGE", "UN_RM", "VOLUME", "REPS"] as const;
+const TYPES_RECORD = ["CHARGE", "UN_RM", "VOLUME", "REPS"] as const;
 export type TypeRecord = (typeof TYPES_RECORD)[number];
 
 export const LIBELLE_RECORD: Record<TypeRecord, string> = {
@@ -126,7 +126,7 @@ export type SeanceResume = {
 /** Une séance dans le fil de l'Accueil (D119) : son résumé et ses premiers exercices. */
 export type SeanceFil = SeanceResume & { nbExercices: number; apercu: ApercuExercice[] };
 
-export type SerieLue = {
+type SerieLue = {
   type: TypeSerie;
   reps: number | null;
   chargeKg: number | null;

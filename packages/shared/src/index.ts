@@ -1,6 +1,6 @@
 export { resumeSemaine, routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
-export { type ApercuExercice, apercuExercices } from "./apercu.js";
+export { apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
   brouillonValide,
@@ -14,7 +14,7 @@ export {
   versBrouillon,
   versSaisie,
 } from "./brouillon-routine.js";
-export { cleJour, formatHeure, formatJour, memeJour } from "./calendar.js";
+export { cleJour, formatJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
 export { courbeUnRm, type Ecart, ecartSerie } from "./ecart.js";
 export {
@@ -24,6 +24,7 @@ export {
   type RequeteCatalogue,
   requeteCatalogue,
 } from "./exercices.js";
+export { type ExerciceFait, resumerExercicesFaits } from "./exercices-faits.js";
 export { type LigneExport, versCsv } from "./export.js";
 export {
   aEnvoyer,
@@ -32,17 +33,8 @@ export {
   type ElementFile,
   mettreEnFile,
 } from "./file-envoi.js";
-export { type RecordBattu, recordsBattus } from "./fin-seance.js";
-export {
-  LIBELLE_ZONE,
-  MUSCLES_SANS_ZONE,
-  type NiveauZone,
-  ZONES,
-  type Zone,
-  type ZoneTravaillee,
-  zoneDuMuscle,
-  zonesTravaillees,
-} from "./muscles.js";
+export { recordsBattus } from "./fin-seance.js";
+export { LIBELLE_ZONE, type ZoneTravaillee, zonesTravaillees } from "./muscles.js";
 export {
   ajusterSurPave,
   type ChampPave,
@@ -52,13 +44,7 @@ export {
   toucherPave,
 } from "./pave.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
-export { type ExerciceProgres, progresExercices, type SeanceProgres } from "./progres.js";
-export {
-  filtrerCatalogue,
-  normaliserRecherche,
-  slugifier,
-  texteRecherche,
-} from "./recherche.js";
+export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
   type HistoriqueExercice,
   LIBELLE_RECORD,
@@ -69,26 +55,24 @@ export {
   type SeanceFil,
   type SeanceResume,
   type SerieHisto,
-  type SerieLue,
-  TYPES_RECORD,
   type TypeRecord,
 } from "./records.js";
 export {
   ABREGE_TYPE_SERIE,
+  type Dossier,
+  deplacementRoutine,
+  dossierSaisi,
   dureeEstimeeSec,
-  type ExerciceRoutine,
   etiquettesSeries,
-  exerciceSaisi,
   LIBELLE_TYPE_SERIE,
   meilleureSerie,
+  ordreDossiers,
   ordreRoutines,
   type RoutineDetail,
   type RoutineResume,
   type RoutineSaisie,
   resumeSeries,
   routineSaisie,
-  type SerieRoutine,
-  serieSaisie,
   TYPES_SERIE,
   type TypeSerie,
 } from "./routines.js";
@@ -127,23 +111,15 @@ export {
   type Bilan,
   calculerPeriode,
   type JourEntraine,
-  type JourSemaine,
-  joursDeLaSemaine,
   niveauxCalendrier,
   PERIODES,
   type Periode,
   type RecordRecent,
   SEMAINES_PERIODE,
-  type SeancePeriode,
-  type Semaine,
-  type Stats,
   type StatsPeriode,
-  semainesRecentes,
   semainesTenues,
-  type Totaux,
 } from "./stats.js";
 export {
-  type AvecGroupe,
   defaireGroupe,
   deplacerAvecGroupes,
   type GroupeSuperset,
@@ -156,6 +132,5 @@ export {
   retirerDuGroupe,
   roleRepos,
 } from "./supersets.js";
-export { estimate1RM, type SetType, setVolume } from "./training.js";
-export { kgToLb, lbToKg, type UnitSystem } from "./units.js";
+export type { UnitSystem } from "./units.js";
 export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";

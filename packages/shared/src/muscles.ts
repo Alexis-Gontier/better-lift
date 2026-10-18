@@ -6,7 +6,7 @@
  * restent de simples chaînes ici, `shared` n'important aucune bibliothèque
  * d'interface.
  */
-export const ZONES = [
+const ZONES = [
   "chest",
   "deltoids",
   "biceps",
@@ -108,7 +108,7 @@ export function zoneDuMuscle(nom: string): Zone | null {
   return ZONE_DU_MUSCLE[nom] ?? null;
 }
 
-export type NiveauZone = "principal" | "secondaire";
+type NiveauZone = "principal" | "secondaire";
 
 export type ZoneTravaillee = { zone: Zone; niveau: NiveauZone };
 

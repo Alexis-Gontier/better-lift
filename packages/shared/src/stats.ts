@@ -36,17 +36,6 @@ export type Bilan = {
   depuis: string | null;
 };
 
-export type Stats = {
-  /** Toutes les séances du compte : sous deux, les courbes ne disent rien encore. */
-  nbSeances: number;
-  /** Les 12 dernières semaines, de la plus ancienne à la semaine en cours. */
-  semaines: Semaine[];
-  /** Les records établis ces 4 dernières semaines, du plus récent au plus ancien. */
-  recordsRecents: RecordRecent[];
-  /** Les exercices faits ces 4 dernières semaines, pour la carte du corps. */
-  muscles: { musclePrincipal: string; musclesSecondaires: string[] }[];
-};
-
 const JOUR_MS = 86_400_000;
 
 /** Un jour civil « 2026-10-03 » en millisecondes UTC, pour compter en jours entiers. */
@@ -123,7 +112,7 @@ export type SeancePeriode = {
 };
 
 /** Le volume ne compte pas l'échauffement, comme `SeancePeriode.volumeKg` (D5). */
-export type Totaux = { seances: number; series: number; dureeMin: number; volumeKg: number };
+type Totaux = { seances: number; series: number; dureeMin: number; volumeKg: number };
 
 /** Un jour entraîné : son volume et ses séances (le calendrier ouvre la première). */
 export type JourEntraine = { jour: string; volumeKg: number; seances: string[] };
@@ -211,34 +200,6 @@ export function calculerPeriode(
       })),
     ),
   };
-}
-
-/** Un jour de la semaine en cours, pour la bande de l'Accueil (D166). */
-export type JourSemaine = { jour: string; entraine: boolean; aujourdhui: boolean; avenir: boolean };
-
-/**
- * Les sept jours de la semaine qui commence à `premierLundi` (jour civil), du
- * lundi au dimanche : entraîné ou non, aujourd'hui, à venir. « Aujourd'hui » se
- * lit dans le fuseau, jamais en UTC.
- */
-export function joursDeLaSemaine(
-  premierLundi: string,
-  jours: readonly JourEntraine[],
-  maintenant: Date,
-  fuseau: string,
-): JourSemaine[] {
-  const entraines = new Set(jours.map((j) => j.jour));
-  const aujourdhui = cleJour(maintenant.toISOString(), fuseau);
-  const lundiMs = jourEnMs(premierLundi);
-  return Array.from({ length: 7 }, (_, i) => {
-    const jour = new Date(lundiMs + i * JOUR_MS).toISOString().slice(0, 10);
-    return {
-      jour,
-      entraine: entraines.has(jour),
-      aujourdhui: jour === aujourdhui,
-      avenir: jour > aujourdhui,
-    };
-  });
 }
 
 /**

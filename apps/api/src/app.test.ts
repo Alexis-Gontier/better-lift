@@ -43,6 +43,13 @@ describe("les réponses d'erreur de l'app composée", () => {
     expect(await res.json()).toEqual({ erreur: "Ressource introuvable." });
   });
 
+  // Monté après le catalogue, « faits » serait pris pour un slug : la route du catalogue
+  // lèverait sur le mock de la base (500). Avant lui, c'est la garde de session qui répond.
+  it("/exercices/faits n'est pas pris pour un slug du catalogue (D312)", async () => {
+    const res = await app.request("/exercices/faits");
+    expect(res.status).toBe(401);
+  });
+
   // Le mock de la base n'a pas de `exercise` : la route du catalogue lève une
   // TypeError, comme le ferait une panne réelle de la base.
   it("rend un 500 JSON sans détail quand une route lève", async () => {

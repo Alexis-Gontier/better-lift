@@ -14,6 +14,8 @@ import type { RoutineDetail } from "./routines.js";
 const routine: RoutineDetail = {
   id: "r1",
   nom: "Push",
+  note: null,
+  dossierId: null,
   exercices: [
     {
       slug: "barbell-bench-press",
@@ -38,6 +40,8 @@ describe("versBrouillon / versSaisie", () => {
     expect(b.exercices[0]?.series[1]).toEqual({ type: "NORMALE", reps: "6", charge: "82,5" });
     expect(versSaisie(b, "metric")).toEqual({
       nom: "Push",
+      note: null,
+      dossierId: null,
       exercices: [
         {
           slug: "barbell-bench-press",
@@ -53,7 +57,12 @@ describe("versBrouillon / versSaisie", () => {
   });
 
   it("part d'une routine vide quand il n'y a rien à modifier", () => {
-    expect(versBrouillon(null, "metric")).toEqual({ nom: "", exercices: [] });
+    expect(versBrouillon(null, "metric")).toEqual({
+      nom: "",
+      note: "",
+      dossierId: null,
+      exercices: [],
+    });
   });
 
   it("rend vide ce qui n'est pas saisi", () => {
@@ -143,5 +152,26 @@ describe("supersets dans le brouillon (D145)", () => {
     const b = de(exo("a", null), exo("b", null));
     const lie = { ...b, exercices: b.exercices.map((e) => ({ ...e, supersetGroupe: 1 })) };
     expect(empreinte(lie)).not.toBe(empreinte(b));
+  });
+});
+
+describe("note et dossier (D298)", () => {
+  it("font l'aller-retour, la note blanche devenant null", () => {
+    const b = versBrouillon({ ...routine, note: "Lent en excentrique", dossierId: "d1" }, "metric");
+    expect(b.note).toBe("Lent en excentrique");
+    expect(b.dossierId).toBe("d1");
+    expect(versSaisie(b, "metric")).toMatchObject({ note: "Lent en excentrique", dossierId: "d1" });
+    expect(versSaisie({ ...b, note: "  " }, "metric").note).toBeNull();
+  });
+
+  it("ce que le détail ne portait pas n'est pas envoyé : le serveur le garde", () => {
+    const { note: _n, dossierId: _d, ...ancien } = routine;
+    const s = versSaisie(versBrouillon(ancien, "metric"), "metric");
+    expect("note" in s).toBe(false);
+    expect("dossierId" in s).toBe(false);
+  });
+
+  it("un brouillon neuf n'a ni note ni dossier", () => {
+    expect(versBrouillon(null, "metric")).toMatchObject({ note: "", dossierId: null });
   });
 });

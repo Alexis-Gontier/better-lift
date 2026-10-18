@@ -1,8 +1,9 @@
-import { ordreRoutines, routineSaisie } from "@better-lift/shared";
+import { deplacementRoutine, ordreRoutines, routineSaisie } from "@better-lift/shared";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { exigerSession, type LireSession } from "../middlewares/session.js";
-import { type DepotRoutines, SlugInconnu } from "../services/routines.js";
+import type { DepotDossiers } from "../services/dossiers.js";
+import { type DepotRoutines, DossierInconnu, SlugInconnu } from "../services/routines.js";
 
 const INTROUVABLE = { erreur: "Routine introuvable." };
 
@@ -11,13 +12,26 @@ const INTROUVABLE = { erreur: "Routine introuvable." };
  *
  * Dépôt et lecteur de session sont INJECTÉS — `app.ts` branche les vrais : les
  * tests montent ces routes sans base ni Better Auth. La routine d'un autre est
- * introuvable (404), jamais interdite (403) : on ne révèle pas qu'elle existe.
+ * introuvable (404), jamais interdite (403) : on ne révèle pas qu'elle existe. Un dossier
+ * d'autrui aussi, même donné comme `dossierId` (D297).
  */
-export function routesRoutines(depot: DepotRoutines, lireSession: LireSession) {
+export function routesRoutines(
+  depot: DepotRoutines,
+  dossiers: DepotDossiers,
+  lireSession: LireSession,
+) {
   return (
     new Hono()
       .use(exigerSession(lireSession))
-      .get("/", async (c) => c.json({ routines: await depot.lister(c.get("userId")) }))
+      // Les routines et leurs dossiers en une lecture : la liste les range ensemble (D297).
+      .get("/", async (c) => {
+        const userId = c.get("userId");
+        const [routines, listeDossiers] = await Promise.all([
+          depot.lister(userId),
+          dossiers.lister(userId),
+        ]);
+        return c.json({ routines, dossiers: listeDossiers }, 200);
+      })
       // AVANT `/:id` : sinon « ordre » serait pris pour un identifiant.
       .put("/ordre", zValidator("json", ordreRoutines), async (c) => {
         const ok = await depot.ordonner(c.get("userId"), c.req.valid("json").ids);
@@ -25,7 +39,7 @@ export function routesRoutines(depot: DepotRoutines, lireSession: LireSession) {
       })
       .get("/:id", async (c) => {
         const routine = await depot.lire(c.get("userId"), c.req.param("id"));
-        return routine ? c.json(routine) : c.json(INTROUVABLE, 404);
+        return routine ? c.json(routine, 200) : c.json(INTROUVABLE, 404);
       })
       .post("/", zValidator("json", routineSaisie), async (c) => {
         try {
@@ -33,6 +47,7 @@ export function routesRoutines(depot: DepotRoutines, lireSession: LireSession) {
           return c.json({ id }, 201);
         } catch (e) {
           if (e instanceof SlugInconnu) return c.json({ erreur: e.message }, 400);
+          if (e instanceof DossierInconnu) return c.json({ erreur: e.message }, 404);
           throw e;
         }
       })
@@ -40,9 +55,21 @@ export function routesRoutines(depot: DepotRoutines, lireSession: LireSession) {
         const id = c.req.param("id");
         try {
           const ok = await depot.remplacer(c.get("userId"), id, c.req.valid("json"));
-          return ok ? c.json({ id }) : c.json(INTROUVABLE, 404);
+          return ok ? c.json({ id }, 200) : c.json(INTROUVABLE, 404);
         } catch (e) {
           if (e instanceof SlugInconnu) return c.json({ erreur: e.message }, 400);
+          if (e instanceof DossierInconnu) return c.json({ erreur: e.message }, 404);
+          throw e;
+        }
+      })
+      // Ranger ailleurs, sans renvoyer toute la routine (D297).
+      .patch("/:id", zValidator("json", deplacementRoutine), async (c) => {
+        const id = c.req.param("id");
+        try {
+          const ok = await depot.deplacer(c.get("userId"), id, c.req.valid("json").dossierId);
+          return ok ? c.json({ id }, 200) : c.json(INTROUVABLE, 404);
+        } catch (e) {
+          if (e instanceof DossierInconnu) return c.json({ erreur: e.message }, 404);
           throw e;
         }
       })

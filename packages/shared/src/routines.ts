@@ -35,7 +35,7 @@ export type SerieRoutine = {
   chargeCibleKg: number | null;
 };
 
-export type ExerciceRoutine = {
+type ExerciceRoutine = {
   slug: string;
   /** Le nom français du catalogue. */
   nom: string;
@@ -53,21 +53,44 @@ export type ExerciceRoutine = {
   series: SerieRoutine[];
 };
 
-export type RoutineDetail = { id: string; nom: string; exercices: ExerciceRoutine[] };
+export type RoutineDetail = {
+  id: string;
+  nom: string;
+  /**
+   * La note de la routine (D296), `null` sans note. Facultative, comme son dossier : une
+   * routine gardée hors ligne par une version antérieure du mobile ne les a pas — et ce qu'on
+   * ne connaît pas, on ne le renvoie pas (D298).
+   */
+  note?: string | null;
+  /** Son dossier, `null` : « Sans dossier ». */
+  dossierId?: string | null;
+  exercices: ExerciceRoutine[];
+};
 
-export type RoutineResume = { id: string; nom: string; nbExercices: number; nbSeries: number };
+export type RoutineResume = {
+  id: string;
+  nom: string;
+  nbExercices: number;
+  nbSeries: number;
+  dossierId: string | null;
+  /** ISO de la dernière séance faite depuis cette routine, `null` si jamais (D310). */
+  derniereSeance: string | null;
+};
+
+/** Un dossier de routines (D296). */
+export type Dossier = { id: string; nom: string };
 
 // --- Le contrat d'écriture ---------------------------------------------------
 // Ce que l'éditeur envoie. L'ordre des tableaux EST la position : le client
 // n'envoie aucune position, le serveur la déduit de l'index (D50).
 
-export const serieSaisie = z.object({
+const serieSaisie = z.object({
   type: z.enum(TYPES_SERIE),
   repsCible: z.number().int().min(0).max(999).nullable(),
   chargeCibleKg: z.number().min(0).max(1000).nullable(),
 });
 
-export const exerciceSaisi = z.object({
+const exerciceSaisi = z.object({
   slug: z.string().min(1).max(200),
   reposSec: z.number().int().min(0).max(3600).nullable(),
   // Facultatif (D145) : un éditeur d'avant les supersets ne l'envoie pas.
@@ -75,8 +98,19 @@ export const exerciceSaisi = z.object({
   series: z.array(serieSaisie).min(1).max(20),
 });
 
+/** Une note blanche vaut pas de note. La borne s'applique avant le rognage. */
+const note = z
+  .string()
+  .max(1000)
+  .transform((s) => (s.trim() === "" ? null : s.trim()))
+  .nullable();
+
 export const routineSaisie = z.object({
   nom: z.string().trim().min(1).max(120),
+  // D298 : ABSENTS, ils restent tels quels en base — un client qui ne les connaît pas (une
+  // version du mobile d'avant les dossiers) ne les efface pas en enregistrant.
+  note: note.optional(),
+  dossierId: z.string().min(1).max(40).nullable().optional(),
   exercices: z.array(exerciceSaisi).min(1).max(50),
 });
 
@@ -88,6 +122,20 @@ export const ordreRoutines = z.object({
     .max(500)
     .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
 });
+
+// --- Les dossiers (D297) ----------------------------------------------------
+
+export const dossierSaisi = z.object({ nom: z.string().trim().min(1).max(60) });
+
+export const ordreDossiers = z.object({
+  ids: z
+    .array(z.string().min(1))
+    .max(500)
+    .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
+});
+
+/** Ranger une routine ailleurs, sans renvoyer toute la routine ; `null` : « Sans dossier ». */
+export const deplacementRoutine = z.object({ dossierId: z.string().min(1).max(40).nullable() });
 
 // --- L'affichage des séries ---------------------------------------------------
 
