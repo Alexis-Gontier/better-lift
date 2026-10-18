@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_app/history/")({
   component: () => (
     <DetailPlaceholder
       title="Aucune séance ouverte"
-      description="Choisissez-en une pour la relire, la comparer à la précédente ou la corriger."
+      description="Choisissez-en une pour la relire et la comparer à la précédente."
       empty={<SessionsOnboarding />}
     />
   ),

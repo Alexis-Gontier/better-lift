@@ -33,6 +33,7 @@ import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { ExerciseQuickView } from "@/components/exercise-quick-view";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
+import { SetBadge } from "@/components/set-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -61,6 +62,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { formatLoad, formatRest, plural } from "@/lib/format";
+import { SET_TYPES, setLabels, setTone } from "@/lib/series";
 import { cn } from "@/lib/utils";
 import { ExercisePicker } from "./exercise-picker";
 import type { InfoExercice } from "./infos";
@@ -68,11 +70,8 @@ import {
   type ChangeSummary,
   copyFirstToAll,
   fromLastTime,
-  SET_TYPES,
   type SeriePrecedente,
-  setLabels,
   setsSummary,
-  setTone,
   supersetLetter,
 } from "./routine-draft";
 
@@ -115,7 +114,7 @@ export function stepValue(value: string, delta: number, min: number, max = Infin
 }
 
 /** Une valeur de série : − / + autour du champ, l'unité à côté du nombre (D246). */
-export function SetField({
+function SetField({
   value,
   unit,
   label,
@@ -174,20 +173,6 @@ export function SetField({
         </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>
-  );
-}
-
-/** Une étiquette de série dans sa case, en couleur selon son type (W, 1, F, D). */
-export function SetBadge({ label, tone }: { label: string; tone: string }) {
-  return (
-    <span
-      className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-md border font-semibold text-sm tabular-nums",
-        tone,
-      )}
-    >
-      {label}
-    </span>
   );
 }
 

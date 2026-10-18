@@ -1,9 +1,14 @@
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { normaliserRecherche, type SeanceFil } from "@better-lift/shared";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, History, ListChecks, Search, Trash2, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
 import { listCardClass, listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
+import { etatAffiche } from "@/components/states/etat";
+import { StateError } from "@/components/states/state-error";
+import { useEtat } from "@/components/states/use-etat";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,59 +22,73 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { fold } from "@/lib/fold";
 import { formatKg, formatMinutes, formatMonth, formatWeekdayDay, plural } from "@/lib/format";
-import { groupByMonth } from "@/mocks/history";
-import { mockRoutines } from "@/mocks/routines";
-import type { MockSession } from "@/mocks/sessions";
-import { DeleteSessionDialog } from "./session-pane";
+import { jourCivil } from "@/lib/locale";
+import { parMois } from "./mois";
+import { seancesQuery } from "./queries";
+import { DeleteSessionDialog, type SeanceASupprimer } from "./session-pane";
 
-const ALL = "toutes";
-const MONTHS_PER_PAGE = 3;
+const TOUTES = "toutes";
 
-export function SessionList({ sessions }: { sessions: MockSession[] }) {
+const minutesDe = (s: { debut: string; fin: string }) =>
+  Math.round((Date.parse(s.fin) - Date.parse(s.debut)) / 60_000);
+
+/** Sans casse ni accents, sur le nom de la séance et ses premiers exercices. */
+function correspond(s: SeanceFil, saisie: string): boolean {
+  const q = normaliserRecherche(saisie);
+  if (!q) return true;
+  return [s.nom, ...s.apercu.map((e) => e.nom)].some((n) => normaliserRecherche(n).includes(q));
+}
+
+/**
+ * L'historique (D263) : les séances, la plus récente d'abord, groupées par mois civil, lues page
+ * par page ; une recherche et un filtre par routine sur ce qui est chargé. Quatre états (D303).
+ */
+export function SessionList() {
+  const force = useEtat();
   const navigate = useNavigate();
-  const [deleting, setDeleting] = useState<MockSession | null>(null);
-  /** Le clic droit sur une séance. */
-  const sessionActions = (s: MockSession): RowAction[] => {
-    const routine = mockRoutines.find((r) => r.name === s.routine);
-    return [
-      ...(routine
-        ? [
-            {
-              label: "Voir la routine",
-              icon: ListChecks,
-              onSelect: () => navigate({ to: "/routines/$id", params: { id: routine.id } }),
-            },
-          ]
-        : []),
-      {
-        label: "Supprimer",
-        icon: Trash2,
-        onSelect: () => setDeleting(s),
-        destructive: true,
-        separated: true,
-      },
-    ];
-  };
+  const requete = useInfiniteQuery(seancesQuery());
+  const [deleting, setDeleting] = useState<SeanceASupprimer | null>(null);
   const [query, setQuery] = useState("");
-  const [routine, setRoutine] = useState(ALL);
-  // Une séance ouverte par son adresse doit être visible : on déplie jusqu'à son mois.
-  const { id: openId } = useParams({ strict: false });
-  const [pages, setPages] = useState(() => {
-    const index = groupByMonth(sessions).findIndex((g) => g.sessions.some((s) => s.id === openId));
-    return Math.max(1, Math.ceil((index + 1) / MONTHS_PER_PAGE));
-  });
-  const routines = [...new Set(sessions.map((s) => s.routine))].sort((a, b) =>
-    a.localeCompare(b, "fr"),
-  );
+  const [routine, setRoutine] = useState(TOUTES);
 
-  const shown = sessions.filter(
-    (s) =>
-      (routine === ALL || s.routine === routine) && fold(s.routine).includes(fold(query.trim())),
+  const seances = requete.data?.pages.flatMap((p) => p.seances) ?? [];
+  const etat = etatAffiche(force, requete, seances.length === 0);
+  if (etat === "chargement") return <SessionListSkeleton />;
+  if (etat === "erreur")
+    return (
+      <StateError
+        title="L'historique n'a pas pu se charger"
+        reessayer={() => void requete.refetch()}
+      />
+    );
+  if (etat === "vide") return <SessionListEmpty />;
+
+  /** Le clic droit sur une séance. */
+  const actions = (s: SeanceFil): RowAction[] => [
+    ...(s.routineId
+      ? [
+          {
+            label: "Voir la routine",
+            icon: ListChecks,
+            onSelect: () =>
+              s.routineId && navigate({ to: "/routines/$id", params: { id: s.routineId } }),
+          },
+        ]
+      : []),
+    {
+      label: "Supprimer",
+      icon: Trash2,
+      onSelect: () => setDeleting(s),
+      destructive: true,
+      separated: true,
+    },
+  ];
+
+  const noms = [...new Set(seances.map((s) => s.nom))].sort((a, b) => a.localeCompare(b, "fr"));
+  const groupes = parMois(
+    seances.filter((s) => (routine === TOUTES || s.nom === routine) && correspond(s, query)),
   );
-  const groups = groupByMonth(shown);
-  const visible = groups.slice(0, pages * MONTHS_PER_PAGE);
 
   return (
     <>
@@ -91,20 +110,20 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
             size="sm"
             spacing={2}
             value={routine}
-            onValueChange={(v) => setRoutine(v || ALL)}
+            onValueChange={(v) => setRoutine(v || TOUTES)}
             className="w-max"
           >
-            <ToggleGroupItem value={ALL}>Toutes les routines</ToggleGroupItem>
-            {routines.map((r) => (
-              <ToggleGroupItem key={r} value={r}>
-                {r}
+            <ToggleGroupItem value={TOUTES}>Toutes les routines</ToggleGroupItem>
+            {noms.map((n) => (
+              <ToggleGroupItem key={n} value={n}>
+                {n}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
         </DragScroll>
       </div>
 
-      {groups.length === 0 && (
+      {groupes.length === 0 && (
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyTitle>Aucune séance ne correspond</EmptyTitle>
@@ -113,21 +132,21 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
         </Empty>
       )}
 
-      {visible.map((g) => {
-        const volume = g.sessions.reduce((sum, s) => sum + s.volume, 0);
+      {groupes.map((g) => {
+        const volume = g.seances.reduce((n, s) => n + s.volumeKg, 0);
         return (
-          <section key={g.month} className="flex flex-col gap-2">
+          <section key={g.mois} className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between">
-              <h2 className="font-medium first-letter:uppercase">{formatMonth(g.month)}</h2>
+              <h2 className="font-medium first-letter:uppercase">{formatMonth(g.mois)}</h2>
               <span className="text-muted-foreground text-xs tabular-nums">
-                {plural(g.sessions.length, "séance")} · {formatKg(volume)}
+                {plural(g.seances.length, "séance")} · {formatKg(Math.round(volume))}
               </span>
             </div>
             {/* Une carte par séance, séparées (D258, comme les routines). */}
             <div className="flex flex-col gap-2">
-              {g.sessions.map((s) => (
+              {g.seances.map((s) => (
                 <Card key={s.id} size="sm" className={listCardClass}>
-                  <RowMenu actions={sessionActions(s)}>
+                  <RowMenu actions={actions(s)}>
                     <Link
                       to="/history/$id"
                       params={{ id: s.id }}
@@ -135,19 +154,19 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
                       className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
                     >
                       <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate font-medium">{s.routine}</span>
+                        <span className="truncate font-medium">{s.nom}</span>
                         <span className="truncate text-muted-foreground text-xs first-letter:uppercase">
-                          {formatWeekdayDay(s.date)} · {formatMinutes(s.minutes)}
+                          {formatWeekdayDay(jourCivil(s.debut))} · {formatMinutes(minutesDe(s))}
                         </span>
                       </span>
-                      {s.records > 0 && (
+                      {s.nbRecords > 0 && (
                         <Badge variant="outline" className="shrink-0">
                           <Trophy data-icon="inline-start" />
-                          {s.records}
+                          {s.nbRecords}
                         </Badge>
                       )}
                       <span className="shrink-0 text-right text-sm tabular-nums">
-                        {formatKg(s.volume)}
+                        {formatKg(Math.round(s.volumeKg))}
                       </span>
                       <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                     </Link>
@@ -159,9 +178,14 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
         );
       })}
 
-      {visible.length < groups.length && (
-        <Button variant="outline" className="self-center" onClick={() => setPages((p) => p + 1)}>
-          Afficher les mois précédents
+      {requete.hasNextPage && (
+        <Button
+          variant="outline"
+          className="self-center"
+          disabled={requete.isFetchingNextPage}
+          onClick={() => void requete.fetchNextPage()}
+        >
+          {requete.isFetchingNextPage ? "Chargement…" : "Afficher les séances précédentes"}
         </Button>
       )}
 
@@ -171,7 +195,7 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
 }
 
 /** La liste pendant le chargement : recherche, filtres, puis deux mois et leurs cartes. */
-export function SessionListSkeleton() {
+function SessionListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
@@ -186,7 +210,7 @@ export function SessionListSkeleton() {
         <div key={m} className="flex flex-col gap-2">
           <Skeleton className="my-1 h-5 w-36 rounded" />
           {Array.from({ length: count }, (_, i) => (
-            <Skeleton key={i} className="h-[3.875rem] rounded-xl" />
+            <Skeleton key={i} className="h-15.5 rounded-xl" />
           ))}
         </div>
       ))}
@@ -195,7 +219,7 @@ export function SessionListSkeleton() {
 }
 
 /** Aucune séance : la liste le dit d'une ligne, le panneau de droite explique (D260). */
-export function SessionListEmpty() {
+function SessionListEmpty() {
   return (
     <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
       Aucune séance pour l'instant.

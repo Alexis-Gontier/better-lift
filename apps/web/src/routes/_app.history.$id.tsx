@@ -1,42 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DetailColumnsSkeleton } from "@/components/detail-columns";
-import { DetailEmpty } from "@/components/list-detail";
-import { StateError } from "@/components/states/state-error";
-import { useEtat } from "@/components/states/use-etat";
+import { seanceQuery } from "@/features/history/queries";
 import { SessionPane } from "@/features/history/session-pane";
-import { previousOf } from "@/mocks/history";
-import { detailOf, useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/history/$id")({
   staticData: { crumb: "Détail" },
+  // Sans attendre : le panneau montre son squelette pendant ce temps (D300).
+  loader: ({ context, params }) => void context.queryClient.prefetchQuery(seanceQuery(params.id)),
   component: SessionRoute,
 });
 
-/** La séance ouverte, dans le panneau de droite (D235), corrigée là où on la lit (D263). */
+/** La séance ouverte, dans le panneau de droite (D235), en lecture (D294). */
 function SessionRoute() {
   const { id } = Route.useParams();
-  // Tant que la page lit la maquette : nominal, sauf état forcé par l'URL.
-  const state = useEtat() ?? "nominal";
-  const sessions = useSessions();
-  const session = sessions.find((s) => s.id === id);
-
-  if (state === "chargement") return <DetailColumnsSkeleton />;
-  if (state === "erreur") return <StateError title="La séance n'a pas pu se charger" />;
-  if (!session || state === "vide")
-    return (
-      <DetailEmpty
-        title="Cette séance n'existe pas"
-        description="Elle a peut-être été supprimée."
-      />
-    );
-
-  const before = previousOf(sessions, id);
-  // `key` : d'une séance à l'autre, le brouillon repart de zéro.
-  return (
-    <SessionPane
-      key={id}
-      detail={detailOf(session)}
-      previous={before ? detailOf(before) : undefined}
-    />
-  );
+  return <SessionPane key={id} id={id} />;
 }

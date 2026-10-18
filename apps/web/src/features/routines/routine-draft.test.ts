@@ -1,12 +1,12 @@
 import { type Brouillon, type RoutineDetail, versBrouillon } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
+import { setLabels } from "@/lib/series";
 import {
   changeSummary,
   copyFirstToAll,
   fromLastTime,
   isDirty,
   saveBlocker,
-  setLabels,
   setsSummary,
   supersetLetter,
 } from "./routine-draft";

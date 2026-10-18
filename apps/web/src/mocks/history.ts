@@ -6,7 +6,7 @@ import type { RealSet } from "./workouts";
 
 /** Une série faite ; `record` dit qu'elle a battu un record à ce moment-là. */
 type DoneSet = MockSet & { record?: boolean };
-export type DoneExercise = Omit<MockRoutineExercise, "sets"> & { sets: DoneSet[] };
+type DoneExercise = Omit<MockRoutineExercise, "sets"> & { sets: DoneSet[] };
 export type SessionDetail = { session: MockSession; exercises: DoneExercise[]; notes?: string };
 
 /** Regroupe des séances déjà triées (la plus récente d'abord) par mois civil `YYYY-MM`. */

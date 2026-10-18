@@ -1,7 +1,7 @@
 import { lastSets, workouts } from "./generated-workouts";
 
 /** Le type d'une série, comme dans Hevy ; absent : une série normale. */
-export type SetType = "warmup" | "drop" | "failure";
+type SetType = "warmup" | "drop" | "failure";
 
 /** Une série ; charge `null` : pas encore de charge connue pour cet exercice. */
 export type MockSet = { kg: number | null; reps: number; type?: SetType };
