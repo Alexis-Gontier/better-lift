@@ -15,8 +15,7 @@ import { formatDaysAgo, formatDelta, formatKg, formatMinutes, plural } from "@/l
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { sessionDetail } from "@/mocks/history";
-import { strengthTrend } from "@/mocks/progress";
-import { routineRuns } from "@/mocks/routine-history";
+import { routineRuns, strengthTrend } from "@/mocks/routine-history";
 import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
 import { useFolders } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
@@ -107,7 +106,7 @@ function Muscles({ routine }: { routine: MockRoutine }) {
 
 /**
  * La routine dans le temps, en bref (D280) : séances, volume moyen et sa tendance, records et
- * réalisation sur trois mois ; « Analyser » ouvre le détail dans Progression.
+ * réalisation sur trois mois.
  */
 function RoutineStats({ routine }: { routine: MockRoutine }) {
   const from = addDays(TODAY, -91);
@@ -131,14 +130,6 @@ function RoutineStats({ routine }: { routine: MockRoutine }) {
     { label: "Durée moyenne", value: formatMinutes(Math.round(avg((r) => r.minutes))) },
     { label: "Records battus", value: String(runs.reduce((n, r) => n + r.records, 0)) },
     { label: "Réalisation", value: `${Math.round(avg((r) => r.completion) * 100)} %` },
-    {
-      label: "Séance par séance",
-      value: (
-        <Link to="/progress" search={{ routine: routine.id }} className="hover:underline">
-          Analyser
-        </Link>
-      ),
-    },
   ];
   return <SummaryCard title="Stats" rows={rows} />;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routineLifts, routineRuns, runFrequency } from "./routine-history";
+import { routineLifts, routineRuns, runFrequency, strengthTrend } from "./routine-history";
 import type { MockRoutine } from "./routines";
 
 const routine: MockRoutine = {
@@ -59,5 +59,22 @@ describe("routineLifts", () => {
     expect(bench?.points.map((p) => p.date)).toEqual(["2026-10-01", "2026-10-15"]);
     expect(bench?.change).toBeCloseTo(6.3, 1);
     expect(fly).toEqual({ slug: "fly", points: [], change: null });
+  });
+});
+
+describe("strengthTrend", () => {
+  it("donne l'écart en % entre la première et la dernière séance chargée", () => {
+    const trend = strengthTrend([
+      { date: "a", value: 0 },
+      { date: "b", value: 80 },
+      { date: "c", value: 88 },
+    ]);
+    expect(trend?.change).toBe(10);
+    expect(trend?.last).toBe(88);
+    expect(trend?.points).toHaveLength(2);
+  });
+
+  it("ne dit rien avec moins de deux séances chargées", () => {
+    expect(strengthTrend([{ date: "a", value: 50 }])).toBeNull();
   });
 });

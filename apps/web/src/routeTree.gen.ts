@@ -12,11 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as AppBodyRouteImport } from './routes/_app.body'
 import { Route as AppExercisesRouteImport } from './routes/_app.exercises'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
-import { Route as AppProgressRouteImport } from './routes/_app.progress'
-import { Route as AppRecordsRouteImport } from './routes/_app.records'
 import { Route as AppRoutinesRouteImport } from './routes/_app.routines'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth.forgot-password'
@@ -50,11 +47,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppBodyRoute = AppBodyRouteImport.update({
-  id: '/body',
-  path: '/body',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppExercisesRoute = AppExercisesRouteImport.update({
   id: '/exercises',
   path: '/exercises',
@@ -63,16 +55,6 @@ const AppExercisesRoute = AppExercisesRouteImport.update({
 const AppHistoryRoute = AppHistoryRouteImport.update({
   id: '/history',
   path: '/history',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProgressRoute = AppProgressRouteImport.update({
-  id: '/progress',
-  path: '/progress',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRecordsRoute = AppRecordsRouteImport.update({
-  id: '/records',
-  path: '/records',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRoutinesRoute = AppRoutinesRouteImport.update({
@@ -173,11 +155,8 @@ const AppSettingsTrainingRoute = AppSettingsTrainingRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/body': typeof AppBodyRoute
   '/exercises': typeof AppExercisesRouteWithChildren
   '/history': typeof AppHistoryRouteWithChildren
-  '/progress': typeof AppProgressRoute
-  '/records': typeof AppRecordsRoute
   '/routines': typeof AppRoutinesRouteWithChildren
   '/settings': typeof AppSettingsRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -200,9 +179,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
-  '/body': typeof AppBodyRoute
-  '/progress': typeof AppProgressRoute
-  '/records': typeof AppRecordsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -225,11 +201,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
-  '/_app/body': typeof AppBodyRoute
   '/_app/exercises': typeof AppExercisesRouteWithChildren
   '/_app/history': typeof AppHistoryRouteWithChildren
-  '/_app/progress': typeof AppProgressRoute
-  '/_app/records': typeof AppRecordsRoute
   '/_app/routines': typeof AppRoutinesRouteWithChildren
   '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -255,11 +228,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/body'
     | '/exercises'
     | '/history'
-    | '/progress'
-    | '/records'
     | '/routines'
     | '/settings'
     | '/forgot-password'
@@ -282,9 +252,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/body'
-    | '/progress'
-    | '/records'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -306,11 +273,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_auth'
-    | '/_app/body'
     | '/_app/exercises'
     | '/_app/history'
-    | '/_app/progress'
-    | '/_app/records'
     | '/_app/routines'
     | '/_app/settings'
     | '/_auth/forgot-password'
@@ -361,13 +325,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/body': {
-      id: '/_app/body'
-      path: '/body'
-      fullPath: '/body'
-      preLoaderRoute: typeof AppBodyRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/exercises': {
       id: '/_app/exercises'
       path: '/exercises'
@@ -380,20 +337,6 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof AppHistoryRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/progress': {
-      id: '/_app/progress'
-      path: '/progress'
-      fullPath: '/progress'
-      preLoaderRoute: typeof AppProgressRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/records': {
-      id: '/_app/records'
-      path: '/records'
-      fullPath: '/records'
-      preLoaderRoute: typeof AppRecordsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/routines': {
@@ -599,22 +542,16 @@ const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
-  AppBodyRoute: typeof AppBodyRoute
   AppExercisesRoute: typeof AppExercisesRouteWithChildren
   AppHistoryRoute: typeof AppHistoryRouteWithChildren
-  AppProgressRoute: typeof AppProgressRoute
-  AppRecordsRoute: typeof AppRecordsRoute
   AppRoutinesRoute: typeof AppRoutinesRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppBodyRoute: AppBodyRoute,
   AppExercisesRoute: AppExercisesRouteWithChildren,
   AppHistoryRoute: AppHistoryRouteWithChildren,
-  AppProgressRoute: AppProgressRoute,
-  AppRecordsRoute: AppRecordsRoute,
   AppRoutinesRoute: AppRoutinesRouteWithChildren,
   AppSettingsRoute: AppSettingsRouteWithChildren,
   AppIndexRoute: AppIndexRoute,

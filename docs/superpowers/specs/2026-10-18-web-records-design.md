@@ -96,14 +96,21 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   récent, 1RM ou muscle et filtrées par muscle ; la chronologie en nuage de points, un clic ouvre
   la séance. Le tableau et la liste groupée par semaine partent.
 
+- **D285 — Records, Progression et Corps partent** (2026-10-18, révise D278, D279, D281, D284).
+  Le groupe Analyse quitte la barre ; la punaise (D276) part avec eux, elle ne servait qu'à ces
+  pages et à l'Accueil. Restent la cible d'un exercice sur sa fiche (D276) et les stats d'une
+  routine dans son détail (D280), sans lien vers Progression. Les calculs de records, de
+  progression et de poids sont retirés des mocks ; on les retrouvera dans l'historique git.
+
 ## 3. Barre latérale
 
 ```
 Accueil
 ENTRAÎNEMENT   Routines · Exercices · Historique
-ANALYSE        Records · Progression · Corps
 Paramètres
 ```
+
+(Révisé par D285 : le groupe Analyse est parti.)
 
 Records prend l'icône `Trophy`. La palette perd « Planifier » et gagne « Aller à Records ».
 

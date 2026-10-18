@@ -1,5 +1,4 @@
 import { estimate1rm } from "./exercise-stats";
-import { strengthTrend } from "./progress";
 import { daysSince } from "./routine-stats";
 import type { MockRoutine } from "./routines";
 
@@ -83,4 +82,20 @@ export function routineLifts(routine: MockRoutine, details: RunSource[]) {
     });
     return { slug, points, change: strengthTrend(points)?.change ?? null };
   });
+}
+
+/**
+ * L'évolution du 1RM estimé d'une série de points (un exercice, le volume d'une routine) : ses points, et l'écart en % entre la
+ * première et la dernière séance chargée. Moins de deux séances chargées : rien à dire.
+ */
+export function strengthTrend(points: readonly { date: string; value: number }[]) {
+  const charged = points.filter((p) => p.value > 0);
+  const first = charged[0];
+  const last = charged.at(-1);
+  if (!first || !last || charged.length < 2) return null;
+  return {
+    points: charged,
+    last: last.value,
+    change: Math.round(((last.value - first.value) / first.value) * 1000) / 10,
+  };
 }

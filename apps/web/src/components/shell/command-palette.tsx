@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { FileUp, type LucideIcon, Plus, Scale } from "lucide-react";
+import { FileUp, type LucideIcon, Plus } from "lucide-react";
 import { useEffect } from "react";
 import {
   Command,
@@ -18,7 +18,6 @@ type To = FileRouteTypes["to"];
 
 const ACTIONS: { label: string; to: To; icon: LucideIcon }[] = [
   { label: "Nouvelle routine", to: "/routines/new", icon: Plus },
-  { label: "Noter mon poids", to: "/body", icon: Scale },
   { label: "Importer depuis Hevy", to: "/settings/data", icon: FileUp },
 ];
 
