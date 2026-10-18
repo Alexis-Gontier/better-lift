@@ -35,7 +35,7 @@ export type SerieRoutine = {
   chargeCibleKg: number | null;
 };
 
-export type ExerciceRoutine = {
+type ExerciceRoutine = {
   slug: string;
   /** Le nom français du catalogue. */
   nom: string;
@@ -61,13 +61,13 @@ export type RoutineResume = { id: string; nom: string; nbExercices: number; nbSe
 // Ce que l'éditeur envoie. L'ordre des tableaux EST la position : le client
 // n'envoie aucune position, le serveur la déduit de l'index (D50).
 
-export const serieSaisie = z.object({
+const serieSaisie = z.object({
   type: z.enum(TYPES_SERIE),
   repsCible: z.number().int().min(0).max(999).nullable(),
   chargeCibleKg: z.number().min(0).max(1000).nullable(),
 });
 
-export const exerciceSaisi = z.object({
+const exerciceSaisi = z.object({
   slug: z.string().min(1).max(200),
   reposSec: z.number().int().min(0).max(3600).nullable(),
   // Facultatif (D145) : un éditeur d'avant les supersets ne l'envoie pas.

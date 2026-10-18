@@ -2,18 +2,13 @@ import { prisma } from "@better-lift/db";
 import {
   type Bilan,
   calculerPeriode,
-  type ExerciceProgres,
   type Periode,
-  progresExercices,
   type RecordRecent,
   recordsDe,
   SEMAINES_PERIODE,
   type SerieHisto,
-  type Stats,
   type StatsPeriode,
-  semainesRecentes,
 } from "@better-lift/shared";
-import { imageDe } from "./exercices.js";
 import { historique, type LigneSeance, versResume } from "./seances.js";
 
 /**
@@ -23,10 +18,6 @@ import { historique, type LigneSeance, versResume } from "./seances.js";
  */
 
 const JOUR_MS = 86_400_000;
-/** Les semaines affichées : 8 pour le volume, 12 pour la régularité. */
-const SEMAINES = 12;
-/** La fenêtre des records récents et de la carte du corps. */
-const FENETRE_JOURS = 28;
 
 /**
  * Les records établis depuis une date, du plus récent au plus ancien, bornés
@@ -67,7 +58,6 @@ export function recordsRecents(
 }
 
 export type DepotStats = {
-  lire(userId: string, maintenant: Date, fuseau: string): Promise<Stats>;
   /** Le bilan de toujours, pour l'en-tête du Profil (D128). */
   bilan(userId: string): Promise<Bilan>;
   /** Les stats d'une période et de la période d'avant (D125). */
@@ -77,13 +67,6 @@ export type DepotStats = {
     fuseau: string,
     periode: Periode,
   ): Promise<StatsPeriode>;
-  /** Les exercices faits sur la période et leur 1RM estimé, début et fin (D173). */
-  lireExercices(
-    userId: string,
-    maintenant: Date,
-    fuseau: string,
-    periode: Periode,
-  ): Promise<ExerciceProgres[]>;
 };
 
 export const depotStats: DepotStats = {
@@ -109,42 +92,6 @@ export const depotStats: DepotStats = {
       volumeKg: Math.round(volumeKg),
       depuis: agregat._min.debut?.toISOString() ?? null,
     };
-  },
-
-  async lireExercices(userId, maintenant, fuseau, periode) {
-    // Une semaine de marge : le découpage civil, dans le fuseau, se fait ensuite.
-    const debut = new Date(maintenant.getTime() - (SEMAINES_PERIODE[periode] + 1) * 7 * JOUR_MS);
-    const lignes = await prisma.seance.findMany({
-      where: { userId, debut: { gte: debut } },
-      select: {
-        debut: true,
-        exercices: {
-          select: {
-            exercise: { select: { slug: true, nomFr: true, gifUrl: true } },
-            series: { select: { type: true, reps: true, chargeKg: true, faite: true } },
-          },
-        },
-      },
-    });
-    return progresExercices(
-      lignes.map((l) => ({
-        debut: l.debut.toISOString(),
-        exercices: l.exercices.map((e) => ({
-          slug: e.exercise.slug,
-          nom: e.exercise.nomFr,
-          image: imageDe(e.exercise.gifUrl),
-          series: e.series.map((x) => ({
-            type: x.type,
-            reps: x.reps,
-            chargeKg: x.chargeKg === null ? null : Number(x.chargeKg),
-            faite: x.faite,
-          })),
-        })),
-      })),
-      maintenant,
-      fuseau,
-      periode,
-    );
   },
 
   async lirePeriode(userId, maintenant, fuseau, periode) {
@@ -218,78 +165,5 @@ export const depotStats: DepotStats = {
       10,
     );
     return { ...p, records, nbSeances };
-  },
-
-  async lire(userId, maintenant, fuseau) {
-    // Une semaine de marge : le découpage civil, dans le fuseau, se fait ensuite.
-    const debut = new Date(maintenant.getTime() - (SEMAINES + 1) * 7 * JOUR_MS);
-    const depuis = new Date(maintenant.getTime() - FENETRE_JOURS * JOUR_MS);
-    const [nbSeances, lignes] = await Promise.all([
-      prisma.seance.count({ where: { userId } }),
-      prisma.seance.findMany({
-        where: { userId, debut: { gte: debut } },
-        select: {
-          id: true,
-          nom: true,
-          routineId: true,
-          debut: true,
-          fin: true,
-          // Lue pour la forme `LigneSeance`, sans usage ici.
-          note: true,
-          exercices: {
-            select: {
-              exerciseId: true,
-              exercise: {
-                select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
-              },
-              note: true,
-              supersetGroupe: true,
-              series: { select: { type: true, reps: true, chargeKg: true, faite: true } },
-            },
-          },
-        },
-      }),
-    ]);
-
-    const semaines = semainesRecentes(
-      lignes.map((l) => ({
-        debut: l.debut.toISOString(),
-        volumeKg: versResume(l as LigneSeance).volumeKg,
-      })),
-      maintenant,
-      fuseau,
-      SEMAINES,
-    );
-
-    // Les exercices des 4 dernières semaines, une fois chacun.
-    const recents = new Map<
-      string,
-      { slug: string; nom: string; target: string; secondary: string[] }
-    >();
-    for (const l of lignes) {
-      if (l.debut < depuis) continue;
-      for (const e of l.exercices) {
-        recents.set(e.exerciseId, {
-          slug: e.exercise.slug,
-          nom: e.exercise.nomFr,
-          target: e.exercise.target,
-          secondary: e.exercise.secondary,
-        });
-      }
-    }
-    const h = await historique(userId, [...recents.keys()]);
-
-    return {
-      nbSeances,
-      semaines,
-      recordsRecents: recordsRecents(
-        [...recents].map(([id, e]) => ({ slug: e.slug, nom: e.nom, historique: h.get(id) ?? [] })),
-        depuis,
-      ),
-      muscles: [...recents.values()].map((e) => ({
-        musclePrincipal: e.target,
-        musclesSecondaires: e.secondary,
-      })),
-    };
   },
 };

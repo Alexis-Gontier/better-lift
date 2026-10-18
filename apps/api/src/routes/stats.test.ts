@@ -1,4 +1,4 @@
-import type { ExerciceProgres, Stats, StatsPeriode } from "@better-lift/shared";
+import type { StatsPeriode } from "@better-lift/shared";
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
 import type { LireSession } from "../middlewares/session.js";
@@ -14,10 +14,6 @@ const lireSession: LireSession = async (h) => {
 function monter() {
   const appels: { userId: string; fuseau: string; periode?: string }[] = [];
   const depot: DepotStats = {
-    async lire(userId, _maintenant, fuseau) {
-      appels.push({ userId, fuseau });
-      return { nbSeances: 3, semaines: [], recordsRecents: [], muscles: [] } satisfies Stats;
-    },
     async bilan(userId) {
       appels.push({ userId, fuseau: "" });
       return { nbSeances: 12, volumeKg: 34_500, depuis: "2026-03-02T17:00:00.000Z" };
@@ -39,46 +35,12 @@ function monter() {
         nbSeances: 3,
       } satisfies StatsPeriode;
     },
-    async lireExercices(userId, _maintenant, fuseau, periode) {
-      appels.push({ userId, fuseau, periode });
-      return [
-        {
-          slug: "dc",
-          nom: "Développé couché",
-          image: null,
-          derniereFois: "2026-10-01T17:00:00.000Z",
-          unRm: 120,
-          unRmDebut: 116,
-        },
-      ] satisfies ExerciceProgres[];
-    },
   };
   const app = new Hono().route("/stats", routesStats(depot, lireSession));
   const lire = (chemin: string, user: string | null = "alice") =>
     app.request(chemin, { headers: user ? { "x-test-user": user } : {} });
   return { lire, appels };
 }
-
-describe("GET /stats (D112)", () => {
-  it("exige une session", async () => {
-    expect((await monter().lire("/stats", null)).status).toBe(401);
-  });
-
-  it("calcule pour l'utilisateur de la session, dans le fuseau demandé", async () => {
-    const { lire, appels } = monter();
-    const res = await lire("/stats?fuseau=America/Montreal");
-    expect(res.status).toBe(200);
-    expect(((await res.json()) as Stats).nbSeances).toBe(3);
-    expect(appels).toEqual([{ userId: "alice", fuseau: "America/Montreal" }]);
-  });
-
-  it("prend Paris sans fuseau, et refuse un fuseau inconnu", async () => {
-    const { lire, appels } = monter();
-    expect((await lire("/stats")).status).toBe(200);
-    expect(appels[0]?.fuseau).toBe("Europe/Paris");
-    expect((await lire("/stats?fuseau=Mars/Olympus")).status).toBe(400);
-  });
-});
 
 describe("GET /stats/periode (D125)", () => {
   it("exige une session", async () => {
@@ -91,6 +53,13 @@ describe("GET /stats/periode (D125)", () => {
     expect(res.status).toBe(200);
     expect(((await res.json()) as StatsPeriode).periode).toBe("trimestre");
     expect(appels).toEqual([{ userId: "alice", fuseau: "America/Montreal", periode: "trimestre" }]);
+  });
+
+  it("prend Paris sans fuseau, et refuse un fuseau inconnu", async () => {
+    const { lire, appels } = monter();
+    expect((await lire("/stats/periode?periode=mois")).status).toBe(200);
+    expect(appels[0]?.fuseau).toBe("Europe/Paris");
+    expect((await lire("/stats/periode?periode=mois&fuseau=Mars/Olympus")).status).toBe(400);
   });
 
   it("refuse une période inconnue ou absente", async () => {
@@ -115,20 +84,10 @@ describe("GET /stats/bilan (D128)", () => {
   });
 });
 
-describe("GET /stats/exercices (D173)", () => {
-  it("exige une session", async () => {
-    expect((await monter().lire("/stats/exercices?periode=mois", null)).status).toBe(401);
-  });
-
-  it("lit les exercices de la période, dans le fuseau, pour l'utilisateur de la session", async () => {
-    const { lire, appels } = monter();
-    const res = await lire("/stats/exercices?periode=annee&fuseau=America/Montreal");
-    expect(res.status).toBe(200);
-    expect(((await res.json()) as ExerciceProgres[])[0]?.slug).toBe("dc");
-    expect(appels).toEqual([{ userId: "alice", fuseau: "America/Montreal", periode: "annee" }]);
-  });
-
-  it("refuse une période inconnue", async () => {
-    expect((await monter().lire("/stats/exercices?periode=siecle")).status).toBe(400);
+describe("routes retirées (D295)", () => {
+  it("ne sert plus GET /stats ni GET /stats/exercices", async () => {
+    const { lire } = monter();
+    expect((await lire("/stats")).status).toBe(404);
+    expect((await lire("/stats/exercices?periode=mois")).status).toBe(404);
   });
 });
