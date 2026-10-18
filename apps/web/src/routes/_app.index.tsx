@@ -18,9 +18,9 @@ export const Route = createFileRoute("/_app/")({
     // La rangée de tête en trois mises en forme, le temps de choisir.
     proto: {
       variants: [
-        { value: "a", label: "Bandeau" },
-        { value: "b", label: "Tuiles" },
-        { value: "c", label: "Éditorial" },
+        { value: "a", label: "Sobre" },
+        { value: "b", label: "Avant / après" },
+        { value: "c", label: "Icône" },
       ],
     },
   },

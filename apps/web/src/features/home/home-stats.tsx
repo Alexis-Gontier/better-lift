@@ -1,5 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  CalendarCheck,
+  Dumbbell,
+  ListChecks,
+  type LucideIcon,
+  Minus,
+  Trophy,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { weeklyGoal } from "@/features/settings/training-settings";
@@ -9,24 +18,25 @@ import { comparedPeriods, goalStreak, weeklyTotals, weekStart } from "@/mocks/da
 import type { MockSession } from "@/mocks/sessions";
 import { addDays } from "@/mocks/stats";
 import { TODAY } from "@/mocks/today";
-import { Sparkline } from "./sparkline";
 
-/** La période des cartes, comparée à la même juste avant ; la tendance, sur douze semaines. */
+/** La période des tuiles, comparée à la même juste avant. */
 const DAYS = 28;
-const TREND_WEEKS = 12;
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 
 type Metric = {
   label: string;
+  icon: LucideIcon;
   /** Le chiffre, et son unité à part (« 47,5 » « t »). */
   value: string;
   unit?: string;
+  /** Le même chiffre sur les 4 semaines d'avant. */
+  before: string;
   /** L'écart à la période d'avant, et son unité (« % ») ; absent sans période d'avant. */
   diff?: number;
   diffUnit?: string;
   foot: ReactNode;
-  trend: number[];
-  trendKind: "bars" | "area";
+  /** Le second repère de la variante B, à côté de la période d'avant. */
+  aside: { label: string; value: ReactNode };
 };
 
 type Week = {
@@ -36,26 +46,24 @@ type Week = {
   days: { date: string; done: boolean; today: boolean; future: boolean }[];
 };
 
-/** Tout ce que montrent les cartes, calculé une fois pour les trois variantes. */
+/** Tout ce que montrent les tuiles, calculé une fois pour les trois variantes. */
 function figures(sessions: MockSession[]): { week: Week; metrics: Metric[] } {
   const goal = weeklyGoal();
   const year = weeklyTotals(sessions, TODAY, 52);
-  const trend = year.slice(-TREND_WEEKS);
   const monday = weekStart(TODAY);
-  const days = WEEKDAYS.map((_, i) => {
-    const date = addDays(monday, i);
-    return {
-      date,
-      done: sessions.some((s) => s.date === date),
-      today: date === TODAY,
-      future: date > TODAY,
-    };
-  });
   const week: Week = {
     goal,
     done: year.at(-1)?.count ?? 0,
     streak: goal === null ? 0 : goalStreak(year, goal),
-    days,
+    days: WEEKDAYS.map((_, i) => {
+      const date = addDays(monday, i);
+      return {
+        date,
+        done: sessions.some((s) => s.date === date),
+        today: date === TODAY,
+        future: date > TODAY,
+      };
+    }),
   };
 
   const { now, before } = comparedPeriods(sessions, TODAY, DAYS);
@@ -64,31 +72,38 @@ function figures(sessions: MockSession[]): { week: Week; metrics: Metric[] } {
   const metrics: Metric[] = [
     {
       label: "Volume",
+      icon: Dumbbell,
       value: tons(now.volume),
       unit: "t",
+      before: `${tons(before.volume)} t`,
       diff:
         before.volume > 0
           ? Math.round(((now.volume - before.volume) / before.volume) * 100)
           : undefined,
       diffUnit: " %",
       foot: `${tons(now.volume / 4)} t par semaine`,
-      trend: trend.map((w) => w.volume),
-      trendKind: "area",
+      aside: { label: "Par semaine", value: `${tons(now.volume / 4)} t` },
     },
     {
       label: "Séances",
+      icon: ListChecks,
       value: String(now.count),
+      before: String(before.count),
       diff: now.count - before.count,
       foot:
         now.count > 0
-          ? `${formatNumber(now.count / 4)} par semaine · ${formatMinutes(Math.round(now.minutes / now.count))} en moyenne`
+          ? `${formatMinutes(Math.round(now.minutes / now.count))} en moyenne`
           : "Aucune séance",
-      trend: trend.map((w) => w.count),
-      trendKind: "bars",
+      aside: {
+        label: "Durée moyenne",
+        value: now.count > 0 ? formatMinutes(Math.round(now.minutes / now.count)) : "—",
+      },
     },
     {
       label: "Records",
+      icon: Trophy,
       value: String(now.records),
+      before: String(before.records),
       diff: now.records - before.records,
       foot: lastRecord ? (
         <Link
@@ -101,14 +116,14 @@ function figures(sessions: MockSession[]): { week: Week; metrics: Metric[] } {
       ) : (
         "Pas encore de record"
       ),
-      trend: trend.map((w) => w.records),
-      trendKind: "bars",
+      aside: {
+        label: "Dernier",
+        value: lastRecord ? formatShortDay(lastRecord.date) : "—",
+      },
     },
   ];
   return { week, metrics };
 }
-
-const signOf = (diff: number) => (diff > 0 ? "+" : diff < 0 ? "−" : "±");
 
 /** L'écart, flèche comprise : « ↗ +6 % ». Neutre : le wireframe n'a pas de couleur. */
 function Delta({
@@ -121,28 +136,28 @@ function Delta({
   className?: string;
 }) {
   const Icon = diff > 0 ? ArrowUpRight : diff < 0 ? ArrowDownRight : Minus;
+  const sign = diff > 0 ? "+" : diff < 0 ? "−" : "±";
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 font-medium text-xs tabular-nums",
-        diff < 0 && "text-muted-foreground",
+        "inline-flex items-center gap-0.5 rounded-full bg-background px-2 py-0.5 font-medium text-xs tabular-nums",
         className,
       )}
     >
       <Icon className="size-3.5" />
-      {signOf(diff)}
+      {sign}
       {formatNumber(Math.abs(diff))}
       {unit}
     </span>
   );
 }
 
-/** Le chiffre d'une carte, son unité en retrait. */
+/** Le chiffre d'une tuile, son unité en retrait. */
 function Figure({ value, unit, className }: { value: string; unit?: string; className?: string }) {
   return (
     <span className={cn("font-semibold tabular-nums tracking-tight", className)}>
       {value}
-      {unit && <span className="ml-1 font-normal text-[0.5em] text-muted-foreground">{unit}</span>}
+      {unit && <span className="ml-1 font-normal text-[0.55em] opacity-60">{unit}</span>}
     </span>
   );
 }
@@ -165,184 +180,175 @@ const weekLine = (w: Week) =>
       ? "Objectif atteint"
       : `Encore ${plural(w.goal - w.done, "séance")}`;
 
-/* ─────────────────────────── A · Bandeau ─────────────────────────── */
-
-/** Un seul bloc, quatre cases séparées d'un filet ; la tendance en barres au pied de chaque case. */
-function StatsStrip({ week, metrics }: { week: Week; metrics: Metric[] }) {
-  const cell = "flex min-h-48 flex-col gap-3 bg-background p-5";
-  const label = "font-medium text-muted-foreground text-xs uppercase tracking-wider";
+/**
+ * Les jours de la semaine, lundi d'abord : faits remplis, aujourd'hui cerclé, à venir effacés.
+ * `inverse` : posés sur l'aplat sombre de la tuile de la semaine (variante B).
+ */
+function WeekDays({
+  week,
+  size = "md",
+  inverse,
+}: {
+  week: Week;
+  size?: "sm" | "md";
+  inverse?: boolean;
+}) {
   return (
-    <div className="grid gap-px overflow-hidden rounded-xl border bg-border @xl:grid-cols-2 @5xl:grid-cols-4">
-      <div className={cell}>
+    <div className="flex justify-between gap-1">
+      {week.days.map((d, i) => (
+        <span
+          key={d.date}
+          title={d.done ? `${formatShortDay(d.date)} · séance faite` : formatShortDay(d.date)}
+          className={cn(
+            "flex items-center justify-center rounded-full font-medium",
+            size === "md" ? "size-7 text-xs" : "size-5 text-[0.65rem]",
+            inverse
+              ? d.done
+                ? "bg-background text-foreground"
+                : d.future
+                  ? "text-background/40"
+                  : "bg-background/15 text-background/70"
+              : d.done
+                ? "bg-foreground text-background"
+                : d.future
+                  ? "text-muted-foreground/50"
+                  : "bg-background text-muted-foreground",
+            d.today && !d.done && (inverse ? "ring-1 ring-background" : "ring-1 ring-foreground"),
+          )}
+        >
+          {WEEKDAYS[i]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const tile = "flex flex-col rounded-2xl bg-muted/60 p-5";
+const grid = "grid gap-3 @xl:grid-cols-2 @5xl:grid-cols-4";
+
+/* ─────────────────────────── A · Sobre ─────────────────────────── */
+
+/** Le chiffre en grand, l'écart en pastille, une ligne de contexte au pied. */
+function TilesPlain({ week, metrics }: { week: Week; metrics: Metric[] }) {
+  return (
+    <div className={grid}>
+      <div className={cn(tile, "min-h-44")}>
         <div className="flex items-center justify-between">
-          <span className={label}>Cette semaine</span>
+          <span className="font-medium text-sm">Cette semaine</span>
           <span className="text-muted-foreground text-xs">{weekLine(week)}</span>
         </div>
         <Figure
           value={String(week.done)}
           unit={week.goal !== null ? `/ ${week.goal}` : undefined}
-          className="text-4xl"
+          className="mt-2 text-4xl"
         />
-        <div className="mt-auto flex flex-col gap-2">
-          {week.goal !== null && (
-            <div className="flex gap-1">
-              {Array.from({ length: Math.max(week.goal, week.done) }, (_, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "h-1.5 flex-1 rounded-full",
-                    i < week.done ? "bg-foreground" : "bg-muted",
-                  )}
-                />
-              ))}
-            </div>
-          )}
-          <span className="text-muted-foreground text-sm">{weekFoot(week)}</span>
-        </div>
-      </div>
-      {metrics.map((m) => (
-        <div key={m.label} className={cell}>
-          <div className="flex items-center justify-between">
-            <span className={label}>{m.label} · 4 sem.</span>
-            {m.diff !== undefined && <Delta diff={m.diff} unit={m.diffUnit} />}
-          </div>
-          <Figure value={m.value} unit={m.unit} className="text-4xl" />
-          <div className="mt-auto flex flex-col gap-2">
-            <Sparkline values={m.trend} kind="bars" className="h-8 text-foreground" />
-            <span className="truncate text-muted-foreground text-sm">{m.foot}</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ─────────────────────────── B · Tuiles ─────────────────────────── */
-
-/** Quatre tuiles pleines, sans bordure ; la tendance en aplat déborde au bas de chacune. */
-function StatsTiles({ week, metrics }: { week: Week; metrics: Metric[] }) {
-  const tile = "relative flex min-h-48 flex-col overflow-hidden rounded-2xl bg-muted/60 p-5";
-  return (
-    <div className="grid gap-3 @xl:grid-cols-2 @5xl:grid-cols-4">
-      <div className={tile}>
-        <span className="font-medium text-sm">Cette semaine</span>
-        <div className="mt-1 flex items-baseline justify-between gap-2">
-          <Figure
-            value={String(week.done)}
-            unit={week.goal !== null ? `/ ${week.goal}` : undefined}
-            className="text-3xl"
-          />
-          <span className="text-muted-foreground text-xs">{weekLine(week)}</span>
-        </div>
         <div className="mt-auto flex flex-col gap-3 pt-4">
-          <div className="flex justify-between">
-            {week.days.map((d, i) => (
-              <span
-                key={d.date}
-                title={d.date}
-                className={cn(
-                  "flex size-7 items-center justify-center rounded-full font-medium text-xs",
-                  d.done
-                    ? "bg-foreground text-background"
-                    : d.future
-                      ? "text-muted-foreground/50"
-                      : "bg-background text-muted-foreground",
-                  d.today && !d.done && "ring-1 ring-foreground",
-                )}
-              >
-                {WEEKDAYS[i]}
-              </span>
-            ))}
-          </div>
+          <WeekDays week={week} />
           <span className="text-muted-foreground text-xs">{weekFoot(week)}</span>
         </div>
       </div>
       {metrics.map((m) => (
-        <div key={m.label} className={tile}>
+        <div key={m.label} className={cn(tile, "min-h-44")}>
           <div className="flex items-center justify-between">
             <span className="font-medium text-sm">{m.label}</span>
-            {m.diff !== undefined && (
-              <Delta
-                diff={m.diff}
-                unit={m.diffUnit}
-                className="rounded-full bg-background px-2 py-0.5"
-              />
-            )}
+            {m.diff !== undefined && <Delta diff={m.diff} unit={m.diffUnit} />}
           </div>
-          <Figure value={m.value} unit={m.unit} className="mt-1 text-3xl" />
-          <span className="relative z-10 mt-1 text-muted-foreground text-xs">
-            4 dernières semaines
-          </span>
-          <Sparkline
-            values={m.trend}
-            kind="area"
-            className="-mx-5 -mb-5 mt-auto h-16 w-[calc(100%+2.5rem)] pt-4 text-foreground/70"
-          />
+          <Figure value={m.value} unit={m.unit} className="mt-2 text-4xl" />
+          <span className="mt-1 text-muted-foreground text-xs">4 dernières semaines</span>
+          <span className="mt-auto truncate pt-4 text-muted-foreground text-sm">{m.foot}</span>
         </div>
       ))}
     </div>
   );
 }
 
-/* ─────────────────────────── C · Éditorial ─────────────────────────── */
+/* ─────────────────────────── B · Avant / après ─────────────────────────── */
 
-/** L'anneau de l'objectif : la part de la semaine faite. */
-function GoalRing({ done, goal }: { done: number; goal: number }) {
-  const r = 22;
-  const c = 2 * Math.PI * r;
-  const part = Math.min(1, done / goal);
+/** Sous le chiffre, les deux périodes côte à côte ; la semaine, en aplat inversé, ressort. */
+function TilesCompare({ week, metrics }: { week: Week; metrics: Metric[] }) {
   return (
-    <svg viewBox="0 0 52 52" className="size-14 -rotate-90" aria-hidden>
-      <circle cx="26" cy="26" r={r} fill="none" stroke="var(--muted)" strokeWidth="5" />
-      <circle
-        cx="26"
-        cy="26"
-        r={r}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeDasharray={`${part * c} ${c}`}
-      />
-    </svg>
+    <div className={grid}>
+      <div className={cn(tile, "min-h-48 bg-foreground text-background")}>
+        <span className="font-medium text-sm">Cette semaine</span>
+        <Figure
+          value={String(week.done)}
+          unit={week.goal !== null ? `/ ${week.goal}` : undefined}
+          className="mt-2 text-4xl"
+        />
+        <span className="mt-1 text-background/70 text-xs">{weekLine(week)}</span>
+        <div className="mt-auto flex flex-col gap-3 pt-4">
+          <WeekDays week={week} inverse />
+          <span className="text-background/70 text-xs">{weekFoot(week)}</span>
+        </div>
+      </div>
+      {metrics.map((m) => (
+        <div key={m.label} className={cn(tile, "min-h-48")}>
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-sm">{m.label}</span>
+            {m.diff !== undefined && <Delta diff={m.diff} unit={m.diffUnit} />}
+          </div>
+          <Figure value={m.value} unit={m.unit} className="mt-2 text-4xl" />
+          <span className="mt-1 text-muted-foreground text-xs">4 dernières semaines</span>
+          <dl className="mt-auto grid grid-cols-2 gap-3 border-foreground/10 border-t pt-3 text-xs">
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">4 sem. d'avant</dt>
+              <dd className="font-medium text-sm tabular-nums">{m.before}</dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">{m.aside.label}</dt>
+              <dd className="font-medium text-sm tabular-nums">{m.aside.value}</dd>
+            </div>
+          </dl>
+        </div>
+      ))}
+    </div>
   );
 }
 
-/** Pas de boîte : un filet épais au-dessus de chaque colonne, des chiffres grands et fins. */
-function StatsEditorial({ week, metrics }: { week: Week; metrics: Metric[] }) {
-  const col = "flex flex-col gap-2 border-foreground border-t-2 pt-3";
+/* ─────────────────────────── C · Icône ─────────────────────────── */
+
+/** Basses et horizontales : l'icône dans son carré, puis l'intitulé, le chiffre et l'écart. */
+function TilesIcon({ week, metrics }: { week: Week; metrics: Metric[] }) {
+  const iconBox =
+    "flex size-11 shrink-0 items-center justify-center rounded-xl bg-background text-foreground";
   return (
-    <div className="grid gap-x-8 gap-y-10 @xl:grid-cols-2 @5xl:grid-cols-4">
-      <div className={col}>
-        <span className="font-medium text-sm">Cette semaine</span>
-        <div className="flex items-center justify-between gap-4">
-          <Figure
-            value={String(week.done)}
-            unit={week.goal !== null ? `/ ${week.goal}` : undefined}
-            className="font-light text-6xl"
-          />
-          {week.goal !== null && <GoalRing done={week.done} goal={week.goal} />}
+    <div className={grid}>
+      <div className={cn(tile, "gap-3 p-4")}>
+        <div className="flex items-center gap-3">
+          <span className={iconBox}>
+            <CalendarCheck className="size-5" />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="text-muted-foreground text-xs">Cette semaine</span>
+            <Figure
+              value={String(week.done)}
+              unit={week.goal !== null ? `/ ${week.goal}` : undefined}
+              className="text-2xl"
+            />
+          </div>
+          {week.goal !== null && (
+            <span className="self-start rounded-full bg-background px-2 py-0.5 font-medium text-xs">
+              {week.done >= week.goal ? "Atteint" : `Encore ${week.goal - week.done}`}
+            </span>
+          )}
         </div>
-        <p className="text-sm">{weekLine(week)}</p>
-        <p className="text-muted-foreground text-sm">{weekFoot(week)}</p>
+        <WeekDays week={week} size="sm" />
       </div>
       {metrics.map((m) => (
-        <div key={m.label} className={col}>
-          <span className="font-medium text-sm">{m.label}, 4 semaines</span>
-          <Figure value={m.value} unit={m.unit} className="font-light text-6xl" />
-          <p className="text-sm">
-            {m.diff === undefined ? (
-              "Pas de période d'avant"
-            ) : m.diff === 0 ? (
-              "Autant que les 4 sem. d'avant"
-            ) : (
-              <>
-                <Delta diff={m.diff} unit={m.diffUnit} className="text-sm" /> face aux 4 sem.
-                d'avant
-              </>
+        <div key={m.label} className={cn(tile, "gap-3 p-4")}>
+          <div className="flex items-center gap-3">
+            <span className={iconBox}>
+              <m.icon className="size-5" />
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="text-muted-foreground text-xs">{m.label} · 4 sem.</span>
+              <Figure value={m.value} unit={m.unit} className="text-2xl" />
+            </div>
+            {m.diff !== undefined && (
+              <Delta diff={m.diff} unit={m.diffUnit} className="self-start" />
             )}
-          </p>
-          <p className="truncate text-muted-foreground text-sm">{m.foot}</p>
+          </div>
+          <span className="truncate text-muted-foreground text-xs">{m.foot}</span>
         </div>
       ))}
     </div>
@@ -351,7 +357,8 @@ function StatsEditorial({ week, metrics }: { week: Week; metrics: Metric[] }) {
 
 /**
  * La rangée de tête (D287) : la semaine face à l'objectif, puis volume, séances et records des
- * quatre dernières semaines, chacun face aux quatre d'avant. Trois mises en forme à comparer.
+ * quatre dernières semaines, chacun face aux quatre d'avant. Des tuiles sans graphique, en trois
+ * mises en forme à comparer.
  */
 export function HomeStats({
   sessions,
@@ -361,18 +368,18 @@ export function HomeStats({
   variant: "a" | "b" | "c";
 }) {
   const data = figures(sessions);
-  if (variant === "b") return <StatsTiles {...data} />;
-  if (variant === "c") return <StatsEditorial {...data} />;
-  return <StatsStrip {...data} />;
+  if (variant === "b") return <TilesCompare {...data} />;
+  if (variant === "c") return <TilesIcon {...data} />;
+  return <TilesPlain {...data} />;
 }
 
 /** L'Accueil pendant le chargement : la rangée de tête, le calendrier, les graphiques. */
 export function HomeSkeleton() {
   return (
     <>
-      <div className="grid gap-4 @xl:grid-cols-2 @5xl:grid-cols-4">
+      <div className={grid}>
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-48 rounded-xl" />
+          <Skeleton key={i} className="h-44 rounded-2xl" />
         ))}
       </div>
       <Skeleton className="h-56 rounded-xl" />
