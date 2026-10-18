@@ -118,6 +118,11 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   routine** sur 3 mois. Les calculs vivent dans `mocks/dashboard.ts`, testés. Quatre états par
   `?etat=` ; `vide` reprend l'accueil de l'Historique (import Hevy).
 
+- **D288 — L'Accueil redevient vide** (2026-10-18, révise D287, revient à D283). Les tuiles
+  (essayées en bandeau, tuiles, éditorial, puis sans graphique : sobre, avant / après, icône),
+  le calendrier, les graphiques et les dernières séances partent, avec `mocks/dashboard.ts`.
+  L'historique git les garde.
+
 ## 3. Barre latérale
 
 ```
