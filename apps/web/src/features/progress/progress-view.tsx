@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RecordsTable } from "@/features/records/records-table";
 import {
   formatKg,
   formatLoad,
@@ -42,7 +43,6 @@ import {
 import type { MockSession } from "@/mocks/sessions";
 import { weekStreak } from "@/mocks/stats";
 import { TODAY } from "@/mocks/today";
-import { RecordsTable } from "./records-table";
 
 /** « +0,3 », « −12 % », « ±0 » : l'écart avec la période précédente, à une décimale. */
 function signed(diff: number, unit = ""): string {

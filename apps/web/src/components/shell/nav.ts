@@ -7,6 +7,7 @@ import {
   Scale,
   Settings,
   TrendingUp,
+  Trophy,
 } from "lucide-react";
 import type { FileRouteTypes } from "@/routeTree.gen";
 
@@ -26,6 +27,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Analyse",
     items: [
+      { title: "Records", to: "/records", icon: Trophy },
       { title: "Progression", to: "/progress", icon: TrendingUp },
       { title: "Corps", to: "/body", icon: Scale },
     ],

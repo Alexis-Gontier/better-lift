@@ -17,10 +17,11 @@ import { exerciseHistory } from "@/mocks/exercise-history";
 import { records } from "@/mocks/exercise-stats";
 import { MUSCLES, mockExercises } from "@/mocks/exercises";
 import { inPeriod, type Period } from "@/mocks/progress";
+import { targetOf } from "@/mocks/targets";
 import { TODAY } from "@/mocks/today";
 
 const ALL = "tous";
-type SortKey = "name" | "heaviest" | "best1rm" | "bestVolume" | "date";
+type SortKey = "name" | "heaviest" | "best1rm" | "bestVolume" | "target" | "date";
 
 type Row = {
   slug: string;
@@ -29,6 +30,7 @@ type Row = {
   heaviest: number;
   best1rm: number;
   bestVolume: number;
+  target: number | undefined;
   /** Date du record le plus récent des trois. */
   date: string;
 };
@@ -46,6 +48,7 @@ function rowsFor(period: Period): Row[] {
         heaviest: r.heaviest.value,
         best1rm: Math.round(r.best1rm.value),
         bestVolume: r.bestVolume.value,
+        target: targetOf(e.slug),
         // Au poids du corps, aucune charge ne bat 0 : la date retombe sur la dernière exécution.
         date:
           [r.heaviest.date, r.best1rm.date, r.bestVolume.date].filter(Boolean).sort().at(-1) ??
@@ -61,6 +64,7 @@ const COLUMNS: { key: SortKey; label: string; numeric?: boolean }[] = [
   { key: "heaviest", label: "Meilleure charge", numeric: true },
   { key: "best1rm", label: "1RM estimé", numeric: true },
   { key: "bestVolume", label: "Meilleur volume", numeric: true },
+  { key: "target", label: "Cible", numeric: true },
   { key: "date", label: "Dernier record", numeric: true },
 ];
 
@@ -71,8 +75,8 @@ export function RecordsTable({ period }: { period: Period }) {
   const rows = rowsFor(period)
     .filter((r) => muscle === ALL || r.muscle === muscle)
     .sort((a, b) => {
-      const av = a[sort.key];
-      const bv = b[sort.key];
+      const av = a[sort.key] ?? 0;
+      const bv = b[sort.key] ?? 0;
       const cmp =
         typeof av === "number" && typeof bv === "number"
           ? av - bv
@@ -147,7 +151,6 @@ export function RecordsTable({ period }: { period: Period }) {
                     <Link
                       to="/exercises/$slug"
                       params={{ slug: r.slug }}
-                      search={{ onglet: "records" }}
                       className="font-medium hover:underline"
                     >
                       {r.name}
@@ -162,6 +165,9 @@ export function RecordsTable({ period }: { period: Period }) {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {r.bestVolume > 0 ? formatKg(r.bestVolume) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground tabular-nums">
+                    {r.target !== undefined ? formatKg(r.target) : "—"}
                   </TableCell>
                   <TableCell className="pr-4 text-right text-muted-foreground tabular-nums">
                     {formatShortDay(r.date)}
