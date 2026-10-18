@@ -39,7 +39,8 @@ function SettingsLayout() {
             </Link>
           ))}
         </nav>
-        <div className="flex min-w-0 flex-col gap-6">
+        {/* De la marge en bas : la dernière carte remonte au-dessus de la barre du prototype. */}
+        <div className="flex min-w-0 flex-col gap-6 pb-32">
           {state === "chargement" &&
             ["a", "b", "c"].map((k) => <Skeleton key={k} className="h-48 rounded-xl" />)}
           {state === "erreur" && <StateError title="Les paramètres n'ont pas pu se charger" />}

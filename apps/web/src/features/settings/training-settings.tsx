@@ -75,7 +75,7 @@ export function TrainingSettings() {
     <SettingsPage
       title="Entraînement"
       description="Repos, charges et calculs proposés partout."
-      actions={edit.actions(null)}
+      actions={edit.actions(null, { status: false })}
     >
       <SettingsSection title="Séries et repos">
         <FieldGroup>

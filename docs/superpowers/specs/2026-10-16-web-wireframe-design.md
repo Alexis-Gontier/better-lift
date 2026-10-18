@@ -354,8 +354,9 @@ et D199 (style), qui seront repris après validation du wireframe.
   retire les onglets et le bouton Enregistrer de chaque carte). À gauche, Compte, Préférences,
   Entraînement, Données, avec leur icône, comme les réglages de GitHub ou Linear ; en rangée
   sous 48rem. Chaque page porte un en-tête collé sous celui de l'app : son titre, une phrase, et
-  l'état d'édition de `useEditable` (« • N modifications non enregistrées », ↶ ↷, Tout annuler,
-  Enregistrer, Ctrl S, avertissement en quittant). Ce qui n'est pas un réglage du compte agit
+  les actions de `useEditable` (↶ ↷, Tout annuler, Enregistrer, Ctrl S, avertissement en
+  quittant), sans le compte des modifications, inutile ici ; une marge en bas laisse la dernière
+  carte remonter au-dessus de la barre du prototype. Ce qui n'est pas un réglage du compte agit
   seul : l'apparence s'applique tout de suite (réglage d'appareil, seul endroit où se règle le thème), le
   mot de passe se change par son propre bouton, les sessions se déconnectent, la suppression
   passe par sa confirmation. Données n'a rien à enregistrer.

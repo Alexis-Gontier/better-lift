@@ -141,7 +141,7 @@ export function PreferencesSettings() {
     <SettingsPage
       title="Préférences"
       description="Unités, formats et apparence."
-      actions={edit.actions(null)}
+      actions={edit.actions(null, { status: false })}
     >
       <Units draft={edit.draft} setDraft={(f) => edit.setDraft(f)} />
       <AppearanceSection />

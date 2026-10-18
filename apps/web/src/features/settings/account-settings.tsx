@@ -256,7 +256,7 @@ export function AccountSettings() {
     <SettingsPage
       title="Compte"
       description="Profil, mot de passe et appareils connectés."
-      actions={edit.actions(null)}
+      actions={edit.actions(null, { status: false })}
     >
       <Profile draft={edit.draft} setDraft={(a) => edit.setDraft(a)} />
       <Security />

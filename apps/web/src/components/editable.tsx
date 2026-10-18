@@ -138,9 +138,10 @@ export function useEditable<T>(o: Options<T>) {
     </span>
   );
 
-  const actions = (menu: ReactNode) => (
+  // `status: false` : sans le compte (Paramètres, où Enregistrer dit déjà tout, D271).
+  const actions = (menu: ReactNode, { status: showStatus = true } = {}) => (
     <>
-      {status}
+      {showStatus && status}
       {(history.canUndo || history.canRedo) && (
         <HistoryButtons
           canUndo={history.canUndo}
