@@ -48,6 +48,38 @@ export async function creerSeance(
   return id;
 }
 
+/** Pose une routine par l'API, une série de 10 par exercice. Rend son identifiant. */
+export async function creerRoutine(
+  api: APIRequestContext,
+  nom: string,
+  slugs: string[],
+  dossierId: string | null = null,
+): Promise<string> {
+  const res = await api.post("/routines", {
+    data: {
+      nom,
+      dossierId,
+      exercices: slugs.map((slug) => ({
+        slug,
+        reposSec: 90,
+        series: [{ type: "NORMALE", repsCible: 10, chargeCibleKg: 40 }],
+      })),
+    },
+  });
+  if (!res.ok()) throw new Error(`Routine refusée : ${res.status()} ${await res.text()}`);
+  return ((await res.json()) as { id: string }).id;
+}
+
+/** Supprime les routines et dossiers du compte E2E qui portent le préfixe. */
+export async function nettoyerRoutines(api: APIRequestContext) {
+  const { routines, dossiers } = (await (await api.get("/routines")).json()) as {
+    routines: { id: string; nom: string }[];
+    dossiers: { id: string; nom: string }[];
+  };
+  for (const r of routines) if (r.nom.startsWith(PREFIXE)) await api.delete(`/routines/${r.id}`);
+  for (const d of dossiers) if (d.nom.startsWith(PREFIXE)) await api.delete(`/dossiers/${d.id}`);
+}
+
 /** Supprime les séances du compte E2E qui portent le préfixe. */
 export async function nettoyerSeances(api: APIRequestContext) {
   const { seances } = (await (await api.get("/seances?taille=100")).json()) as {

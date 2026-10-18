@@ -1,45 +1,50 @@
+import { type RoutineResume, versBrouillon, versSaisie } from "@better-lift/shared";
 import { useDraggable } from "@dnd-kit/core";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ChevronRight, Copy, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { listCardClass, listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Card } from "@/components/ui/card";
 import { formatDaysAgo, formatMinutes, plural } from "@/lib/format";
+import { joursDepuis, SYSTEME } from "@/lib/locale";
 import { cn } from "@/lib/utils";
-import { exerciseBySlug } from "@/mocks/exercises";
-import { daysSince, estimateMinutes } from "@/mocks/routine-stats";
-import { deleteRoutine, newRoutineId, saveRoutine, useDraftName } from "@/mocks/routine-store";
-import type { MockRoutine } from "@/mocks/routines";
-import { TODAY } from "@/mocks/today";
+import { nomBrouillon } from "./ecran";
+import { routineQuery, useCreerRoutine, useSupprimerRoutine } from "./queries";
 
 /** Les muscles d'une routine, sans doublon, dans l'ordre des exercices. */
-function routineMuscles(routine: MockRoutine): string[] {
-  const muscles = routine.exercises.map((e) => exerciseBySlug(e.slug)?.muscle ?? "");
-  return [...new Set(muscles.filter(Boolean))];
-}
+const muscles = (r: RoutineResume) => [
+  ...new Set(r.exercices.map((e) => e.musclePrincipal).filter(Boolean)),
+];
 
 const rowClass = "flex items-center gap-3 px-4 py-3";
 
 /** Le clic droit sur une routine : les mêmes actions que son menu ⋯. */
-function routineActions(
-  routine: MockRoutine,
-  navigate: ReturnType<typeof useNavigate>,
-): RowAction[] {
+function useRoutineActions(routine: RoutineResume): RowAction[] {
+  const navigate = useNavigate();
+  const client = useQueryClient();
+  const { id: ouverte } = useParams({ strict: false });
+  const creer = useCreerRoutine();
+  const supprimer = useSupprimerRoutine();
   return [
     {
       label: "Dupliquer",
       icon: Copy,
-      onSelect: () => {
-        const copy = {
-          ...routine,
-          id: newRoutineId(),
-          name: `${routine.name} (copie)`,
-          lastDone: null,
-        };
-        saveRoutine(copy);
-        navigate({ to: "/routines/$id", params: { id: copy.id }, search: true });
-        toast.success(`« ${copy.name} » créée`);
+      onSelect: async () => {
+        try {
+          // La copie part du détail : le résumé n'a pas les séries.
+          const detail = await client.fetchQuery(routineQuery(routine.id));
+          const nom = `${routine.nom} (copie)`.slice(0, 120);
+          const id = await creer.mutateAsync({
+            ...versSaisie(versBrouillon(detail, SYSTEME), SYSTEME),
+            nom,
+          });
+          navigate({ to: "/routines/$id", params: { id }, search: true });
+          toast.success(`« ${nom} » créée`);
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "La routine n'a pas pu être dupliquée.");
+        }
       },
     },
     {
@@ -48,31 +53,29 @@ function routineActions(
       destructive: true,
       separated: true,
       onSelect: () => {
-        deleteRoutine(routine.id);
-        toast(`« ${routine.name} » supprimée`, {
-          action: { label: "Annuler", onClick: () => saveRoutine(routine) },
-        });
+        if (ouverte === routine.id) navigate({ to: "/routines", search: true });
+        supprimer(routine.id, `« ${routine.nom} » supprimée`);
       },
     },
   ];
 }
 
 /** Le contenu d'une ligne de routine : nom et muscles, durée et dernière fois. */
-function RowBody({ routine }: { routine: MockRoutine }) {
+function RowBody({ routine }: { routine: RoutineResume }) {
   return (
     <>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-medium">{routine.name}</span>
+        <span className="truncate font-medium">{routine.nom}</span>
         <span className="truncate text-muted-foreground text-xs">
-          {[plural(routine.exercises.length, "exercice"), ...routineMuscles(routine)].join(" · ")}
+          {[plural(routine.nbExercices, "exercice"), ...muscles(routine)].join(" · ")}
         </span>
       </div>
       <div className="flex shrink-0 flex-col items-end">
         <span className="text-sm tabular-nums">
-          ~{formatMinutes(estimateMinutes(routine.exercises))}
+          ~{formatMinutes(Math.ceil(routine.dureeEstimeeSec / 60 / 5) * 5)}
         </span>
         <span className="text-muted-foreground text-xs">
-          {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
+          {formatDaysAgo(routine.derniereSeance ? joursDepuis(routine.derniereSeance) : null)}
         </span>
       </div>
     </>
@@ -83,11 +86,10 @@ function RowBody({ routine }: { routine: MockRoutine }) {
  * Une routine dans la liste, en ligne compacte (D251) ; sa poignée la glisse dans un autre
  * dossier (D257).
  */
-export function RoutineRow({ routine }: { routine: MockRoutine }) {
-  const navigate = useNavigate();
+export function RoutineRow({ routine }: { routine: RoutineResume }) {
+  const actions = useRoutineActions(routine);
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
     id: routine.id,
-    data: { routine },
   });
   return (
     <Card ref={setNodeRef} className={cn(listCardClass, isDragging && "opacity-40")}>
@@ -95,14 +97,14 @@ export function RoutineRow({ routine }: { routine: MockRoutine }) {
       <button
         ref={setActivatorNodeRef}
         type="button"
-        aria-label={`Changer de dossier : ${routine.name}`}
+        aria-label={`Changer de dossier : ${routine.nom}`}
         className="flex w-7 shrink-0 cursor-grab items-center justify-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
         <GripVertical className="size-4" />
       </button>
-      <RowMenu actions={routineActions(routine, navigate)}>
+      <RowMenu actions={actions}>
         <Link
           to="/routines/$id"
           params={{ id: routine.id }}
@@ -118,7 +120,7 @@ export function RoutineRow({ routine }: { routine: MockRoutine }) {
 }
 
 /** La ligne qui suit le pointeur pendant un glisser. */
-export function RoutineRowPreview({ routine }: { routine: MockRoutine }) {
+export function RoutineRowPreview({ routine }: { routine: RoutineResume }) {
   return (
     <div className="flex cursor-grabbing items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-lg">
       <GripVertical className="size-4 shrink-0 text-muted-foreground" />
@@ -129,7 +131,7 @@ export function RoutineRowPreview({ routine }: { routine: MockRoutine }) {
 
 /** La ligne de la routine en cours de création, en tête de liste (D238) : elle suit le nom tapé. */
 export function DraftRoutineRow() {
-  const name = useDraftName();
+  const name = nomBrouillon.use();
   return (
     <Link
       to="/routines/new"

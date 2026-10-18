@@ -1,3 +1,5 @@
+import { type ExerciceResume, GROUPES, type Groupe, LIBELLE_GROUPE } from "@better-lift/shared";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Check, Search } from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
@@ -21,19 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fold } from "@/lib/fold";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/use-debounce";
+import { catalogueQuery } from "@/lib/catalogue";
 import { plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useExercises } from "@/mocks/exercise-store";
-import type { MockExercise } from "@/mocks/exercises";
-import type { MockRoutineExercise } from "@/mocks/routines";
 
-const ALL = "tous";
-
-/** Un exercice tout juste ajouté : une série de 10, charge à noter, 1 min 30 de repos. */
-export function newRoutineExercise(slug: string): MockRoutineExercise {
-  return { slug, sets: [{ kg: null, reps: 10 }], restSeconds: 90 };
-}
+const TOUS = "tous";
 
 /** Une carte du catalogue : cochée, elle montre son rang d'ajout. */
 function PickCard({
@@ -42,7 +38,7 @@ function PickCard({
   disabled,
   onToggle,
 }: {
-  exercise: MockExercise;
+  exercise: ExerciceResume;
   /** Rang dans la sélection (1, 2…), ou 0 si elle n'est pas cochée. */
   rank: number;
   disabled: boolean;
@@ -60,13 +56,13 @@ function PickCard({
         checked && "border-foreground/40 bg-muted/50",
       )}
     >
-      <ExerciseThumb name={exercise.name} className="size-12" />
+      <ExerciseThumb name={exercise.nom} src={exercise.image} className="size-12" />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate font-medium" title={exercise.name}>
-          {exercise.name}
+        <span className="truncate font-medium" title={exercise.nom}>
+          {exercise.nom}
         </span>
         <span className="truncate text-muted-foreground text-xs">
-          {exercise.muscle} · {exercise.equipment}
+          {LIBELLE_GROUPE[exercise.groupe]} · {exercise.equipement}
         </span>
       </span>
       {/* Le rang plutôt qu'une coche : les exercices s'ajoutent dans l'ordre où on les coche. */}
@@ -84,9 +80,9 @@ function PickCard({
 }
 
 /**
- * Ajouter des exercices à une routine (D262) : le catalogue en cartes, une recherche sans accents
- * et un filtre par muscle ; on en coche plusieurs, ils s'ajoutent dans l'ordre coché. Ceux déjà
- * dans la routine n'y figurent pas : toutes les cartes ont la même hauteur, rien à éviter.
+ * Ajouter des exercices à une routine (D262) : le catalogue en cartes, la recherche (noms
+ * français et anglais, côté serveur) et un filtre par muscle ; on en coche plusieurs, ils
+ * s'ajoutent dans l'ordre coché. Ceux déjà dans la routine n'y figurent pas.
  */
 export function ExercisePicker({
   open,
@@ -97,50 +93,40 @@ export function ExercisePicker({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onPick: (slugs: string[]) => void;
+  onPick: (exercices: ExerciceResume[]) => void;
   /** Les exercices déjà dans la routine. */
   present: readonly string[];
   /** Combien la routine peut encore en recevoir (50 au plus). */
   room: number;
 }) {
-  const exercises = useExercises();
-  const [query, setQuery] = useState("");
-  const [muscle, setMuscle] = useState(ALL);
-  const [picked, setPicked] = useState<string[]>([]);
-  const muscles = [...new Set(exercises.map((e) => e.muscle))].sort((a, b) =>
-    a.localeCompare(b, "fr"),
-  );
+  const [saisie, setSaisie] = useState("");
+  const q = useDebounce(saisie);
+  const [groupe, setGroupe] = useState<Groupe | typeof TOUS>(TOUS);
+  const [picked, setPicked] = useState<ExerciceResume[]>([]);
+  const catalogue = useInfiniteQuery({
+    ...catalogueQuery({ q, ...(groupe !== TOUS && { groupe }) }),
+    enabled: open,
+  });
 
-  const q = fold(query.trim());
-  const shown = exercises
-    .filter(
-      (e) =>
-        !present.includes(e.slug) &&
-        (muscle === ALL || e.muscle === muscle) &&
-        (fold(e.name).includes(q) || fold(e.slug.replaceAll("-", " ")).includes(q)),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  const lus = catalogue.data?.pages.flatMap((p) => p.exercices) ?? [];
+  const shown = lus.filter((e) => !present.includes(e.slug));
   const full = picked.length >= room;
   // Sans eux, une recherche peut ne rien rendre : le vide dit pourquoi.
-  const hiddenMatch =
-    shown.length === 0 &&
-    exercises.some(
-      (e) =>
-        present.includes(e.slug) &&
-        (fold(e.name).includes(q) || fold(e.slug.replaceAll("-", " ")).includes(q)),
-    );
+  const hiddenMatch = shown.length === 0 && lus.length > 0;
 
   function close(next: boolean) {
     onOpenChange(next);
     if (!next) {
       setPicked([]);
-      setQuery("");
-      setMuscle(ALL);
+      setSaisie("");
+      setGroupe(TOUS);
     }
   }
 
-  const toggle = (slug: string) =>
-    setPicked((p) => (p.includes(slug) ? p.filter((s) => s !== slug) : [...p, slug]));
+  const toggle = (e: ExerciceResume) =>
+    setPicked((p) =>
+      p.some((x) => x.slug === e.slug) ? p.filter((x) => x.slug !== e.slug) : [...p, e],
+    );
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -162,20 +148,20 @@ export function ExercisePicker({
               autoFocus
               aria-label="Rechercher un exercice"
               placeholder="développé, squat, bench press…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
             />
           </InputGroup>
-          <Select value={muscle} onValueChange={setMuscle}>
+          <Select value={groupe} onValueChange={(v) => setGroupe(v as Groupe | typeof TOUS)}>
             <SelectTrigger aria-label="Muscle" className="w-44">
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper">
               <SelectGroup>
-                <SelectItem value={ALL}>Tous les muscles</SelectItem>
-                {muscles.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
+                <SelectItem value={TOUS}>Tous les muscles</SelectItem>
+                {GROUPES.map((g) => (
+                  <SelectItem key={g} value={g}>
+                    {LIBELLE_GROUPE[g]}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -184,7 +170,20 @@ export function ExercisePicker({
         </div>
 
         <ScrollArea className="min-h-0 [&_[data-slot=scroll-area-viewport]>div]:block!">
-          {shown.length === 0 ? (
+          {catalogue.isPending ? (
+            <div className="grid gap-2 p-4 sm:grid-cols-2">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-19 rounded-xl" />
+              ))}
+            </div>
+          ) : catalogue.isError ? (
+            <Empty className="py-12">
+              <EmptyHeader>
+                <EmptyTitle>Le catalogue n'a pas pu se charger</EmptyTitle>
+                <EmptyDescription>{catalogue.error.message}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : shown.length === 0 ? (
             <Empty className="py-12">
               <EmptyHeader>
                 <EmptyTitle>
@@ -198,16 +197,28 @@ export function ExercisePicker({
               </EmptyHeader>
             </Empty>
           ) : (
-            <div className="grid gap-2 p-4 sm:grid-cols-2">
-              {shown.map((e) => (
-                <PickCard
-                  key={e.slug}
-                  exercise={e}
-                  rank={picked.indexOf(e.slug) + 1}
-                  disabled={full}
-                  onToggle={() => toggle(e.slug)}
-                />
-              ))}
+            <div className="flex flex-col gap-3 p-4">
+              <div className="grid gap-2 sm:grid-cols-2">
+                {shown.map((e) => (
+                  <PickCard
+                    key={e.slug}
+                    exercise={e}
+                    rank={picked.findIndex((x) => x.slug === e.slug) + 1}
+                    disabled={full}
+                    onToggle={() => toggle(e)}
+                  />
+                ))}
+              </div>
+              {catalogue.hasNextPage && (
+                <Button
+                  variant="outline"
+                  className="self-center"
+                  disabled={catalogue.isFetchingNextPage}
+                  onClick={() => void catalogue.fetchNextPage()}
+                >
+                  {catalogue.isFetchingNextPage ? "Chargement…" : "Afficher plus"}
+                </Button>
+              )}
             </div>
           )}
         </ScrollArea>

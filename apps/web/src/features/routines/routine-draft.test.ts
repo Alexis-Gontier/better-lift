@@ -1,263 +1,181 @@
+import { type Brouillon, type RoutineDetail, versBrouillon } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
-import type { MockRoutine } from "@/mocks/routines";
 import {
-  canLinkWithNext,
-  canSave,
-  chainsIntoNext,
   changeSummary,
   copyFirstToAll,
-  emptyDraft,
-  fromDraft,
   fromLastTime,
   isDirty,
-  linkWithNext,
-  normalizeSupersets,
   saveBlocker,
   setLabels,
   setsSummary,
-  toDraft,
-  unlink,
+  supersetLetter,
 } from "./routine-draft";
 
-const routine: MockRoutine = {
-  id: "1",
-  name: "Push",
-  folder: "Push Pull Legs",
-  lastDone: "2026-10-13",
-  exercises: [
-    { slug: "lever-chest-press", restSeconds: 150, sets: [{ kg: 80, reps: 10 }] },
-    { slug: "dumbbell-lateral-raise", restSeconds: 90, sets: [{ kg: null, reps: 12 }] },
+const routine: RoutineDetail = {
+  id: "r1",
+  nom: "Push",
+  note: null,
+  dossierId: "d1",
+  exercices: [
+    {
+      slug: "lever-chest-press",
+      nom: "Développé pectoraux à la machine",
+      image: null,
+      musclePrincipal: "Pectoraux",
+      musclesSecondaires: [],
+      reposSec: 150,
+      supersetGroupe: null,
+      series: [{ type: "NORMALE", repsCible: 10, chargeCibleKg: 80 }],
+    },
+    {
+      slug: "dumbbell-lateral-raise",
+      nom: "Élévations latérales",
+      image: null,
+      musclePrincipal: "Épaules",
+      musclesSecondaires: [],
+      reposSec: 90,
+      supersetGroupe: null,
+      series: [{ type: "NORMALE", repsCible: 12, chargeCibleKg: null }],
+    },
   ],
 };
 
-describe("brouillon de routine", () => {
-  it("revient à la routine d'origine, sans identifiant technique", () => {
-    expect(fromDraft(toDraft(routine), routine)).toEqual(routine);
-  });
+const saved = versBrouillon(routine, "metric");
+const serie = (
+  type: Brouillon["exercices"][number]["series"][number]["type"],
+  reps = "",
+  charge = "",
+) => ({
+  type,
+  reps,
+  charge,
+});
 
-  it("n'est pas modifié tant qu'on n'a rien changé", () => {
-    expect(isDirty(toDraft(routine), routine)).toBe(false);
-    expect(isDirty(emptyDraft, undefined)).toBe(false);
+describe("brouillon de routine", () => {
+  it("n'est pas modifié tant qu'on n'a rien changé, espaces du nom compris", () => {
+    expect(isDirty(saved, saved)).toBe(false);
+    expect(isDirty({ ...saved, nom: " Push " }, saved)).toBe(false);
   });
 
   it("est modifié dès qu'une série change", () => {
-    const draft = toDraft(routine);
-    const [first, ...rest] = draft.exercises;
+    const [first, ...rest] = saved.exercices;
     if (!first) throw new Error("exercice attendu");
     const changed = {
-      ...draft,
-      exercises: [{ ...first, sets: [{ kg: 82.5, reps: 10 }] }, ...rest],
+      ...saved,
+      exercices: [{ ...first, series: [serie("NORMALE", "10", "82,5")] }, ...rest],
     };
-    expect(isDirty(changed, routine)).toBe(true);
+    expect(isDirty(changed, saved)).toBe(true);
   });
 
-  it("ne compte pas les espaces autour du nom", () => {
-    expect(isDirty({ ...toDraft(routine), name: " Push " }, routine)).toBe(false);
-  });
-
-  it("ne voit pas un simple renumérotage des identifiants", () => {
-    const draft = toDraft(routine);
-    const renumbered = {
-      ...draft,
-      exercises: draft.exercises.map((e) => ({ ...e, uid: `x${e.uid}` })),
-    };
-    expect(isDirty(renumbered, routine)).toBe(false);
-  });
-
-  it("voit un réordonnancement", () => {
-    const draft = toDraft(routine);
-    expect(isDirty({ ...draft, exercises: [...draft.exercises].reverse() }, routine)).toBe(true);
-  });
-
-  it("exige un nom et un exercice pour enregistrer", () => {
-    expect(canSave(emptyDraft)).toBe(false);
-    expect(canSave({ ...toDraft(routine), name: "  " })).toBe(false);
-    expect(canSave({ ...toDraft(routine), exercises: [] })).toBe(false);
-    expect(canSave(toDraft(routine))).toBe(true);
+  it("dit pourquoi il ne s'enregistre pas : nom, exercice, puis saisie illisible", () => {
+    expect(saveBlocker({ ...saved, nom: " " })).toBe("Donnez-lui un nom");
+    expect(saveBlocker({ ...saved, exercices: [] })).toBe("Ajoutez au moins un exercice");
+    const [first, ...rest] = saved.exercices;
+    if (!first) throw new Error("exercice attendu");
+    expect(
+      saveBlocker({
+        ...saved,
+        exercices: [{ ...first, series: [serie("NORMALE", "dix")] }, ...rest],
+      }),
+    ).toBe("Vérifiez les charges et répétitions");
+    expect(saveBlocker(saved)).toBeNull();
   });
 });
 
-describe("supersets", () => {
-  const ex = (slug: string, superset?: string) => ({ slug, ...(superset ? { superset } : {}) });
-
-  it("lie un exercice au suivant", () => {
-    expect(linkWithNext([ex("a"), ex("b"), ex("c")], 0)).toEqual([
-      ex("a", "A"),
-      ex("b", "A"),
-      ex("c"),
-    ]);
+describe("étiquettes et supersets", () => {
+  it("numérote les séries normales entre elles, lettres pour les autres", () => {
+    expect(
+      setLabels([
+        serie("ECHAUFFEMENT"),
+        serie("NORMALE"),
+        serie("NORMALE"),
+        serie("DEGRESSIVE"),
+        serie("ECHEC"),
+      ]),
+    ).toEqual(["W", "1", "2", "D", "F"]);
   });
 
-  it("agrandit un superset existant et renomme dans l'ordre", () => {
-    const list = [ex("a"), ex("b"), ex("c", "A"), ex("d", "A")];
-    expect(linkWithNext(list, 1)).toEqual([ex("a"), ex("b", "A"), ex("c", "A"), ex("d", "A")]);
-    expect(linkWithNext(list, 0)).toEqual([ex("a", "A"), ex("b", "A"), ex("c", "B"), ex("d", "B")]);
-  });
-
-  it("fusionne deux supersets voisins", () => {
-    const list = [ex("a", "A"), ex("b", "A"), ex("c", "B"), ex("d", "B")];
-    expect(linkWithNext(list, 1).map((e) => e.superset)).toEqual(["A", "A", "A", "A"]);
-  });
-
-  it("ne lie pas le dernier", () => {
-    expect(canLinkWithNext([ex("a"), ex("b")], 1)).toBe(false);
-    expect(canLinkWithNext([ex("a", "A"), ex("b", "A")], 0)).toBe(false);
-  });
-
-  it("délier le milieu coupe le groupe ; un exercice seul perd sa lettre", () => {
-    const list = [ex("a", "A"), ex("b", "A"), ex("c", "A")];
-    expect(unlink(list, 1)).toEqual([ex("a"), ex("b"), ex("c")]);
-    expect(unlink([ex("a", "A"), ex("b", "A"), ex("c", "A"), ex("d", "A")], 0)).toEqual([
-      ex("a"),
-      ex("b", "A"),
-      ex("c", "A"),
-      ex("d", "A"),
-    ]);
-  });
-
-  it("un glisser qui sépare un groupe le défait", () => {
-    expect(normalizeSupersets([ex("a", "A"), ex("x"), ex("b", "A")])).toEqual([
-      ex("a"),
-      ex("x"),
-      ex("b"),
-    ]);
-  });
-
-  it("seul le dernier d'un superset garde son repos", () => {
-    const list = [ex("a", "A"), ex("b", "A"), ex("c")];
-    expect([0, 1, 2].map((i) => chainsIntoNext(list, i))).toEqual([true, false, false]);
-  });
-});
-
-describe("étiquettes des séries", () => {
-  it("numérote les séries normales entre elles", () => {
-    expect(setLabels([{ type: "warmup" }, {}, {}, { type: "drop" }])).toEqual(["W", "1", "2", "D"]);
-  });
-
-  it("marque une série à l'échec", () => {
-    expect(setLabels([{}, { type: "failure" }, {}])).toEqual(["1", "F", "2"]);
-  });
-});
-
-describe("raison d'un enregistrement impossible", () => {
-  it("demande un nom, puis un exercice", () => {
-    expect(saveBlocker(emptyDraft)).toBe("Donnez-lui un nom");
-    expect(saveBlocker({ ...emptyDraft, name: "Push" })).toBe("Ajoutez au moins un exercice");
-    expect(saveBlocker(toDraft(routine))).toBeNull();
+  it("donne la lettre du superset, A puis B dans l'ordre", () => {
+    const liste = [{ supersetGroupe: 3 }, { supersetGroupe: 3 }, { supersetGroupe: null }];
+    expect(supersetLetter(liste, 0)).toBe("A");
+    expect(supersetLetter(liste, 2)).toBeNull();
   });
 });
 
 describe("actions groupées sur les séries", () => {
   it("donne la première série normale aux autres, sans toucher aux séries typées", () => {
-    const sets = [
-      { kg: 20, reps: 15, type: "warmup" as const },
-      { kg: 80, reps: 10 },
-      { kg: 75, reps: 8 },
-      { kg: 60, reps: 12, type: "drop" as const },
-    ];
-    expect(copyFirstToAll(sets).map((s) => [s.kg, s.reps])).toEqual([
-      [20, 15],
-      [80, 10],
-      [80, 10],
-      [60, 12],
+    expect(
+      copyFirstToAll([
+        serie("ECHAUFFEMENT", "15", "20"),
+        serie("NORMALE", "8", "60"),
+        serie("NORMALE", "6", ""),
+        serie("ECHEC", "", ""),
+      ]),
+    ).toEqual([
+      serie("ECHAUFFEMENT", "15", "20"),
+      serie("NORMALE", "8", "60"),
+      serie("NORMALE", "8", "60"),
+      serie("ECHEC", "", ""),
     ]);
   });
 
   it("recopie la dernière séance rang par rang, puis la dernière série connue", () => {
-    const sets = [
-      { kg: 0, reps: 10 },
-      { kg: 0, reps: 10 },
-      { kg: 0, reps: 10 },
+    const precedentes = [
+      { reps: 10, chargeKg: 82.5, faite: true },
+      { reps: 8, chargeKg: null, faite: true },
     ];
-    const last = [
-      [80, 10],
-      [82.5, 8],
-    ] as const;
-    expect(fromLastTime(sets, last).map((s) => [s.kg, s.reps])).toEqual([
-      [80, 10],
-      [82.5, 8],
-      [82.5, 8],
+    expect(
+      fromLastTime([serie("NORMALE"), serie("NORMALE"), serie("NORMALE")], precedentes),
+    ).toEqual([
+      serie("NORMALE", "10", "82,5"),
+      serie("NORMALE", "8", ""),
+      serie("NORMALE", "8", ""),
     ]);
-    expect(fromLastTime(sets, undefined)).toEqual(sets);
+    expect(fromLastTime([serie("NORMALE", "5")], [])).toEqual([serie("NORMALE", "5")]);
   });
 });
 
 describe("résumé d'un exercice replié", () => {
-  it("résume des séries identiques", () => {
-    expect(
-      setsSummary([
-        { kg: 10, reps: 12 },
-        { kg: 10, reps: 12 },
-        { kg: 10, reps: 12 },
-      ]),
-    ).toBe("3 × 12 · 10 kg");
+  it("résume des séries identiques, puis des plages", () => {
+    expect(setsSummary([serie("NORMALE", "12", "10"), serie("NORMALE", "12", "10")])).toBe(
+      "2 × 12 · 10 kg",
+    );
+    expect(setsSummary([serie("NORMALE", "10", "8"), serie("NORMALE", "12", "10,5")])).toBe(
+      "2 × 10–12 · 8–10,5 kg",
+    );
   });
 
-  it("donne des plages quand les séries varient", () => {
-    expect(
-      setsSummary([
-        { kg: 8, reps: 10 },
-        { kg: 10, reps: 12 },
-        { kg: 82.5, reps: 12 },
-      ]),
-    ).toBe("3 × 10–12 · 8–82,5 kg");
-  });
-
-  it("met les échauffements devant et tolère une charge non notée", () => {
-    expect(
-      setsSummary([
-        { kg: 5, reps: 15, type: "warmup" },
-        { kg: null, reps: 10 },
-        { kg: null, reps: 10 },
-      ]),
-    ).toBe("1 W + 2 × 10");
-  });
-
-  it("résume des séries sans répétitions cibles, comme la base en contient", () => {
-    expect(
-      setsSummary([
-        { kg: null, reps: null },
-        { kg: null, reps: null },
-      ]),
-    ).toBe("2 séries");
-    expect(
-      setsSummary([
-        { kg: 20, reps: 12 },
-        { kg: 20, reps: null },
-      ]),
-    ).toBe("2 × 12 · 20 kg");
+  it("met les échauffements devant et tolère ce qui n'est pas noté", () => {
+    expect(setsSummary([serie("ECHAUFFEMENT", "15"), serie("NORMALE", "12")])).toBe("1 W + 1 × 12");
+    expect(setsSummary([serie("NORMALE"), serie("NORMALE")])).toBe("2 séries");
   });
 });
 
 describe("ce que le brouillon change", () => {
   it("ne compte rien sur une routine intacte", () => {
-    expect(changeSummary(toDraft(routine), routine).count).toBe(0);
+    expect(changeSummary(saved, saved).count).toBe(0);
   });
 
-  it("marque l'exercice modifié, l'ajouté, le retiré et le nom", () => {
-    const d = toDraft(routine);
-    const [first] = d.exercises;
-    if (!first) throw new Error("fixture");
-    const next = {
-      ...d,
-      name: "Push lourd",
-      exercises: [
-        { ...first, restSeconds: 120 },
-        { uid: "neuf", slug: "dips", restSeconds: 90, sets: [{ kg: null, reps: 10 }] },
-      ],
+  it("marque l'exercice modifié, l'ajouté, le retiré, le nom et le dossier", () => {
+    const [first] = saved.exercices;
+    if (!first) throw new Error("exercice attendu");
+    const ajoute = { ...first, cle: "nouvelle", slug: "pull-up" };
+    const draft: Brouillon = {
+      ...saved,
+      nom: "Push lourd",
+      dossierId: null,
+      exercices: [{ ...first, repos: "180" }, ajoute],
     };
-    const s = changeSummary(next, routine);
-    expect([...s.changed]).toEqual([first.uid]);
-    expect([...s.added]).toEqual(["neuf"]);
-    expect(s.removed).toBe(1);
-    expect(s.others).toBe(1);
-    expect(s.count).toBe(4);
+    const c = changeSummary(draft, saved);
+    expect(c.changed.has(first.cle)).toBe(true);
+    expect(c.added.has("nouvelle")).toBe(true);
+    expect(c.removed).toBe(1);
+    expect(c.others).toBe(2);
+    expect(c.count).toBe(5);
   });
 
   it("compte un nouvel ordre pour un seul changement", () => {
-    const d = toDraft(routine);
-    const s = changeSummary({ ...d, exercises: [...d.exercises].reverse() }, routine);
-    expect(s.changed.size).toBe(0);
-    expect(s.count).toBe(1);
+    const draft = { ...saved, exercices: [...saved.exercices].reverse() };
+    expect(changeSummary(draft, saved).count).toBe(1);
   });
 });

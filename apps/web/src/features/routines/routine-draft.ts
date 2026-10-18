@@ -1,183 +1,106 @@
-import { plural } from "@/lib/format";
 import {
-  FOLDERS,
-  type MockRoutine,
-  type MockRoutineExercise,
-  type SetType,
-} from "@/mocks/routines";
-
-/** Un exercice du brouillon porte un identifiant stable : le glisser-déposer en a besoin. */
-export type DraftExercise = MockRoutineExercise & { uid: string };
-export type Draft = { name: string; folder: string; notes: string; exercises: DraftExercise[] };
-
-export const emptyDraft: Draft = { name: "", folder: FOLDERS[0], notes: "", exercises: [] };
-
-export function toDraft(routine: MockRoutine | undefined): Draft {
-  if (!routine) return emptyDraft;
-  return {
-    name: routine.name,
-    folder: routine.folder,
-    notes: routine.notes ?? "",
-    exercises: routine.exercises.map((e, i) => ({
-      ...e,
-      uid: `${e.slug}-${i}`,
-      sets: e.sets.map((s) => ({ ...s })),
-    })),
-  };
-}
-
-/** La routine enregistrée à partir du brouillon ; ce qui n'est pas dans le brouillon est gardé. */
-export function fromDraft(draft: Draft, base: Pick<MockRoutine, "id" | "lastDone">): MockRoutine {
-  const notes = draft.notes.trim();
-  return {
-    ...base,
-    name: draft.name.trim(),
-    folder: draft.folder,
-    ...(notes ? { notes } : {}),
-    exercises: draft.exercises.map(({ uid: _uid, ...e }) => e),
-  };
-}
-
-/** Le contenu du brouillon, sans les identifiants techniques : deux brouillons égaux s'y lisent pareil. */
-function fingerprint(draft: Draft): string {
-  return JSON.stringify({
-    ...draft,
-    name: draft.name.trim(),
-    notes: draft.notes.trim(),
-    exercises: draft.exercises.map(({ uid: _uid, ...e }) => e),
-  });
-}
-
-/** Le brouillon diffère-t-il de la routine enregistrée (ou d'une routine vide) ? */
-export function isDirty(draft: Draft, routine: MockRoutine | undefined): boolean {
-  return fingerprint(draft) !== fingerprint(toDraft(routine));
-}
-
-/** Enregistrable : un nom et au moins un exercice. */
-export function canSave(draft: Draft): boolean {
-  return draft.name.trim() !== "" && draft.exercises.length > 0;
-}
-
-type Linkable = { superset?: string };
+  type Brouillon,
+  brouillonValide,
+  chargeEnTexte,
+  empreinte,
+  groupeDe,
+  lireCharge,
+  type SerieBrouillon,
+  type TypeSerie,
+} from "@better-lift/shared";
+import { plural } from "@/lib/format";
+import { SYSTEME } from "@/lib/locale";
 
 /**
- * Les supersets d'une liste d'exercices, remis d'aplomb : un superset est une suite CONTIGUË
- * d'exercices de même lettre. Un exercice seul perd sa lettre ; les groupes sont renommés A, B…
- * dans l'ordre. À appliquer après tout changement de structure (lier, délier, glisser, retirer).
+ * L'éditeur de routine du web travaille sur le `Brouillon` de `shared` (D85) : la copie de
+ * travail commune au mobile, charges et répétitions en texte, supersets et validation compris.
+ * Ce module ne garde que ce que l'éditeur du web montre à sa façon.
  */
-export function normalizeSupersets<T extends Linkable>(exercises: readonly T[]): T[] {
-  const runs: T[][] = [];
-  for (const e of exercises) {
-    const run = runs.at(-1);
-    if (e.superset && run?.[0]?.superset === e.superset) run.push(e);
-    else runs.push([e]);
-  }
-  let next = 0;
-  return runs.flatMap((run) => {
-    if (run.length < 2) return run.map(({ superset: _s, ...e }) => e as T);
-    const letter = String.fromCharCode(65 + next++);
-    return run.map((e) => ({ ...e, superset: letter }));
-  });
+
+/** Le brouillon diffère-t-il de la version enregistrée ? Les espaces autour du nom et de la note ne comptent pas. */
+export function isDirty(draft: Brouillon, saved: Brouillon): boolean {
+  const propre = (b: Brouillon) => ({ ...b, nom: b.nom.trim(), note: b.note?.trim() });
+  return empreinte(propre(draft)) !== empreinte(propre(saved));
 }
 
-/** Le dernier exercice (ou celui qui n'a pas de suivant) ne peut pas être lié. */
-export function canLinkWithNext(exercises: readonly Linkable[], i: number): boolean {
-  const e = exercises[i];
-  const next = exercises[i + 1];
-  return !!e && !!next && !(e.superset && e.superset === next.superset);
-}
-
-/** Lie l'exercice `i` au suivant : leurs groupes, s'ils en ont, fusionnent. */
-export function linkWithNext<T extends Linkable>(exercises: readonly T[], i: number): T[] {
-  if (!canLinkWithNext(exercises, i)) return [...exercises];
-  const a = exercises[i]?.superset;
-  const b = exercises[i + 1]?.superset;
-  // Une lettre provisoire, qu'aucun groupe n'a : la normalisation la renomme.
-  const letter = a ?? b ?? "~";
-  const merged = exercises.map((e, j) => {
-    const inA = a !== undefined && e.superset === a;
-    const inB = b !== undefined && e.superset === b;
-    return j === i || j === i + 1 || inA || inB ? { ...e, superset: letter } : e;
-  });
-  return normalizeSupersets(merged);
-}
-
-/** Sort l'exercice `i` de son superset ; le reste du groupe se recolle s'il reste contigu. */
-export function unlink<T extends Linkable>(exercises: readonly T[], i: number): T[] {
-  return normalizeSupersets(
-    exercises.map((e, j) => {
-      if (j !== i) return e;
-      const { superset: _s, ...rest } = e;
-      return rest as T;
-    }),
-  );
-}
-
-/** Le repos ne compte qu'après le dernier exercice d'un superset : les autres s'enchaînent. */
-export function chainsIntoNext(exercises: readonly Linkable[], i: number): boolean {
-  const e = exercises[i];
-  return !!e?.superset && exercises[i + 1]?.superset === e.superset;
+/** Pourquoi la routine ne s'enregistre pas encore, ou `null` si elle le peut (D252). */
+export function saveBlocker(draft: Brouillon): string | null {
+  if (draft.nom.trim() === "") return "Donnez-lui un nom";
+  if (draft.exercices.length === 0) return "Ajoutez au moins un exercice";
+  if (!brouillonValide(draft, SYSTEME)) return "Vérifiez les charges et répétitions";
+  return null;
 }
 
 /**
  * Les types de série, dans l'ordre du menu de Hevy ; `short` est l'étiquette de la ligne et
- * `tone` sa couleur (seule couleur du wireframe : elle porte un sens, D249).
+ * `tone` sa couleur (seule couleur de l'éditeur : elle porte un sens, D249).
  */
 export const SET_TYPES: readonly {
-  value: SetType | "normal";
+  value: TypeSerie;
   label: string;
   short: string;
   tone: string;
 }[] = [
-  { value: "warmup", label: "Échauffement", short: "W", tone: "text-amber-500" },
-  { value: "normal", label: "Normale", short: "", tone: "text-foreground" },
+  { value: "ECHAUFFEMENT", label: "Échauffement", short: "W", tone: "text-amber-500" },
+  { value: "NORMALE", label: "Normale", short: "", tone: "text-foreground" },
   // Rose plutôt que rouge : le rouge appartient au danger (D36, D252).
-  { value: "failure", label: "Échec", short: "F", tone: "text-rose-600" },
-  { value: "drop", label: "Dégressive", short: "D", tone: "text-sky-500" },
+  { value: "ECHEC", label: "Échec", short: "F", tone: "text-rose-600" },
+  { value: "DEGRESSIVE", label: "Dégressive", short: "D", tone: "text-sky-500" },
 ];
 
 /** La couleur de l'étiquette d'une série. */
-export function setTone(type: SetType | undefined): string {
-  return SET_TYPES.find((t) => t.value === (type ?? "normal"))?.tone ?? "text-foreground";
+export function setTone(type: TypeSerie): string {
+  return SET_TYPES.find((t) => t.value === type)?.tone ?? "text-foreground";
 }
 
 /**
  * L'étiquette de chaque série, comme dans Hevy : W, F ou D pour une série typée, et un numéro
  * pour les séries normales, comptées entre elles (W, 1, 2, D → W 1 2 D).
  */
-export function setLabels(sets: readonly { type?: SetType }[]): string[] {
+export function setLabels(series: readonly { type: TypeSerie }[]): string[] {
   let n = 0;
-  return sets.map((s) => {
-    if (!s.type) return String(++n);
-    return SET_TYPES.find((t) => t.value === s.type)?.short ?? "?";
-  });
+  return series.map((s) =>
+    s.type === "NORMALE" ? String(++n) : (SET_TYPES.find((t) => t.value === s.type)?.short ?? "?"),
+  );
 }
 
-/** Pourquoi la routine ne s'enregistre pas encore, ou `null` si elle le peut (D252). */
-export function saveBlocker(draft: Draft): string | null {
-  if (draft.name.trim() === "") return "Donnez-lui un nom";
-  if (draft.exercises.length === 0) return "Ajoutez au moins un exercice";
-  return null;
+/** La lettre du superset de l'exercice `i` (A, B…), ou `null` hors groupe. */
+export function supersetLetter(
+  exercices: readonly { supersetGroupe: number | null }[],
+  i: number,
+): string | null {
+  return groupeDe(exercices, i)?.lettre ?? null;
 }
-
-type PlannedSet = { kg: number | null; reps: number | null; type?: SetType };
 
 /** « Même charge partout » : la première série normale donne sa charge et ses répétitions aux autres séries normales. */
-export function copyFirstToAll<T extends PlannedSet>(sets: readonly T[]): T[] {
-  const first = sets.find((s) => !s.type);
-  if (!first) return [...sets];
-  return sets.map((s) => (s.type ? s : { ...s, kg: first.kg, reps: first.reps }));
+export function copyFirstToAll(series: readonly SerieBrouillon[]): SerieBrouillon[] {
+  const first = series.find((s) => s.type === "NORMALE");
+  if (!first) return [...series];
+  return series.map((s) =>
+    s.type === "NORMALE" ? { ...s, charge: first.charge, reps: first.reps } : s,
+  );
 }
 
-/** « Recopier la dernière fois » : chaque série reprend la série de même rang de la dernière séance, ou la dernière connue. */
-export function fromLastTime<T extends PlannedSet>(
-  sets: readonly T[],
-  last: readonly (readonly [number | null, number])[] | undefined,
-): T[] {
-  if (!last || last.length === 0) return [...sets];
-  return sets.map((s, i) => {
-    const [kg, reps] = last[i] ?? last.at(-1) ?? [s.kg, s.reps];
-    return { ...s, kg, reps };
+/** Une série de la dernière séance, telle que la rend `GET /seances/precedentes`. */
+export type SeriePrecedente = { reps: number | null; chargeKg: number | null; faite: boolean };
+
+/**
+ * « Recopier la dernière fois » : chaque série reprend la série de même rang de la dernière
+ * séance, ou la dernière connue au-delà.
+ */
+export function fromLastTime(
+  series: readonly SerieBrouillon[],
+  last: readonly SeriePrecedente[] | undefined,
+): SerieBrouillon[] {
+  if (!last || last.length === 0) return [...series];
+  return series.map((s, i) => {
+    const p = last[i] ?? last.at(-1);
+    if (!p) return s;
+    return {
+      ...s,
+      reps: p.reps === null ? "" : String(p.reps),
+      charge: p.chargeKg === null ? "" : chargeEnTexte(p.chargeKg, SYSTEME),
+    };
   });
 }
 
@@ -192,56 +115,54 @@ function range(values: readonly number[], format: (n: number) => string): string
  * Le résumé d'un exercice replié (D253) : « 3 × 12 · 10 kg », des plages quand les séries
  * varient (« 3 × 10–12 · 8–10 kg »), les échauffements devant (« 1 W + 3 × 12 »).
  */
-export function setsSummary(sets: readonly PlannedSet[]): string {
-  const warmups = sets.filter((s) => s.type === "warmup").length;
-  const working = sets.filter((s) => s.type !== "warmup");
+export function setsSummary(series: readonly SerieBrouillon[]): string {
+  const warmups = series.filter((s) => s.type === "ECHAUFFEMENT").length;
+  const working = series.filter((s) => s.type !== "ECHAUFFEMENT");
   if (working.length === 0) return warmups > 0 ? `${warmups} W` : "Aucune série";
-  // Comme en base, une cible peut manquer : on résume ce qui est noté, sans « — » inutile.
-  const repsNoted = working.flatMap((s) => (s.reps === null ? [] : [s.reps]));
-  const kgs = working.flatMap((s) => (s.kg === null ? [] : [s.kg]));
+  // Une cible peut manquer : on résume ce qui est noté, sans « — » inutile.
+  const reps = working.flatMap((s) => (/^\d+$/.test(s.reps.trim()) ? [Number(s.reps)] : []));
+  const kgs = working.flatMap((s) => {
+    const kg = lireCharge(s.charge, SYSTEME);
+    return kg === null || Number.isNaN(kg) ? [] : [kg];
+  });
   const count =
-    repsNoted.length === 0
+    reps.length === 0
       ? plural(working.length, "série")
-      : `${working.length} × ${range(repsNoted, String)}`;
+      : `${working.length} × ${range(reps, String)}`;
   const load = kgs.length === 0 ? "" : ` · ${range(kgs, (n) => String(n).replace(".", ","))} kg`;
   return `${warmups > 0 ? `${warmups} W + ` : ""}${count}${load}`;
 }
 
-/** Ce que le brouillon change à la routine enregistrée (D261) : de quoi marquer et compter. */
+/** Ce que le brouillon change à la version enregistrée (D261) : de quoi marquer et compter. */
 export type ChangeSummary = {
-  /** Exercices déjà là, dont un réglage a bougé. */
+  /** Exercices déjà là, dont un réglage a bougé (par clé). */
   changed: ReadonlySet<string>;
-  /** Exercices ajoutés depuis l'ouverture. */
+  /** Exercices ajoutés depuis l'ouverture (par clé). */
   added: ReadonlySet<string>;
   removed: number;
-  /** Le nom, le dossier, les notes, l'ordre : un changement chacun. */
+  /** Le nom, le dossier, la note, l'ordre : un changement chacun. */
   others: number;
   count: number;
 };
 
-export function changeSummary(draft: Draft, routine: MockRoutine | undefined): ChangeSummary {
-  const saved = toDraft(routine);
-  const before = new Map(saved.exercises.map((e) => [e.uid, JSON.stringify({ ...e, uid: "" })]));
+/** Les clés suivent les exercices : le brouillon et sa version enregistrée partagent les leurs. */
+export function changeSummary(draft: Brouillon, saved: Brouillon): ChangeSummary {
+  const sansCle = ({ cle: _cle, ...e }: Brouillon["exercices"][number]) => JSON.stringify(e);
+  const before = new Map(saved.exercices.map((e) => [e.cle, sansCle(e)]));
   const changed = new Set<string>();
   const added = new Set<string>();
-  for (const e of draft.exercises) {
-    const was = before.get(e.uid);
-    if (was === undefined) added.add(e.uid);
-    else if (was !== JSON.stringify({ ...e, uid: "" })) changed.add(e.uid);
+  for (const e of draft.exercices) {
+    const was = before.get(e.cle);
+    if (was === undefined) added.add(e.cle);
+    else if (was !== sansCle(e)) changed.add(e.cle);
   }
-  const kept = draft.exercises.filter((e) => before.has(e.uid)).map((e) => e.uid);
+  const kept = draft.exercices.filter((e) => before.has(e.cle)).map((e) => e.cle);
   const removed = before.size - kept.length;
-  const order = saved.exercises.map((e) => e.uid).filter((uid) => kept.includes(uid));
+  const order = saved.exercices.map((e) => e.cle).filter((c) => kept.includes(c));
   const others =
-    Number(draft.name.trim() !== saved.name.trim()) +
-    Number(draft.folder !== saved.folder) +
-    Number(draft.notes.trim() !== saved.notes.trim()) +
+    Number(draft.nom.trim() !== saved.nom.trim()) +
+    Number(draft.dossierId !== saved.dossierId) +
+    Number((draft.note ?? "").trim() !== (saved.note ?? "").trim()) +
     Number(kept.join() !== order.join());
-  return {
-    changed,
-    added,
-    removed,
-    others,
-    count: changed.size + added.size + removed + others,
-  };
+  return { changed, added, removed, others, count: changed.size + added.size + removed + others };
 }

@@ -18,8 +18,8 @@ import {
 export function useUnsavedGuard(
   dirty: boolean,
   what: string,
-  /** Enregistre avant de partir ; absent quand l'élément n'est pas enregistrable. */
-  save?: () => void,
+  /** Enregistre avant de partir, `false` en cas d'échec ; absent quand l'élément n'est pas enregistrable. */
+  save?: () => Promise<boolean>,
 ): { guard: ReactNode; release: () => void } {
   const blocking = useRef(dirty);
   blocking.current = dirty;
@@ -50,8 +50,9 @@ export function useUnsavedGuard(
           </AlertDialogAction>
           {save && (
             <AlertDialogAction
-              onClick={() => {
-                save();
+              onClick={async () => {
+                // Un enregistrement refusé garde la page : les modifications ne se perdent pas.
+                if (!(await save())) return blocker.reset?.();
                 blocking.current = false;
                 blocker.proceed?.();
               }}

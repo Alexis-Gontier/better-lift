@@ -9,8 +9,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { formatShortDay } from "@/lib/format";
-import { useRoutines } from "@/mocks/routine-store";
-import type { MockRoutine } from "@/mocks/routines";
 import { mockSessions } from "@/mocks/sessions";
 import { useCrumbLabels } from "./crumb-label";
 
@@ -20,14 +18,7 @@ type Params = { id?: string; slug?: string };
  * Le libellé d'une page de détail est son nom (« Push A ») plutôt que « Détail ».
  * Lu dans les données factices ; il viendra de l'API au branchement.
  */
-function detailLabel(
-  routeId: string,
-  params: Params,
-  fallback: string,
-  routines: MockRoutine[],
-): string {
-  if (routeId.endsWith("/routines/$id") && params.id)
-    return routines.find((r) => r.id === params.id)?.name ?? fallback;
+function detailLabel(routeId: string, params: Params, fallback: string): string {
   if (routeId.endsWith("/history/$id") && params.id) {
     const s = mockSessions.find((x) => x.id === params.id);
     return s ? `${s.routine} · ${formatShortDay(s.date)}` : fallback;
@@ -36,8 +27,6 @@ function detailLabel(
 }
 
 export function AppBreadcrumb() {
-  // Lue dans le magasin : une routine renommée change aussitôt de libellé.
-  const routines = useRoutines();
   const poses = useCrumbLabels();
   const crumbs = useMatches()
     .filter((m) => m.staticData.crumb)
@@ -45,8 +34,7 @@ export function AppBreadcrumb() {
       id: m.id,
       // Posé par la page elle-même quand elle lit l'API (`useCrumbLabel`).
       label:
-        poses.get(m.id) ??
-        detailLabel(m.routeId, m.params as Params, m.staticData.crumb as string, routines),
+        poses.get(m.id) ?? detailLabel(m.routeId, m.params as Params, m.staticData.crumb as string),
       pathname: m.pathname,
     }));
 

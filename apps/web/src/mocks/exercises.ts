@@ -13,7 +13,7 @@ export type MockExercise = {
  * Les exercices réellement utilisés (routines de prod et export Hevy), tels que le catalogue
  * de prod les nomme : slug, nom français, muscle visé, équipement, muscles secondaires.
  */
-export const mockExercises: MockExercise[] = [
+const mockExercises: MockExercise[] = [
   {
     slug: "lever-seated-fly",
     name: "Écarté assis à la machine",

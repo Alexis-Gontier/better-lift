@@ -1,3 +1,4 @@
+import type { Brouillon, SeanceResume } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
 import { BodyMap } from "@/components/body-map";
 import { SummaryCard, type SummaryRow } from "@/components/summary-card";
@@ -12,84 +13,116 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDaysAgo, formatDelta, formatKg, formatMinutes, plural } from "@/lib/format";
+import { joursDepuis } from "@/lib/locale";
 import { cn } from "@/lib/utils";
-import { exerciseBySlug } from "@/mocks/exercises";
-import { sessionDetail } from "@/mocks/history";
-import { routineRuns, strengthTrend } from "@/mocks/routine-history";
-import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
-import { useFolders } from "@/mocks/routine-store";
-import type { MockRoutine } from "@/mocks/routines";
-import { useSessions } from "@/mocks/session-store";
-import { addDays } from "@/mocks/stats";
-import { TODAY } from "@/mocks/today";
-import type { Draft } from "./routine-draft";
+import type { InfoExercice } from "./infos";
 import { filled } from "./routine-editor";
+import { minutesEstimees, musclesRoutine, seriesPrevues, statsRoutine, volumePrevu } from "./stats";
 
 const NO_FOLDER = "__sans-dossier";
+/** La fenêtre des stats d'une routine (D280). */
+const JOURS_STATS = 91;
+
+const nbSeries = (b: Brouillon) => b.exercices.reduce((n, e) => n + e.series.length, 0);
 
 /**
  * La routine en bref (D265), une ligne par chiffre : ils suivent la saisie et montrent leur
  * écart avec la version enregistrée. Le volume prévu n'apparaît qu'avec des charges notées ;
  * « Dernière fois » ouvre la séance.
  */
-function Summary({ routine, saved }: { routine: MockRoutine; saved?: MockRoutine }) {
-  const sessions = useSessions();
-  const sets = (r: MockRoutine) => r.exercises.reduce((n, e) => n + e.sets.length, 0);
-  const warmups = routine.exercises.reduce(
-    (n, e) => n + e.sets.filter((s) => s.type === "warmup").length,
+function Summary({
+  draft,
+  saved,
+  derniere,
+}: {
+  draft: Brouillon;
+  saved?: Brouillon;
+  derniere?: SeanceResume;
+}) {
+  const warmups = draft.exercices.reduce(
+    (n, e) => n + e.series.filter((s) => s.type === "ECHAUFFEMENT").length,
     0,
   );
   const delta = (now: number, was: number | undefined, unit = "") =>
     was !== undefined && Math.round(was) !== Math.round(now)
       ? `${formatDelta(now, was)}${unit}`
       : undefined;
-  const minutes = estimateMinutes(routine.exercises);
-  const volume = plannedVolume(routine.exercises);
-  const last = sessions.find((s) => s.routine === routine.name && s.date === routine.lastDone);
+  const minutes = minutesEstimees(draft);
+  const volume = volumePrevu(draft);
   const rows: SummaryRow[] = [
     {
       label: "Durée estimée",
       value: `~${formatMinutes(minutes)}`,
-      delta: delta(minutes, saved && estimateMinutes(saved.exercises), " min"),
+      delta: delta(minutes, saved && minutesEstimees(saved), " min"),
     },
     {
       label: "Exercices",
-      value: String(routine.exercises.length),
-      delta: delta(routine.exercises.length, saved?.exercises.length),
+      value: String(draft.exercices.length),
+      delta: delta(draft.exercices.length, saved?.exercices.length),
     },
     {
       label: "Séries",
-      value: String(sets(routine)),
-      delta: delta(sets(routine), saved && sets(saved)),
+      value: String(nbSeries(draft)),
+      delta: delta(nbSeries(draft), saved && nbSeries(saved)),
       hint: warmups > 0 ? `dont ${plural(warmups, "échauffement")}` : undefined,
     },
-    // En base, aucune charge cible n'est notée (D262) : sans charge, pas de ligne.
+    // Sans charge cible notée, pas de ligne.
     ...(volume > 0
       ? [
           {
             label: "Volume prévu",
             value: formatKg(volume),
-            delta: delta(volume, saved && plannedVolume(saved.exercises), " kg"),
+            delta: delta(volume, saved && volumePrevu(saved), " kg"),
           },
         ]
       : []),
     {
       label: "Dernière fois",
-      value: last ? (
-        <Link to="/history/$id" params={{ id: last.id }} className="hover:underline">
-          {formatDaysAgo(daysSince(last.date, TODAY))}
+      value: derniere ? (
+        <Link to="/history/$id" params={{ id: derniere.id }} className="hover:underline">
+          {formatDaysAgo(joursDepuis(derniere.debut))}
         </Link>
       ) : (
-        formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)
+        formatDaysAgo(null)
       ),
     },
   ];
   return <SummaryCard title="En bref" rows={rows} />;
 }
 
+/**
+ * La routine dans le temps, en bref (D280, D311) : séances, volume moyen et sa tendance, durée,
+ * records et réalisation sur trois mois.
+ */
+function RoutineStats({ saved, seances }: { saved: Brouillon; seances: SeanceResume[] }) {
+  const depuis = new Date(Date.now() - JOURS_STATS * 86_400_000).toISOString();
+  const s = statsRoutine(seriesPrevues(saved), seances, depuis);
+  if (!s) return null;
+  const rows: SummaryRow[] = [
+    { label: "Séances sur 3 mois", value: String(s.nb) },
+    {
+      label: "Volume moyen",
+      value: formatKg(Math.round(s.volumeMoyen)),
+      delta:
+        s.tendanceVolume === null
+          ? undefined
+          : `${s.tendanceVolume > 0 ? "+" : s.tendanceVolume < 0 ? "−" : "±"}${Math.abs(Math.round(s.tendanceVolume))} %`,
+    },
+    { label: "Durée moyenne", value: formatMinutes(Math.round(s.dureeMoyenneMin)) },
+    { label: "Records battus", value: String(s.records) },
+    { label: "Réalisation", value: `${Math.round(s.realisation * 100)} %` },
+  ];
+  return <SummaryCard title="Stats" rows={rows} />;
+}
+
 /** Ce que la routine fait travailler : la silhouette seule, en petit (D255). */
-function Muscles({ routine }: { routine: MockRoutine }) {
-  const { primary, secondary } = bodyMuscles(routine.exercises, exerciseBySlug);
+function Muscles({ draft, infos }: { draft: Brouillon; infos: ReadonlyMap<string, InfoExercice> }) {
+  const { primary, secondary } = musclesRoutine(
+    draft.exercices.flatMap((e) => {
+      const info = infos.get(e.slug);
+      return info ? [info] : [];
+    }),
+  );
   if (primary.length === 0)
     return (
       <p className="text-muted-foreground text-sm">
@@ -105,66 +138,38 @@ function Muscles({ routine }: { routine: MockRoutine }) {
 }
 
 /**
- * La routine dans le temps, en bref (D280) : séances, volume moyen et sa tendance, records et
- * réalisation sur trois mois.
- */
-function RoutineStats({ routine }: { routine: MockRoutine }) {
-  const from = addDays(TODAY, -91);
-  const details = useSessions()
-    .filter((s) => s.date >= from)
-    .map(sessionDetail);
-  const runs = routineRuns(routine, details);
-  if (runs.length === 0) return null;
-  const avg = (f: (r: (typeof runs)[number]) => number) =>
-    runs.reduce((n, r) => n + f(r), 0) / runs.length;
-  const trend = strengthTrend(runs.map((r) => ({ date: r.date, value: r.volume })));
-  const rows: SummaryRow[] = [
-    { label: "Séances sur 3 mois", value: String(runs.length) },
-    {
-      label: "Volume moyen",
-      value: formatKg(Math.round(avg((r) => r.volume))),
-      delta: trend
-        ? `${trend.change > 0 ? "+" : trend.change < 0 ? "−" : "±"}${Math.abs(Math.round(trend.change))} %`
-        : undefined,
-    },
-    { label: "Durée moyenne", value: formatMinutes(Math.round(avg((r) => r.minutes))) },
-    { label: "Records battus", value: String(runs.reduce((n, r) => n + r.records, 0)) },
-    { label: "Réalisation", value: `${Math.round(avg((r) => r.completion) * 100)} %` },
-  ];
-  return <SummaryCard title="Stats" rows={rows} />;
-}
-
-/**
- * La colonne de droite de l'éditeur (D253, D254), une carte par sujet : les chiffres, les
- * muscles travaillés, puis les réglages — dossier et notes —, qui ne pèsent plus en tête.
+ * La colonne de droite de l'éditeur (D253, D254), une carte par sujet : les chiffres, les stats,
+ * les muscles travaillés, puis les réglages — dossier et note —, qui ne pèsent plus en tête.
  */
 export function RoutineOverview({
-  routine,
-  saved,
-  stats,
   draft,
+  saved,
+  seances,
+  infos,
+  dossiers,
   onChange,
 }: {
   /** La routine telle que saisie : les chiffres suivent la saisie. */
-  routine: MockRoutine;
-  /** La version enregistrée : chaque chiffre montre son écart avec elle. */
-  saved?: MockRoutine;
-  /** La routine enregistrée, pour ses stats (D280) ; absente à la création. */
-  stats?: MockRoutine;
-  draft: Draft;
-  onChange: (update: (d: Draft) => Draft) => void;
+  draft: Brouillon;
+  /** La version enregistrée : chaque chiffre montre son écart avec elle ; absente à la création. */
+  saved?: Brouillon;
+  /** Les séances de la routine, la plus récente d'abord (D311) ; absentes à la création. */
+  seances?: SeanceResume[];
+  infos: ReadonlyMap<string, InfoExercice>;
+  dossiers: readonly { id: string; nom: string }[];
+  onChange: (update: (d: Brouillon) => Brouillon) => void;
 }) {
-  const folders = useFolders();
+  const dossier = draft.dossierId ?? null;
   return (
     <>
-      <Summary routine={routine} saved={saved} />
-      {stats && <RoutineStats routine={stats} />}
+      <Summary draft={draft} saved={saved} derniere={seances?.[0]} />
+      {saved && seances && <RoutineStats saved={saved} seances={seances} />}
       <Card size="sm">
         <CardHeader>
           <CardTitle>Muscles travaillés</CardTitle>
         </CardHeader>
         <CardContent>
-          <Muscles routine={routine} />
+          <Muscles draft={draft} infos={infos} />
         </CardContent>
       </Card>
       <Card size="sm">
@@ -174,17 +179,19 @@ export function RoutineOverview({
         <CardContent className="flex flex-col gap-3">
           {/* Radix refuse une valeur vide : « Sans dossier » passe par une clé. */}
           <Select
-            value={folders.includes(draft.folder) ? draft.folder : NO_FOLDER}
-            onValueChange={(v) => onChange((d) => ({ ...d, folder: v === NO_FOLDER ? "" : v }))}
+            value={dossier && dossiers.some((d) => d.id === dossier) ? dossier : NO_FOLDER}
+            onValueChange={(v) =>
+              onChange((d) => ({ ...d, dossierId: v === NO_FOLDER ? null : v }))
+            }
           >
             <SelectTrigger aria-label="Dossier" className={cn("w-full", filled)}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {folders.map((f) => (
-                  <SelectItem key={f} value={f}>
-                    {f}
+                {dossiers.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.nom}
                   </SelectItem>
                 ))}
                 <SelectItem value={NO_FOLDER}>Sans dossier</SelectItem>
@@ -194,9 +201,10 @@ export function RoutineOverview({
           <Textarea
             aria-label="Notes de la routine"
             placeholder="Notes : échauffement, consignes…"
+            maxLength={1000}
             className={cn("min-h-20", filled)}
-            value={draft.notes}
-            onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value }))}
+            value={draft.note ?? ""}
+            onChange={(e) => onChange((d) => ({ ...d, note: e.target.value }))}
           />
         </CardContent>
       </Card>

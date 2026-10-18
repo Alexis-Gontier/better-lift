@@ -1,10 +1,22 @@
+import {
+  type Brouillon,
+  type RoutineDetail,
+  type SeanceResume,
+  versBrouillon,
+  versSaisie,
+} from "@better-lift/shared";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { DetailColumns } from "@/components/detail-columns";
+import { DetailColumns, DetailColumnsSkeleton } from "@/components/detail-columns";
 import { useEditable } from "@/components/editable";
-import { DetailHeader } from "@/components/list-detail";
+import { DetailEmpty, DetailHeader } from "@/components/list-detail";
+import { useCrumbLabel } from "@/components/shell/crumb-label";
+import { etatAffiche } from "@/components/states/etat";
+import { StateError } from "@/components/states/state-error";
+import { useEtat } from "@/components/states/use-etat";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,51 +36,72 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUnsavedGuard } from "@/components/unsaved-guard";
+import { ErreurApi } from "@/lib/api";
+import { SYSTEME } from "@/lib/locale";
+import { nomBrouillon } from "./ecran";
+import { type InfoExercice, useInfosExercices } from "./infos";
 import {
-  deleteRoutine,
-  newRoutineId,
-  peekNextRoutineFolder,
-  saveRoutine,
-  setDraftName,
-  setNextRoutineFolder,
-} from "@/mocks/routine-store";
-import type { MockRoutine } from "@/mocks/routines";
-import {
-  changeSummary,
-  type Draft,
-  fromDraft,
-  isDirty,
-  saveBlocker,
-  toDraft,
-} from "./routine-draft";
+  precedentesQuery,
+  routineQuery,
+  routinesQuery,
+  seancesRoutineQuery,
+  useCreerRoutine,
+  useEnregistrerRoutine,
+  useSupprimerRoutine,
+} from "./queries";
+import { changeSummary, isDirty, saveBlocker } from "./routine-draft";
 import { RoutineFields, RoutineNameInput } from "./routine-editor";
 import { RoutineOverview } from "./routine-overview";
 
+const echec = (e: unknown) => toast.error(e instanceof Error ? e.message : "L'action a échoué.");
+
+/** Les muscles connus par le détail de la routine ; les exercices ajoutés se lisent à part. */
+const infosDuDetail = (detail: RoutineDetail | undefined): ReadonlyMap<string, InfoExercice> =>
+  new Map(
+    (detail?.exercices ?? []).map((e) => [
+      e.slug,
+      { musclePrincipal: e.musclePrincipal, musclesSecondaires: e.musclesSecondaires },
+    ]),
+  );
+
+/** Les slugs du brouillon, triés et sans doublon : la clé de « Dernière fois ». */
+const slugsDe = (b: Brouillon) => [...new Set(b.exercices.map((e) => e.slug))].sort();
+
 /** Le menu ⋯ de la routine : ce qui ne se modifie pas champ par champ. */
-function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () => void }) {
+function RoutineMenu({
+  id,
+  saved,
+  release,
+}: {
+  id: string;
+  saved: Brouillon;
+  release?: () => void;
+}) {
   const navigate = useNavigate();
   const [confirming, setConfirming] = useState(false);
+  const creer = useCreerRoutine();
+  const supprimer = useSupprimerRoutine();
+  const nom = saved.nom.trim();
 
   function duplicate() {
-    const copy = {
-      ...routine,
-      id: newRoutineId(),
-      name: `${routine.name} (copie)`,
-      lastDone: null,
-    };
-    saveRoutine(copy);
-    release?.();
-    navigate({ to: "/routines/$id", params: { id: copy.id }, search: true });
-    toast.success(`« ${copy.name} » créée`);
+    const copie = `${nom} (copie)`.slice(0, 120);
+    creer.mutate(
+      { ...versSaisie(saved, SYSTEME), nom: copie },
+      {
+        onSuccess: (nouvelle) => {
+          release?.();
+          navigate({ to: "/routines/$id", params: { id: nouvelle }, search: true });
+          toast.success(`« ${copie} » créée`);
+        },
+        onError: echec,
+      },
+    );
   }
 
   function remove() {
-    deleteRoutine(routine.id);
     release?.();
     navigate({ to: "/routines", search: true });
-    toast(`« ${routine.name} » supprimée`, {
-      action: { label: "Annuler", onClick: () => saveRoutine(routine) },
-    });
+    supprimer(id, `« ${nom} » supprimée`);
   }
 
   return (
@@ -80,7 +113,9 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onSelect={duplicate}>Dupliquer</DropdownMenuItem>
+          <DropdownMenuItem disabled={creer.isPending} onSelect={duplicate}>
+            Dupliquer
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
             Supprimer
@@ -90,7 +125,7 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer « {routine.name} » ?</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer « {nom} » ?</AlertDialogTitle>
             <AlertDialogDescription>
               Les séances déjà faites restent dans l'historique.
             </AlertDialogDescription>
@@ -108,28 +143,92 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
 }
 
 /**
+ * La routine ouverte (D235) : ses requêtes et ses quatre états, puis l'éditeur. Une routine
+ * d'autrui ou supprimée est introuvable (404).
+ */
+export function RoutinePane({ id }: { id: string }) {
+  const force = useEtat();
+  const routine = useQuery(routineQuery(id));
+  const seances = useQuery(seancesRoutineQuery(id));
+  const liste = useQuery(routinesQuery());
+
+  if (routine.error instanceof ErreurApi && routine.error.statut === 404)
+    return (
+      <DetailEmpty
+        title="Cette routine n'existe pas"
+        description="Elle a peut-être été supprimée."
+      />
+    );
+  const etat = etatAffiche(force, routine, false);
+  if (etat === "erreur")
+    return (
+      <StateError
+        title="La routine n'a pas pu se charger"
+        reessayer={() => void routine.refetch()}
+      />
+    );
+  if (etat === "chargement" || !routine.data) return <DetailColumnsSkeleton />;
+  if (etat === "vide")
+    return (
+      <DetailEmpty
+        title="Cette routine n'existe pas"
+        description="Elle a peut-être été supprimée."
+      />
+    );
+  return (
+    <RoutineEditorPane
+      key={id}
+      detail={routine.data}
+      seances={seances.data}
+      dossiers={liste.data?.dossiers ?? []}
+    />
+  );
+}
+
+/**
  * La routine ouverte, toujours modifiable (D243, D250) : le détail EST l'éditeur ; le nom se
  * modifie dans la tête, le dossier et les chiffres dessous. Modifiée (D261), la tête montre
  * l'historique, le nombre de modifications, « Tout annuler » et « Enregistrer » ; les cartes
  * touchées portent « Modifié » ou « Nouveau », les chiffres leur écart.
  */
-export function RoutinePane({ routine }: { routine: MockRoutine }) {
-  const edit = useEditable<Draft>({
-    initial: () => toDraft(routine),
-    isDirty: (d) => isDirty(d, routine),
-    count: (d) => changeSummary(d, routine).count,
+function RoutineEditorPane({
+  detail,
+  seances,
+  dossiers,
+}: {
+  detail: RoutineDetail;
+  seances?: SeanceResume[];
+  dossiers: readonly { id: string; nom: string }[];
+}) {
+  // La version enregistrée : ses clés sont celles du brouillon, qui en part. Après un
+  // enregistrement réussi, le brouillon devient la nouvelle référence.
+  const [saved, setSaved] = useState(() => versBrouillon(detail, SYSTEME));
+  const enregistrer = useEnregistrerRoutine(detail.id);
+  const edit = useEditable<Brouillon>({
+    initial: () => saved,
+    isDirty: (d) => isDirty(d, saved),
+    count: (d) => changeSummary(d, saved).count,
     blocker: saveBlocker,
-    onSave: (d) => saveRoutine(fromDraft(d, routine)),
+    onSave: async (d) => {
+      await enregistrer.mutateAsync(versSaisie(d, SYSTEME));
+      setSaved(d);
+    },
     what: "cette routine",
     savedMessage: "Routine enregistrée",
   });
   const { draft, setDraft } = edit;
+  useCrumbLabel(saved.nom.trim() || undefined);
+  const infos = useInfosExercices(
+    draft.exercices.map((e) => e.slug),
+    infosDuDetail(detail),
+  );
+  const precedentes = useQuery(precedentesQuery(slugsDe(draft))).data;
 
   return (
     <>
       <DetailHeader
         title={<RoutineNameInput draft={draft} onChange={setDraft} />}
-        actions={edit.actions(<RoutineMenu routine={routine} release={edit.release} />)}
+        actions={edit.actions(<RoutineMenu id={detail.id} saved={saved} release={edit.release} />)}
       />
       <DetailColumns
         id="routine-editeur"
@@ -137,15 +236,18 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
           <RoutineFields
             draft={draft}
             onChange={setDraft}
-            changes={changeSummary(draft, routine)}
+            changes={changeSummary(draft, saved)}
+            infos={infos}
+            precedentes={precedentes}
           />
         }
         aside={
           <RoutineOverview
-            routine={fromDraft(draft, routine)}
-            saved={edit.dirty ? routine : undefined}
-            stats={routine}
             draft={draft}
+            saved={edit.dirty ? saved : undefined}
+            seances={seances}
+            infos={infos}
+            dossiers={dossiers}
             onChange={setDraft}
           />
         }
@@ -157,27 +259,36 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
 
 /**
  * Création (D238) : le même éditeur, vide, le curseur dans le nom. Rien n'est créé avant
- * *Créer* : il faut un nom et au moins un exercice.
+ * *Créer* : il faut un nom et au moins un exercice. `dossier` : « Nouvelle routine ici ».
  */
-export function RoutinePaneNew() {
+export function RoutinePaneNew({ dossier }: { dossier?: string }) {
   const navigate = useNavigate();
-  // « Nouvelle routine ici » : la routine naît dans ce dossier ; on l'oublie une fois lu.
-  const [draft, setDraft] = useState<Draft>(() => {
-    const empty = toDraft(undefined);
-    return { ...empty, folder: peekNextRoutineFolder() ?? empty.folder };
-  });
-  useEffect(() => () => setNextRoutineFolder(null), []);
-  const base = { id: "nouvelle", lastDone: null };
-  const { guard, release } = useUnsavedGuard(isDirty(draft, undefined), "cette routine");
-  useEffect(() => setDraftName(draft.name), [draft.name]);
-  useEffect(() => () => setDraftName(""), []);
+  const [vide] = useState<Brouillon>(() => ({
+    ...versBrouillon(null, SYSTEME),
+    dossierId: dossier ?? null,
+  }));
+  const [draft, setDraft] = useState<Brouillon>(vide);
+  const creer = useCreerRoutine();
+  const liste = useQuery(routinesQuery());
+  const infos = useInfosExercices(
+    draft.exercices.map((e) => e.slug),
+    new Map(),
+  );
+  const precedentes = useQuery(precedentesQuery(slugsDe(draft))).data;
+  const { guard, release } = useUnsavedGuard(isDirty(draft, vide), "cette routine");
+  useEffect(() => nomBrouillon.set(draft.nom), [draft.nom]);
+  useEffect(() => () => nomBrouillon.set(""), []);
+  const blocker = saveBlocker(draft);
 
   function create() {
-    const routine = fromDraft(draft, { id: newRoutineId(), lastDone: null });
-    saveRoutine(routine);
-    release();
-    navigate({ to: "/routines/$id", params: { id: routine.id }, search: true });
-    toast.success(`« ${routine.name} » créée`);
+    creer.mutate(versSaisie(draft, SYSTEME), {
+      onSuccess: (id) => {
+        release();
+        navigate({ to: "/routines/$id", params: { id }, search: true });
+        toast.success(`« ${draft.nom.trim()} » créée`);
+      },
+      onError: echec,
+    });
   }
 
   return (
@@ -193,27 +304,39 @@ export function RoutinePaneNew() {
             >
               Annuler
             </Button>
-            {saveBlocker(draft) && (
+            {blocker && (
               <span className="text-muted-foreground text-sm" id="routine-manque">
-                {saveBlocker(draft)}
+                {blocker}
               </span>
             )}
             <Button
               size="sm"
-              disabled={saveBlocker(draft) !== null}
+              disabled={blocker !== null || creer.isPending}
               aria-describedby="routine-manque"
               onClick={create}
             >
-              Créer
+              {creer.isPending ? "Création…" : "Créer"}
             </Button>
           </>
         }
       />
       <DetailColumns
         id="routine-editeur"
-        main={<RoutineFields draft={draft} onChange={setDraft} />}
+        main={
+          <RoutineFields
+            draft={draft}
+            onChange={setDraft}
+            infos={infos}
+            precedentes={precedentes}
+          />
+        }
         aside={
-          <RoutineOverview routine={fromDraft(draft, base)} draft={draft} onChange={setDraft} />
+          <RoutineOverview
+            draft={draft}
+            infos={infos}
+            dossiers={liste.data?.dossiers ?? []}
+            onChange={setDraft}
+          />
         }
       />
       {guard}

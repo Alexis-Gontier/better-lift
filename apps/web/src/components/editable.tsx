@@ -84,7 +84,8 @@ type Options<T> = {
   count: (draft: T) => number;
   /** Ce qui empêche d'enregistrer, dit à la place du compte (D252). */
   blocker?: (draft: T) => string | null;
-  onSave: (draft: T) => void;
+  /** L'écriture ; une promesse rejetée garde le brouillon et dit l'échec. */
+  onSave: (draft: T) => void | Promise<void>;
   /** « cette routine », « cette séance » : pour la fenêtre de sortie. */
   what: string;
   /** Le toast d'un enregistrement réussi. */
@@ -102,10 +103,16 @@ export function useEditable<T>(o: Options<T>) {
   const dirty = o.isDirty(draft);
   const blocker = o.blocker?.(draft) ?? null;
   const count = o.count(draft);
-  const save = () => {
-    if (!dirty || blocker) return;
-    o.onSave(draft);
-    toast.success(o.savedMessage, { id: "element-enregistre" });
+  const save = async (): Promise<boolean> => {
+    if (!dirty || blocker) return false;
+    try {
+      await o.onSave(draft);
+      toast.success(o.savedMessage, { id: "element-enregistre" });
+      return true;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "L'enregistrement a échoué.");
+      return false;
+    }
   };
   const { guard, release } = useUnsavedGuard(dirty, o.what, blocker ? undefined : save);
   useEditorKeys({ undo: history.undo, redo: history.redo, save });

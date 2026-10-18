@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ListChecks, Plus } from "lucide-react";
 import { DetailPlaceholder } from "@/components/list-detail";
+import { useEtat } from "@/components/states/use-etat";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -10,15 +12,17 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { useRoutines } from "@/mocks/routine-store";
+import { routinesQuery } from "./queries";
 
 /**
  * `/routines` sans routine ouverte (D260) : un état vide franc, qui dit quoi faire et porte la
  * création. Sans aucune routine, la première création prend le relais.
  */
 export function RoutinesHome() {
-  // Toutes supprimées : la première création reprend la main, comme à l'état vide.
-  if (useRoutines().length === 0) return <RoutinesOnboarding />;
+  const force = useEtat();
+  const liste = useQuery(routinesQuery());
+  // Aucune routine (ou toutes supprimées) : la première création reprend la main.
+  if (force === "vide" || liste.data?.routines.length === 0) return <RoutinesOnboarding />;
   return (
     <DetailPlaceholder
       title="Aucune routine ouverte"

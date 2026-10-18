@@ -1,3 +1,4 @@
+import { normaliserRecherche, type RoutineResume } from "@better-lift/shared";
 import {
   DndContext,
   type DragEndEvent,
@@ -8,10 +9,14 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronRight, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { etatAffiche } from "@/components/states/etat";
+import { StateError } from "@/components/states/state-error";
+import { useEtat } from "@/components/states/use-etat";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,50 +30,52 @@ import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { exerciseBySlug } from "@/mocks/exercises";
+import { dossierRenomme } from "./ecran";
 import {
-  deleteFolder,
-  groupByFolder,
-  moveRoutine,
-  renameFolder,
-  setNextRoutineFolder,
-  setRenamingFolder,
-  useFolders,
-  useRenamingFolder,
-} from "@/mocks/routine-store";
-import type { MockRoutine } from "@/mocks/routines";
+  routinesQuery,
+  useDeplacerRoutine,
+  useRenommerDossier,
+  useSupprimerDossier,
+} from "./queries";
 import { DraftRoutineRow, RoutineRow, RoutineRowPreview } from "./routine-card";
+import { parDossier } from "./stats";
 
-/** Sans casse ni accents : « developpe » trouve « Développé ». */
-function fold(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-}
+type Dossier = { id: string; nom: string };
 
-function matches(routine: MockRoutine, query: string): boolean {
-  const q = fold(query.trim());
+/** Sans casse ni accents, sur le nom de la routine et ceux de ses exercices. */
+function correspond(routine: RoutineResume, saisie: string): boolean {
+  const q = normaliserRecherche(saisie);
   if (!q) return true;
-  const names = routine.exercises.map((e) => exerciseBySlug(e.slug)?.name ?? "");
-  return [routine.name, ...names].some((n) => fold(n).includes(q));
+  return [routine.nom, ...routine.exercices.map((e) => e.nom)].some((n) =>
+    normaliserRecherche(n).includes(q),
+  );
 }
 
-/** L'identifiant de dépôt d'un dossier : distinct de ceux des routines. */
-const dropId = (folder: string) => `dossier:${folder}`;
+/** L'identifiant de dépôt d'un dossier, distinct de ceux des routines ; « - » : sans dossier. */
+const dropId = (dossier: Dossier | null) => `dossier:${dossier?.id ?? "-"}`;
+
+const echec = (e: unknown) => toast.error(e instanceof Error ? e.message : "L'action a échoué.");
 
 /** Le nom d'un dossier, en saisie : juste créé, ou « Renommer ». */
-function FolderNameInput({ folder }: { folder: string }) {
+function FolderNameInput({ dossier }: { dossier: Dossier }) {
+  const renommer = useRenommerDossier();
+  const valider = (nom: string) => {
+    dossierRenomme.set(null);
+    const propre = nom.trim();
+    if (!propre || propre === dossier.nom) return;
+    renommer.mutate({ id: dossier.id, nom: propre }, { onError: echec });
+  };
   return (
     <Input
       aria-label="Nom du dossier"
-      defaultValue={folder}
+      defaultValue={dossier.nom}
+      maxLength={60}
       autoFocus
       onFocus={(e) => e.currentTarget.select()}
-      onBlur={(e) => renameFolder(folder, e.currentTarget.value)}
+      onBlur={(e) => valider(e.currentTarget.value)}
       onKeyDown={(e) => {
         if (e.key === "Enter") e.currentTarget.blur();
-        if (e.key === "Escape") setRenamingFolder(null);
+        if (e.key === "Escape") dossierRenomme.set(null);
       }}
       className="h-7 flex-1 px-2 font-medium"
     />
@@ -76,37 +83,36 @@ function FolderNameInput({ folder }: { folder: string }) {
 }
 
 /** Le menu ⋯ d'un dossier : y créer une routine, le renommer, le supprimer. */
-function FolderMenu({ folder }: { folder: string }) {
+function FolderMenu({ dossier }: { dossier: Dossier }) {
   const navigate = useNavigate();
+  const supprimer = useSupprimerDossier();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-xs" aria-label={`Actions du dossier ${folder}`}>
+        <Button variant="ghost" size="icon-xs" aria-label={`Actions du dossier ${dossier.nom}`}>
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem
-          onSelect={() => {
-            setNextRoutineFolder(folder);
-            navigate({ to: "/routines/new", search: true });
-          }}
+          onSelect={() =>
+            navigate({ to: "/routines/new", search: (p) => ({ ...p, dossier: dossier.id }) })
+          }
         >
           <Plus /> Nouvelle routine ici
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setRenamingFolder(folder)}>
+        <DropdownMenuItem onSelect={() => dossierRenomme.set(dossier.id)}>
           <Pencil /> Renommer
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
-          onSelect={() => {
-            const undo = deleteFolder(folder);
-            toast(`Dossier « ${folder} » supprimé`, {
-              description: "Ses routines sont dans « Sans dossier ».",
-              action: { label: "Annuler", onClick: undo },
-            });
-          }}
+          onSelect={() =>
+            supprimer(
+              dossier.id,
+              `Dossier « ${dossier.nom} » supprimé, ses routines sont « Sans dossier »`,
+            )
+          }
         >
           <Trash2 /> Supprimer le dossier
         </DropdownMenuItem>
@@ -120,30 +126,31 @@ function FolderMenu({ folder }: { folder: string }) {
  * et même replié, reçoit une routine glissée (D257).
  */
 function FolderSection({
-  folder,
+  dossier,
   routines,
   open,
   onToggle,
 }: {
-  folder: string;
-  routines: MockRoutine[];
+  dossier: Dossier | null;
+  routines: RoutineResume[];
   open: boolean;
   onToggle: () => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: dropId(folder) });
-  const renaming = useRenamingFolder() === folder && folder !== "";
-  const name = folder || "Sans dossier";
+  const { setNodeRef, isOver } = useDroppable({ id: dropId(dossier) });
+  const renaming = dossierRenomme.use() === dossier?.id && dossier !== null;
+  const name = dossier?.nom ?? "Sans dossier";
   return (
     <section
       ref={setNodeRef}
+      aria-label={name}
       className={cn(
         "flex flex-col gap-1.5 rounded-xl transition-shadow",
         isOver && "ring-2 ring-foreground/40 ring-offset-4 ring-offset-background",
       )}
     >
       <div className="flex h-8 items-center gap-1">
-        {renaming ? (
-          <FolderNameInput folder={folder} />
+        {renaming && dossier ? (
+          <FolderNameInput dossier={dossier} />
         ) : (
           <button
             type="button"
@@ -157,11 +164,11 @@ function FolderSection({
                 open && "rotate-90",
               )}
             />
-            <span className={cn("truncate", !folder && "text-muted-foreground")}>{name}</span>
+            <span className={cn("truncate", !dossier && "text-muted-foreground")}>{name}</span>
             <span className="text-muted-foreground tabular-nums">{routines.length}</span>
           </button>
         )}
-        {folder && !renaming && <FolderMenu folder={folder} />}
+        {dossier && !renaming && <FolderMenu dossier={dossier} />}
       </div>
       {open &&
         (routines.length === 0 ? (
@@ -183,37 +190,70 @@ function FolderSection({
 /**
  * Les routines rangées par dossier (D257) : des sections repliables, une recherche qui ne montre
  * que les dossiers ayant un résultat (dépliés), et la poignée de chaque ligne pour changer une
- * routine de dossier.
+ * routine de dossier. Ses quatre états viennent de `GET /routines` (D303).
  */
-export function RoutineList({ routines }: { routines: MockRoutine[] }) {
+export function RoutineList() {
+  const force = useEtat();
+  const requete = useQuery(routinesQuery());
   const [query, setQuery] = useState("");
   const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
-  const [dragged, setDragged] = useState<MockRoutine | null>(null);
-  const folderNames = useFolders();
-  const creating = useRouterState({ select: (s) => s.location.pathname === "/routines/new" });
+  const [dragged, setDragged] = useState<RoutineResume | null>(null);
+  const deplacer = useDeplacerRoutine();
+  const creating = useRouterState({ select: (s) => s.location.pathname.endsWith("/routines/new") });
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor),
   );
 
+  const routines = requete.data?.routines ?? [];
+  const dossiers = requete.data?.dossiers ?? [];
+  const etat = etatAffiche(force, requete, routines.length === 0 && dossiers.length === 0);
+  if (etat === "chargement") return <RoutineListSkeleton />;
+  if (etat === "erreur")
+    return (
+      <StateError
+        title="Les routines n'ont pas pu se charger"
+        reessayer={() => void requete.refetch()}
+      />
+    );
+  if (etat === "vide")
+    return (
+      <>
+        {creating && <DraftRoutineRow />}
+        <RoutineListEmpty />
+      </>
+    );
+
   const searching = query.trim() !== "";
-  const groups = groupByFolder(
-    routines.filter((r) => matches(r, query)),
-    folderNames,
-  ).filter((g) => !searching || g.items.length > 0);
+  const groups = parDossier(
+    routines.filter((r) => correspond(r, query)),
+    dossiers,
+  ).filter((g) => !searching || g.routines.length > 0);
 
   function onDragEnd({ active, over }: DragEndEvent) {
     setDragged(null);
     const target = over?.id;
     if (typeof target !== "string" || !target.startsWith("dossier:")) return;
-    const folder = target.slice("dossier:".length);
+    const cible = target.slice("dossier:".length);
+    const dossierId = cible === "-" ? null : cible;
     const routine = routines.find((r) => r.id === active.id);
-    if (!routine || routine.folder === folder) return;
-    moveRoutine(routine.id, folder);
-    toast.success(`« ${routine.name} » rangée dans « ${folder || "Sans dossier"} »`, {
-      id: "routine-rangee",
-      action: { label: "Annuler", onClick: () => moveRoutine(routine.id, routine.folder) },
-    });
+    if (!routine || routine.dossierId === dossierId) return;
+    const avant = routine.dossierId;
+    const nom = dossiers.find((d) => d.id === dossierId)?.nom ?? "Sans dossier";
+    deplacer.mutate(
+      { id: routine.id, dossierId },
+      {
+        onSuccess: () =>
+          toast.success(`« ${routine.nom} » rangée dans « ${nom} »`, {
+            id: "routine-rangee",
+            action: {
+              label: "Annuler",
+              onClick: () => deplacer.mutate({ id: routine.id, dossierId: avant }),
+            },
+          }),
+        onError: echec,
+      },
+    );
   }
 
   return (
@@ -246,22 +286,25 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
           onDragCancel={() => setDragged(null)}
         >
           <div className="flex flex-col gap-5">
-            {groups.map((g) => (
-              <FolderSection
-                key={g.folder || "-"}
-                folder={g.folder}
-                routines={g.items}
-                open={searching || !closed.has(g.folder)}
-                onToggle={() =>
-                  setClosed((c) => {
-                    const next = new Set(c);
-                    if (next.has(g.folder)) next.delete(g.folder);
-                    else next.add(g.folder);
-                    return next;
-                  })
-                }
-              />
-            ))}
+            {groups.map((g) => {
+              const cle = g.dossier?.id ?? "-";
+              return (
+                <FolderSection
+                  key={cle}
+                  dossier={g.dossier}
+                  routines={g.routines}
+                  open={searching || !closed.has(cle)}
+                  onToggle={() =>
+                    setClosed((c) => {
+                      const next = new Set(c);
+                      if (next.has(cle)) next.delete(cle);
+                      else next.add(cle);
+                      return next;
+                    })
+                  }
+                />
+              );
+            })}
           </div>
           <DragOverlay>{dragged && <RoutineRowPreview routine={dragged} />}</DragOverlay>
         </DndContext>
@@ -271,7 +314,7 @@ export function RoutineList({ routines }: { routines: MockRoutine[] }) {
 }
 
 /** La liste pendant le chargement : la recherche, puis deux dossiers et leurs cartes. */
-export function RoutineListSkeleton() {
+function RoutineListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
@@ -279,7 +322,7 @@ export function RoutineListSkeleton() {
         <div key={f} className="flex flex-col gap-2">
           <Skeleton className="my-1 h-5 w-36 rounded" />
           {Array.from({ length: count }, (_, i) => (
-            <Skeleton key={i} className="h-[3.875rem] rounded-xl" />
+            <Skeleton key={i} className="h-15.5 rounded-xl" />
           ))}
         </div>
       ))}
@@ -288,7 +331,7 @@ export function RoutineListSkeleton() {
 }
 
 /** Aucune routine : la liste le dit d'une ligne, le panneau de droite guide la création (D260). */
-export function RoutineListEmpty() {
+function RoutineListEmpty() {
   return (
     <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
       Aucune routine pour l'instant.

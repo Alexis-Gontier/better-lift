@@ -1,3 +1,4 @@
+import type { TypeSerie } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
 import { Info, MoreHorizontal, Trophy } from "lucide-react";
 import { useState } from "react";
@@ -20,6 +21,17 @@ import { formatDelta, formatKg, formatLoad, formatShortDay } from "@/lib/format"
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { type DoneExercise, doneRecords, doneVolume, type SessionDetail } from "@/mocks/history";
+import type { SetType } from "@/mocks/routines";
+
+/** Le type de la maquette dans celui de l'API ; provisoire, l'éditeur part au lot Historique. */
+const versType = (t?: SetType): TypeSerie =>
+  t === "warmup"
+    ? "ECHAUFFEMENT"
+    : t === "drop"
+      ? "DEGRESSIVE"
+      : t === "failure"
+        ? "ECHEC"
+        : "NORMALE";
 
 // Mêmes colonnes que l'éditeur de routine (D246) ; « Précédent » s'efface dans une carte étroite.
 const SET_GRID =
@@ -46,7 +58,7 @@ function DoneExerciseCard({
 }) {
   const info = exerciseBySlug(exercise.slug);
   const name = info?.name ?? exercise.slug;
-  const labels = setLabels(exercise.sets);
+  const labels = setLabels(exercise.sets.map((x) => ({ type: versType(x.type) })));
   const records = exercise.sets.filter((s) => s.record).length;
   const setAt = (i: number, patch: Partial<DoneExercise["sets"][number]>) =>
     onChange({
@@ -106,7 +118,7 @@ function DoneExerciseCard({
           return (
             // Clé par position : une clé tirée des valeurs remonterait la ligne à chaque frappe.
             <div key={i} className={cn(SET_GRID, "px-1")}>
-              <SetBadge label={labels[i] ?? String(i + 1)} tone={setTone(set.type)} />
+              <SetBadge label={labels[i] ?? String(i + 1)} tone={setTone(versType(set.type))} />
               <span
                 className={cn(PREVIOUS_COL, "truncate text-muted-foreground text-sm tabular-nums")}
               >
