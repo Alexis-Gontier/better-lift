@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -204,7 +203,7 @@ export function SessionListEmpty() {
   );
 }
 
-/** Le panneau de droite sans aucune séance : d'où elles viennent, et l'import. */
+/** Le panneau de droite sans aucune séance : d'où elles viennent. */
 export function SessionsOnboarding() {
   return (
     <Empty className="flex-1">
@@ -218,11 +217,6 @@ export function SessionsOnboarding() {
           précédente de la même routine.
         </EmptyDescription>
       </EmptyHeader>
-      <EmptyContent>
-        <Button variant="outline" asChild>
-          <Link to="/settings/data">Importer depuis Hevy</Link>
-        </Button>
-      </EmptyContent>
     </Empty>
   );
 }

@@ -1,15 +1,6 @@
 import { useState } from "react";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SettingsPage, SettingsSection, useSetting } from "./settings-section";
+import { SettingsPage, SettingsSection } from "./settings-section";
 
 type Appearance = "clair" | "sombre" | "systeme";
 const THEME_KEY = "better-lift-theme"; // la clé que lit le script de `index.html`
@@ -36,99 +27,6 @@ function applyAppearance(a: Appearance) {
   }
 }
 
-type Formats = { timezone: string; unit: string; dateFormat: string; weekStart: string };
-
-const TIMEZONES = ["Europe/Paris", "Europe/Brussels", "Europe/Zurich", "America/Montreal"];
-
-/** Le réglage enregistré, en mémoire : l'API le tiendra sur le compte. */
-let savedFormats: Formats = {
-  timezone: "Europe/Paris",
-  unit: "kg",
-  dateFormat: "court",
-  weekStart: "lundi",
-};
-
-function Units({ draft, setDraft }: { draft: Formats; setDraft: (f: Formats) => void }) {
-  return (
-    <SettingsSection
-      title="Région et formats"
-      description="Ils s'appliquent à toutes les pages et au mobile."
-    >
-      <FieldGroup>
-        {/* Le fuseau découpe les séances en jours et en semaines : un réglage de région (D272). */}
-        <Field>
-          <FieldLabel htmlFor="timezone">Fuseau horaire</FieldLabel>
-          <Select
-            value={draft.timezone}
-            onValueChange={(timezone) => setDraft({ ...draft, timezone })}
-          >
-            <SelectTrigger id="timezone" className="w-full sm:w-72">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {TIMEZONES.map((tz) => (
-                  <SelectItem key={tz} value={tz}>
-                    {tz}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <FieldDescription>Les séances sont rangées par jour dans ce fuseau.</FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel>Unité de charge</FieldLabel>
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            value={draft.unit}
-            onValueChange={(unit) => unit && setDraft({ ...draft, unit })}
-            className="justify-start"
-          >
-            <ToggleGroupItem value="kg">Kilogrammes (kg)</ToggleGroupItem>
-            <ToggleGroupItem value="lb">Livres (lb)</ToggleGroupItem>
-          </ToggleGroup>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="date-format">Format de date</FieldLabel>
-          <Select
-            value={draft.dateFormat}
-            onValueChange={(dateFormat) => setDraft({ ...draft, dateFormat })}
-          >
-            <SelectTrigger id="date-format" className="w-full sm:w-72">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="court">16 oct. 2026</SelectItem>
-                <SelectItem value="long">vendredi 16 octobre 2026</SelectItem>
-                <SelectItem value="numerique">16/10/2026</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <FieldLabel>Premier jour de la semaine</FieldLabel>
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            value={draft.weekStart}
-            onValueChange={(weekStart) => weekStart && setDraft({ ...draft, weekStart })}
-            className="justify-start"
-          >
-            <ToggleGroupItem value="lundi">Lundi</ToggleGroupItem>
-            <ToggleGroupItem value="dimanche">Dimanche</ToggleGroupItem>
-          </ToggleGroup>
-          <FieldDescription>
-            Les semaines du Planning et des statistiques commencent ce jour-là.
-          </FieldDescription>
-        </Field>
-      </FieldGroup>
-    </SettingsSection>
-  );
-}
-
 /** L'apparence s'applique tout de suite, hors du brouillon de la page : c'est un réglage d'appareil. */
 function AppearanceSection() {
   const [draft, setDraft] = useState<Appearance>(currentAppearance());
@@ -153,16 +51,13 @@ function AppearanceSection() {
   );
 }
 
+/**
+ * Préférences : l'apparence, réglage d'appareil. Fuseau, unités et formats n'ont pas de champ
+ * en base : le web prend le fuseau du navigateur et les kilos (D294, D313).
+ */
 export function PreferencesSettings() {
-  const [formats, setFormats] = useSetting(
-    () => savedFormats,
-    (f) => {
-      savedFormats = f;
-    },
-  );
   return (
-    <SettingsPage title="Préférences" description="Fuseau, unités, formats et apparence.">
-      <Units draft={formats} setDraft={setFormats} />
+    <SettingsPage title="Préférences" description="L'apparence, sur cet appareil.">
       <AppearanceSection />
     </SettingsPage>
   );

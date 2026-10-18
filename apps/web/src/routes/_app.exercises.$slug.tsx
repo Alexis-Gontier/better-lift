@@ -1,19 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DetailColumns, DetailColumnsSkeleton } from "@/components/detail-columns";
-import { useEditable } from "@/components/editable";
 import { DetailEmpty, DetailHeader } from "@/components/list-detail";
 import { StateError } from "@/components/states/state-error";
 import { useEtat } from "@/components/states/use-etat";
 import { ExerciseFigures, ExerciseLook, ExerciseMain } from "@/features/exercises/exercise-detail";
-import {
-  type ExerciseDraft,
-  ExerciseNote,
-  exerciseChangeCount,
-  fromExerciseDraft,
-  toExerciseDraft,
-} from "@/features/exercises/exercise-form";
 import { exerciseHistory } from "@/mocks/exercise-history";
-import { saveExercise, useExercises } from "@/mocks/exercise-store";
+import { useExercises } from "@/mocks/exercise-store";
 import type { MockExercise } from "@/mocks/exercises";
 
 export const Route = createFileRoute("/_app/exercises/$slug")({
@@ -37,33 +29,19 @@ function ExerciseRoute() {
         description="Il a peut-être été supprimé du catalogue."
       />
     );
-  // `key` : d'un exercice à l'autre, le brouillon repart de zéro.
-  return <ExercisePane key={slug} exercise={exercise} empty={state === "vide"} />;
+  return <ExercisePane exercise={exercise} empty={state === "vide"} />;
 }
 
 /**
- * La fiche d'un exercice, modifiable comme une routine (D264) : sa note épinglée seule. Le
- * catalogue ne se renomme pas (D286).
+ * La fiche d'un exercice, en lecture seule : la note épinglée et la cible n'ont pas d'API
+ * (D294), et le catalogue ne se renomme pas (D286).
  */
 function ExercisePane({ exercise, empty }: { exercise: MockExercise; empty: boolean }) {
-  const edit = useEditable<ExerciseDraft>({
-    initial: () => toExerciseDraft(exercise),
-    isDirty: (d) => exerciseChangeCount(d, exercise) > 0,
-    count: (d) => exerciseChangeCount(d, exercise),
-    onSave: (d) => saveExercise(fromExerciseDraft(d, exercise)),
-    what: "cet exercice",
-    savedMessage: "Exercice enregistré",
-  });
-  const { draft, setDraft } = edit;
   const history = empty ? [] : exerciseHistory(exercise.slug);
 
   return (
     <>
-      <DetailHeader
-        title={exercise.name}
-        subtitle={`${exercise.muscle} · ${exercise.equipment}`}
-        actions={edit.actions(null)}
-      />
+      <DetailHeader title={exercise.name} subtitle={`${exercise.muscle} · ${exercise.equipment}`} />
       <DetailColumns
         id="exercice-fiche"
         main={
@@ -73,18 +51,16 @@ function ExercisePane({ exercise, empty }: { exercise: MockExercise; empty: bool
               description={`Ajoutez ${exercise.name} à une routine : sa progression apparaîtra ici après la première séance.`}
             />
           ) : (
-            <ExerciseMain exercise={exercise} history={history} />
+            <ExerciseMain history={history} />
           )
         }
         aside={
           <>
             {history.length > 0 && <ExerciseFigures history={history} />}
-            <ExerciseNote draft={draft} onChange={setDraft} />
             <ExerciseLook exercise={exercise} />
           </>
         }
       />
-      {edit.guard}
     </>
   );
 }

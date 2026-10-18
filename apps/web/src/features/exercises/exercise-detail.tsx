@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
 import { ExerciseGif } from "@/components/exercise-media";
 import { SummaryCard } from "@/components/summary-card";
@@ -31,7 +31,6 @@ import {
   sessionVolume,
 } from "@/mocks/exercise-stats";
 import type { MockExercise } from "@/mocks/exercises";
-import { targetOf } from "@/mocks/targets";
 
 const chartConfig = {
   oneRm: { label: "1RM estimé", color: "var(--chart-2)" },
@@ -42,8 +41,7 @@ const chartConfig = {
 const setsText = (p: Performance) =>
   p.sets.map((s) => `${s.kg === null ? "—" : formatNumber(s.kg)} × ${s.reps}`).join(" · ");
 
-function ProgressChart({ exercise, history }: { exercise: MockExercise; history: Performance[] }) {
-  const target = targetOf(exercise.slug);
+function ProgressChart({ history }: { history: Performance[] }) {
   const data = history.map((p) => ({
     date: p.date,
     oneRm: Math.round(best1rmOf(p) * 10) / 10,
@@ -55,11 +53,7 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
     <Card>
       <CardHeader>
         <CardTitle>Progression</CardTitle>
-        <CardDescription>
-          {target !== undefined
-            ? `Cible : ${formatKg(target)} en pointillés`
-            : "Toutes les séances"}
-        </CardDescription>
+        <CardDescription>Toutes les séances</CardDescription>
       </CardHeader>
       <CardContent>
         {!charged ? (
@@ -84,7 +78,7 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
                 // Bornes rondes, aux 5 kg : sinon l'axe affiche « 123.3 ».
                 domain={[
                   (min: number) => Math.max(0, Math.floor((min - 5) / 5) * 5),
-                  (max: number) => Math.ceil((Math.max(max, target ?? 0) + 5) / 5) * 5,
+                  (max: number) => Math.ceil((max + 5) / 5) * 5,
                 ]}
               />
               <ChartTooltip
@@ -103,9 +97,6 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
                 }
               />
               <ChartLegend content={<ChartLegendContent />} />
-              {target !== undefined && (
-                <ReferenceLine y={target} stroke="var(--muted-foreground)" strokeDasharray="4 4" />
-              )}
               <Line
                 dataKey="oneRm"
                 type="monotone"
@@ -161,16 +152,10 @@ function OneRmPercentages({ history }: { history: Performance[] }) {
  * La colonne principale de la fiche (D264) : la progression, l'historique des séances, les
  * pourcentages du 1RM et la meilleure charge par nombre de répétitions, d'un seul défilement.
  */
-export function ExerciseMain({
-  exercise,
-  history,
-}: {
-  exercise: MockExercise;
-  history: Performance[];
-}) {
+export function ExerciseMain({ history }: { history: Performance[] }) {
   return (
     <>
-      <ProgressChart exercise={exercise} history={history} />
+      <ProgressChart history={history} />
       <ExerciseHistory history={history} />
       <OneRmPercentages history={history} />
       <BestByReps history={history} />

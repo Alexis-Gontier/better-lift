@@ -48,14 +48,8 @@ export function LoginForm() {
             />
           </Field>
           <Field>
-            <div className="flex items-center">
-              <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
-              <span className="ml-auto">
-                <AuthLink to="/forgot-password" quiet>
-                  Mot de passe oublié ?
-                </AuthLink>
-              </span>
-            </div>
+            {/* Pas de « Mot de passe oublié ? » : l'API n'envoie aucun e-mail (D294). */}
+            <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
             <PasswordInput
               id="password"
               autoComplete="current-password"

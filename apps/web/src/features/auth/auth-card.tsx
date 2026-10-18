@@ -15,30 +15,12 @@ import type { FileRouteTypes } from "@/routeTree.gen";
 /** Better Auth : 8 à 128 caractères par défaut (`minPasswordLength`, `maxPasswordLength`). */
 export const PASSWORD = { min: 8, max: 128 } as const;
 
-type AuthTo = Extract<
-  FileRouteTypes["to"],
-  "/login" | "/register" | "/forgot-password" | "/reset-password"
->;
+type AuthTo = Extract<FileRouteTypes["to"], "/login" | "/register">;
 
-/** Un lien entre pages d'auth, sans l'état forcé. `quiet` : petit et gris, à côté d'un libellé. */
-export function AuthLink({
-  to,
-  quiet,
-  children,
-}: {
-  to: AuthTo;
-  quiet?: boolean;
-  children: ReactNode;
-}) {
+/** Un lien entre pages d'auth, sans l'état forcé. */
+export function AuthLink({ to, children }: { to: AuthTo; children: ReactNode }) {
   return (
-    <Link
-      to={to}
-      className={
-        quiet
-          ? "text-muted-foreground text-xs hover:text-foreground"
-          : "font-medium text-foreground underline underline-offset-4"
-      }
-    >
+    <Link to={to} className="font-medium text-foreground underline underline-offset-4">
       {children}
     </Link>
   );
