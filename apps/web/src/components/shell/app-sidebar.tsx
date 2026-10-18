@@ -1,4 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { Brand } from "@/components/brand";
 import {
   Sidebar,
   SidebarContent,
@@ -24,11 +25,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       {/* Le nom, aligné sur la hauteur du header ; masqué quand la barre est repliée. */}
       <SidebarHeader className="h-12 justify-center px-4">
-        <Link
-          to="/"
-          className="font-extrabold text-lg tracking-tight group-data-[collapsible=icon]:hidden"
-        >
-          BETTER-LIFT.
+        <Link to="/" className="group-data-[collapsible=icon]:hidden">
+          <Brand />
         </Link>
       </SidebarHeader>
       <SidebarContent>

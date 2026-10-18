@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { Brand } from "@/components/brand";
 
 export const Route = createFileRoute("/_auth")({
   staticData: { proto: { states: true } },
@@ -12,9 +13,9 @@ export const Route = createFileRoute("/_auth")({
 function AuthLayout() {
   return (
     <main className="relative flex min-h-svh flex-col items-center justify-center bg-background px-6 py-28">
-      <span className="absolute top-14 font-semibold text-lg uppercase tracking-wider">
-        better-lift
-      </span>
+      <div className="absolute top-14">
+        <Brand />
+      </div>
       <div className="w-full max-w-90">
         <Outlet />
       </div>

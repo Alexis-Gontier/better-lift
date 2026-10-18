@@ -133,7 +133,8 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
 - **D291 — Les pages d'auth sont dessinées** (2026-10-18, précise §4.1 du wireframe). Vrais
   formulaires shadcn (`Field`, `InputGroup` pour afficher le mot de passe), envoi simulé
   (`useFakeSubmit`, 700 ms). Centré seul, à la façon des SaaS (ElevenLabs, Vercel, Linear) :
-  pas de carte, le nom en capitales en haut de page, la colonne de 360 px centrée dans la
+  pas de carte, le nom `Brand` de la barre latérale
+  en haut de page, la colonne de 360 px centrée dans la
   fenêtre, grand titre centré, champs et bouton
   de 40 px, « Mot de passe oublié ? » discret à droite du libellé, bouton grisé tant que le
   formulaire est incomplet. Pas de connexion Google/Apple : l'API n'a que l'e-mail. États : `chargement` fige l'envoi, `erreur` montre l'échec propre à
