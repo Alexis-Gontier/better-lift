@@ -268,6 +268,29 @@ et D199 (style), qui seront repris après validation du wireframe.
   l'éditeur ne propose pas ; un exercice archivé dans une routine n'a pas d'état ; l'unité est
   figée en kg alors que l'affichage passe par `formaterCharge` ; l'ordre en base est un
   `position` global, à étendre au dossier ; la durée estimée devra venir de `shared`.
+- **D263 — Une séance se corrige comme une routine** (2026-10-18, tranche D239 pour A, retire B
+  et C et leurs variantes `?v=`). Le détail est toujours modifiable, sous la même tête que
+  l'éditeur de routine (`useEditable` : historique, « N modifications non enregistrées » à côté de
+  la date, Tout annuler, Enregistrer, Ctrl S, sortie). À gauche, une carte par exercice : la tête
+  de la carte de routine (vignette, nom sur une ligne, « Modifié », badge de record, ⋯ Voir la
+  fiche), puis ses séries en champs − / + face à la **séance précédente de la même routine**
+  (colonne « Précédent », effacée dans une carte étroite) et un trophée sur la série record. On
+  corrige charges et répétitions, pas le nombre de séries (D239). À droite : la durée (champ),
+  volume, séries et records en mini-cartes avec leur écart à la précédente, la date de celle-ci,
+  les muscles, la note. La liste passe aux cartes séparées par mois ; rien d'ouvert, « Aucune
+  séance ouverte » ; vide, la droite explique d'où viennent les séances et propose l'import Hevy.
+- **D264 — La fiche d'exercice en deux colonnes** (2026-10-18, retire les onglets Résumé /
+  Historique / Records de D236 pour la fiche). À gauche, d'un seul défilement : progression,
+  historique (chaque date mène à la séance), pourcentages du 1RM, meilleure charge par nombre de
+  répétitions. À droite : records en mini-cartes (meilleure charge, 1RM estimé, meilleur volume,
+  séances), note épinglée, réglages d'un exercice personnel (muscle, équipement), exécution,
+  muscles. La note de tout exercice, et le nom, le muscle, l'équipement d'un exercice personnel,
+  se modifient comme une routine (`useEditable`) : plus d'enregistrement au clic (D240). Le
+  catalogue ne se renomme pas. La création reprend le même gabarit, le curseur dans le nom ; le
+  bouton « Exercice personnalisé » descend dans la barre du bas de la liste, comme « Nouvelle
+  routine » (D257). Vide, la liste le dit d'une ligne et la droite guide la première création.
+  Briques communes nées de ce passage : `useEditable`, `DetailColumns` (et son squelette),
+  `listCardClass`, `DetailPlaceholder` avec icône et action.
 
 ## 3. Coquille
 

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet, useParams, useRouterState } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { ListDetailPage } from "@/components/list-detail";
 import { LocalTabs } from "@/components/page-tabs";
@@ -51,14 +52,20 @@ function ExercisesPage() {
       key={state}
       title="Exercices"
       tabs={<LocalTabs tabs={TABS} value={shownTab} onChange={setTab} />}
-      actions={
-        <Button asChild>
-          <Link to="/exercises/new" search>
-            Exercice personnalisé
-          </Link>
-        </Button>
+      // La création vit dans la barre du bas, comme « Nouvelle routine » (D257) : l'en-tête
+      // de la liste tient alors à 300 px.
+      footer={
+        state === "nominal" && (
+          <Button asChild className="flex-1">
+            <Link to="/exercises/new" search>
+              <Plus data-icon="inline-start" /> Exercice personnalisé
+            </Link>
+          </Button>
+        )
       }
       storageId="exercices"
+      // La fiche et sa colonne de droite défilent chacune de leur côté (D264).
+      detailScroll="columns"
       detail={<Outlet />}
     >
       {state === "chargement" && <ExerciseListSkeleton />}

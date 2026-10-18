@@ -1,9 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Pin } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
 import { ExerciseGif } from "@/components/exercise-media";
-import { InlineField } from "@/components/inline-field";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -51,7 +49,7 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
   // Sans aucune charge notée (curl à la poulie fait sans noter le poids), pas de courbe.
   const charged = data.some((d) => d.heaviest > 0);
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
         <CardTitle>Progression</CardTitle>
         <CardDescription>
@@ -131,41 +129,87 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
   );
 }
 
-export function ExerciseSummary({
+/** Les pourcentages du 1RM estimé, arrondis aux 2,5 kg : de quoi régler une charge de travail. */
+function OneRmPercentages({ history }: { history: Performance[] }) {
+  const best = records(history).best1rm.value;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Pourcentages du 1RM</CardTitle>
+        <CardDescription>
+          {best > 0
+            ? `Sur un 1RM estimé de ${formatKg(Math.round(best))}, arrondi aux 2,5 kg`
+            : "Pas encore de série chargée"}
+        </CardDescription>
+      </CardHeader>
+      {best > 0 && (
+        <CardContent className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm @lg:grid-cols-3 @3xl:grid-cols-4">
+          {oneRmPercentages(best).map((r) => (
+            <div key={r.percent} className="flex justify-between tabular-nums">
+              <span className="text-muted-foreground">{r.percent} %</span>
+              <span>{formatKg(r.kg)}</span>
+            </div>
+          ))}
+        </CardContent>
+      )}
+    </Card>
+  );
+}
+
+/**
+ * La colonne principale de la fiche (D264) : la progression, l'historique des séances, les
+ * pourcentages du 1RM et la meilleure charge par nombre de répétitions, d'un seul défilement.
+ */
+export function ExerciseMain({
   exercise,
   history,
-  onNoteChange,
 }: {
   exercise: MockExercise;
   history: Performance[];
-  /** La note se modifie au clic et s'enregistre en la quittant (D240). */
-  onNoteChange?: (note: string) => void;
 }) {
-  const best = records(history).best1rm.value;
   return (
-    <div className="grid gap-4 @3xl:grid-cols-3">
-      {/* Épinglée : en tête, sur toute la largeur. */}
-      <Card size="sm" className="@3xl:col-span-3">
-        <CardContent className="flex items-start gap-3 text-muted-foreground text-sm">
-          <Pin className="mt-0.5 size-4 shrink-0 text-foreground" />
-          {onNoteChange ? (
-            <InlineField
-              label="Note épinglée"
-              multiline
-              placeholder="Aucune note. Notez un réglage de machine ou une consigne."
-              value={exercise.note ?? ""}
-              className="flex-1"
-              onCommit={onNoteChange}
-            />
-          ) : (
-            (exercise.note ?? "Aucune note. Notez un réglage de machine ou une consigne.")
+    <>
+      <ProgressChart exercise={exercise} history={history} />
+      <ExerciseHistory history={history} />
+      <OneRmPercentages history={history} />
+      <BestByReps history={history} />
+    </>
+  );
+}
+
+/** Les records en mini-cartes, comme les chiffres d'une routine (D255). */
+export function ExerciseFigures({ history }: { history: Performance[] }) {
+  const r = records(history);
+  const last = history.at(-1);
+  const tiles = [
+    { label: "Meilleure charge", value: formatKg(r.heaviest.value), date: r.heaviest.date },
+    { label: "1RM estimé", value: formatKg(Math.round(r.best1rm.value)), date: r.best1rm.date },
+    { label: "Meilleur volume", value: formatKg(r.bestVolume.value), date: r.bestVolume.date },
+    { label: "Séances", value: String(history.length), date: last?.date },
+  ];
+  return (
+    <div className="grid gap-2 @[13rem]:grid-cols-2">
+      {tiles.map((t) => (
+        <Card key={t.label} size="sm" className="gap-0.5 px-3">
+          <span className="text-muted-foreground text-xs">{t.label}</span>
+          <span className="font-semibold tabular-nums">{t.value}</span>
+          {t.date && (
+            <span className="text-muted-foreground text-xs">
+              {t.label === "Séances" ? "dernière le " : "le "}
+              {formatShortDay(t.date)}
+            </span>
           )}
-        </CardContent>
-      </Card>
-      <div className="@3xl:col-span-2">
-        <ProgressChart exercise={exercise} history={history} />
-      </div>
-      <Card>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/** L'animation et les muscles de l'exercice, dans la colonne de droite. */
+export function ExerciseLook({ exercise }: { exercise: MockExercise }) {
+  return (
+    <>
+      <Card size="sm">
         <CardHeader>
           <CardTitle>Exécution</CardTitle>
           <CardDescription>{exercise.equipment}</CardDescription>
@@ -174,27 +218,7 @@ export function ExerciseSummary({
           <ExerciseGif name={exercise.name} />
         </CardContent>
       </Card>
-      <Card className="@3xl:col-span-2">
-        <CardHeader>
-          <CardTitle>Pourcentages du 1RM</CardTitle>
-          <CardDescription>
-            {best > 0
-              ? `Sur un 1RM estimé de ${formatKg(Math.round(best))}, arrondi aux 2,5 kg`
-              : "Pas encore de série enregistrée"}
-          </CardDescription>
-        </CardHeader>
-        {best > 0 && (
-          <CardContent className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm @lg:grid-cols-3 @3xl:grid-cols-4">
-            {oneRmPercentages(best).map((r) => (
-              <div key={r.percent} className="flex justify-between tabular-nums">
-                <span className="text-muted-foreground">{r.percent} %</span>
-                <span>{formatKg(r.kg)}</span>
-              </div>
-            ))}
-          </CardContent>
-        )}
-      </Card>
-      <Card>
+      <Card size="sm">
         <CardHeader>
           <CardTitle>Muscles</CardTitle>
           <CardDescription>
@@ -202,17 +226,23 @@ export function ExerciseSummary({
             {exercise.secondary?.length ? ` · ${exercise.secondary.join(", ")}` : ""}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-1 items-center">
-          <BodyMap primary={[exercise.muscle]} secondary={exercise.secondary} />
+        <CardContent>
+          <div className="mx-auto h-24 w-full max-w-32">
+            <BodyMap primary={[exercise.muscle]} secondary={exercise.secondary} />
+          </div>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }
 
-export function ExerciseHistory({ history }: { history: Performance[] }) {
+function ExerciseHistory({ history }: { history: Performance[] }) {
   return (
-    <Card className="gap-0 py-0">
+    <Card className="gap-0 pb-0">
+      <CardHeader className="pb-3">
+        <CardTitle>Historique</CardTitle>
+        <CardDescription>Chaque séance mène à son relevé.</CardDescription>
+      </CardHeader>
       <Table>
         <TableHeader>
           <TableRow>
@@ -245,53 +275,29 @@ export function ExerciseHistory({ history }: { history: Performance[] }) {
   );
 }
 
-export function ExerciseRecords({ history }: { history: Performance[] }) {
-  const r = records(history);
+/** La meilleure charge par nombre de répétitions, de 1 à 12 : les cases vides se voient. */
+function BestByReps({ history }: { history: Performance[] }) {
   const byReps = bestByReps(history);
-  const tiles = [
-    { label: "Meilleure charge", value: formatKg(r.heaviest.value), date: r.heaviest.date },
-    {
-      label: "Meilleur 1RM estimé",
-      value: formatKg(Math.round(r.best1rm.value)),
-      date: r.best1rm.date,
-    },
-    { label: "Meilleur volume", value: formatKg(r.bestVolume.value), date: r.bestVolume.date },
-  ];
   return (
-    <>
-      <div className="grid gap-4 @lg:grid-cols-3">
-        {tiles.map((t) => (
-          <Card key={t.label} size="sm">
-            <CardHeader>
-              <CardDescription>{t.label}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-1">
-              <span className="font-semibold text-2xl tabular-nums">{t.value}</span>
-              <span className="text-muted-foreground text-xs">le {formatShortDay(t.date)}</span>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Meilleure charge par nombre de répétitions</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((reps) => {
-            const kg = byReps.get(reps);
-            return (
-              <div
-                key={reps}
-                className="flex w-20 flex-col items-center rounded-lg border px-2 py-1.5 data-[empty=true]:border-dashed data-[empty=true]:text-muted-foreground"
-                data-empty={!kg}
-              >
-                <span className="text-muted-foreground text-xs">{reps} rép.</span>
-                <span className="text-sm tabular-nums">{kg ? formatKg(kg) : "—"}</span>
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-    </>
+    <Card>
+      <CardHeader>
+        <CardTitle>Meilleure charge par nombre de répétitions</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-2">
+        {Array.from({ length: 12 }, (_, i) => i + 1).map((reps) => {
+          const kg = byReps.get(reps);
+          return (
+            <div
+              key={reps}
+              className="flex w-20 flex-col items-center rounded-lg border px-2 py-1.5 data-[empty=true]:border-dashed data-[empty=true]:text-muted-foreground"
+              data-empty={!kg}
+            >
+              <span className="text-muted-foreground text-xs">{reps} rép.</span>
+              <span className="text-sm tabular-nums">{kg ? formatKg(kg) : "—"}</span>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }

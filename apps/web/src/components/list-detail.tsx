@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/empty";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useWidth } from "@/lib/use-width";
 import { cn } from "@/lib/utils";
 
@@ -247,19 +246,5 @@ export function DetailPlaceholder({
       </EmptyHeader>
       {children && <EmptyContent>{children}</EmptyContent>}
     </Empty>
-  );
-}
-
-/** Le panneau pendant le chargement : la tête, puis deux blocs. */
-export function DetailSkeleton() {
-  return (
-    <>
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-7 w-56 rounded" />
-        <Skeleton className="h-4 w-32 rounded" />
-      </div>
-      <Skeleton className="h-36 rounded-xl" />
-      <Skeleton className="h-64 rounded-xl" />
-    </>
   );
 }

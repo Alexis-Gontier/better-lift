@@ -1,10 +1,9 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { ChevronRight, Dumbbell, History, Search, Trophy } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { ChevronRight, Dumbbell, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { listCardClass, listLinkProps } from "@/components/list-detail";
-import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -74,21 +73,6 @@ function DraftExerciseRow() {
 
 export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
   const creating = useRouterState({ select: (s) => s.location.pathname === "/exercises/new" });
-  const navigate = useNavigate();
-  const exerciseActions = (slug: string): RowAction[] => [
-    {
-      label: "Voir l'historique",
-      icon: History,
-      onSelect: () =>
-        navigate({ to: "/exercises/$slug", params: { slug }, search: { onglet: "historique" } }),
-    },
-    {
-      label: "Voir les records",
-      icon: Trophy,
-      onSelect: () =>
-        navigate({ to: "/exercises/$slug", params: { slug }, search: { onglet: "records" } }),
-    },
-  ];
   const [query, setQuery] = useState("");
   const [muscle, setMuscle] = useState(ALL);
   const [equipment, setEquipment] = useState(ALL);
@@ -181,35 +165,33 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
           {creating && <DraftExerciseRow />}
           {rows.map((e) => (
             <Card key={e.slug} size="sm" className={listCardClass}>
-              <RowMenu actions={exerciseActions(e.slug)}>
-                <Link
-                  to="/exercises/$slug"
-                  params={{ slug: e.slug }}
-                  {...listLinkProps}
-                  className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
-                >
-                  <ExerciseThumb name={e.name} />
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium" title={e.name}>
-                      {e.name}
-                    </span>
-                    <span className="truncate text-muted-foreground text-xs">
-                      {e.muscle} · {e.equipment}
-                    </span>
-                  </div>
-                  {e.custom && <Badge variant="secondary">Personnalisé</Badge>}
-                  <div className="hidden w-28 shrink-0 flex-col items-end @xl:flex">
-                    <span className="text-sm tabular-nums">
-                      {e.best1rm > 0 ? formatKg(Math.round(e.best1rm)) : "—"}
-                    </span>
-                    <span className="text-muted-foreground text-xs">1RM estimé</span>
-                  </div>
-                  <span className="hidden w-20 shrink-0 text-right text-muted-foreground text-xs @2xl:block">
-                    {formatDaysAgo(e.lastDone ? daysSince(e.lastDone, TODAY) : null)}
+              <Link
+                to="/exercises/$slug"
+                params={{ slug: e.slug }}
+                {...listLinkProps}
+                className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
+              >
+                <ExerciseThumb name={e.name} />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate font-medium" title={e.name}>
+                    {e.name}
                   </span>
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                </Link>
-              </RowMenu>
+                  <span className="truncate text-muted-foreground text-xs">
+                    {e.muscle} · {e.equipment}
+                  </span>
+                </div>
+                {e.custom && <Badge variant="secondary">Personnalisé</Badge>}
+                <div className="hidden w-28 shrink-0 flex-col items-end @xl:flex">
+                  <span className="text-sm tabular-nums">
+                    {e.best1rm > 0 ? formatKg(Math.round(e.best1rm)) : "—"}
+                  </span>
+                  <span className="text-muted-foreground text-xs">1RM estimé</span>
+                </div>
+                <span className="hidden w-20 shrink-0 text-right text-muted-foreground text-xs @2xl:block">
+                  {formatDaysAgo(e.lastDone ? daysSince(e.lastDone, TODAY) : null)}
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+              </Link>
             </Card>
           ))}
         </div>
@@ -237,22 +219,33 @@ export function ExerciseListSkeleton() {
   );
 }
 
+/** Aucun exercice personnel : la liste le dit d'une ligne, le panneau de droite guide (D260). */
 export function CustomExercisesEmpty() {
   return (
-    <Empty className="border border-dashed">
+    <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
+      Aucun exercice personnel pour l'instant.
+    </p>
+  );
+}
+
+/** Le panneau de droite sans exercice personnel : à quoi il sert, et sa création. */
+export function CustomExercisesOnboarding() {
+  return (
+    <Empty className="flex-1">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Dumbbell />
         </EmptyMedia>
-        <EmptyTitle>Pas encore d'exercice personnalisé</EmptyTitle>
+        <EmptyTitle>Pas encore d'exercice personnel</EmptyTitle>
         <EmptyDescription>
-          Ajoutez une machine de votre salle ou une variante absente du catalogue.
+          Ajoutez une machine de votre salle ou une variante absente du catalogue : elle s'utilise
+          ensuite dans les routines comme les autres.
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild>
           <Link to="/exercises/new" search>
-            Créer un exercice
+            <Plus data-icon="inline-start" /> Créer un exercice
           </Link>
         </Button>
       </EmptyContent>
