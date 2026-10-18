@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Info, MoreHorizontal, Trophy } from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
+import { ExerciseQuickView } from "@/components/exercise-quick-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { ExerciseQuickView } from "@/features/exercises/exercise-quick-view";
 import { setLabels, setTone } from "@/features/routines/routine-draft";
 import { filled, SetBadge, SetField } from "@/features/routines/routine-editor";
 import { formatDelta, formatKg, formatLoad, formatShortDay } from "@/lib/format";

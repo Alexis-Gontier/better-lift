@@ -226,6 +226,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@better-lift/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@better-lift/shared':
         specifier: workspace:*
         version: link:../../packages/shared

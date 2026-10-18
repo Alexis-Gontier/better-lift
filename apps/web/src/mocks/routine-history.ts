@@ -1,6 +1,6 @@
-import { estimate1rm } from "./exercise-stats";
 import { daysSince } from "./routine-stats";
 import type { MockRoutine } from "./routines";
+import { estimate1rm } from "./stats";
 
 /**
  * Les stats d'une routine (D279, D280), séance par séance : ce qui manquait au wireframe, qui

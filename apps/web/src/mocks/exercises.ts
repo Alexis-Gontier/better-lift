@@ -177,9 +177,6 @@ export const mockExercises: MockExercise[] = [
   },
 ];
 
-export const MUSCLES = [...new Set(mockExercises.map((e) => e.muscle))];
-export const EQUIPMENTS = [...new Set(mockExercises.map((e) => e.equipment))];
-
 export function exerciseBySlug(slug: string): MockExercise | undefined {
   return mockExercises.find((e) => e.slug === slug);
 }

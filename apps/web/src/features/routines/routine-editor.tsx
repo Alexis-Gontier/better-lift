@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
+import { ExerciseQuickView } from "@/components/exercise-quick-view";
 import { Sortable, SortableItem, SortableItemHandle } from "@/components/reui/sortable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { ExerciseQuickView } from "@/features/exercises/exercise-quick-view";
 import { formatLoad, formatRest, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";

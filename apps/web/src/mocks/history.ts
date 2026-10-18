@@ -1,7 +1,7 @@
-import { estimate1rm } from "./exercise-stats";
 import { workouts } from "./generated-workouts";
 import { type MockRoutineExercise, type MockSet, mockRoutines } from "./routines";
 import type { MockSession } from "./sessions";
+import { estimate1rm } from "./stats";
 import type { RealSet } from "./workouts";
 
 /** Une série faite ; `record` dit qu'elle a battu un record à ce moment-là. */

@@ -1,16 +1,16 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { ListDetailPage } from "@/components/list-detail";
-import { StateError } from "@/components/states/state-error";
-import { useEtat } from "@/components/states/use-etat";
-import {
-  ExerciseList,
-  ExerciseListEmpty,
-  ExerciseListSkeleton,
-} from "@/features/exercises/exercise-list";
-import { useExercises } from "@/mocks/exercise-store";
+import { ExerciseList } from "@/features/exercises/exercise-list";
+import { faitsQuery } from "@/features/exercises/queries";
+import { catalogueQuery } from "@/lib/catalogue";
 
 export const Route = createFileRoute("/_app/exercises")({
   staticData: { crumb: "Exercices" },
+  // Sans attendre : la liste montre son squelette pendant ce temps (D300).
+  loader: ({ context }) => {
+    void context.queryClient.prefetchInfiniteQuery(catalogueQuery({ q: "" }));
+    void context.queryClient.prefetchQuery(faitsQuery());
+  },
   component: ExercisesPage,
 });
 
@@ -19,22 +19,15 @@ export const Route = createFileRoute("/_app/exercises")({
  * d'exercice personnel, donc ni onglets ni création (D286).
  */
 function ExercisesPage() {
-  // Tant que la page lit la maquette : nominal, sauf état forcé par l'URL.
-  const state = useEtat() ?? "nominal";
-  const exercises = useExercises();
   return (
     <ListDetailPage
-      key={state}
       title="Exercices"
       storageId="exercices"
       // La fiche et sa colonne de droite défilent chacune de leur côté (D264).
       detailScroll="columns"
       detail={<Outlet />}
     >
-      {state === "chargement" && <ExerciseListSkeleton />}
-      {state === "erreur" && <StateError title="Les exercices n'ont pas pu se charger" />}
-      {state === "vide" && <ExerciseListEmpty />}
-      {state === "nominal" && <ExerciseList exercises={exercises} />}
+      <ExerciseList />
     </ListDetailPage>
   );
 }
