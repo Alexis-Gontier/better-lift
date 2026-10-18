@@ -1,47 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Scale } from "lucide-react";
-import { useTab } from "@/components/page-tabs";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Page } from "@/components/page";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
+import { Button } from "@/components/ui/button";
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BODY_TABS, BodyView } from "@/features/body/body-view";
+import { BodySkeleton, BodyView, type Entry, EntryDialog } from "@/features/body/body-view";
+import { PeriodToggle } from "@/features/progress/period-toggle";
+import { formatKg } from "@/lib/format";
+import type { Period } from "@/mocks/progress";
 
 export const Route = createFileRoute("/_app/body")({
-  staticData: {
-    crumb: "Corps",
-    proto: {
-      variants: [
-        { value: "a", label: "Empilé" },
-        { value: "b", label: "Côte à côte" },
-      ],
-    },
-  },
+  staticData: { crumb: "Corps" },
   component: BodyPage,
 });
 
+/** Corps (D268) : une seule page, sans onglets ; la période et la pesée en tête. */
 function BodyPage() {
-  const tab = useTab(BODY_TABS.map((t) => t.value));
-  const { state, variant } = useProto();
-  if (state === "nominal") return <BodyView tab={tab} side={variant !== "a"} />;
+  const { state } = useProto();
+  const [period, setPeriod] = useState<Period>("3m");
+  const [entry, setEntry] = useState<Entry | null>(null);
   return (
-    <BodyView tab={tab}>
-      {state === "chargement" && (
+    <Page
+      title="Corps"
+      actions={
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {["a", "b", "c"].map((k) => (
-              <Skeleton key={k} className="h-24 rounded-xl" />
-            ))}
-          </div>
-          <Skeleton className="h-80 rounded-xl" />
+          <PeriodToggle value={period} onChange={setPeriod} />
+          <Button size="sm" onClick={() => setEntry("poids")}>
+            Noter mon poids
+          </Button>
         </>
-      )}
+      }
+    >
+      {state === "chargement" && <BodySkeleton />}
       {state === "erreur" && <StateError title="Les mesures n'ont pas pu se charger" />}
       {state === "vide" && (
         <Empty className="border border-dashed">
@@ -55,8 +55,21 @@ function BodyPage() {
               jour à l'autre.
             </EmptyDescription>
           </EmptyHeader>
+          <EmptyContent>
+            <Button onClick={() => setEntry("poids")}>Noter mon poids</Button>
+          </EmptyContent>
         </Empty>
       )}
-    </BodyView>
+      {state === "nominal" && <BodyView period={period} entry={entry} onEntry={setEntry} />}
+      {/* Hors de l'état nominal, la saisie reste ouvrable : c'est la première pesée. */}
+      {state !== "nominal" && (
+        <EntryDialog
+          entry={entry}
+          onOpenChange={(o) => !o && setEntry(null)}
+          onWeight={(kg) => toast.success(`${formatKg(kg)} noté pour aujourd'hui`)}
+          onMeasure={() => toast.success("Mesure notée")}
+        />
+      )}
+    </Page>
   );
 }

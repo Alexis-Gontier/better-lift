@@ -50,3 +50,18 @@ export const mockMeasurements: Measurement[] = [
 ];
 
 export const WEIGHT_GOAL = 78;
+
+/**
+ * Quand l'objectif sera atteint au rythme actuel (D268) : `perWeek` est la pente de la moyenne,
+ * en kg par semaine. Rien si l'on s'en éloigne, si l'on stagne, ou s'il est déjà atteint.
+ */
+export function goalEta(
+  current: number,
+  goal: number,
+  perWeek: number,
+  today: string,
+): string | null {
+  const gap = goal - current;
+  if (Math.abs(gap) < 0.05 || perWeek === 0 || Math.sign(gap) !== Math.sign(perWeek)) return null;
+  return addDays(today, Math.round((gap / perWeek) * 7));
+}

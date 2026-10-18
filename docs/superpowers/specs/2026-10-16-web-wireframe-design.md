@@ -309,6 +309,26 @@ et D199 (style), qui seront repris après validation du wireframe.
   reste (« • 2 »), la phrase entière en infobulle ; le champ du nom se réduit alors à son texte.
   Ce qui empêche d'enregistrer s'y lit toujours en entier (D252). Le sous-titre redevient fixe :
   la date d'une séance, le muscle et l'équipement d'un exercice.
+- **D267 — Progression répond à « est-ce que je progresse ? »** (2026-10-18, retire les onglets
+  Graphiques / Records et les variantes Grille / Un graphique). Période en boutons (4 sem.,
+  3 mois, 6 mois, 1 an), la même sur Corps. Puis, d'un seul défilement : un **bandeau** —
+  séances et volume par semaine, durée moyenne, records battus —, chacun comparé à la période
+  de même longueur juste avant ; la **force**, une carte par exercice parmi les six plus faits
+  de la période, avec la courbe de son 1RM estimé et son évolution en %, qui ouvre la fiche ;
+  les **séries par muscle et par semaine** face à une bande repère de 10 à 20, avec la
+  silhouette (remplacent volume et fréquence par muscle, qui n'apprenaient rien) ; la
+  **régularité**, une case par semaine selon le nombre de séances, et la série en cours ; les
+  **derniers records** (huit au plus, chacun ouvre sa séance), le tableau complet s'ouvrant dans
+  un panneau latéral « Tous les records ». La durée et le nombre de séances par semaine, en
+  graphiques, partent : le bandeau et la régularité les disent.
+- **D268 — Corps tient sur une page** (2026-10-18, retire les onglets Poids / Mensurations et
+  les variantes Empilé / Côte à côte). À gauche : un bandeau (moyenne sur 7 jours, tendance en kg
+  par semaine sur 4 semaines, objectif avec ce qui reste, barre de progression et date estimée
+  au rythme actuel, ou pourquoi il n'y en a pas), la courbe sur la période choisie, puis les
+  mensurations en cartes (dernière valeur, écart sur six mois, petite courbe, « Noter une
+  mesure »). À droite : le **journal des pesées**, la plus récente en tête, chacune corrigeable
+  sur place (enregistrée en quittant le champ) ou supprimable, un toast proposant d'annuler.
+  « Noter mon poids » reste l'action de la page, ouvrable dès l'état vide.
 
 ## 3. Coquille
 
