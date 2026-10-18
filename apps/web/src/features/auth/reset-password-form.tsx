@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { LinkIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useProto } from "@/components/proto/use-proto";
+import { useEtat } from "@/components/states/use-etat";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
@@ -20,7 +20,8 @@ import {
  */
 export function ResetPasswordForm() {
   const navigate = useNavigate();
-  const { state } = useProto();
+  // Tant que la page lit la maquette : nominal, sauf état forcé par l'URL.
+  const state = useEtat() ?? "nominal";
   const [next, setNext] = useState("");
   const [again, setAgain] = useState("");
   const [pending, setPending] = useState(false);

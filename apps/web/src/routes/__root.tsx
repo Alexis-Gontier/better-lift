@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { ProtoBar } from "@/components/proto/proto-bar";
-import { type ProtoOptions, parseProtoSearch } from "@/components/proto/proto-search";
+import { parseEtat } from "@/components/states/etat";
+import { EtatBar } from "@/components/states/etat-bar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -8,13 +8,13 @@ declare module "@tanstack/react-router" {
   interface StaticDataRouteOption {
     /** Libellé de la route dans le fil d'Ariane. */
     crumb?: string;
-    /** Ce que la barre de prototypage propose sur cette page (D223, D245). */
-    proto?: ProtoOptions;
+    /** La page répond aux quatre états, que `?etat=` peut forcer (D303). */
+    etats?: boolean;
   }
 }
 
 export const Route = createRootRoute({
-  validateSearch: parseProtoSearch,
+  validateSearch: parseEtat,
   component: Root,
 });
 
@@ -22,8 +22,8 @@ function Root() {
   return (
     <TooltipProvider delayDuration={0}>
       <Outlet />
-      <ProtoBar />
-      {/* Au centre : la barre de prototypage occupe le coin droit. */}
+      <EtatBar />
+      {/* Au centre : le sélecteur d'état occupe le coin droit. */}
       <Toaster position="bottom-center" />
     </TooltipProvider>
   );

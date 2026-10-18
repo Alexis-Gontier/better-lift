@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { useProto } from "@/components/proto/use-proto";
+import { useEtat } from "@/components/states/use-etat";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -127,7 +127,8 @@ const LATENCY_MS = 700;
  * est `erreur`. `?etat=chargement` fige le formulaire en attente.
  */
 export function useFakeSubmit(onSuccess: () => void) {
-  const { state } = useProto();
+  // Tant que la page lit la maquette : nominal, sauf état forcé par l'URL.
+  const state = useEtat() ?? "nominal";
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
   const submit = (e: React.FormEvent) => {

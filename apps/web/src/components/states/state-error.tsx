@@ -3,7 +3,7 @@ import { CircleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
-/** Erreur de chargement d'une page ; « Réessayer » retire l'état forcé du prototype. */
+/** Erreur de chargement d'une page ; « Réessayer » retire l'état forcé par l'URL (D303). */
 export function StateError({ title }: { title: string }) {
   const navigate = useNavigate();
   return (

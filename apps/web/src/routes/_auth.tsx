@@ -2,7 +2,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Brand } from "@/components/brand";
 
 export const Route = createFileRoute("/_auth")({
-  staticData: { proto: { states: true } },
+  staticData: { etats: true },
   component: AuthLayout,
 });
 

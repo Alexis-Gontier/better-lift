@@ -2,7 +2,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { MousePointerClick } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
-import { useProto } from "@/components/proto/use-proto";
+import { useEtat } from "@/components/states/use-etat";
 import {
   Empty,
   EmptyContent,
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Une ligne de liste est un `Link` vers son élément : le routeur pose `data-status="active"`
- * sur celle qui est ouverte. `search` garde l'état forcé, la variante et l'onglet d'une ligne
+ * sur celle qui est ouverte. `search` garde l'état forcé et l'onglet d'une ligne
  * à l'autre ; la recherche n'entre pas dans la comparaison (D235).
  */
 export const listLinkProps = {
@@ -232,7 +232,8 @@ export function DetailPlaceholder({
   empty?: ReactNode;
   children?: ReactNode;
 }) {
-  const { state } = useProto();
+  // Tant que la page lit la maquette : nominal, sauf état forcé par l'URL.
+  const state = useEtat() ?? "nominal";
   if (state === "chargement" || state === "erreur") return null;
   if (state === "vide") return empty ?? null;
   return (
