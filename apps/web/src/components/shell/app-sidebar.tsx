@@ -4,14 +4,13 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NAV_GROUPS } from "./nav";
+import { NAV_ITEMS } from "./nav";
 
 /** L'entrée est active sur sa page et ses sous-pages ; l'Accueil, seulement sur « / ». */
 function isActive(to: string, pathname: string): boolean {
@@ -33,29 +32,26 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        {NAV_GROUPS.map((group) => (
-          <SidebarGroup key={group.label ?? group.items[0]?.to}>
-            {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
-            <SidebarMenu>
-              {group.items.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    isActive={isActive(item.to, pathname)}
-                    // Gris par défaut, noir sur la page courante ; même graisse dans les deux cas.
-                    className="font-normal text-muted-foreground data-active:font-normal data-active:text-foreground"
-                  >
-                    <Link to={item.to}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
+        <SidebarGroup>
+          <SidebarMenu>
+            {NAV_ITEMS.map((item) => (
+              <SidebarMenuItem key={item.to}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  isActive={isActive(item.to, pathname)}
+                  // Gris par défaut, noir sur la page courante ; même graisse dans les deux cas.
+                  className="font-normal text-muted-foreground data-active:font-normal data-active:text-foreground"
+                >
+                  <Link to={item.to}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter />
       <SidebarRail />

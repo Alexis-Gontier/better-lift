@@ -12,7 +12,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import type { FileRouteTypes } from "@/routeTree.gen";
-import { NAV_GROUPS } from "./nav";
+import { NAV_ITEMS } from "./nav";
 
 type To = FileRouteTypes["to"];
 
@@ -62,7 +62,7 @@ export function CommandPalette({ open: paletteOpen, onOpenChange: setPaletteOpen
         <CommandList className="max-h-[min(28rem,60vh)]">
           <CommandEmpty>Aucun résultat.</CommandEmpty>
           <CommandGroup heading="Aller à">
-            {NAV_GROUPS.flatMap((g) => g.items).map((item) => (
+            {NAV_ITEMS.map((item) => (
               <CommandItem key={item.to} onSelect={() => go(item.to)}>
                 <item.icon /> {item.title}
               </CommandItem>

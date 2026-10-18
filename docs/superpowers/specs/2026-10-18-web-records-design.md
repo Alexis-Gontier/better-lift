@@ -126,14 +126,18 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
 - **D289 — Paramètres quitte la barre latérale** (2026-10-18). On y va par le menu du compte
   (l'avatar, en haut à droite) ou par la palette (« Paramètres » parmi les actions).
 
+- **D290 — La barre latérale est une seule liste** (2026-10-18). Plus d'intitulé « Entraînement » :
+  Accueil, Routines, Historique, Exercices, à la suite. L'Historique passe avant les Exercices.
+  `NAV_ITEMS` remplace `NAV_GROUPS` ; la palette suit le même ordre.
+
 ## 3. Barre latérale
 
 ```
-Accueil
-ENTRAÎNEMENT   Routines · Exercices · Historique
+Accueil · Routines · Historique · Exercices
 ```
 
-(Révisé par D285 : le groupe Analyse est parti ; par D289 : Paramètres aussi.)
+(Révisé par D285 : le groupe Analyse est parti ; par D289 : Paramètres aussi ; par D290 : une
+seule liste, sans intitulé de groupe.)
 
 Records prend l'icône `Trophy`. La palette perd « Planifier » et gagne « Aller à Records ».
 
