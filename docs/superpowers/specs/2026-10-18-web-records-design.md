@@ -141,6 +141,14 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   la page — identifiants refusés sans dire lequel, adresse hors `SIGNUP_ALLOWLIST`, envoi raté,
   lien expiré (dit avant la saisie). L'écran « e-mail envoyé » ne dit pas si le compte existe,
   comme `requestPasswordReset`.
+  L'inscription demande le mot de passe deux fois (« Les deux saisies diffèrent »), confirmation
+  propre à l'interface : Better Auth n'en reçoit qu'un.
+
+- **D292 — L'application vit sous `/app`** (2026-10-18). La racine du site est laissée à une
+  future landing, construite à part. Tout le web y passe, auth comprise (`/app/login`,
+  `/app/routines`…), à la façon d'ElevenLabs : le routeur porte `basepath: "/app"` et Vite
+  `base: "/app/"`, sans renommer une route. Le build Vercel range le SPA sous `static/app` ; en
+  attendant la landing, `/` redirige (307) vers `/app`. `/api` ne bouge pas.
 
 ## 3. Barre latérale
 

@@ -8,6 +8,8 @@ import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
   routeTree,
+  // L'application vit sous `/app`, la racine est à la landing (D292) ; Vite a le même `base`.
+  basepath: "/app",
   defaultNotFoundComponent: NotFoundPage,
   defaultErrorComponent: ErrorPage,
 });
