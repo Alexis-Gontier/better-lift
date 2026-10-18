@@ -74,6 +74,9 @@ const decimal = (n: number) => ({ toString: () => String(n) });
 const ligne: LigneRoutine = {
   id: "r1",
   nom: "Push",
+  note: null,
+  dossierId: null,
+  seances: [],
   exercices: [
     {
       reposSec: 180,
@@ -98,6 +101,8 @@ describe("projections", () => {
     expect(versDetail(ligne)).toEqual({
       id: "r1",
       nom: "Push",
+      note: null,
+      dossierId: null,
       exercices: [
         {
           slug: "barbell-bench-press",
@@ -117,7 +122,14 @@ describe("projections", () => {
   });
 
   it("résume en comptant exercices et séries", () => {
-    expect(versResume(ligne)).toEqual({ id: "r1", nom: "Push", nbExercices: 1, nbSeries: 2 });
+    expect(versResume(ligne)).toEqual({
+      id: "r1",
+      nom: "Push",
+      nbExercices: 1,
+      nbSeries: 2,
+      dossierId: null,
+      derniereSeance: null,
+    });
   });
 });
 
@@ -141,5 +153,34 @@ describe("supersets (D146)", () => {
   it("versDetail rend le groupe", () => {
     const l = { ...ligne, exercices: ligne.exercices.map((e) => ({ ...e, supersetGroupe: 1 })) };
     expect(versDetail(l).exercices[0]?.supersetGroupe).toBe(1);
+  });
+});
+
+describe("note, dossier, dernière séance (D296, D310)", () => {
+  it("versEcriture garde l'absence : rien à écrire (D298)", () => {
+    const e = versEcriture(saisie, ids);
+    expect("note" in e).toBe(false);
+    expect("dossierId" in e).toBe(false);
+  });
+
+  it("versEcriture recopie note et dossier quand ils sont donnés, null compris", () => {
+    expect(versEcriture({ ...saisie, note: null, dossierId: "d1" }, ids)).toMatchObject({
+      note: null,
+      dossierId: "d1",
+    });
+  });
+
+  it("versDetail et versResume rendent note, dossier et la dernière séance en ISO", () => {
+    const l = {
+      ...ligne,
+      note: "Lent",
+      dossierId: "d1",
+      seances: [{ debut: new Date("2026-10-10T08:00:00Z") }],
+    };
+    expect(versDetail(l)).toMatchObject({ note: "Lent", dossierId: "d1" });
+    expect(versResume(l)).toMatchObject({
+      dossierId: "d1",
+      derniereSeance: "2026-10-10T08:00:00.000Z",
+    });
   });
 });
