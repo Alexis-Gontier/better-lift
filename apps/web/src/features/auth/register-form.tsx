@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
+  AUTH_CONTROL,
   AuthCard,
   AuthLink,
   PASSWORD,
@@ -40,6 +41,7 @@ export function RegisterForm() {
           <Field>
             <FieldLabel htmlFor="name">Nom</FieldLabel>
             <Input
+              className={AUTH_CONTROL}
               id="name"
               autoComplete="name"
               maxLength={100}
@@ -52,6 +54,7 @@ export function RegisterForm() {
           <Field>
             <FieldLabel htmlFor="email">E-mail</FieldLabel>
             <Input
+              className={AUTH_CONTROL}
               id="email"
               type="email"
               autoComplete="email"
@@ -74,7 +77,11 @@ export function RegisterForm() {
             />
             <FieldDescription>Au moins {PASSWORD.min} caractères.</FieldDescription>
           </Field>
-          <SubmitButton pending={pending} disabled={tooShort} pendingLabel="Création…">
+          <SubmitButton
+            pending={pending}
+            disabled={name.trim() === "" || email === "" || password.length < PASSWORD.min}
+            pendingLabel="Création…"
+          >
             Créer le compte
           </SubmitButton>
         </FieldGroup>

@@ -20,18 +20,32 @@ type AuthTo = Extract<
   "/login" | "/register" | "/forgot-password" | "/reset-password"
 >;
 
-/** Un lien entre pages d'auth : garde la variante, pas l'état forcé. */
-export function AuthLink({ to, children }: { to: AuthTo; children: ReactNode }) {
+/** Un lien entre pages d'auth, sans l'état forcé. `quiet` : petit et gris, à côté d'un libellé. */
+export function AuthLink({
+  to,
+  quiet,
+  children,
+}: {
+  to: AuthTo;
+  quiet?: boolean;
+  children: ReactNode;
+}) {
   return (
     <Link
       to={to}
-      search={(s) => ({ v: s.v })}
-      className="font-medium text-foreground underline-offset-4 hover:underline"
+      className={
+        quiet
+          ? "text-muted-foreground text-xs hover:text-foreground"
+          : "font-medium text-foreground underline underline-offset-4"
+      }
     >
       {children}
     </Link>
   );
 }
+
+/** Champs et bouton plus hauts que la densité du web : on vise et on tape. */
+export const AUTH_CONTROL = "h-10";
 
 type CardProps = {
   title: string;
@@ -46,10 +60,10 @@ type CardProps = {
 /** Le cadre commun aux pages d'auth : titre, message d'échec, formulaire, lien secondaire. */
 export function AuthCard({ title, description, error, children, footer }: CardProps) {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="font-semibold text-2xl tracking-tight">{title}</h1>
-        {description && <p className="text-muted-foreground text-sm">{description}</p>}
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-2 text-center">
+        <h1 className="font-semibold text-3xl tracking-tight">{title}</h1>
+        {description && <p className="text-balance text-muted-foreground text-sm">{description}</p>}
       </div>
       {error && (
         <Alert variant="destructive">
@@ -69,7 +83,7 @@ type PasswordProps = Omit<React.ComponentProps<"input">, "type">;
 export function PasswordInput(props: PasswordProps) {
   const [visible, setVisible] = useState(false);
   return (
-    <InputGroup>
+    <InputGroup className={AUTH_CONTROL}>
       <InputGroupInput type={visible ? "text" : "password"} maxLength={PASSWORD.max} {...props} />
       <InputGroupAddon align="inline-end">
         <InputGroupButton
@@ -98,7 +112,7 @@ export function SubmitButton({
   pendingLabel: string;
 }) {
   return (
-    <Button type="submit" className="w-full" disabled={pending || disabled}>
+    <Button type="submit" className={`${AUTH_CONTROL} w-full`} disabled={pending || disabled}>
       {pending && <Loader2 className="animate-spin" />}
       {pending ? pendingLabel : children}
     </Button>

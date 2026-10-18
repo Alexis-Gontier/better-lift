@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { AuthCard, AuthLink, SubmitButton, useFakeSubmit } from "./auth-card";
+import { AUTH_CONTROL, AuthCard, AuthLink, SubmitButton, useFakeSubmit } from "./auth-card";
 
 /**
  * Mot de passe oublié par `requestPasswordReset`. Better Auth répond pareil que l'adresse ait
@@ -28,8 +28,10 @@ export function ForgotPasswordForm() {
         }
         footer={<AuthLink to="/login">Retour à la connexion</AuthLink>}
       >
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed p-6 text-center">
-          <MailCheck className="size-8 text-muted-foreground" />
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="flex size-12 items-center justify-center rounded-full bg-muted">
+            <MailCheck className="size-5 text-muted-foreground" />
+          </span>
           <p className="text-muted-foreground text-sm">Rien reçu ? Regardez les indésirables.</p>
           <Button variant="outline" size="sm" onClick={() => toast.success("Lien renvoyé")}>
             Renvoyer le lien
@@ -51,6 +53,7 @@ export function ForgotPasswordForm() {
           <Field>
             <FieldLabel htmlFor="email">E-mail</FieldLabel>
             <Input
+              className={AUTH_CONTROL}
               id="email"
               type="email"
               autoComplete="email"
@@ -61,7 +64,7 @@ export function ForgotPasswordForm() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </Field>
-          <SubmitButton pending={pending} pendingLabel="Envoi…">
+          <SubmitButton pending={pending} disabled={email === ""} pendingLabel="Envoi…">
             Envoyer le lien
           </SubmitButton>
         </FieldGroup>

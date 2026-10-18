@@ -2,7 +2,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { AuthCard, AuthLink, PasswordInput, SubmitButton, useFakeSubmit } from "./auth-card";
+import {
+  AUTH_CONTROL,
+  AuthCard,
+  AuthLink,
+  PasswordInput,
+  SubmitButton,
+  useFakeSubmit,
+} from "./auth-card";
 
 /**
  * Connexion par `signIn.email`. Better Auth ne dit pas lequel des deux est faux : le message
@@ -29,6 +36,7 @@ export function LoginForm() {
           <Field>
             <FieldLabel htmlFor="email">E-mail</FieldLabel>
             <Input
+              className={AUTH_CONTROL}
               id="email"
               type="email"
               autoComplete="email"
@@ -42,8 +50,10 @@ export function LoginForm() {
           <Field>
             <div className="flex items-center">
               <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
-              <span className="ml-auto text-sm">
-                <AuthLink to="/forgot-password">Mot de passe oublié ?</AuthLink>
+              <span className="ml-auto">
+                <AuthLink to="/forgot-password" quiet>
+                  Mot de passe oublié ?
+                </AuthLink>
               </span>
             </div>
             <PasswordInput
@@ -54,7 +64,11 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Field>
-          <SubmitButton pending={pending} pendingLabel="Connexion…">
+          <SubmitButton
+            pending={pending}
+            disabled={email === "" || password === ""}
+            pendingLabel="Connexion…"
+          >
             Se connecter
           </SubmitButton>
         </FieldGroup>
