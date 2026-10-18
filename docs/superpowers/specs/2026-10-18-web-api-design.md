@@ -126,6 +126,9 @@ Constats de départ :
 - **D310 — Une routine sait quand elle a été faite** (2026-10-18). `RoutineResume` gagne
   `derniereSeance` (ISO ou `null`) et `dossierId` : la liste du web les affiche sans lire les
   séances.
+  **Précision** (2026-10-18, au lot Routines) : aussi `exercices` (nom et muscle principal de
+  chacun) et `dureeEstimeeSec` (`dureeEstimeeSec` de `shared`) — la liste cherche dans les
+  noms d'exercices, montre les muscles et la durée sans lire chaque routine.
 - **D311 — Les séances se filtrent par routine** (2026-10-18). `GET /seances` accepte
   `routine=<id>` ; les stats d'une routine (D280 : séances, volume et sa tendance, durée,
   records, réalisation) se calculent sur ces `SeanceResume` (`debut`, `fin`, `volumeKg`,
