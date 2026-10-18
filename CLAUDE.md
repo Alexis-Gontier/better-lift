@@ -27,7 +27,15 @@ coquille plate, en-tête commun à fil d'Ariane, cartes et graphes shadcn. Le mo
 « Underground orange », Barlow, Accueil tableau de la semaine, onglet Progrès, horloge de salle ;
 le web bascule ensuite (D177). Le mobile est ensuite **resserré pour le MVP** (D178,
 `2026-10-13-mobile-mvp-retrait-design.md`) : Accueil, Progrès et détail de séance retirés, la barre
-est Routines · Démarrer · Profil ; les pages gardées sont revues une à une. **Prochaine étape : l'épreuve du jalon** — abandonner Hevy un mois complet ; ce qui manquera guidera la suite.
+est Routines · Démarrer · Profil ; les pages gardées sont revues une à une. Le web est ensuite
+**redessiné en wireframe** (D221–D292, `2026-10-16-web-wireframe-design.md`,
+`2026-10-18-web-records-design.md`) : Accueil · Routines · Historique · Exercices, Paramètres au
+menu du compte, l'application sous `/app` (la racine est laissée à une landing). Puis le web est
+**branché sur l'API** (D293–D313, `2026-10-18-web-api-design.md`) : plus de maquette, une couche
+de requêtes par page, dossiers et notes de routine côté API, suite Playwright de bout en bout
+(`pnpm --filter @better-lift/web e2e`, compte `e2e@better-lift.local` sur la branche Neon `dev`,
+identifiants dans `apps/web/.env.e2e`). **Prochaine étape : l'épreuve du jalon** — abandonner Hevy
+un mois complet ; ce qui manquera guidera la suite.
 `git log` et les plans de `docs/superpowers/plans/` donnent le détail.
 
 Distant : `Alexis-Gontier/better-lift` (privé). Le code de la V1 reste sur la branche `v1` et le

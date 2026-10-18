@@ -24,6 +24,31 @@ Conception : [`2026-10-18-web-api-design.md`](../../docs/superpowers/specs/2026-
 - Knip voit tout le web (D309) : seuls `components/ui/` et `lib/utils.ts` sont des entrées ;
   le code des registres (`reui/`, `kibo-ui/`) n'est dispensé que de ses exports inutilisés.
 
+## Données (D299–D304, D313)
+
+- **Une couche de requêtes par page** : `features/<x>/queries.ts` (clés, `queryOptions`,
+  mutations) ; ce que plusieurs pages lisent vit dans `lib/` (`catalogue.ts`, `exercices.ts`).
+  Les écrans consomment les types de l'API ; les calculs viennent de `shared`.
+- **Tout appel passe par `lire()`** (`lib/api.ts`) : une réponse non `ok` devient une `ErreurApi`
+  (message de `{ erreur }`, statut ; 0 si le serveur est injoignable). Un 401 relit la session et
+  la garde renvoie à la connexion (`main.tsx`).
+- **Les routes préchargent sans attendre** (`prefetchQuery` dans `loader`) ; la page lit par
+  `useQuery` et choisit son état par `etatAffiche(useEtat(), requête, vide)` — `?etat=` force
+  toujours un des quatre états (D303), la barre d'état ne s'affiche qu'en développement.
+- **Le libellé d'une page de détail** dans le fil d'Ariane : `useCrumbLabel(nom)`.
+- **Supprimer** : `useSuppression` (`components/use-suppression.ts`) — l'élément sort du cache,
+  l'appel part à la fin du toast « Annuler » (`lib/differe.ts`, `keepalive`), D302.
+- **Éditeur de routine** : le `Brouillon` de `shared` (charges en texte « 82,5 »), la version
+  enregistrée gardée en état pour que ses clés suivent le brouillon ; `useEditable` attend
+  l'enregistrement (succès dit après la réponse, échec gardé).
+- **Fuseau et kilos** : `lib/locale.ts` seul (`jourCivil`, `joursDepuis`, `SYSTEME`), D313.
+- **E2E** : `apps/web/e2e/`, compte `e2e@` seulement, données préfixées `e2e-` et nettoyées ;
+  `CAPTURES=page1,page2 … e2e captures` photographie des pages avec la session E2E.
+
+> Les sections qui suivent décrivent l'**ancien web** (poste d'analyse, D132–D160), remplacé par
+> le wireframe (D221+) puis branché (D293+). Ce qui y vaut encore : les principes de coquille et
+> d'élévation ; les noms de fichiers, d'écrans et de routes, non.
+
 ## Coquille (D69–D73, D81)
 
 Conception : [`2026-09-24-coquille-shadcn-design.md`](../../docs/superpowers/specs/2026-09-24-coquille-shadcn-design.md),
