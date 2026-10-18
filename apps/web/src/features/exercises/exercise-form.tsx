@@ -261,7 +261,7 @@ export function ExerciseMenu({
                 ? `Il figure dans ${blockers.join(" et ")}. ${
                     sessions > 0
                       ? "Une séance faite le garde : il reste dans vos exercices."
-                      : "Retirez-le de ces routines avant de le supprimer."
+                      : `Retirez-le de ${routines.length > 1 ? "ces routines" : "cette routine"} avant de le supprimer.`
                   }`
                 : "Il disparaît de la liste de vos exercices."}
             </AlertDialogDescription>
