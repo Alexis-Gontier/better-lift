@@ -1,9 +1,9 @@
 # better-lift — système visuel « Underground orange »
 
-Ce que voit et touche l'utilisateur de l'app mobile, en un seul endroit. La décision et ses raisons
-sont dans [`docs/superpowers/specs/2026-10-11-mobile-identite-design.md`](docs/superpowers/specs/2026-10-11-mobile-identite-design.md)
-(D161–D177) ; le code fait foi pour les valeurs (`apps/mobile/lib/palette.ts`, `lib/theme.ts`).
-**Le web garde encore le lime** : il bascule dans un chantier à part (D177).
+Ce que voit et touche l'utilisateur de l'app mobile, en un seul endroit. Les décisions sont dans
+[`docs/decisions.md`](docs/decisions.md) (D161–D176) ; les valeurs exactes vivent dans le code
+(`apps/mobile/lib/palette.ts`, `lib/theme.ts`). Le web n'a pas encore d'identité : c'est un
+wireframe shadcn en gris, dont le style se décidera après l'épreuve du jalon.
 
 ## Thèse
 
@@ -26,9 +26,9 @@ Un token par rôle, deux valeurs (sombre / clair). `lib/palette.test.ts` vérifi
 | `danger` / `dangerEncre` | `#c42443` / `#ff4d6d` | `#c4213f` | Toujours avec un mot ; rouge rosé, loin de l'orange |
 | `superset` | `#9a8cf0` | `#5a4bbf` | Repère de superset |
 
-**L'orange ne porte que l'action (aplat) et le record (contour).** Trois exceptions bornées, des
-intensités d'effort : la carte du corps, le calendrier (et les jours entraînés de l'Accueil),
-l'horloge de salle. Jamais sur les lignes de série, l'onglet actif ou un titre.
+**L'orange ne porte que l'action (aplat) et le record (contour).** Deux exceptions bornées, des
+intensités d'effort : la carte du corps et l'horloge de salle. Jamais sur les lignes de série,
+l'onglet actif ou un titre.
 
 ## Typographie
 
@@ -46,10 +46,10 @@ l'horloge de salle. Jamais sur les lignes de série, l'onglet actif ou un titre.
 
 ## Composants qui portent l'identité
 
-- **Barre d'onglets** : Accueil · Routines · rond orange Démarrer / Reprendre · Progrès · Profil ;
-  l'onglet actif dans une pilule `surface3` (la forme dit la position).
+- **Barre d'onglets** : Routines · rond orange Démarrer / Reprendre · Profil ; l'onglet actif
+  dans une pilule `surface3` (la forme dit la position).
 - **L'horloge de salle** (geste signature) : après chaque coche qui lance un repos, une feuille
-  aux deux tiers de l'écran, décompte en affiche orange ~128, « Ensuite », −15 s · +15 s · Passer ;
+  aux deux tiers de l'écran, décompte en affiche orange (~128), « Ensuite », −15 s · +15 s · Passer ;
   glissée vers le bas, elle redevient le bandeau d'une ligne.
 - **Badge record** : contour orange, fond teinté, flèche montante.
 - **Squelette** : le chargement d'une page dessine ses cartes et pulse doucement.

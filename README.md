@@ -52,8 +52,9 @@ La CI rejoue la même chaîne sur chaque PR ; `main` n'accepte que des PR fusion
 
 ## Documentation
 
-- [Conception](docs/superpowers/specs/2026-09-22-better-lift-redemarrage-design.md) — décisions et
-  pièges ; les autres specs du dossier la complètent.
+- [Conception](docs/conception.md) — produit, architecture, données, ce qui ne se perd jamais.
+- [Registre des décisions](docs/decisions.md) — les choix en vigueur, que le code cite (« D57 »).
+- [Système visuel du mobile](DESIGN.md).
 - [Déploiement](docs/deploiement.md) — Vercel et APK EAS.
 - [`CLAUDE.md`](CLAUDE.md) et [`.claude/rules/`](.claude/rules/) — consignes pour l'agent de code.
 
