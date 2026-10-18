@@ -53,9 +53,36 @@ type ExerciceRoutine = {
   series: SerieRoutine[];
 };
 
-export type RoutineDetail = { id: string; nom: string; exercices: ExerciceRoutine[] };
+export type RoutineDetail = {
+  id: string;
+  nom: string;
+  /**
+   * La note de la routine (D296), `null` sans note. Facultative, comme son dossier : une
+   * routine gardée hors ligne par une version antérieure du mobile ne les a pas — et ce qu'on
+   * ne connaît pas, on ne le renvoie pas (D298).
+   */
+  note?: string | null;
+  /** Son dossier, `null` : « Sans dossier ». */
+  dossierId?: string | null;
+  exercices: ExerciceRoutine[];
+};
 
-export type RoutineResume = { id: string; nom: string; nbExercices: number; nbSeries: number };
+export type RoutineResume = {
+  id: string;
+  nom: string;
+  nbExercices: number;
+  nbSeries: number;
+  dossierId: string | null;
+  /** ISO de la dernière séance faite depuis cette routine, `null` si jamais (D310). */
+  derniereSeance: string | null;
+  /** Ses exercices, dans l'ordre : la liste du web les cherche et en montre les muscles (D310). */
+  exercices: { nom: string; musclePrincipal: string }[];
+  /** `dureeEstimeeSec` de ses exercices : la liste l'affiche sans lire chaque routine. */
+  dureeEstimeeSec: number;
+};
+
+/** Un dossier de routines (D296). */
+export type Dossier = { id: string; nom: string };
 
 // --- Le contrat d'écriture ---------------------------------------------------
 // Ce que l'éditeur envoie. L'ordre des tableaux EST la position : le client
@@ -75,8 +102,19 @@ const exerciceSaisi = z.object({
   series: z.array(serieSaisie).min(1).max(20),
 });
 
+/** Une note blanche vaut pas de note. La borne s'applique avant le rognage. */
+const note = z
+  .string()
+  .max(1000)
+  .transform((s) => (s.trim() === "" ? null : s.trim()))
+  .nullable();
+
 export const routineSaisie = z.object({
   nom: z.string().trim().min(1).max(120),
+  // D298 : ABSENTS, ils restent tels quels en base — un client qui ne les connaît pas (une
+  // version du mobile d'avant les dossiers) ne les efface pas en enregistrant.
+  note: note.optional(),
+  dossierId: z.string().min(1).max(40).nullable().optional(),
   exercices: z.array(exerciceSaisi).min(1).max(50),
 });
 
@@ -88,6 +126,20 @@ export const ordreRoutines = z.object({
     .max(500)
     .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
 });
+
+// --- Les dossiers (D297) ----------------------------------------------------
+
+export const dossierSaisi = z.object({ nom: z.string().trim().min(1).max(60) });
+
+export const ordreDossiers = z.object({
+  ids: z
+    .array(z.string().min(1))
+    .max(500)
+    .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
+});
+
+/** Ranger une routine ailleurs, sans renvoyer toute la routine ; `null` : « Sans dossier ». */
+export const deplacementRoutine = z.object({ dossierId: z.string().min(1).max(40).nullable() });
 
 // --- L'affichage des séries ---------------------------------------------------
 

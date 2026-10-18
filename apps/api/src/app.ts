@@ -6,6 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { auth } from "./auth.js";
+import { routesDossiers } from "./routes/dossiers.js";
 import { routesExercices } from "./routes/exercices.js";
 import { routesExport } from "./routes/export.js";
 import { health } from "./routes/health.js";
@@ -14,6 +15,7 @@ import { routesRecords } from "./routes/records.js";
 import { routesRoutines } from "./routes/routines.js";
 import { routesSeances } from "./routes/seances.js";
 import { routesStats } from "./routes/stats.js";
+import { depotDossiers } from "./services/dossiers.js";
 import { depotPreferences } from "./services/preferences.js";
 import { depotPrisma as depotRoutines } from "./services/routines.js";
 import { depotLecture, depotPrisma as depotSeances } from "./services/seances.js";
@@ -60,9 +62,11 @@ const lireSession = (headers: Headers) => auth.api.getSession({ headers });
 
 const routes = app
   .route("/health", health)
-  .route("/exercices", routesExercices())
+  // AVANT le catalogue : son `/:slug` prendrait « faits » pour un slug (D312).
   .route("/exercices", routesRecords(depotLecture, lireSession))
-  .route("/routines", routesRoutines(depotRoutines, lireSession))
+  .route("/exercices", routesExercices())
+  .route("/routines", routesRoutines(depotRoutines, depotDossiers, lireSession))
+  .route("/dossiers", routesDossiers(depotDossiers, lireSession))
   .route("/seances", routesSeances(depotSeances, depotLecture, lireSession))
   .route("/stats", routesStats(depotStats, lireSession))
   .route("/preferences", routesPreferences(depotPreferences, lireSession))

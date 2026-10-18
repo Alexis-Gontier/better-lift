@@ -12,6 +12,10 @@ import type { DepotLectureSeances } from "../services/seances.js";
 export function routesRecords(lecture: DepotLectureSeances, lireSession: LireSession) {
   return (
     new Hono()
+      // Les exercices que l'utilisateur a faits (D312), joints au catalogue par le web.
+      .get("/faits", exigerSession(lireSession), async (c) =>
+        c.json({ exercices: await lecture.exercicesFaits(c.get("userId")) }, 200),
+      )
       .get("/:slug/records", exigerSession(lireSession), async (c) => {
         const records = await lecture.records(c.get("userId"), c.req.param("slug"));
         return records

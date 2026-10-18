@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  dossierSaisi,
   dureeEstimeeSec,
   etiquettesSeries,
   meilleureSerie,
@@ -179,5 +180,41 @@ describe("routineSaisie et les supersets (D145)", () => {
   });
   it("refuse un groupe nul ou négatif", () => {
     expect(routineSaisie.safeParse(avec(0)).success).toBe(false);
+  });
+});
+
+describe("routineSaisie : note et dossier (D298)", () => {
+  const base = {
+    nom: "Push",
+    exercices: [{ slug: "a", reposSec: null, series: [serie] }],
+  };
+
+  it("laisse note et dossier absents : l'écriture les garde", () => {
+    const s = routineSaisie.parse(base);
+    expect(s.note).toBeUndefined();
+    expect(s.dossierId).toBeUndefined();
+  });
+
+  it("rogne la note, et ramène une note blanche à null", () => {
+    expect(routineSaisie.parse({ ...base, note: "  Lent  " }).note).toBe("Lent");
+    expect(routineSaisie.parse({ ...base, note: "   " }).note).toBeNull();
+    expect(routineSaisie.parse({ ...base, note: null }).note).toBeNull();
+  });
+
+  it("refuse une note de plus de 1000 caractères", () => {
+    expect(routineSaisie.safeParse({ ...base, note: "x".repeat(1001) }).success).toBe(false);
+  });
+
+  it("accepte un dossier, ou null pour « Sans dossier »", () => {
+    expect(routineSaisie.parse({ ...base, dossierId: "d1" }).dossierId).toBe("d1");
+    expect(routineSaisie.parse({ ...base, dossierId: null }).dossierId).toBeNull();
+  });
+});
+
+describe("dossierSaisi (D297)", () => {
+  it("rogne le nom, et refuse le vide ou plus de 60 caractères", () => {
+    expect(dossierSaisi.parse({ nom: "  PPL " }).nom).toBe("PPL");
+    expect(dossierSaisi.safeParse({ nom: " " }).success).toBe(false);
+    expect(dossierSaisi.safeParse({ nom: "x".repeat(61) }).success).toBe(false);
   });
 });

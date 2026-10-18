@@ -97,9 +97,13 @@ function fauxDepot() {
   return { depot, ecritures: () => ecritures };
 }
 
+/** Ce que `lister` a reçu, appel par appel : on vérifie ce que la route lui passe. */
+const appelsLister: unknown[][] = [];
+
 /** La lecture : une séance « s-1 » à alice, et une réponse reconnaissable pour « precedentes ». */
 const fauxLecture: DepotLectureSeances = {
-  async lister(userId) {
+  async lister(userId, page, taille, routineId) {
+    appelsLister.push([userId, page, taille, routineId]);
     return userId === "alice"
       ? {
           seances: [
@@ -140,6 +144,9 @@ const fauxLecture: DepotLectureSeances = {
     return Object.fromEntries(slugs.map((s) => [s, [{ reps: 6, chargeKg: 82.5, faite: true }]]));
   },
   async records() {
+    return [];
+  },
+  async exercicesFaits() {
     return [];
   },
   async historiqueExercice() {
@@ -224,6 +231,14 @@ describe("la lecture des séances", () => {
     const { lire } = monter();
     expect(((await (await lire("/seances")).json()) as { total: number }).total).toBe(1);
     expect(((await (await lire("/seances", "bob")).json()) as { total: number }).total).toBe(0);
+  });
+
+  it("filtre par routine quand `routine` est donné (D311)", async () => {
+    const { lire } = monter();
+    expect((await lire("/seances?routine=r1&taille=100")).status).toBe(200);
+    expect(appelsLister.at(-1)).toEqual(["alice", 1, 100, "r1"]);
+    await lire("/seances");
+    expect(appelsLister.at(-1)).toEqual(["alice", 1, 30, undefined]);
   });
 
   it("rend 404, jamais 403, sur la séance d'un autre", async () => {

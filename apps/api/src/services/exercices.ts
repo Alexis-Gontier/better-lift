@@ -29,7 +29,7 @@ export type LigneExercice = {
 };
 
 // `gifUrl` entre dans le résumé : l'image fixe de la liste s'en déduit.
-const CHAMPS_RESUME = {
+export const CHAMPS_RESUME = {
   slug: true,
   nomFr: true,
   nomRecherche: true,

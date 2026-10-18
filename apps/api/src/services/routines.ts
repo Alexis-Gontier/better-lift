@@ -1,5 +1,6 @@
 import { prisma } from "@better-lift/db";
 import {
+  dureeEstimeeSec,
   normaliserGroupes,
   type RoutineDetail,
   type RoutineResume,
@@ -23,6 +24,13 @@ export class SlugInconnu extends Error {
   }
 }
 
+/** Le dossier donné n'existe pas ou n'est pas à lui : introuvable, comme sa routine (D297). */
+export class DossierInconnu extends Error {
+  constructor() {
+    super("Dossier introuvable.");
+  }
+}
+
 type SerieEcrite = {
   position: number;
   type: TypeSerie;
@@ -41,9 +49,12 @@ type ExerciceEcrit = {
 export function versEcriture(
   saisie: RoutineSaisie,
   idsParSlug: Map<string, string>,
-): { nom: string; exercices: ExerciceEcrit[] } {
+): { nom: string; note?: string | null; dossierId?: string | null; exercices: ExerciceEcrit[] } {
   return {
     nom: saisie.nom,
+    // D298 : absents de la saisie, ils restent absents — donc inchangés en base.
+    ...(saisie.note !== undefined && { note: saisie.note }),
+    ...(saisie.dossierId !== undefined && { dossierId: saisie.dossierId }),
     // D146 : un groupe mal formé se corrige, il ne fait pas refuser la routine.
     exercices: normaliserGroupes(saisie.exercices).map((e, position) => {
       const exerciseId = idsParSlug.get(e.slug);
@@ -66,6 +77,10 @@ export function versEcriture(
 export type LigneRoutine = {
   id: string;
   nom: string;
+  note: string | null;
+  dossierId: string | null;
+  /** La dernière séance faite depuis la routine, au plus une (D310). */
+  seances: { debut: Date }[];
   exercices: {
     reposSec: number | null;
     supersetGroupe: number | null;
@@ -88,6 +103,8 @@ export function versDetail(l: LigneRoutine): RoutineDetail {
   return {
     id: l.id,
     nom: l.nom,
+    note: l.note,
+    dossierId: l.dossierId,
     exercices: l.exercices.map((e) => ({
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
@@ -111,6 +128,13 @@ export function versResume(l: LigneRoutine): RoutineResume {
     nom: l.nom,
     nbExercices: l.exercices.length,
     nbSeries: l.exercices.reduce((n, e) => n + e.series.length, 0),
+    dossierId: l.dossierId,
+    derniereSeance: l.seances[0]?.debut.toISOString() ?? null,
+    exercices: l.exercices.map((e) => ({
+      nom: e.exercise.nomFr,
+      musclePrincipal: e.exercise.target,
+    })),
+    dureeEstimeeSec: dureeEstimeeSec(l.exercices),
   };
 }
 
@@ -124,11 +148,16 @@ export type DepotRoutines = {
   supprimer(userId: string, id: string): Promise<boolean>;
   /** `false` si un identifiant n'est pas à lui : rien n'est alors modifié. */
   ordonner(userId: string, ids: string[]): Promise<boolean>;
+  /** Range la routine dans un dossier, `null` : « Sans dossier ». `false` si elle n'est pas à lui ; lève `DossierInconnu`. */
+  deplacer(userId: string, id: string, dossierId: string | null): Promise<boolean>;
 };
 
 const LECTURE = {
   id: true,
   nom: true,
+  note: true,
+  dossierId: true,
+  seances: { orderBy: { debut: "desc" }, take: 1, select: { debut: true } },
   exercices: {
     orderBy: { position: "asc" },
     select: {
@@ -153,6 +182,23 @@ async function resoudre(saisie: RoutineSaisie): Promise<Map<string, string>> {
     select: { id: true, slug: true },
   });
   return new Map(lignes.map((l) => [l.slug, l.id]));
+}
+
+/**
+ * Un dossier donné doit être à lui : celui d'autrui est introuvable (D297). Vérifié DANS la
+ * transaction de l'écriture, pour qu'il ne disparaisse pas entre-temps.
+ */
+async function verifierDossier(
+  tx: Pick<typeof prisma, "dossier">,
+  userId: string,
+  dossierId: string | null | undefined,
+) {
+  if (!dossierId) return;
+  const sien = await tx.dossier.findFirst({
+    where: { id: dossierId, userId },
+    select: { id: true },
+  });
+  if (!sien) throw new DossierInconnu();
 }
 
 /** Les exercices à créer, sous la forme imbriquée qu'attend Prisma. */
@@ -185,21 +231,26 @@ export const depotPrisma: DepotRoutines = {
 
   async creer(userId, saisie) {
     const ecriture = versEcriture(saisie, await resoudre(saisie));
-    // En dernière position : une routine neuve s'ajoute au bas de la liste.
-    const derniere = await prisma.routine.aggregate({
-      where: { userId },
-      _max: { position: true },
+    return prisma.$transaction(async (tx) => {
+      await verifierDossier(tx, userId, ecriture.dossierId);
+      // En dernière position : une routine neuve s'ajoute au bas de la liste.
+      const derniere = await tx.routine.aggregate({
+        where: { userId },
+        _max: { position: true },
+      });
+      const creee = await tx.routine.create({
+        data: {
+          userId,
+          nom: ecriture.nom,
+          note: ecriture.note ?? null,
+          dossierId: ecriture.dossierId ?? null,
+          position: (derniere._max.position ?? -1) + 1,
+          exercices: creationImbriquee(ecriture),
+        },
+        select: { id: true },
+      });
+      return creee.id;
     });
-    const creee = await prisma.routine.create({
-      data: {
-        userId,
-        nom: ecriture.nom,
-        position: (derniere._max.position ?? -1) + 1,
-        exercices: creationImbriquee(ecriture),
-      },
-      select: { id: true },
-    });
-    return creee.id;
   },
 
   async remplacer(userId, id, saisie) {
@@ -209,11 +260,18 @@ export const depotPrisma: DepotRoutines = {
       // faite avant et l'écriture, la routine pourrait avoir été supprimée.
       const existe = await tx.routine.findFirst({ where: { id, userId }, select: { id: true } });
       if (!existe) return false;
-      // Remplacement complet (D50) : les séries partent en cascade.
+      await verifierDossier(tx, userId, ecriture.dossierId);
+      // Remplacement complet (D50) : les séries partent en cascade. Note et dossier ne
+      // changent que s'ils sont donnés (D298).
       await tx.routineExercice.deleteMany({ where: { routineId: id } });
       await tx.routine.update({
         where: { id },
-        data: { nom: ecriture.nom, exercices: creationImbriquee(ecriture) },
+        data: {
+          nom: ecriture.nom,
+          ...(ecriture.note !== undefined && { note: ecriture.note }),
+          ...(ecriture.dossierId !== undefined && { dossierId: ecriture.dossierId }),
+          exercices: creationImbriquee(ecriture),
+        },
       });
       return true;
     });
@@ -232,6 +290,14 @@ export const depotPrisma: DepotRoutines = {
         ids.map((id, position) => tx.routine.update({ where: { id }, data: { position } })),
       );
       return true;
+    });
+  },
+
+  async deplacer(userId, id, dossierId) {
+    return prisma.$transaction(async (tx) => {
+      await verifierDossier(tx, userId, dossierId);
+      const { count } = await tx.routine.updateMany({ where: { id, userId }, data: { dossierId } });
+      return count > 0;
     });
   },
 };

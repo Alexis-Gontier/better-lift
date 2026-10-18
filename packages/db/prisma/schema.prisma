@@ -78,6 +78,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   routines      Routine[]
+  dossiers      Dossier[]
   seances       Seance[]
   preferences   Preferences?
 
@@ -164,13 +165,35 @@ model Routine {
   nom       String   @db.VarChar(120)
   // Ordre dans la liste de l'utilisateur.
   position  Int      @default(0)
+  // D296 : supprimer un dossier range ses routines dans « Sans dossier ».
+  dossierId String?
+  note      String?  @db.VarChar(1000)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dossier   Dossier?          @relation(fields: [dossierId], references: [id], onDelete: SetNull)
   exercices RoutineExercice[]
   seances   Seance[]
 
+  @@index([userId, position])
+  @@index([dossierId])
+}
+
+/// Un dossier de routines (D296) : une table plutôt qu'un texte sur la routine, pour qu'un
+/// dossier vide existe, se renomme en une écriture et garde sa place.
+model Dossier {
+  id        String   @id @default(cuid())
+  userId    String
+  nom       String   @db.VarChar(60)
+  // Ordre dans la liste de l'utilisateur.
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routines Routine[]
+
+  @@unique([userId, nom])
   @@index([userId, position])
 }
 

@@ -25,7 +25,17 @@ export type ExerciceBrouillon = {
   series: SerieBrouillon[];
 };
 
-export type Brouillon = { nom: string; exercices: ExerciceBrouillon[] };
+export type Brouillon = {
+  nom: string;
+  /**
+   * En texte, comme tapée ; blanche, elle vaut « pas de note ». ABSENTE quand le détail lu ne
+   * la portait pas (cache d'une version antérieure) : on ne l'envoie pas, le serveur la garde.
+   */
+  note?: string;
+  /** Repris tel quel, l'éditeur ne le change pas ; absent : inconnu, non envoyé (D298). */
+  dossierId?: string | null;
+  exercices: ExerciceBrouillon[];
+};
 
 // Pas de `crypto.randomUUID` : Hermes ne l'a pas. La clé n'a qu'à être unique
 // dans l'écran ouvert — un compteur suffit, l'horodatage sépare deux ouvertures.
@@ -33,9 +43,11 @@ let compteur = 0;
 const cle = () => `${Date.now().toString(36)}-${(compteur++).toString(36)}`;
 
 export function versBrouillon(r: RoutineDetail | null, systeme: UnitSystem): Brouillon {
-  if (!r) return { nom: "", exercices: [] };
+  if (!r) return { nom: "", note: "", dossierId: null, exercices: [] };
   return {
     nom: r.nom,
+    ...(r.note !== undefined && { note: r.note ?? "" }),
+    ...(r.dossierId !== undefined && { dossierId: r.dossierId }),
     exercices: r.exercices.map((e) => ({
       cle: cle(),
       slug: e.slug,
@@ -101,6 +113,8 @@ export function brouillonValide(b: Brouillon, systeme: UnitSystem): boolean {
 export function versSaisie(b: Brouillon, systeme: UnitSystem): RoutineSaisie {
   return {
     nom: b.nom.trim(),
+    ...(b.note !== undefined && { note: b.note.trim() === "" ? null : b.note.trim() }),
+    ...(b.dossierId !== undefined && { dossierId: b.dossierId }),
     exercices: normaliserGroupes(b.exercices).map((e) => ({
       slug: e.slug,
       reposSec: lireEntier(e.repos, 3600),
