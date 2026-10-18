@@ -1,8 +1,10 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { parseEtat } from "@/components/states/etat";
 import { EtatBar } from "@/components/states/etat-bar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import type { Session } from "@/lib/auth";
 
 declare module "@tanstack/react-router" {
   interface StaticDataRouteOption {
@@ -13,7 +15,10 @@ declare module "@tanstack/react-router" {
   }
 }
 
-export const Route = createRootRoute({
+/** Ce que chaque route reçoit : la session (D301) et le cache des requêtes (D300). */
+type ContexteRouteur = { auth: { session: Session }; queryClient: QueryClient };
+
+export const Route = createRootRouteWithContext<ContexteRouteur>()({
   validateSearch: parseEtat,
   component: Root,
 });

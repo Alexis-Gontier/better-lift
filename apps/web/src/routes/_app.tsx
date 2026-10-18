@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { CommandPalette } from "@/components/shell/command-palette";
@@ -8,6 +8,12 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 export const Route = createFileRoute("/_app")({
   // Toutes les pages de l'application répondent aux quatre états.
   staticData: { etats: true },
+  // Sans session, la connexion, qui ramènera ici (D301).
+  beforeLoad: ({ context, location }) => {
+    if (!context.auth.session) {
+      throw redirect({ to: "/login", search: { redirect: location.href } });
+    }
+  },
   component: AppLayout,
 });
 

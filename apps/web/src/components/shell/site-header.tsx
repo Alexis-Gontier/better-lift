@@ -13,23 +13,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { initials, mockAccount } from "@/mocks/account";
+import { useDeconnexion } from "@/components/use-deconnexion";
+import { auth } from "@/lib/auth";
+import { initials } from "@/lib/format";
 import { AppBreadcrumb } from "./app-breadcrumb";
 
 function AccountMenu() {
+  const deconnecter = useDeconnexion();
+  // La garde de `_app` assure qu'une session est là.
+  const user = auth.session?.user;
+  const nom = user?.name ?? "";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Mon compte">
           <Avatar className="size-8">
-            <AvatarFallback className="text-xs">{initials(mockAccount.name)}</AvatarFallback>
+            <AvatarFallback className="text-xs">{initials(nom)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col">
-          <span className="font-medium text-foreground">{mockAccount.name}</span>
-          <span className="font-normal text-muted-foreground text-xs">{mockAccount.email}</span>
+          <span className="font-medium text-foreground">{nom}</span>
+          <span className="font-normal text-muted-foreground text-xs">{user?.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -38,10 +44,8 @@ function AccountMenu() {
               <Settings /> Paramètres
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to="/login">
-              <LogOut /> Se déconnecter
-            </Link>
+          <DropdownMenuItem onSelect={() => void deconnecter()}>
+            <LogOut /> Se déconnecter
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

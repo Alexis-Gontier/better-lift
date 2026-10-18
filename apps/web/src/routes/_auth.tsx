@@ -1,8 +1,12 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { Brand } from "@/components/brand";
 
 export const Route = createFileRoute("/_auth")({
   staticData: { etats: true },
+  // Déjà connecté : rien à faire ici.
+  beforeLoad: ({ context }) => {
+    if (context.auth.session) throw redirect({ to: "/" });
+  },
   component: AuthLayout,
 });
 
