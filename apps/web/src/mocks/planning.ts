@@ -1,22 +1,8 @@
 import type { Planned } from "./calendar";
-import { exerciseBySlug } from "./exercises";
-import { estimateMinutes } from "./routine-stats";
-import { mockRoutines, routineById } from "./routines";
+import { mockRoutines } from "./routines";
 import { mockSessions } from "./sessions";
 import { addDays, startOfWeek } from "./stats";
 import { TODAY } from "./today";
-
-/** La routine planifiée aujourd'hui (vendredi) : Legs, d'après la semaine type. */
-const todayRoutine = routineById("4");
-export const mockToday = {
-  routineId: "4",
-  routine: todayRoutine?.name ?? "Legs",
-  exercises: todayRoutine?.exercises.length ?? 0,
-  minutes: estimateMinutes(todayRoutine?.exercises ?? []),
-  muscles: [
-    ...new Set(todayRoutine?.exercises.map((e) => exerciseBySlug(e.slug)?.muscle ?? "") ?? []),
-  ].filter(Boolean),
-};
 
 /** Semaine type : jour (0 = lundi) → routine. Push le mardi, Pull le jeudi, Legs le vendredi. */
 const TEMPLATE: [number, string][] = [

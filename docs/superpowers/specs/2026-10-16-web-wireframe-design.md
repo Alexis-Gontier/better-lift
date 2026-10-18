@@ -329,6 +329,27 @@ et D199 (style), qui seront repris après validation du wireframe.
   mesure »). À droite : le **journal des pesées**, la plus récente en tête, chacune corrigeable
   sur place (enregistrée en quittant le champ) ou supprimable, un toast proposant d'annuler.
   « Noter mon poids » reste l'action de la page, ouvrable dès l'état vide.
+- **D269 — Le Planning à la façon de Google Agenda** (2026-10-18, retire les onglets Semaine /
+  Mois au profit d'un sélecteur, les variantes Calendrier / Agenda et l'action « Répéter la
+  semaine » en tête). Pleine hauteur, sans titre affiché : à gauche, « Planifier », un
+  mini-calendrier (un point sous les jours chargés ; un clic y mène) et les routines à glisser,
+  avec leur durée ; la colonne cède sa place sous 1280 px et Planifier passe dans la barre. La
+  barre d'outils : Aujourd'hui, ‹ ›, le titre (« 12 oct. – 18 oct. 2026 », « Octobre 2026 »),
+  la légende, Semaine / Mois, et ⋯ « Répéter cette semaine ». La semaine : sept colonnes pleine
+  hauteur, le jour en tête et aujourd'hui en pastille ; chaque séance est un bloc — nom, durée,
+  exercices — fait en aplat, prévu en contour, manqué en pointillés barrés. Une séance prévue se
+  glisse d'un jour à l'autre ; une routine glissée de la colonne s'y pose ; « + Planifier »
+  apparaît au survol d'un jour à venir. Un clic sur un bloc ouvre une petite fenêtre : voir la
+  routine ou la séance, déplacer (ou replanifier une manquée) par un calendrier, retirer avec
+  annulation. Le mois reprend la grille, avec les mêmes blocs compacts et la même fenêtre.
+- **D270 — L'Accueil regarde aujourd'hui et cette semaine** (2026-10-18, retire les variantes
+  Grille / Deux colonnes). En tête, aujourd'hui : la routine prévue (exercices, durée, muscles,
+  « Voir la routine », « on la lance depuis le téléphone »), ou la séance faite qui s'ouvre, ou
+  « Repos » et la prochaine séance prévue. Puis « Cette semaine » : les sept jours comme dans le
+  Planning et ses chiffres face à la semaine dernière. Enfin trois colonnes : les cinq dernières
+  séances, les cinq derniers records, le poids et les objectifs. Le volume par semaine et la
+  régularité sur un an partent : ils doublaient Progression, rejointe par « Voir la
+  progression » en tête.
 
 ## 3. Coquille
 

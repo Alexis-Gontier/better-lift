@@ -103,7 +103,3 @@ export const mockRoutines: MockRoutine[] = [
     ],
   },
 ];
-
-export function routineById(id: string): MockRoutine | undefined {
-  return mockRoutines.find((r) => r.id === id);
-}

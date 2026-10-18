@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatKg, formatMinutes, formatShortDay } from "@/lib/format";
 import { mockRecords } from "@/mocks/records";
-import { mockSessions } from "@/mocks/sessions";
+import { useSessions } from "@/mocks/session-store";
 
 const rowClass =
   "-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted";
@@ -13,10 +13,10 @@ export function RecentRecords() {
     <Card className="h-full">
       <CardHeader>
         <CardTitle>Records récents</CardTitle>
-        <CardDescription>30 derniers jours</CardDescription>
+        <CardDescription>Les 5 derniers, sur 30 jours</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col">
-        {mockRecords.map((r) => (
+        {mockRecords.slice(0, 5).map((r) => (
           <Link key={r.id} to="/exercises/$slug" params={{ slug: r.slug }} className={rowClass}>
             <span className="flex min-w-0 flex-col">
               <span className="truncate">{r.exercise}</span>
@@ -35,7 +35,7 @@ export function RecentRecords() {
 }
 
 export function RecentSessions() {
-  const sessions = mockSessions.slice(0, 5);
+  const sessions = useSessions().slice(0, 5);
   return (
     <Card className="h-full">
       <CardHeader>
