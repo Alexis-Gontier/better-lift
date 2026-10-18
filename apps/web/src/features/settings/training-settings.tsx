@@ -1,3 +1,4 @@
+import { useEditable } from "@/components/editable";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
@@ -21,34 +22,66 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatPrecise, formatRest } from "@/lib/format";
-import { SettingsSection, useDraft } from "./settings-section";
+import { SettingsPage, SettingsSection } from "./settings-section";
 
 const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
 const RESTS = ["60", "90", "120", "150", "180"];
 
+type Training = {
+  rest: string;
+  rpe: boolean;
+  increment: string;
+  bar: string;
+  plates: number[];
+  formula: string;
+};
+
+/** Le réglage enregistré, en mémoire : l'API le tiendra sur le compte. */
+let savedTraining: Training = {
+  rest: "120",
+  rpe: false,
+  increment: "2.5",
+  bar: "20",
+  plates: [...PLATES],
+  formula: "epley",
+};
+
+/**
+ * Entraînement (D271) : séries et repos, charges et disques, formule du 1RM — un seul brouillon
+ * pour la page, enregistré d'un coup.
+ */
 export function TrainingSettings() {
-  // Un brouillon par section : chacune s'enregistre seule.
-  const sets = useDraft({ rest: "120", rpe: false });
-  const loads = useDraft({ increment: "2.5", bar: "20", plates: [25, 20, 15, 10, 5, 2.5, 1.25] });
-  const formula = useDraft({ formula: "epley" });
+  const edit = useEditable<Training>({
+    initial: () => savedTraining,
+    isDirty: (d) => JSON.stringify(d) !== JSON.stringify(savedTraining),
+    count: (d) =>
+      (Object.keys(d) as (keyof Training)[]).filter(
+        (k) => JSON.stringify(d[k]) !== JSON.stringify(savedTraining[k]),
+      ).length,
+    onSave: (d) => {
+      savedTraining = d;
+    },
+    what: "ces réglages",
+    savedMessage: "Réglages enregistrés",
+  });
+  const d = edit.draft;
+  const set = (patch: Partial<Training>) => edit.setDraft((x) => ({ ...x, ...patch }));
   const togglePlate = (p: number, on: boolean) =>
-    loads.setDraft({
-      ...loads.draft,
-      plates: on
-        ? [...loads.draft.plates, p].sort((a, b) => b - a)
-        : loads.draft.plates.filter((x) => x !== p),
+    set({
+      plates: on ? [...d.plates, p].sort((a, b) => b - a) : d.plates.filter((x) => x !== p),
     });
 
   return (
-    <>
-      <SettingsSection title="Séries et repos" dirty={sets.dirty} onSave={sets.save}>
+    <SettingsPage
+      title="Entraînement"
+      description="Repos, charges et calculs proposés partout."
+      actions={edit.actions(null)}
+    >
+      <SettingsSection title="Séries et repos">
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="rest">Repos par défaut</FieldLabel>
-            <Select
-              value={sets.draft.rest}
-              onValueChange={(rest) => sets.setDraft({ ...sets.draft, rest })}
-            >
+            <Select value={d.rest} onValueChange={(rest) => set({ rest })}>
               <SelectTrigger id="rest" className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
@@ -71,11 +104,7 @@ export function TrainingSettings() {
                 Une colonne de plus dans chaque série, sur le mobile.
               </FieldDescription>
             </FieldContent>
-            <Switch
-              id="rpe"
-              checked={sets.draft.rpe}
-              onCheckedChange={(rpe) => sets.setDraft({ ...sets.draft, rpe })}
-            />
+            <Switch id="rpe" checked={d.rpe} onCheckedChange={(rpe) => set({ rpe })} />
           </Field>
         </FieldGroup>
       </SettingsSection>
@@ -83,8 +112,6 @@ export function TrainingSettings() {
       <SettingsSection
         title="Charges et disques"
         description="Pour arrondir les charges proposées à ce que la salle permet."
-        dirty={loads.dirty}
-        onSave={loads.save}
       >
         <FieldGroup>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -93,10 +120,8 @@ export function TrainingSettings() {
               <ToggleGroup
                 type="single"
                 variant="outline"
-                value={loads.draft.increment}
-                onValueChange={(increment) =>
-                  increment && loads.setDraft({ ...loads.draft, increment })
-                }
+                value={d.increment}
+                onValueChange={(increment) => increment && set({ increment })}
                 className="justify-start"
               >
                 {["1", "1.25", "2.5"].map((v) => (
@@ -112,8 +137,8 @@ export function TrainingSettings() {
                 id="bar"
                 inputMode="decimal"
                 className="w-28"
-                value={loads.draft.bar}
-                onChange={(e) => loads.setDraft({ ...loads.draft, bar: e.target.value })}
+                value={d.bar}
+                onChange={(e) => set({ bar: e.target.value })}
               />
             </Field>
           </div>
@@ -124,7 +149,7 @@ export function TrainingSettings() {
                 <Field key={p} orientation="horizontal" className="w-auto">
                   <Checkbox
                     id={`plate-${p}`}
-                    checked={loads.draft.plates.includes(p)}
+                    checked={d.plates.includes(p)}
                     onCheckedChange={(on) => togglePlate(p, on === true)}
                   />
                   <FieldLabel htmlFor={`plate-${p}`} className="font-normal tabular-nums">
@@ -140,13 +165,8 @@ export function TrainingSettings() {
       <SettingsSection
         title="Formule du 1RM estimé"
         description="Utilisée pour les courbes, les records et les pourcentages."
-        dirty={formula.dirty}
-        onSave={formula.save}
       >
-        <RadioGroup
-          value={formula.draft.formula}
-          onValueChange={(value) => formula.setDraft({ formula: value })}
-        >
+        <RadioGroup value={d.formula} onValueChange={(value) => set({ formula: value })}>
           <Field orientation="horizontal">
             <RadioGroupItem value="epley" id="epley" />
             <FieldContent>
@@ -167,6 +187,7 @@ export function TrainingSettings() {
           </Field>
         </RadioGroup>
       </SettingsSection>
-    </>
+      {edit.guard}
+    </SettingsPage>
   );
 }

@@ -14,7 +14,7 @@ import { mockRoutines } from "@/mocks/routines";
 import { mockSessions } from "@/mocks/sessions";
 import { mockWeights } from "@/mocks/weights";
 import { HevyImport } from "./hevy-import";
-import { SettingsSection } from "./settings-section";
+import { SettingsPage, SettingsSection } from "./settings-section";
 
 /** Télécharge un fichier construit dans le navigateur. */
 function download(name: string, type: string, content: string) {
@@ -39,9 +39,10 @@ function exportJson() {
   download("better-lift.json", "application/json", JSON.stringify(data, null, 2));
 }
 
+/** Données (D271) : rien à enregistrer, chaque section agit d'elle-même. */
 export function DataSettings() {
   return (
-    <>
+    <SettingsPage title="Données" description="Importer, exporter ou effacer votre historique.">
       <SettingsSection
         title="Importer depuis Hevy"
         description="Reprenez votre historique : exportez-le en CSV depuis Hevy, puis déposez-le ici."
@@ -85,6 +86,6 @@ export function DataSettings() {
           </AlertDialogContent>
         </AlertDialog>
       </SettingsSection>
-    </>
+    </SettingsPage>
   );
 }

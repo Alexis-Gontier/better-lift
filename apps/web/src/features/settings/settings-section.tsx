@@ -1,33 +1,16 @@
-import { Check } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import type { ReactNode } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-type Props = {
+/** Une section de paramètres : un titre, une phrase, ses champs. L'enregistrement est celui de la page (D271). */
+export function SettingsSection({
+  title,
+  description,
+  children,
+}: {
   title: string;
   description?: string;
-  /** Sans `onSave`, la section n'a pas de pied (ses actions sont dans son contenu). */
-  onSave?: () => void;
-  dirty?: boolean;
   children: ReactNode;
-};
-
-/** Une section de paramètres : enregistrable seule, dès qu'elle diffère de l'enregistré. */
-export function SettingsSection({ title, description, onSave, dirty = false, children }: Props) {
-  const [saved, setSaved] = useState(false);
-  useEffect(() => {
-    if (!saved) return;
-    const t = window.setTimeout(() => setSaved(false), 2000);
-    return () => window.clearTimeout(t);
-  }, [saved]);
-
+}) {
   return (
     <Card>
       <CardHeader>
@@ -35,36 +18,36 @@ export function SettingsSection({ title, description, onSave, dirty = false, chi
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>{children}</CardContent>
-      {onSave && (
-        <CardFooter className="justify-end gap-3 border-t">
-          {saved && (
-            <span className="flex items-center gap-1 text-muted-foreground text-sm">
-              <Check className="size-4" /> Enregistré
-            </span>
-          )}
-          <Button
-            disabled={!dirty}
-            onClick={() => {
-              onSave();
-              setSaved(true);
-            }}
-          >
-            Enregistrer
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 }
 
-/** Un brouillon comparé à sa version enregistrée : `dirty` dit s'il y a quelque chose à enregistrer. */
-export function useDraft<T>(initial: T) {
-  const [saved, setSaved] = useState(initial);
-  const [draft, setDraft] = useState(initial);
-  return {
-    draft,
-    setDraft,
-    dirty: JSON.stringify(draft) !== JSON.stringify(saved),
-    save: () => setSaved(draft),
-  };
+/**
+ * Une page de paramètres (D271) : son titre et, collé sous l'en-tête de l'app, l'état et les
+ * actions de la page — un seul « Enregistrer » pour toutes ses sections, comme une routine.
+ */
+export function SettingsPage({
+  title,
+  description,
+  actions,
+  children,
+}: {
+  title: string;
+  description: string;
+  /** `edit.actions(null)` d'un `useEditable` ; absent sur une page sans réglage à enregistrer. */
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="sticky top-12 z-5 -mx-1 flex min-h-14 items-center justify-between gap-3 border-b bg-background px-1 py-2">
+        <div className="flex min-w-0 flex-col">
+          <h2 className="font-medium text-lg">{title}</h2>
+          <p className="truncate text-muted-foreground text-sm">{description}</p>
+        </div>
+        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      </div>
+      {children}
+    </div>
+  );
 }

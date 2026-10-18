@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useEditable } from "@/components/editable";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -8,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SettingsSection, useDraft } from "./settings-section";
+import { SettingsPage, SettingsSection } from "./settings-section";
 
 type Appearance = "clair" | "sombre" | "systeme";
 const THEME_KEY = "better-lift-theme"; // la clé que lit le script de `index.html`
@@ -35,18 +37,16 @@ function applyAppearance(a: Appearance) {
   }
 }
 
-function Units() {
-  const { draft, setDraft, dirty, save } = useDraft({
-    unit: "kg",
-    dateFormat: "court",
-    weekStart: "lundi",
-  });
+type Formats = { unit: string; dateFormat: string; weekStart: string };
+
+/** Le réglage enregistré, en mémoire : l'API le tiendra sur le compte. */
+let savedFormats: Formats = { unit: "kg", dateFormat: "court", weekStart: "lundi" };
+
+function Units({ draft, setDraft }: { draft: Formats; setDraft: (f: Formats) => void }) {
   return (
     <SettingsSection
       title="Unités et formats"
       description="Ils s'appliquent à toutes les pages et au mobile."
-      dirty={dirty}
-      onSave={save}
     >
       <FieldGroup>
         <Field>
@@ -101,8 +101,9 @@ function Units() {
   );
 }
 
+/** L'apparence s'applique tout de suite, hors du brouillon de la page : c'est un réglage d'appareil. */
 function AppearanceSection() {
-  const { draft, setDraft } = useDraft<Appearance>(currentAppearance());
+  const [draft, setDraft] = useState<Appearance>(currentAppearance());
   return (
     <SettingsSection title="Apparence" description="Appliquée tout de suite, sur cet appareil.">
       <ToggleGroup
@@ -125,10 +126,26 @@ function AppearanceSection() {
 }
 
 export function PreferencesSettings() {
+  const edit = useEditable<Formats>({
+    initial: () => savedFormats,
+    isDirty: (d) => JSON.stringify(d) !== JSON.stringify(savedFormats),
+    count: (d) =>
+      (Object.keys(d) as (keyof Formats)[]).filter((k) => d[k] !== savedFormats[k]).length,
+    onSave: (d) => {
+      savedFormats = d;
+    },
+    what: "ces préférences",
+    savedMessage: "Préférences enregistrées",
+  });
   return (
-    <>
-      <Units />
+    <SettingsPage
+      title="Préférences"
+      description="Unités, formats et apparence."
+      actions={edit.actions(null)}
+    >
+      <Units draft={edit.draft} setDraft={(f) => edit.setDraft(f)} />
       <AppearanceSection />
-    </>
+      {edit.guard}
+    </SettingsPage>
   );
 }

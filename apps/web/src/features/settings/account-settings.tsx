@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Laptop, Smartphone } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useEditable } from "@/components/editable";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { mockAccount } from "@/mocks/account";
-import { SettingsSection, useDraft } from "./settings-section";
+import { SettingsPage, SettingsSection } from "./settings-section";
 
 const TIMEZONES = ["Europe/Paris", "Europe/Brussels", "Europe/Zurich", "America/Montreal"];
 
@@ -57,15 +59,14 @@ const SESSIONS = [
   },
 ];
 
-function Profile() {
-  const { draft, setDraft, dirty, save } = useDraft(mockAccount);
+type Account = typeof mockAccount;
+
+/** Le profil enregistré, en mémoire : l'API le tiendra sur le compte. */
+let savedAccount: Account = mockAccount;
+
+function Profile({ draft, setDraft }: { draft: Account; setDraft: (a: Account) => void }) {
   return (
-    <SettingsSection
-      title="Profil"
-      description="Votre nom et votre fuseau horaire."
-      dirty={dirty}
-      onSave={save}
-    >
+    <SettingsSection title="Profil" description="Votre nom et votre fuseau horaire.">
       <FieldGroup>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
@@ -112,20 +113,16 @@ function Profile() {
   );
 }
 
+/**
+ * Le mot de passe se change à part, par son propre bouton (D271) : il ne se mêle pas au
+ * brouillon du profil et ne survit pas à une annulation.
+ */
 function Security() {
-  const { draft, setDraft, save } = useDraft({ current: "", next: "" });
+  const [draft, setDraft] = useState({ current: "", next: "" });
   const valid = draft.current.length > 0 && draft.next.length >= 8;
   return (
-    <SettingsSection
-      title="Mot de passe"
-      description="Au moins 8 caractères."
-      dirty={valid}
-      onSave={() => {
-        save();
-        setDraft({ current: "", next: "" });
-      }}
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
+    <SettingsSection title="Mot de passe" description="Au moins 8 caractères.">
+      <div className="grid items-end gap-4 sm:grid-cols-[1fr_1fr_auto]">
         <Field>
           <FieldLabel htmlFor="current-password">Mot de passe actuel</FieldLabel>
           <Input
@@ -146,6 +143,16 @@ function Security() {
             onChange={(e) => setDraft({ ...draft, next: e.target.value })}
           />
         </Field>
+        <Button
+          variant="outline"
+          disabled={!valid}
+          onClick={() => {
+            setDraft({ current: "", next: "" });
+            toast.success("Mot de passe changé");
+          }}
+        >
+          Changer
+        </Button>
       </div>
     </SettingsSection>
   );
@@ -231,13 +238,31 @@ function DangerZone() {
   );
 }
 
+/** Compte (D271) : le profil s'enregistre avec la page ; mot de passe, sessions et suppression agissent seuls. */
 export function AccountSettings() {
+  const edit = useEditable<Account>({
+    initial: () => savedAccount,
+    isDirty: (d) => JSON.stringify(d) !== JSON.stringify(savedAccount),
+    count: (d) =>
+      (Object.keys(d) as (keyof Account)[]).filter((k) => d[k] !== savedAccount[k]).length,
+    blocker: (d) => (d.name.trim() === "" ? "Donnez votre nom" : null),
+    onSave: (d) => {
+      savedAccount = d;
+    },
+    what: "votre profil",
+    savedMessage: "Profil enregistré",
+  });
   return (
-    <>
-      <Profile />
+    <SettingsPage
+      title="Compte"
+      description="Profil, mot de passe et appareils connectés."
+      actions={edit.actions(null)}
+    >
+      <Profile draft={edit.draft} setDraft={(a) => edit.setDraft(a)} />
       <Security />
       <Sessions />
       <DangerZone />
-    </>
+      {edit.guard}
+    </SettingsPage>
   );
 }

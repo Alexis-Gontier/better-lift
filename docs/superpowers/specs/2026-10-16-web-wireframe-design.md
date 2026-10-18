@@ -350,6 +350,15 @@ et D199 (style), qui seront repris après validation du wireframe.
   séances, les cinq derniers records, le poids et les objectifs. Le volume par semaine et la
   régularité sur un an partent : ils doublaient Progression, rejointe par « Voir la
   progression » en tête.
+- **D271 — Paramètres : navigation à gauche, un seul enregistrement par page** (2026-10-18,
+  retire les onglets et le bouton Enregistrer de chaque carte). À gauche, Compte, Préférences,
+  Entraînement, Données, avec leur icône, comme les réglages de GitHub ou Linear ; en rangée
+  sous 48rem. Chaque page porte un en-tête collé sous celui de l'app : son titre, une phrase, et
+  l'état d'édition de `useEditable` (« • N modifications non enregistrées », ↶ ↷, Tout annuler,
+  Enregistrer, Ctrl S, avertissement en quittant). Ce qui n'est pas un réglage du compte agit
+  seul : l'apparence s'applique tout de suite (réglage d'appareil, D-thème de l'utilisateur), le
+  mot de passe se change par son propre bouton, les sessions se déconnectent, la suppression
+  passe par sa confirmation. Données n'a rien à enregistrer.
 
 ## 3. Coquille
 
