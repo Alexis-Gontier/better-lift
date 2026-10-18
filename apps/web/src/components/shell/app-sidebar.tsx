@@ -1,0 +1,58 @@
+import { Link, useLocation } from "@tanstack/react-router";
+import { Brand } from "@/components/brand";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { NAV_ITEMS } from "./nav";
+
+/** L'entrée est active sur sa page et ses sous-pages ; l'Accueil, seulement sur « / ». */
+function isActive(to: string, pathname: string): boolean {
+  return to === "/" ? pathname === "/" : pathname === to || pathname.startsWith(`${to}/`);
+}
+
+/** Les liens seuls, pour l'instant : le reste revient pas à pas. */
+export function AppSidebar() {
+  const { pathname } = useLocation();
+  return (
+    <Sidebar collapsible="icon">
+      {/* Le nom, aligné sur la hauteur du header ; masqué quand la barre est repliée. */}
+      <SidebarHeader className="h-12 justify-center px-4">
+        <Link to="/" className="group-data-[collapsible=icon]:hidden">
+          <Brand />
+        </Link>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            {NAV_ITEMS.map((item) => (
+              <SidebarMenuItem key={item.to}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  isActive={isActive(item.to, pathname)}
+                  // Gris par défaut, noir sur la page courante ; même graisse dans les deux cas.
+                  className="font-normal text-muted-foreground data-active:font-normal data-active:text-foreground"
+                >
+                  <Link to={item.to}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter />
+      <SidebarRail />
+    </Sidebar>
+  );
+}

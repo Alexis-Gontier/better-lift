@@ -7,17 +7,19 @@ import { defineConfig } from "vite";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * L'application vit sous `/app` : la racine du site est laissée à la landing (D292). Le routeur
+ * porte le même préfixe (`basepath` dans `main.tsx`).
+ */
+const BASE = "/app/";
+
 export default defineConfig({
+  base: BASE,
   plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(dirname, "./src"),
     },
   },
-  server: {
-    port: 3000,
-    proxy: {
-      "/api": { target: "http://localhost:3001", changeOrigin: true },
-    },
-  },
+  server: { port: 3000 },
 });

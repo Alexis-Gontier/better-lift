@@ -1,144 +1,138 @@
 @import "tailwindcss";
-@import "./tokens.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
 
-/* Le sombre est le thème par défaut (`:root`), le clair se pose par
-   `data-theme="light"` : les variantes `dark:` des primitives shadcn suivent ce
-   mécanisme, pas la préférence du système. */
-@custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
+@custom-variant dark (&:is(.dark *));
 
-/* Tailwind 4 laisse `border` en `currentColor` : les primitives shadcn (Card,
-   Table…) posent `border` sans couleur et comptent sur ce défaut. */
-@layer base {
-  *,
-  ::before,
-  ::after {
-    border-color: var(--line);
-  }
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  /* Plus foncé que le défaut shadcn (0,556) : 4,3:1 sur --muted ; ici ≥ 4,5:1 sur tout fond gris clair (D251). */
+  --muted-foreground: oklch(0.52 0 0);
+  /* La silhouette des muscles : un corps qui se détache de la carte. */
+  --body-map: oklch(0.88 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --body-map: oklch(0.38 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @theme inline {
-  /* Vocabulaire du projet : surfaces, filets, quatre niveaux d’encre. */
-  --color-canvas: var(--canvas);
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-ink: var(--ink);
-  --color-ink-muted: var(--ink-muted);
-  --color-ink-subtle: var(--ink-subtle);
-  --color-ink-faint: var(--ink-faint);
-
-  /* Le lime EN TEXTE, c’est-à-dire le contour du record. L’aplat de l’action passe
-     par `primary` plus bas : la distinction par la forme vaut aussi pour les noms
-     de classes, un registre par nom. */
-  --color-accent-ink: var(--accent-ink);
-  --color-accent-line: var(--accent-line);
-  --color-accent-wash: var(--accent-wash);
-  --color-image-bg: var(--image-bg);
-  --color-cal-0: var(--cal-0);
-  --color-cal-1: var(--cal-1);
-  --color-cal-2: var(--cal-2);
-  --color-cal-3: var(--cal-3);
-  --color-cal-4: var(--cal-4);
-  --color-superset: var(--superset);
-
-  /* Archivo partout (D135) ; la police système ne sert que pendant le chargement. */
-  --font-sans: "Archivo Variable", system-ui, sans-serif;
-
-  /* Vocabulaire des primitives shadcn vendorisées. Elles ne connaissent que leurs
-     propres noms de rôles, et un rôle absent d’ici n’émet AUCUNE règle, en silence :
-     l’élément hérite alors de son parent. C’est ce qui rendait la ligne sélectionnée
-     de la palette illisible : `bg-accent` touchait le lime, mais `text-accent-foreground`
-     n’existait pas, le texte restait en --ink, soit 1,6:1. */
-  --color-background: var(--canvas);
-  --color-foreground: var(--ink);
-  --color-popover: var(--surface-1);
-  --color-popover-foreground: var(--ink);
-  --color-muted: var(--surface-2);
-  --color-muted-foreground: var(--ink-subtle);
-  --color-border: var(--line);
-  --color-input: var(--line-strong);
-  --color-ring: var(--accent);
-
-  /* `primary` chez shadcn porte l’action : c’est exactement l’aplat de la doctrine,
-     fond lime et texte sombre. */
-  --color-primary: var(--accent);
-  --color-primary-foreground: var(--accent-on);
-  --color-secondary: var(--surface-3);
-  --color-secondary-foreground: var(--ink);
-
-  /* `accent` chez shadcn ne désigne PAS la marque mais la surface de survol ou de
-     sélection : `bg-accent` habille l’item de command.tsx et les variantes `ghost`
-     et `outline` de button.tsx. Le faire pointer sur le lime peindrait un aplat de
-     marque sous chaque survol, et la couleur unique n’aurait plus de sens. */
-  --color-accent: var(--surface-3);
-  --color-accent-foreground: var(--ink);
-
-  /* `destructive` est désormais traduit (D36). Le rouge est borné au danger : il
-     ne porte jamais l’action ni le record, qui restent au lime. C’est parce que
-     le lime porte déjà deux rôles qu’il ne peut pas en porter un troisième — un
-     champ invalide cerclé de lime dirait « agis ici » au moment où il faut dire
-     « quelque chose ne va pas ». */
-  --color-destructive: var(--danger);
-  --color-destructive-foreground: var(--danger-on);
-  --color-destructive-ink: var(--danger-ink);
-
-  /* `card` (D158) : la carte se détache par son filet, une marche au-dessus du canevas. */
-  --color-card: var(--surface-1);
-  --color-card-foreground: var(--ink);
-
-  /* La sidebar (D72, D154). Même fond que le canevas et le contenu : la coquille
-     est plate, un filet sépare la barre du contenu. L'élément actif est une
-     SURFACE, jamais le lime — `sidebar-primary` n'est utilisé par aucun bloc
-     rendu ici, mais il reste traduit pour qu'aucun rôle n'émette en silence. */
-  --color-sidebar: var(--canvas);
-  --color-sidebar-foreground: var(--ink-muted);
-  --color-sidebar-primary: var(--accent);
-  --color-sidebar-primary-foreground: var(--accent-on);
-  --color-sidebar-accent: var(--nav-active);
-  --color-sidebar-accent-foreground: var(--ink);
-  --color-sidebar-border: var(--line);
-  --color-sidebar-ring: var(--accent);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-heading: var(--font-sans);
+  --font-sans: "Inter Variable", sans-serif;
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* react-resizable-panels fixe `height: 100%` en style inline sur le groupe (non
-   surchargeable, cf. sa doc) : sans cette chaîne, il s'effondre à la hauteur de son
-   contenu plutôt que de remplir la fenêtre. */
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  background: var(--canvas);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  /* Tout chiffre s'aligne en colonne : charges, reps, durées, dates. */
-  font-variant-numeric: tabular-nums;
-}
-
-/* Le chiffre héros (D103, D135) : tuiles, bilans. Sur le web, la coupe condensée
-   est un réglage de l'axe `wdth`, pas une police à part. */
-@utility chiffre {
-  font-stretch: 72%;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.01em;
-}
-
-/* Les animations pilotées en JavaScript échappent à cette règle : toute
-   bibliothèque de graphiques devra désactiver les siennes explicitement. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    /* biome-ignore lint/complexity/noImportantStyles: la réduction de mouvement doit primer sur toute animation déclarée ailleurs. */
-    animation-duration: 0.01ms !important;
-    /* biome-ignore lint/complexity/noImportantStyles: même raison, pour les transitions. */
-    transition-duration: 0.01ms !important;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
   }
 }

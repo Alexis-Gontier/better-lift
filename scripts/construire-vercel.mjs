@@ -3,7 +3,7 @@
  * Construit le déploiement Vercel au format « Build Output API » (v3), sans
  * dépendre de la détection automatique de Vercel.
  *
- *   .vercel/output/static/            le SPA web
+ *   .vercel/output/static/app/        le SPA web, sous /app (la racine ira à la landing)
  *   .vercel/output/functions/api.func l'API, EN UN SEUL FICHIER (esbuild)
  *   .vercel/output/config.json        les routes
  *
@@ -33,7 +33,7 @@ const urlDirecte = process.env.DIRECT_URL;
 process.env.DIRECT_URL ??= "postgresql://build:build@localhost:5432/build";
 executer("pnpm --filter @better-lift/db generate");
 executer("pnpm --filter @better-lift/web build");
-cpSync("apps/web/dist", `${SORTIE}/static`, { recursive: true });
+cpSync("apps/web/dist", `${SORTIE}/static/app`, { recursive: true });
 
 mkdirSync(FONCTION, { recursive: true });
 await build({
@@ -69,8 +69,10 @@ writeFileSync(
       // `cheminInterne` dans apps/api/src/vercel.ts.
       { src: "^/api/(.*)$", dest: "/api?__chemin=$1" },
       { handle: "filesystem" },
-      // SPA : toute autre route rend index.html, TanStack Router fait le reste.
-      { src: "/(.*)", dest: "/index.html" },
+      // En attendant la landing, la racine mène à l'application.
+      { src: "^/$", status: 307, headers: { Location: "/app" } },
+      // SPA sous /app : toute route rend son index.html, TanStack Router fait le reste.
+      { src: "^/app(/.*)?$", dest: "/app/index.html" },
     ],
   }),
 );

@@ -1,0 +1,82 @@
+import { useNavigate } from "@tanstack/react-router";
+import { type LucideIcon, Plus, Settings } from "lucide-react";
+import { useEffect } from "react";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import type { FileRouteTypes } from "@/routeTree.gen";
+import { NAV_ITEMS } from "./nav";
+
+type To = FileRouteTypes["to"];
+
+const ACTIONS: { label: string; to: To; icon: LucideIcon }[] = [
+  { label: "Nouvelle routine", to: "/routines/new", icon: Plus },
+  // Hors de la barre latérale : le menu du compte et la palette y mènent.
+  { label: "Paramètres", to: "/settings", icon: Settings },
+];
+
+type Props = {
+  open: boolean;
+  onOpenChange: (open: boolean | ((open: boolean) => boolean)) => void;
+};
+
+/** L'état d'ouverture vit dans la mise en page : le bouton du header l'ouvre aussi. */
+export function CommandPalette({ open: paletteOpen, onOpenChange: setPaletteOpen }: Props) {
+  const navigate = useNavigate();
+
+  // Ctrl K (Cmd K sur Mac) ouvre la recherche, même sans bouton visible.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [setPaletteOpen]);
+
+  function go(to: To) {
+    setPaletteOpen(false);
+    navigate({ to });
+  }
+
+  return (
+    <CommandDialog
+      className="top-[15%] sm:max-w-2xl"
+      open={paletteOpen}
+      onOpenChange={setPaletteOpen}
+      title="Recherche"
+      description="Aller à une page ou lancer une action"
+    >
+      <Command>
+        <CommandInput placeholder="Rechercher une page, une action…" />
+        <CommandList className="max-h-[min(28rem,60vh)]">
+          <CommandEmpty>Aucun résultat.</CommandEmpty>
+          <CommandGroup heading="Aller à">
+            {NAV_ITEMS.map((item) => (
+              <CommandItem key={item.to} onSelect={() => go(item.to)}>
+                <item.icon /> {item.title}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="Actions">
+            {ACTIONS.map((a) => (
+              <CommandItem key={a.label} onSelect={() => go(a.to)}>
+                <a.icon /> {a.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    </CommandDialog>
+  );
+}

@@ -48,6 +48,9 @@ Procédure complète : [`docs/deploiement.md`](../../docs/deploiement.md).
 - Base de prod : `betterlift` sur la branche Neon `production`. La console Neon propose `neondb`
   par défaut : **une URL de prod doit finir par `/betterlift`**, sinon l'API tombe sur le schéma
   de la V1 (`column nomFr does not exist`).
+- **Le web vit sous `/app` (D292)** : Vite `base: "/app/"`, routeur `basepath: "/app"`, SPA copié
+  dans `static/app`. La racine est réservée à la landing ; d'ici là, elle redirige (307) vers
+  `/app`. `scripts/essayer-vercel.mjs` rejoue les deux.
 - Le web de production appelle `<origine>/api` ; `VITE_API_URL` ne sert qu'en développement.
 - Mobile : projet EAS `@algont/better-lift`, APK par `eas build --profile preview` (file gratuite :
   jusqu'à une heure d'attente).

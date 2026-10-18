@@ -6,7 +6,7 @@
  *   BETTER_AUTH_URL=http://localhost:4000 node --env-file=.env scripts/essayer-vercel.mjs
  *
  * `/api/*` → la fonction bundlée, avec la même réécriture que Vercel ; le reste →
- * les fichiers statiques, puis index.html (SPA).
+ * les fichiers statiques, puis l'index.html de `/app` (SPA) ; `/` redirige vers `/app`.
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
@@ -35,11 +35,15 @@ createServer((req, res) => {
     req.url = `/api?${url.searchParams}`;
     return fonction(req, res);
   }
+  if (url.pathname === "/") {
+    res.writeHead(307, { location: "/app" });
+    return res.end();
+  }
   const fichier = path.join(RACINE, "static", url.pathname);
   const cible =
     existsSync(fichier) && statSync(fichier).isFile()
       ? fichier
-      : path.join(RACINE, "static", "index.html");
+      : path.join(RACINE, "static", "app", "index.html");
   res.writeHead(200, {
     "content-type":
       TYPES[/** @type {keyof typeof TYPES} */ (path.extname(cible))] ?? "application/octet-stream",

@@ -9,316 +9,512 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProtegeRouteImport } from './routes/_protege'
-import { Route as ConnexionRouteImport } from './routes/connexion'
-import { Route as ProtegeIndexRouteImport } from './routes/_protege.index'
-import { Route as ProtegeExercicesRouteImport } from './routes/_protege.exercices'
-import { Route as ProtegeProfilRouteImport } from './routes/_protege.profil'
-import { Route as ProtegeRoutinesRouteImport } from './routes/_protege.routines'
-import { Route as ProtegeSeancesRouteImport } from './routes/_protege.seances'
-import { Route as ProtegeExercicesSlugRouteImport } from './routes/_protege.exercices.$slug'
-import { Route as ProtegeRoutinesIndexRouteImport } from './routes/_protege.routines.index'
-import { Route as ProtegeRoutinesIdRouteImport } from './routes/_protege.routines.$id'
-import { Route as ProtegeRoutinesNouvelleRouteImport } from './routes/_protege.routines.nouvelle'
-import { Route as ProtegeSeancesIdRouteImport } from './routes/_protege.seances.$id'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppExercisesRouteImport } from './routes/_app.exercises'
+import { Route as AppHistoryRouteImport } from './routes/_app.history'
+import { Route as AppRoutinesRouteImport } from './routes/_app.routines'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AuthLoginRouteImport } from './routes/_auth.login'
+import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
+import { Route as AppExercisesIndexRouteImport } from './routes/_app.exercises.index'
+import { Route as AppExercisesSlugRouteImport } from './routes/_app.exercises.$slug'
+import { Route as AppHistoryIndexRouteImport } from './routes/_app.history.index'
+import { Route as AppHistoryIdRouteImport } from './routes/_app.history.$id'
+import { Route as AppRoutinesIndexRouteImport } from './routes/_app.routines.index'
+import { Route as AppRoutinesIdRouteImport } from './routes/_app.routines.$id'
+import { Route as AppRoutinesNewRouteImport } from './routes/_app.routines.new'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app.settings.index'
+import { Route as AppSettingsAccountRouteImport } from './routes/_app.settings.account'
+import { Route as AppSettingsDataRouteImport } from './routes/_app.settings.data'
+import { Route as AppSettingsPreferencesRouteImport } from './routes/_app.settings.preferences'
+import { Route as AppSettingsTrainingRouteImport } from './routes/_app.settings.training'
 
-const ProtegeRoute = ProtegeRouteImport.update({
-  id: '/_protege',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConnexionRoute = ConnexionRouteImport.update({
-  id: '/connexion',
-  path: '/connexion',
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProtegeIndexRoute = ProtegeIndexRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProtegeRoute,
+  getParentRoute: () => AppRoute,
 } as any)
-const ProtegeExercicesRoute = ProtegeExercicesRouteImport.update({
-  id: '/exercices',
-  path: '/exercices',
-  getParentRoute: () => ProtegeRoute,
+const AppExercisesRoute = AppExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AppRoute,
 } as any)
-const ProtegeProfilRoute = ProtegeProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
-  getParentRoute: () => ProtegeRoute,
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
 } as any)
-const ProtegeRoutinesRoute = ProtegeRoutinesRouteImport.update({
+const AppRoutinesRoute = AppRoutinesRouteImport.update({
   id: '/routines',
   path: '/routines',
-  getParentRoute: () => ProtegeRoute,
+  getParentRoute: () => AppRoute,
 } as any)
-const ProtegeSeancesRoute = ProtegeSeancesRouteImport.update({
-  id: '/seances',
-  path: '/seances',
-  getParentRoute: () => ProtegeRoute,
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
 } as any)
-const ProtegeExercicesSlugRoute = ProtegeExercicesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ProtegeExercicesRoute,
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
 } as any)
-const ProtegeRoutinesIndexRoute = ProtegeRoutinesIndexRouteImport.update({
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AppExercisesIndexRoute = AppExercisesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProtegeRoutinesRoute,
+  getParentRoute: () => AppExercisesRoute,
 } as any)
-const ProtegeRoutinesIdRoute = ProtegeRoutinesIdRouteImport.update({
+const AppExercisesSlugRoute = AppExercisesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AppExercisesRoute,
+} as any)
+const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppHistoryRoute,
+} as any)
+const AppHistoryIdRoute = AppHistoryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ProtegeRoutinesRoute,
+  getParentRoute: () => AppHistoryRoute,
 } as any)
-const ProtegeRoutinesNouvelleRoute = ProtegeRoutinesNouvelleRouteImport.update({
-  id: '/nouvelle',
-  path: '/nouvelle',
-  getParentRoute: () => ProtegeRoutinesRoute,
+const AppRoutinesIndexRoute = AppRoutinesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoutinesRoute,
 } as any)
-const ProtegeSeancesIdRoute = ProtegeSeancesIdRouteImport.update({
+const AppRoutinesIdRoute = AppRoutinesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ProtegeSeancesRoute,
+  getParentRoute: () => AppRoutinesRoute,
+} as any)
+const AppRoutinesNewRoute = AppRoutinesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppRoutinesRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsAccountRoute = AppSettingsAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsDataRoute = AppSettingsDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsPreferencesRoute = AppSettingsPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsTrainingRoute = AppSettingsTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AppSettingsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof ProtegeIndexRoute
-  '/connexion': typeof ConnexionRoute
-  '/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/profil': typeof ProtegeProfilRoute
-  '/routines': typeof ProtegeRoutinesRouteWithChildren
-  '/seances': typeof ProtegeSeancesRouteWithChildren
-  '/exercices/$slug': typeof ProtegeExercicesSlugRoute
-  '/routines/$id': typeof ProtegeRoutinesIdRoute
-  '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
-  '/seances/$id': typeof ProtegeSeancesIdRoute
-  '/routines/': typeof ProtegeRoutinesIndexRoute
+  '/': typeof AppIndexRoute
+  '/exercises': typeof AppExercisesRouteWithChildren
+  '/history': typeof AppHistoryRouteWithChildren
+  '/routines': typeof AppRoutinesRouteWithChildren
+  '/settings': typeof AppSettingsRouteWithChildren
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/exercises/$slug': typeof AppExercisesSlugRoute
+  '/history/$id': typeof AppHistoryIdRoute
+  '/routines/$id': typeof AppRoutinesIdRoute
+  '/routines/new': typeof AppRoutinesNewRoute
+  '/settings/account': typeof AppSettingsAccountRoute
+  '/settings/data': typeof AppSettingsDataRoute
+  '/settings/preferences': typeof AppSettingsPreferencesRoute
+  '/settings/training': typeof AppSettingsTrainingRoute
+  '/exercises/': typeof AppExercisesIndexRoute
+  '/history/': typeof AppHistoryIndexRoute
+  '/routines/': typeof AppRoutinesIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/connexion': typeof ConnexionRoute
-  '/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/profil': typeof ProtegeProfilRoute
-  '/seances': typeof ProtegeSeancesRouteWithChildren
-  '/': typeof ProtegeIndexRoute
-  '/exercices/$slug': typeof ProtegeExercicesSlugRoute
-  '/routines/$id': typeof ProtegeRoutinesIdRoute
-  '/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
-  '/seances/$id': typeof ProtegeSeancesIdRoute
-  '/routines': typeof ProtegeRoutinesIndexRoute
+  '/': typeof AppIndexRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/exercises/$slug': typeof AppExercisesSlugRoute
+  '/history/$id': typeof AppHistoryIdRoute
+  '/routines/$id': typeof AppRoutinesIdRoute
+  '/routines/new': typeof AppRoutinesNewRoute
+  '/settings/account': typeof AppSettingsAccountRoute
+  '/settings/data': typeof AppSettingsDataRoute
+  '/settings/preferences': typeof AppSettingsPreferencesRoute
+  '/settings/training': typeof AppSettingsTrainingRoute
+  '/exercises': typeof AppExercisesIndexRoute
+  '/history': typeof AppHistoryIndexRoute
+  '/routines': typeof AppRoutinesIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_protege': typeof ProtegeRouteWithChildren
-  '/connexion': typeof ConnexionRoute
-  '/_protege/exercices': typeof ProtegeExercicesRouteWithChildren
-  '/_protege/profil': typeof ProtegeProfilRoute
-  '/_protege/routines': typeof ProtegeRoutinesRouteWithChildren
-  '/_protege/seances': typeof ProtegeSeancesRouteWithChildren
-  '/_protege/': typeof ProtegeIndexRoute
-  '/_protege/exercices/$slug': typeof ProtegeExercicesSlugRoute
-  '/_protege/routines/$id': typeof ProtegeRoutinesIdRoute
-  '/_protege/routines/nouvelle': typeof ProtegeRoutinesNouvelleRoute
-  '/_protege/seances/$id': typeof ProtegeSeancesIdRoute
-  '/_protege/routines/': typeof ProtegeRoutinesIndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_app/exercises': typeof AppExercisesRouteWithChildren
+  '/_app/history': typeof AppHistoryRouteWithChildren
+  '/_app/routines': typeof AppRoutinesRouteWithChildren
+  '/_app/settings': typeof AppSettingsRouteWithChildren
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/exercises/$slug': typeof AppExercisesSlugRoute
+  '/_app/history/$id': typeof AppHistoryIdRoute
+  '/_app/routines/$id': typeof AppRoutinesIdRoute
+  '/_app/routines/new': typeof AppRoutinesNewRoute
+  '/_app/settings/account': typeof AppSettingsAccountRoute
+  '/_app/settings/data': typeof AppSettingsDataRoute
+  '/_app/settings/preferences': typeof AppSettingsPreferencesRoute
+  '/_app/settings/training': typeof AppSettingsTrainingRoute
+  '/_app/exercises/': typeof AppExercisesIndexRoute
+  '/_app/history/': typeof AppHistoryIndexRoute
+  '/_app/routines/': typeof AppRoutinesIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/connexion'
-    | '/exercices'
-    | '/profil'
+    | '/exercises'
+    | '/history'
     | '/routines'
-    | '/seances'
-    | '/exercices/$slug'
+    | '/settings'
+    | '/login'
+    | '/register'
+    | '/exercises/$slug'
+    | '/history/$id'
     | '/routines/$id'
-    | '/routines/nouvelle'
-    | '/seances/$id'
+    | '/routines/new'
+    | '/settings/account'
+    | '/settings/data'
+    | '/settings/preferences'
+    | '/settings/training'
+    | '/exercises/'
+    | '/history/'
     | '/routines/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/connexion'
-    | '/exercices'
-    | '/profil'
-    | '/seances'
     | '/'
-    | '/exercices/$slug'
+    | '/login'
+    | '/register'
+    | '/exercises/$slug'
+    | '/history/$id'
     | '/routines/$id'
-    | '/routines/nouvelle'
-    | '/seances/$id'
+    | '/routines/new'
+    | '/settings/account'
+    | '/settings/data'
+    | '/settings/preferences'
+    | '/settings/training'
+    | '/exercises'
+    | '/history'
     | '/routines'
+    | '/settings'
   id:
     | '__root__'
-    | '/_protege'
-    | '/connexion'
-    | '/_protege/exercices'
-    | '/_protege/profil'
-    | '/_protege/routines'
-    | '/_protege/seances'
-    | '/_protege/'
-    | '/_protege/exercices/$slug'
-    | '/_protege/routines/$id'
-    | '/_protege/routines/nouvelle'
-    | '/_protege/seances/$id'
-    | '/_protege/routines/'
+    | '/_app'
+    | '/_auth'
+    | '/_app/exercises'
+    | '/_app/history'
+    | '/_app/routines'
+    | '/_app/settings'
+    | '/_auth/login'
+    | '/_auth/register'
+    | '/_app/'
+    | '/_app/exercises/$slug'
+    | '/_app/history/$id'
+    | '/_app/routines/$id'
+    | '/_app/routines/new'
+    | '/_app/settings/account'
+    | '/_app/settings/data'
+    | '/_app/settings/preferences'
+    | '/_app/settings/training'
+    | '/_app/exercises/'
+    | '/_app/history/'
+    | '/_app/routines/'
+    | '/_app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  ProtegeRoute: typeof ProtegeRouteWithChildren
-  ConnexionRoute: typeof ConnexionRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_protege': {
-      id: '/_protege'
+    '/_app': {
+      id: '/_app'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof ProtegeRouteImport
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/connexion': {
-      id: '/connexion'
-      path: '/connexion'
-      fullPath: '/connexion'
-      preLoaderRoute: typeof ConnexionRouteImport
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_protege/': {
-      id: '/_protege/'
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof ProtegeIndexRouteImport
-      parentRoute: typeof ProtegeRoute
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_protege/exercices': {
-      id: '/_protege/exercices'
-      path: '/exercices'
-      fullPath: '/exercices'
-      preLoaderRoute: typeof ProtegeExercicesRouteImport
-      parentRoute: typeof ProtegeRoute
+    '/_app/exercises': {
+      id: '/_app/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof AppExercisesRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_protege/profil': {
-      id: '/_protege/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof ProtegeProfilRouteImport
-      parentRoute: typeof ProtegeRoute
+    '/_app/history': {
+      id: '/_app/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_protege/routines': {
-      id: '/_protege/routines'
+    '/_app/routines': {
+      id: '/_app/routines'
       path: '/routines'
       fullPath: '/routines'
-      preLoaderRoute: typeof ProtegeRoutinesRouteImport
-      parentRoute: typeof ProtegeRoute
+      preLoaderRoute: typeof AppRoutinesRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_protege/seances': {
-      id: '/_protege/seances'
-      path: '/seances'
-      fullPath: '/seances'
-      preLoaderRoute: typeof ProtegeSeancesRouteImport
-      parentRoute: typeof ProtegeRoute
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_protege/exercices/$slug': {
-      id: '/_protege/exercices/$slug'
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_app/exercises/': {
+      id: '/_app/exercises/'
+      path: '/'
+      fullPath: '/exercises/'
+      preLoaderRoute: typeof AppExercisesIndexRouteImport
+      parentRoute: typeof AppExercisesRoute
+    }
+    '/_app/exercises/$slug': {
+      id: '/_app/exercises/$slug'
       path: '/$slug'
-      fullPath: '/exercices/$slug'
-      preLoaderRoute: typeof ProtegeExercicesSlugRouteImport
-      parentRoute: typeof ProtegeExercicesRoute
+      fullPath: '/exercises/$slug'
+      preLoaderRoute: typeof AppExercisesSlugRouteImport
+      parentRoute: typeof AppExercisesRoute
     }
-    '/_protege/routines/': {
-      id: '/_protege/routines/'
+    '/_app/history/': {
+      id: '/_app/history/'
+      path: '/'
+      fullPath: '/history/'
+      preLoaderRoute: typeof AppHistoryIndexRouteImport
+      parentRoute: typeof AppHistoryRoute
+    }
+    '/_app/history/$id': {
+      id: '/_app/history/$id'
+      path: '/$id'
+      fullPath: '/history/$id'
+      preLoaderRoute: typeof AppHistoryIdRouteImport
+      parentRoute: typeof AppHistoryRoute
+    }
+    '/_app/routines/': {
+      id: '/_app/routines/'
       path: '/'
       fullPath: '/routines/'
-      preLoaderRoute: typeof ProtegeRoutinesIndexRouteImport
-      parentRoute: typeof ProtegeRoutinesRoute
+      preLoaderRoute: typeof AppRoutinesIndexRouteImport
+      parentRoute: typeof AppRoutinesRoute
     }
-    '/_protege/routines/$id': {
-      id: '/_protege/routines/$id'
+    '/_app/routines/$id': {
+      id: '/_app/routines/$id'
       path: '/$id'
       fullPath: '/routines/$id'
-      preLoaderRoute: typeof ProtegeRoutinesIdRouteImport
-      parentRoute: typeof ProtegeRoutinesRoute
+      preLoaderRoute: typeof AppRoutinesIdRouteImport
+      parentRoute: typeof AppRoutinesRoute
     }
-    '/_protege/routines/nouvelle': {
-      id: '/_protege/routines/nouvelle'
-      path: '/nouvelle'
-      fullPath: '/routines/nouvelle'
-      preLoaderRoute: typeof ProtegeRoutinesNouvelleRouteImport
-      parentRoute: typeof ProtegeRoutinesRoute
+    '/_app/routines/new': {
+      id: '/_app/routines/new'
+      path: '/new'
+      fullPath: '/routines/new'
+      preLoaderRoute: typeof AppRoutinesNewRouteImport
+      parentRoute: typeof AppRoutinesRoute
     }
-    '/_protege/seances/$id': {
-      id: '/_protege/seances/$id'
-      path: '/$id'
-      fullPath: '/seances/$id'
-      preLoaderRoute: typeof ProtegeSeancesIdRouteImport
-      parentRoute: typeof ProtegeSeancesRoute
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/account': {
+      id: '/_app/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof AppSettingsAccountRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/data': {
+      id: '/_app/settings/data'
+      path: '/data'
+      fullPath: '/settings/data'
+      preLoaderRoute: typeof AppSettingsDataRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/preferences': {
+      id: '/_app/settings/preferences'
+      path: '/preferences'
+      fullPath: '/settings/preferences'
+      preLoaderRoute: typeof AppSettingsPreferencesRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/training': {
+      id: '/_app/settings/training'
+      path: '/training'
+      fullPath: '/settings/training'
+      preLoaderRoute: typeof AppSettingsTrainingRouteImport
+      parentRoute: typeof AppSettingsRoute
     }
   }
 }
 
-interface ProtegeExercicesRouteChildren {
-  ProtegeExercicesSlugRoute: typeof ProtegeExercicesSlugRoute
+interface AppExercisesRouteChildren {
+  AppExercisesSlugRoute: typeof AppExercisesSlugRoute
+  AppExercisesIndexRoute: typeof AppExercisesIndexRoute
 }
 
-const ProtegeExercicesRouteChildren: ProtegeExercicesRouteChildren = {
-  ProtegeExercicesSlugRoute: ProtegeExercicesSlugRoute,
+const AppExercisesRouteChildren: AppExercisesRouteChildren = {
+  AppExercisesSlugRoute: AppExercisesSlugRoute,
+  AppExercisesIndexRoute: AppExercisesIndexRoute,
 }
 
-const ProtegeExercicesRouteWithChildren =
-  ProtegeExercicesRoute._addFileChildren(ProtegeExercicesRouteChildren)
-
-interface ProtegeRoutinesRouteChildren {
-  ProtegeRoutinesIdRoute: typeof ProtegeRoutinesIdRoute
-  ProtegeRoutinesNouvelleRoute: typeof ProtegeRoutinesNouvelleRoute
-  ProtegeRoutinesIndexRoute: typeof ProtegeRoutinesIndexRoute
-}
-
-const ProtegeRoutinesRouteChildren: ProtegeRoutinesRouteChildren = {
-  ProtegeRoutinesIdRoute: ProtegeRoutinesIdRoute,
-  ProtegeRoutinesNouvelleRoute: ProtegeRoutinesNouvelleRoute,
-  ProtegeRoutinesIndexRoute: ProtegeRoutinesIndexRoute,
-}
-
-const ProtegeRoutinesRouteWithChildren = ProtegeRoutinesRoute._addFileChildren(
-  ProtegeRoutinesRouteChildren,
+const AppExercisesRouteWithChildren = AppExercisesRoute._addFileChildren(
+  AppExercisesRouteChildren,
 )
 
-interface ProtegeSeancesRouteChildren {
-  ProtegeSeancesIdRoute: typeof ProtegeSeancesIdRoute
+interface AppHistoryRouteChildren {
+  AppHistoryIdRoute: typeof AppHistoryIdRoute
+  AppHistoryIndexRoute: typeof AppHistoryIndexRoute
 }
 
-const ProtegeSeancesRouteChildren: ProtegeSeancesRouteChildren = {
-  ProtegeSeancesIdRoute: ProtegeSeancesIdRoute,
+const AppHistoryRouteChildren: AppHistoryRouteChildren = {
+  AppHistoryIdRoute: AppHistoryIdRoute,
+  AppHistoryIndexRoute: AppHistoryIndexRoute,
 }
 
-const ProtegeSeancesRouteWithChildren = ProtegeSeancesRoute._addFileChildren(
-  ProtegeSeancesRouteChildren,
+const AppHistoryRouteWithChildren = AppHistoryRoute._addFileChildren(
+  AppHistoryRouteChildren,
 )
 
-interface ProtegeRouteChildren {
-  ProtegeExercicesRoute: typeof ProtegeExercicesRouteWithChildren
-  ProtegeProfilRoute: typeof ProtegeProfilRoute
-  ProtegeRoutinesRoute: typeof ProtegeRoutinesRouteWithChildren
-  ProtegeSeancesRoute: typeof ProtegeSeancesRouteWithChildren
-  ProtegeIndexRoute: typeof ProtegeIndexRoute
+interface AppRoutinesRouteChildren {
+  AppRoutinesIdRoute: typeof AppRoutinesIdRoute
+  AppRoutinesNewRoute: typeof AppRoutinesNewRoute
+  AppRoutinesIndexRoute: typeof AppRoutinesIndexRoute
 }
 
-const ProtegeRouteChildren: ProtegeRouteChildren = {
-  ProtegeExercicesRoute: ProtegeExercicesRouteWithChildren,
-  ProtegeProfilRoute: ProtegeProfilRoute,
-  ProtegeRoutinesRoute: ProtegeRoutinesRouteWithChildren,
-  ProtegeSeancesRoute: ProtegeSeancesRouteWithChildren,
-  ProtegeIndexRoute: ProtegeIndexRoute,
+const AppRoutinesRouteChildren: AppRoutinesRouteChildren = {
+  AppRoutinesIdRoute: AppRoutinesIdRoute,
+  AppRoutinesNewRoute: AppRoutinesNewRoute,
+  AppRoutinesIndexRoute: AppRoutinesIndexRoute,
 }
 
-const ProtegeRouteWithChildren =
-  ProtegeRoute._addFileChildren(ProtegeRouteChildren)
+const AppRoutinesRouteWithChildren = AppRoutinesRoute._addFileChildren(
+  AppRoutinesRouteChildren,
+)
+
+interface AppSettingsRouteChildren {
+  AppSettingsAccountRoute: typeof AppSettingsAccountRoute
+  AppSettingsDataRoute: typeof AppSettingsDataRoute
+  AppSettingsPreferencesRoute: typeof AppSettingsPreferencesRoute
+  AppSettingsTrainingRoute: typeof AppSettingsTrainingRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsAccountRoute: AppSettingsAccountRoute,
+  AppSettingsDataRoute: AppSettingsDataRoute,
+  AppSettingsPreferencesRoute: AppSettingsPreferencesRoute,
+  AppSettingsTrainingRoute: AppSettingsTrainingRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppExercisesRoute: typeof AppExercisesRouteWithChildren
+  AppHistoryRoute: typeof AppHistoryRouteWithChildren
+  AppRoutinesRoute: typeof AppRoutinesRouteWithChildren
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppExercisesRoute: AppExercisesRouteWithChildren,
+  AppHistoryRoute: AppHistoryRouteWithChildren,
+  AppRoutinesRoute: AppRoutinesRouteWithChildren,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  ProtegeRoute: ProtegeRouteWithChildren,
-  ConnexionRoute: ConnexionRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -24,6 +24,9 @@
     },
     "apps/web": {
       "entry": ["src/components/ui/**/*.{ts,tsx}", "src/lib/utils.ts"],
+      "ignoreIssues": {
+        "src/components/{reui,kibo-ui}/**": ["exports", "types"]
+      },
       "project": "src/**/*.{ts,tsx,css}"
     },
     "apps/mobile": {

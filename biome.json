@@ -30,5 +30,29 @@
   },
   "css": {
     "parser": { "tailwindDirectives": true }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "apps/web/src/components/ui/**",
+        "apps/web/src/components/kibo-ui/**",
+        "apps/web/src/components/reui/**"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useKeyWithClickEvents": "off",
+            "useFocusableInteractive": "off"
+          },
+          "suspicious": {
+            "noDocumentCookie": "off",
+            "noDoubleEquals": "off",
+            "noExplicitAny": "off"
+          },
+          "style": { "noNonNullAssertion": "off" }
+        }
+      }
+    }
+  ]
 }

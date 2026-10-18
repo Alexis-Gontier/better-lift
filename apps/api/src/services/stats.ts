@@ -1,72 +1,14 @@
 import { prisma } from "@better-lift/db";
-import {
-  type Bilan,
-  calculerPeriode,
-  type Periode,
-  type RecordRecent,
-  recordsDe,
-  SEMAINES_PERIODE,
-  type SerieHisto,
-  type StatsPeriode,
-} from "@better-lift/shared";
-import { historique, type LigneSeance, versResume } from "./seances.js";
+import type { Bilan } from "@better-lift/shared";
 
 /**
- * Les statistiques (D112), côté métier. Tout est dérivé des séances, à la
- * lecture (D58) : rien n'est stocké, rien n'est à recalculer quand une séance
- * arrive. Ce module ne connaît pas Hono.
+ * Les statistiques (D112), côté métier : le bilan de toujours, dérivé des séances à la lecture
+ * (D58). Ce module ne connaît pas Hono.
  */
-
-const JOUR_MS = 86_400_000;
-
-/**
- * Les records établis depuis une date, du plus récent au plus ancien, bornés
- * à `n`. Chaque exercice porte son historique chronologique COMPLET : un record
- * se juge contre tout ce qui le précède, même avant la fenêtre (D64).
- */
-export function recordsRecents(
-  exercices: readonly {
-    slug: string;
-    nom: string;
-    historique: (SerieHisto & { date: string })[];
-  }[],
-  depuis: Date,
-  n = 5,
-): RecordRecent[] {
-  const lignes: RecordRecent[] = [];
-  for (const e of exercices) {
-    // Une série qui bat plusieurs records en porte plusieurs types : une ligne.
-    const parSerie = new Map<string, RecordRecent>();
-    for (const r of recordsDe(e.historique)) {
-      if (Date.parse(r.date) < depuis.getTime()) continue;
-      const cle = `${r.date}|${r.reps}|${r.chargeKg}`;
-      const ligne = parSerie.get(cle);
-      if (ligne) ligne.types.push(r.type);
-      else
-        parSerie.set(cle, {
-          slug: e.slug,
-          nom: e.nom,
-          types: [r.type],
-          reps: r.reps,
-          chargeKg: r.chargeKg,
-          date: r.date,
-        });
-    }
-    lignes.push(...parSerie.values());
-  }
-  return lignes.sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, n);
-}
 
 export type DepotStats = {
   /** Le bilan de toujours, pour l'en-tête du Profil (D128). */
   bilan(userId: string): Promise<Bilan>;
-  /** Les stats d'une période et de la période d'avant (D125). */
-  lirePeriode(
-    userId: string,
-    maintenant: Date,
-    fuseau: string,
-    periode: Periode,
-  ): Promise<StatsPeriode>;
 };
 
 export const depotStats: DepotStats = {
@@ -92,78 +34,5 @@ export const depotStats: DepotStats = {
       volumeKg: Math.round(volumeKg),
       depuis: agregat._min.debut?.toISOString() ?? null,
     };
-  },
-
-  async lirePeriode(userId, maintenant, fuseau, periode) {
-    // Deux périodes et une semaine de marge : le découpage civil se fait ensuite.
-    const semaines = 2 * SEMAINES_PERIODE[periode] + 1;
-    const debut = new Date(maintenant.getTime() - semaines * 7 * JOUR_MS);
-    const [nbSeances, lignes] = await Promise.all([
-      prisma.seance.count({ where: { userId } }),
-      prisma.seance.findMany({
-        where: { userId, debut: { gte: debut } },
-        select: {
-          id: true,
-          nom: true,
-          routineId: true,
-          debut: true,
-          fin: true,
-          note: true,
-          exercices: {
-            select: {
-              exerciseId: true,
-              exercise: {
-                select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
-              },
-              note: true,
-              supersetGroupe: true,
-              series: { select: { type: true, reps: true, chargeKg: true, faite: true } },
-            },
-          },
-        },
-      }),
-    ]);
-
-    const p = calculerPeriode(
-      lignes.map((l) => {
-        const resume = versResume(l as LigneSeance);
-        return {
-          id: l.id,
-          debut: resume.debut,
-          fin: resume.fin,
-          volumeKg: resume.volumeKg,
-          seriesFaites: resume.seriesFaites,
-          exercices: l.exercices.map((e) => ({
-            musclePrincipal: e.exercise.target,
-            musclesSecondaires: e.exercise.secondary,
-            seriesComptees: e.series.filter((s) => s.faite && s.type !== "ECHAUFFEMENT").length,
-          })),
-        };
-      }),
-      maintenant,
-      fuseau,
-      periode,
-    );
-
-    // Les records de la période : chaque série se juge contre TOUT ce qui la
-    // précède (D64), d'où l'historique complet des exercices de la période.
-    const dansPeriode = new Set(p.jours.flatMap((j) => j.seances));
-    const courantes = lignes.filter((l) => dansPeriode.has(l.id));
-    const exercices = new Map<string, { slug: string; nom: string }>();
-    for (const l of courantes) {
-      for (const e of l.exercices) {
-        exercices.set(e.exerciseId, { slug: e.exercise.slug, nom: e.exercise.nomFr });
-      }
-    }
-    const depuis = new Date(
-      Math.min(...courantes.map((l) => l.debut.getTime()), maintenant.getTime()),
-    );
-    const h = await historique(userId, [...exercices.keys()]);
-    const records = recordsRecents(
-      [...exercices].map(([id, e]) => ({ ...e, historique: h.get(id) ?? [] })),
-      depuis,
-      10,
-    );
-    return { ...p, records, nbSeances };
   },
 };
