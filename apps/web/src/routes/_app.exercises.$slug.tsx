@@ -7,6 +7,7 @@ import { StateError } from "@/components/states/state-error";
 import { ExerciseFigures, ExerciseLook, ExerciseMain } from "@/features/exercises/exercise-detail";
 import {
   type ExerciseDraft,
+  ExerciseMenu,
   ExerciseNameInput,
   ExerciseNote,
   ExerciseSettings,
@@ -69,7 +70,9 @@ function ExercisePane({ exercise, empty }: { exercise: MockExercise; empty: bool
         subtitle={
           exercise.custom ? "Exercice personnel" : `${exercise.muscle} · ${exercise.equipment}`
         }
-        actions={edit.actions(null)}
+        actions={edit.actions(
+          exercise.custom ? <ExerciseMenu exercise={exercise} release={edit.release} /> : null,
+        )}
       />
       <DetailColumns
         id="exercice-fiche"

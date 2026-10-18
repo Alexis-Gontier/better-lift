@@ -23,13 +23,15 @@ import { formatKg, formatMinutes, formatMonth, formatWeekdayDay, plural } from "
 import { groupByMonth } from "@/mocks/history";
 import { mockRoutines } from "@/mocks/routines";
 import type { MockSession } from "@/mocks/sessions";
+import { DeleteSessionDialog } from "./session-pane";
 
 const ALL = "toutes";
 const MONTHS_PER_PAGE = 3;
 
 export function SessionList({ sessions }: { sessions: MockSession[] }) {
   const navigate = useNavigate();
-  /** Le clic droit sur une séance. Sans API, Supprimer ne fait encore rien. */
+  const [deleting, setDeleting] = useState<MockSession | null>(null);
+  /** Le clic droit sur une séance. */
   const sessionActions = (s: MockSession): RowAction[] => {
     const routine = mockRoutines.find((r) => r.name === s.routine);
     return [
@@ -42,7 +44,13 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
             },
           ]
         : []),
-      { label: "Supprimer", icon: Trash2, onSelect: () => {}, destructive: true, separated: true },
+      {
+        label: "Supprimer",
+        icon: Trash2,
+        onSelect: () => setDeleting(s),
+        destructive: true,
+        separated: true,
+      },
     ];
   };
   const [query, setQuery] = useState("");
@@ -157,6 +165,8 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
           Afficher les mois précédents
         </Button>
       )}
+
+      <DeleteSessionDialog session={deleting} onOpenChange={() => setDeleting(null)} />
     </>
   );
 }

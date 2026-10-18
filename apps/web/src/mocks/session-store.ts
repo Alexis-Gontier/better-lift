@@ -18,10 +18,22 @@ export function withCorrection(session: MockSession, correction: Correction): Se
   return { ...detail, session: { ...detail.session, volume: doneVolume(detail) } };
 }
 
-/** Les corrections du wireframe, en mémoire jusqu'au rechargement. Remplacé par l'API. */
+/** Les corrections et suppressions du wireframe, en mémoire jusqu'au rechargement. Remplacé par l'API. */
 const corrections = new Map<string, Correction>();
+const deleted = new Set<string>();
 let sessions: MockSession[] = mockSessions;
 const listeners = new Set<() => void>();
+
+/** Relit la liste : sans les séances supprimées, avec la durée et le volume corrigés. */
+function refresh() {
+  sessions = mockSessions
+    .filter((s) => !deleted.has(s.id))
+    .map((s) => {
+      const c = corrections.get(s.id);
+      return c ? withCorrection(s, c).session : s;
+    });
+  for (const l of listeners) l();
+}
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -29,8 +41,10 @@ function subscribe(listener: () => void) {
 }
 
 /** Les séances, corrections comprises : la liste montre la durée et le volume corrigés. */
+export const currentSessions = (): MockSession[] => sessions;
+
 export function useSessions(): MockSession[] {
-  return useSyncExternalStore(subscribe, () => sessions);
+  return useSyncExternalStore(subscribe, currentSessions);
 }
 
 export function detailOf(session: MockSession): SessionDetail {
@@ -42,9 +56,15 @@ export function detailOf(session: MockSession): SessionDetail {
 export function saveSession(detail: SessionDetail) {
   const { session, exercises, notes } = detail;
   corrections.set(session.id, { exercises, notes, minutes: session.minutes });
-  sessions = mockSessions.map((s) => {
-    const c = corrections.get(s.id);
-    return c ? withCorrection(s, c).session : s;
-  });
-  for (const l of listeners) l();
+  refresh();
+}
+
+/** Retire la séance de la liste. Rend de quoi annuler. */
+export function deleteSession(id: string): () => void {
+  deleted.add(id);
+  refresh();
+  return () => {
+    deleted.delete(id);
+    refresh();
+  };
 }

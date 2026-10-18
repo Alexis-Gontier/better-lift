@@ -152,7 +152,10 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
         </DragScroll>
       </div>
 
-      {rows.length === 0 && !creating ? (
+      {exercises.length === 0 && !creating ? (
+        // Rien à filtrer : la liste est vide, pas la recherche (le dernier exercice personnel supprimé).
+        <CustomExercisesEmpty />
+      ) : rows.length === 0 && !creating ? (
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyTitle>Aucun exercice ne correspond</EmptyTitle>

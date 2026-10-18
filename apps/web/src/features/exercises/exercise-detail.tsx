@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatKg, formatShortDay } from "@/lib/format";
+import { formatKg, formatNumber, formatShortDay } from "@/lib/format";
 import {
   best1rmOf,
   bestByReps,
@@ -38,7 +38,9 @@ const chartConfig = {
   heaviest: { label: "Meilleure charge", color: "var(--chart-4)" },
 } satisfies ChartConfig;
 
-const setsText = (p: Performance) => p.sets.map((s) => `${s.kg ?? "—"} × ${s.reps}`).join(" · ");
+/** « 47,5 × 15 · 40 × 14 » : la virgule française, comme partout ailleurs. */
+const setsText = (p: Performance) =>
+  p.sets.map((s) => `${s.kg === null ? "—" : formatNumber(s.kg)} × ${s.reps}`).join(" · ");
 
 function ProgressChart({ exercise, history }: { exercise: MockExercise; history: Performance[] }) {
   const target = targetOf(exercise.slug);

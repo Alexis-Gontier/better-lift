@@ -70,8 +70,11 @@ function ExercisesPage() {
     >
       {state === "chargement" && <ExerciseListSkeleton />}
       {state === "erreur" && <StateError title="Les exercices n'ont pas pu se charger" />}
-      {state === "vide" && <CustomExercisesEmpty />}
-      {state === "nominal" && <ExerciseList key={shownTab} exercises={exercises} />}
+      {/* `vide` : aucun exercice personnel. Le catalogue, lui, est toujours là. */}
+      {state === "vide" && shownTab === "mes-exercices" && <CustomExercisesEmpty />}
+      {(state === "nominal" || (state === "vide" && shownTab === "catalogue")) && (
+        <ExerciseList key={shownTab} exercises={exercises} />
+      )}
     </ListDetailPage>
   );
 }

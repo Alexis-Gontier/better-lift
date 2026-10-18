@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { withCorrection } from "./session-store";
+import { currentSessions, deleteSession, withCorrection } from "./session-store";
 import type { MockSession } from "./sessions";
 
 const session: MockSession = {
@@ -49,5 +49,17 @@ describe("correction d'une séance", () => {
 
   it("n'invente pas de note vide", () => {
     expect(withCorrection(session, { minutes: 47, exercises: [] })).not.toHaveProperty("notes");
+  });
+});
+
+describe("suppression d'une séance", () => {
+  it("retire la séance de la liste, et l'annulation la rend à sa place", () => {
+    const before = currentSessions();
+    const id = before[1]?.id ?? "";
+    const undo = deleteSession(id);
+    expect(currentSessions().some((s) => s.id === id)).toBe(false);
+    expect(currentSessions()).toHaveLength(before.length - 1);
+    undo();
+    expect(currentSessions().map((s) => s.id)).toEqual(before.map((s) => s.id));
   });
 });

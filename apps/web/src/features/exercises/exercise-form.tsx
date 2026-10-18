@@ -1,11 +1,27 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, MoreHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DetailColumns } from "@/components/detail-columns";
 import { DetailHeader } from "@/components/list-detail";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Empty,
   EmptyDescription,
@@ -26,9 +42,17 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { filled } from "@/features/routines/routine-editor";
+import { plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { customSlug, saveExercise, setExerciseDraftName } from "@/mocks/exercise-store";
+import { exerciseHistory } from "@/mocks/exercise-history";
+import {
+  customSlug,
+  deleteExercise,
+  saveExercise,
+  setExerciseDraftName,
+} from "@/mocks/exercise-store";
 import { EQUIPMENTS, type MockExercise, MUSCLES, mockExercises } from "@/mocks/exercises";
+import { useRoutines } from "@/mocks/routine-store";
 
 /** Ce qui se modifie d'une fiche (D264) : la note de tout exercice, le reste s'il est personnel. */
 export type ExerciseDraft = Pick<MockExercise, "name" | "muscle" | "equipment"> & { note: string };
@@ -178,6 +202,85 @@ export function ExerciseNote({ draft, onChange }: { draft: ExerciseDraft; onChan
         />
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Le menu ⋯ d'un exercice personnel : Supprimer. Tant qu'une routine ou une séance s'en sert, la
+ * fenêtre dit pourquoi on ne peut pas, plutôt que de laisser des références orphelines.
+ */
+export function ExerciseMenu({
+  exercise,
+  release,
+}: {
+  exercise: MockExercise;
+  release: () => void;
+}) {
+  const navigate = useNavigate();
+  const [confirming, setConfirming] = useState(false);
+  const routines = useRoutines().filter((r) => r.exercises.some((e) => e.slug === exercise.slug));
+  const sessions = exerciseHistory(exercise.slug).length;
+  const blockers = [
+    routines.length > 0 && plural(routines.length, "routine"),
+    sessions > 0 && plural(sessions, "séance"),
+  ].filter(Boolean);
+
+  function remove() {
+    const undo = deleteExercise(exercise.slug);
+    release();
+    navigate({ to: "/exercises", search: true });
+    toast(`« ${exercise.name} » supprimé`, {
+      action: { label: "Annuler", onClick: undo },
+    });
+  }
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon-sm" aria-label="Actions de l'exercice">
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
+            <Trash2 /> Supprimer
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {blockers.length > 0
+                ? `« ${exercise.name} » sert encore`
+                : `Supprimer « ${exercise.name} » ?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {blockers.length > 0
+                ? `Il figure dans ${blockers.join(" et ")}. ${
+                    sessions > 0
+                      ? "Une séance faite le garde : il reste dans vos exercices."
+                      : "Retirez-le de ces routines avant de le supprimer."
+                  }`
+                : "Il disparaît de la liste de vos exercices."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {blockers.length > 0 ? (
+              <AlertDialogCancel>Compris</AlertDialogCancel>
+            ) : (
+              <>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={remove}>
+                  Supprimer
+                </AlertDialogAction>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 

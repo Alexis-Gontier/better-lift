@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,11 +25,59 @@ import {
 import { formatDay } from "@/lib/format";
 import type { SessionDetail } from "@/mocks/history";
 import { useRoutines } from "@/mocks/routine-store";
-import { saveSession } from "@/mocks/session-store";
+import { deleteSession, saveSession } from "@/mocks/session-store";
+import type { MockSession } from "@/mocks/sessions";
 import { changedExercises, sessionChangeCount } from "./session-draft";
 import { SessionExercises, SessionNote, SessionSummary } from "./session-editor";
 
-/** Le menu ⋯ de la séance : la routine d'origine, puis Supprimer. Sans API, supprimer la referme. */
+/**
+ * Supprimer une séance, après confirmation : du menu ⋯ comme du clic droit dans la liste. Ouverte,
+ * elle se referme. Le toast permet d'annuler.
+ */
+export function DeleteSessionDialog({
+  session,
+  onOpenChange,
+  release,
+}: {
+  /** La séance à supprimer ; `null` : fenêtre fermée. */
+  session: MockSession | null;
+  onOpenChange: (open: boolean) => void;
+  /** Lève le garde « non enregistré » de la séance ouverte avant de la quitter. */
+  release?: () => void;
+}) {
+  const navigate = useNavigate();
+  const { id: openId } = useParams({ strict: false });
+  function remove() {
+    if (!session) return;
+    const undo = deleteSession(session.id);
+    if (session.id === openId) {
+      release?.();
+      navigate({ to: "/history", search: true });
+    }
+    toast("Séance supprimée", { action: { label: "Annuler", onClick: undo } });
+  }
+  return (
+    <AlertDialog open={session !== null} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Supprimer cette séance ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {session && `${session.routine}, ${formatDay(session.date)}. `}Ses séries et les records
+            qu'elle portait disparaîtront.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={remove}>
+            Supprimer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+/** Le menu ⋯ de la séance : la routine d'origine, puis Supprimer. */
 function SessionMenu({ detail, release }: { detail: SessionDetail; release: () => void }) {
   const navigate = useNavigate();
   const routine = useRoutines().find((r) => r.name === detail.session.routine);
@@ -56,29 +104,11 @@ function SessionMenu({ detail, release }: { detail: SessionDetail; release: () =
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <AlertDialog open={confirming} onOpenChange={setConfirming}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette séance ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Ses séries et les records qu'elle portait disparaîtront. C'est définitif.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                release();
-                navigate({ to: "/history", search: true });
-                toast("Séance supprimée");
-              }}
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteSessionDialog
+        session={confirming ? detail.session : null}
+        onOpenChange={setConfirming}
+        release={release}
+      />
     </>
   );
 }

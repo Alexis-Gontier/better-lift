@@ -29,7 +29,11 @@ export function useUnsavedGuard(
     withResolver: true,
   });
   const guard = (
-    <AlertDialog open={blocker.status === "blocked"}>
+    // Échap ou un clic hors de la fenêtre : on reste, comme « Rester ».
+    <AlertDialog
+      open={blocker.status === "blocked"}
+      onOpenChange={(open) => !open && blocker.reset?.()}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>

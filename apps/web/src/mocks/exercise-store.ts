@@ -22,6 +22,19 @@ export function saveExercise(exercise: MockExercise) {
   version.set(version.get() + 1);
 }
 
+/** Retire un exercice personnalisé. Rend de quoi annuler, à la même place. */
+export function deleteExercise(slug: string): () => void {
+  const i = mockExercises.findIndex((e) => e.slug === slug);
+  const removed = mockExercises[i];
+  if (!removed?.custom) return () => {};
+  mockExercises.splice(i, 1);
+  version.set(version.get() + 1);
+  return () => {
+    mockExercises.splice(i, 0, removed);
+    version.set(version.get() + 1);
+  };
+}
+
 /** Sans casse ni accents ni ponctuation : « Presse à cuisses » → « presse-a-cuisses ». */
 function kebab(text: string): string {
   return text
