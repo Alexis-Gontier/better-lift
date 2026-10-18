@@ -30,3 +30,9 @@ packages/db/src/generated/
 
 # Rapports de critique de la skill impeccable (locaux)
 .impeccable/
+
+# E2E (D304) : identifiants du compte de test, état de session, rapports
+.env.e2e
+apps/web/e2e/.auth/
+apps/web/test-results/
+apps/web/playwright-report/

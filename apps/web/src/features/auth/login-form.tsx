@@ -1,30 +1,45 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { authClient, chargerSession, cibleApresConnexion } from "@/lib/auth";
 import {
   AUTH_CONTROL,
   AuthCard,
   AuthLink,
   PasswordInput,
   SubmitButton,
-  useFakeSubmit,
+  useEnvoi,
 } from "./auth-card";
+import { messageAuth } from "./messages";
 
 /**
  * Connexion par `signIn.email`. Better Auth ne dit pas lequel des deux est faux : le message
  * non plus. La limite de tentatives (table `rateLimit`) rend le même échec.
  */
 export function LoginForm() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const { redirect } = useSearch({ from: "/_auth/login" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { submit, pending, failed } = useFakeSubmit(() => navigate({ to: "/" }));
+  const { submit, pending, erreur } = useEnvoi(
+    async () => {
+      const { error } = await authClient.signIn.email({ email, password });
+      return error ? messageAuth("connexion", error.code, error.status ?? 0) : null;
+    },
+    async () => {
+      // Relire puis invalider : la garde de `_app` doit voir la nouvelle session.
+      await chargerSession();
+      await router.invalidate();
+      await router.navigate({ to: cibleApresConnexion(redirect) });
+    },
+    "E-mail ou mot de passe incorrect.",
+  );
   return (
     <AuthCard
       title="Connexion"
       description="Entrez votre e-mail et votre mot de passe."
-      error={failed ? "E-mail ou mot de passe incorrect." : null}
+      error={erreur}
       footer={
         <>
           Pas encore de compte ? <AuthLink to="/register">Créer un compte</AuthLink>

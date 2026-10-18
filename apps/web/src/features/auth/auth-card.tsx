@@ -101,31 +101,34 @@ export function SubmitButton({
   );
 }
 
-/** Le délai simulé d'un aller-retour avec Better Auth. */
-const LATENCY_MS = 700;
-
 /**
- * L'envoi simulé d'un formulaire d'auth (D222) : attend, puis réussit, sauf si l'état forcé
- * est `erreur`. `?etat=chargement` fige le formulaire en attente.
+ * L'envoi d'un formulaire d'auth. `envoyer` rend un message d'erreur, ou `null` en cas de
+ * succès ; `apres` suit un succès (relire la session, naviguer). `?etat=chargement` fige le
+ * formulaire en attente, `?etat=erreur` montre l'échec propre à la page (D303).
  */
-export function useFakeSubmit(onSuccess: () => void) {
-  // Tant que la page lit la maquette : nominal, sauf état forcé par l'URL.
-  const state = useEtat() ?? "nominal";
+export function useEnvoi(
+  envoyer: () => Promise<string | null>,
+  apres: () => Promise<void>,
+  echecForce: string,
+) {
+  const force = useEtat();
   const [pending, setPending] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const submit = (e: React.FormEvent) => {
+  const [erreur, setErreur] = useState<string | null>(null);
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPending(true);
-    setFailed(false);
-    window.setTimeout(() => {
+    setErreur(null);
+    try {
+      const echec = await envoyer();
+      if (echec) setErreur(echec);
+      else await apres();
+    } finally {
       setPending(false);
-      if (state === "erreur") setFailed(true);
-      else onSuccess();
-    }, LATENCY_MS);
+    }
   };
   return {
     submit,
-    pending: pending || state === "chargement",
-    failed: failed || state === "erreur",
+    pending: pending || force === "chargement",
+    erreur: force === "erreur" ? echecForce : erreur,
   };
 }

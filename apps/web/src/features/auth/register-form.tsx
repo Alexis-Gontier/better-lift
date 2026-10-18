@@ -1,7 +1,8 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { authClient, chargerSession } from "@/lib/auth";
 import {
   AUTH_CONTROL,
   AuthCard,
@@ -9,8 +10,9 @@ import {
   PASSWORD,
   PasswordInput,
   SubmitButton,
-  useFakeSubmit,
+  useEnvoi,
 } from "./auth-card";
+import { messageAuth } from "./messages";
 
 /**
  * Inscription par `signUp.email` : nom, e-mail, mot de passe saisi deux fois (la confirmation
@@ -18,12 +20,24 @@ import {
  * de `SIGNUP_ALLOWLIST` : c'est l'échec qu'on montre.
  */
 export function RegisterForm() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [again, setAgain] = useState("");
-  const { submit, pending, failed } = useFakeSubmit(() => navigate({ to: "/" }));
+  const { submit, pending, erreur } = useEnvoi(
+    async () => {
+      const { error } = await authClient.signUp.email({ name: name.trim(), email, password });
+      return error ? messageAuth("inscription", error.code, error.status ?? 0) : null;
+    },
+    async () => {
+      // L'inscription ouvre la session : la relire, puis l'Accueil.
+      await chargerSession();
+      await router.invalidate();
+      await router.navigate({ to: "/" });
+    },
+    "Cette adresse n'est pas invitée. Demandez l'accès à l'administrateur.",
+  );
   const tooShort = password.length > 0 && password.length < PASSWORD.min;
   const mismatch = again.length > 0 && again !== password;
   const valid =
@@ -32,9 +46,7 @@ export function RegisterForm() {
     <AuthCard
       title="Créer un compte"
       description="better-lift est ouvert sur invitation."
-      error={
-        failed ? "Cette adresse n'est pas invitée. Demandez l'accès à l'administrateur." : null
-      }
+      error={erreur}
       footer={
         <>
           Déjà un compte ? <AuthLink to="/login">Se connecter</AuthLink>
