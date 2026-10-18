@@ -1,12 +1,14 @@
 import { prisma } from "@better-lift/db";
 import {
   apercuExercices,
+  type ExerciceFait,
   type HistoriqueExercice,
   type LigneExport,
   marquerRecords,
   normaliserGroupes,
   type RecordExercice,
   recordsDe,
+  resumerExercicesFaits,
   type SeanceDetail,
   type SeanceFil,
   type SeanceResume,
@@ -316,6 +318,8 @@ export type DepotLectureSeances = {
   ): Promise<Record<string, { reps: number | null; chargeKg: number | null; faite: boolean }[]>>;
   /** Les records actuels ; `null` si l'exercice n'existe pas. */
   records(userId: string, slug: string): Promise<RecordExercice[] | null>;
+  /** Les exercices qu'il a faits : dernière fois et meilleur 1RM (D312). */
+  exercicesFaits(userId: string): Promise<ExerciceFait[]>;
 };
 
 const LECTURE_SEANCE = {
@@ -379,6 +383,31 @@ export async function historique(userId: string, exerciseIds: string[], avant?: 
 }
 
 export const depotLecture: DepotLectureSeances = {
+  async exercicesFaits(userId) {
+    const lignes = await prisma.seanceSerie.findMany({
+      where: { exercice: { seance: { userId } } },
+      select: {
+        type: true,
+        reps: true,
+        chargeKg: true,
+        faite: true,
+        exercice: {
+          select: { exercise: { select: { slug: true } }, seance: { select: { debut: true } } },
+        },
+      },
+    });
+    return resumerExercicesFaits(
+      lignes.map((l) => ({
+        slug: l.exercice.exercise.slug,
+        date: l.exercice.seance.debut.toISOString(),
+        type: l.type,
+        reps: l.reps,
+        chargeKg: enNombre(l.chargeKg),
+        faite: l.faite,
+      })),
+    );
+  },
+
   async lister(userId, page, taille, routineId) {
     // Le filtre `userId` reste : la routine d'autrui ne rend rien.
     const where = { userId, ...(routineId ? { routineId } : {}) };

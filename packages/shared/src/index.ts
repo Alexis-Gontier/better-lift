@@ -24,6 +24,7 @@ export {
   type RequeteCatalogue,
   requeteCatalogue,
 } from "./exercices.js";
+export { type ExerciceFait, resumerExercicesFaits } from "./exercices-faits.js";
 export { type LigneExport, versCsv } from "./export.js";
 export {
   aEnvoyer,

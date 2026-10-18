@@ -19,17 +19,32 @@ const historique: HistoriqueExercice = [
   },
 ];
 
+const fait = { slug: "bench", derniereFois: "2026-10-03T17:00:00.000Z", meilleur1Rm: 99.2 };
+
 /** Seule alice a un historique, et seul « bench » existe. */
 const lecture = {
   async historiqueExercice(userId: string, slug: string) {
     if (slug !== "bench") return null;
     return userId === "alice" ? historique : [];
   },
+  async exercicesFaits(userId: string) {
+    return userId === "alice" ? [fait] : [];
+  },
 } as unknown as DepotLectureSeances;
 
 const app = new Hono().route("/exercices", routesRecords(lecture, lireSession));
 const lire = (chemin: string, user: string | null = "alice") =>
   app.request(chemin, { headers: user ? { "x-test-user": user } : {} });
+
+describe("GET /exercices/faits (D312)", () => {
+  it("exige une session, puis rend les exercices de l'utilisateur, et seulement les siens", async () => {
+    expect((await lire("/exercices/faits", null)).status).toBe(401);
+    const res = await lire("/exercices/faits");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ exercices: [fait] });
+    expect(await (await lire("/exercices/faits", "bob")).json()).toEqual({ exercices: [] });
+  });
+});
 
 describe("GET /exercices/:slug/historique (D124)", () => {
   it("exige une session", async () => {

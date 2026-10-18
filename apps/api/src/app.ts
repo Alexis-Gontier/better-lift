@@ -62,8 +62,9 @@ const lireSession = (headers: Headers) => auth.api.getSession({ headers });
 
 const routes = app
   .route("/health", health)
-  .route("/exercices", routesExercices())
+  // AVANT le catalogue : son `/:slug` prendrait « faits » pour un slug (D312).
   .route("/exercices", routesRecords(depotLecture, lireSession))
+  .route("/exercices", routesExercices())
   .route("/routines", routesRoutines(depotRoutines, depotDossiers, lireSession))
   .route("/dossiers", routesDossiers(depotDossiers, lireSession))
   .route("/seances", routesSeances(depotSeances, depotLecture, lireSession))

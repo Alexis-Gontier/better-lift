@@ -146,6 +146,9 @@ const fauxLecture: DepotLectureSeances = {
   async records() {
     return [];
   },
+  async exercicesFaits() {
+    return [];
+  },
   async historiqueExercice() {
     return null;
   },
