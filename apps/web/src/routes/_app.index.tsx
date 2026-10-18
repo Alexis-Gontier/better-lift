@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { GoalsCard } from "@/features/home/goals-card";
 import { HomeEmpty, HomeSkeleton } from "@/features/home/home-states";
 import { RecentRecords, RecentSessions } from "@/features/home/recent-lists";
-import { TodayCard } from "@/features/home/today-card";
-import { WeekStats } from "@/features/home/week-stats";
 import { WeightCard } from "@/features/home/weight-card";
 
 export const Route = createFileRoute("/_app/")({
@@ -16,10 +14,7 @@ export const Route = createFileRoute("/_app/")({
   component: HomePage,
 });
 
-/**
- * L'Accueil (D270) : aujourd'hui et cette semaine d'abord ; puis les dernières séances, les
- * derniers records, le poids et les objectifs. L'analyse sur la durée vit dans Progression.
- */
+/** L'Accueil, en attendant sa refonte autour des records (D277). */
 function HomePage() {
   const { state } = useProto();
   return (
@@ -37,18 +32,14 @@ function HomePage() {
       {state === "erreur" && <StateError title="L'accueil n'a pas pu se charger" />}
       {state === "vide" && <HomeEmpty />}
       {state === "nominal" && (
-        <>
-          <TodayCard />
-          <WeekStats />
-          <div className="grid items-start gap-4 @3xl:grid-cols-3">
-            <RecentSessions />
-            <RecentRecords />
-            <div className="flex flex-col gap-4">
-              <WeightCard />
-              <GoalsCard />
-            </div>
+        <div className="grid items-start gap-4 @3xl:grid-cols-3">
+          <RecentSessions />
+          <RecentRecords />
+          <div className="flex flex-col gap-4">
+            <WeightCard />
+            <GoalsCard />
           </div>
-        </>
+        </div>
       )}
     </Page>
   );

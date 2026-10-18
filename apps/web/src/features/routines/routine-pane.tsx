@@ -80,9 +80,6 @@ function RoutineMenu({ routine, release }: { routine: MockRoutine; release?: () 
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onSelect={() => navigate({ to: "/planning" })}>
-            Planifier
-          </DropdownMenuItem>
           <DropdownMenuItem onSelect={duplicate}>Dupliquer</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>

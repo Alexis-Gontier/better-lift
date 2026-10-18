@@ -11,18 +11,14 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Chargement : aujourd'hui, la semaine, puis les trois colonnes. */
+/** Chargement : les trois colonnes. */
 export function HomeSkeleton() {
   return (
-    <>
-      <Skeleton className="h-28 rounded-xl" />
-      <Skeleton className="h-56 rounded-xl" />
-      <div className="grid gap-4 @3xl:grid-cols-3">
-        <Skeleton className="h-80 rounded-xl" />
-        <Skeleton className="h-80 rounded-xl" />
-        <Skeleton className="h-80 rounded-xl" />
-      </div>
-    </>
+    <div className="grid gap-4 @3xl:grid-cols-3">
+      <Skeleton className="h-80 rounded-xl" />
+      <Skeleton className="h-80 rounded-xl" />
+      <Skeleton className="h-80 rounded-xl" />
+    </div>
   );
 }
 

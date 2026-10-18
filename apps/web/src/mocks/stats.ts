@@ -5,7 +5,6 @@
  */
 
 export type SessionLike = { date: string; volume: number; minutes: number };
-type WeekTotals = { count: number; volume: number; minutes: number };
 
 const DAY_MS = 86_400_000;
 
@@ -27,31 +26,6 @@ export function startOfWeek(date: string): string {
   return addDays(date, -weekday);
 }
 
-function totals(sessions: SessionLike[]): WeekTotals {
-  return sessions.reduce(
-    (acc, s) => ({
-      count: acc.count + 1,
-      volume: acc.volume + s.volume,
-      minutes: acc.minutes + s.minutes,
-    }),
-    { count: 0, volume: 0, minutes: 0 },
-  );
-}
-
-/**
- * La semaine en cours face à la précédente, à la même date (D270) : un vendredi se compare au
- * lundi–vendredi d'avant, pas à une semaine entière qui fausserait l'écart.
- */
-export function weekSummary(sessions: SessionLike[], today: string) {
-  const current = startOfWeek(today);
-  const previous = addDays(current, -7);
-  const sameDay = addDays(today, -7);
-  return {
-    current: totals(sessions.filter((s) => startOfWeek(s.date) === current && s.date <= today)),
-    previous: totals(sessions.filter((s) => startOfWeek(s.date) === previous && s.date <= sameDay)),
-  };
-}
-
 /** Volume des `weeks` dernières semaines, la plus ancienne d'abord. */
 export function weeklyVolume(sessions: SessionLike[], today: string, weeks: number) {
   const last = startOfWeek(today);
@@ -64,9 +38,9 @@ export function weeklyVolume(sessions: SessionLike[], today: string, weeks: numb
   });
 }
 
-/** Semaines consécutives avec au moins une séance, en partant de la semaine en cours si elle compte. */
-export function weekStreak(sessions: SessionLike[], today: string): number {
-  const weeks = new Set(sessions.filter((s) => s.date <= today).map((s) => startOfWeek(s.date)));
+/** Semaines consécutives avec au moins un élément, en partant de la semaine en cours si elle compte. */
+export function weekStreak(items: readonly { date: string }[], today: string): number {
+  const weeks = new Set(items.filter((s) => s.date <= today).map((s) => startOfWeek(s.date)));
   let week = startOfWeek(today);
   if (!weeks.has(week)) week = addDays(week, -7);
   let streak = 0;

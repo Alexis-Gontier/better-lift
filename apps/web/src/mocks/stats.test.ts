@@ -7,7 +7,6 @@ import {
   startOfWeek,
   weeklyVolume,
   weekStreak,
-  weekSummary,
 } from "./stats";
 
 const TODAY = "2026-10-16"; // vendredi
@@ -24,22 +23,6 @@ describe("dates civiles", () => {
   it("ajoute des jours en franchissant les mois", () => {
     expect(addDays("2026-10-31", 1)).toBe("2026-11-01");
     expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
-  });
-});
-
-describe("weekSummary", () => {
-  it("compare la semaine en cours à la précédente, à la même date", () => {
-    const sessions = [
-      s("2026-10-13", 5000, 70),
-      s("2026-10-15", 4000, 50),
-      s("2026-10-07", 3000, 60),
-      // Samedi dernier : après la même date, il ne compte pas encore.
-      s("2026-10-10", 9000, 90),
-    ];
-    expect(weekSummary(sessions, TODAY)).toEqual({
-      current: { count: 2, volume: 9000, minutes: 120 },
-      previous: { count: 1, volume: 3000, minutes: 60 },
-    });
   });
 });
 

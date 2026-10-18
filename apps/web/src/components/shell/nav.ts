@@ -1,5 +1,4 @@
 import {
-  CalendarDays,
   Dumbbell,
   History,
   House,
@@ -19,7 +18,6 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Entraînement",
     items: [
-      { title: "Planning", to: "/planning", icon: CalendarDays },
       { title: "Routines", to: "/routines", icon: ListChecks },
       { title: "Exercices", to: "/exercises", icon: Dumbbell },
       { title: "Historique", to: "/history", icon: History },

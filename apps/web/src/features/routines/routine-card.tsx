@@ -1,6 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, ChevronRight, Copy, GripVertical, Trash2 } from "lucide-react";
+import { ChevronRight, Copy, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { listCardClass, listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
@@ -27,7 +27,6 @@ function routineActions(
   navigate: ReturnType<typeof useNavigate>,
 ): RowAction[] {
   return [
-    { label: "Planifier", icon: CalendarPlus, onSelect: () => navigate({ to: "/planning" }) },
     {
       label: "Dupliquer",
       icon: Copy,
