@@ -42,6 +42,8 @@ function fauxDepot(): DepotRoutines {
           nbSeries: 1,
           dossierId: d.dossierId ?? null,
           derniereSeance: null,
+          exercices: d.exercices.map((e) => ({ nom: e.nom, musclePrincipal: e.musclePrincipal })),
+          dureeEstimeeSec: 0,
         }));
     },
     async lire(userId, id) {

@@ -1,4 +1,4 @@
-import type { RoutineSaisie } from "@better-lift/shared";
+import { dureeEstimeeSec, type RoutineSaisie } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 import {
   type LigneRoutine,
@@ -129,6 +129,9 @@ describe("projections", () => {
       nbSeries: 2,
       dossierId: null,
       derniereSeance: null,
+      exercices: [{ nom: "Développé couché à la barre", musclePrincipal: "Pectoraux" }],
+      // Deux séries et le repos de 180 s qui les sépare : le calcul de shared.
+      dureeEstimeeSec: dureeEstimeeSec([{ reposSec: 180, series: [1, 2] }]),
     });
   });
 });
