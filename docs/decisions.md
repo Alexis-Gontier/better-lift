@@ -188,8 +188,6 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 
 ## Interface mobile
 
-Le système visuel en une page : [`DESIGN.md`](../DESIGN.md).
-
 - **D28** — Une seule couleur pour l'action et le record, distinguée par la forme : l'action est
   un aplat, le record un contour (texte coloré sur fond teinté, flèche montante). La couleur
   est l'orange depuis D161.

@@ -7,7 +7,7 @@ paths:
 
 Écrans gardés depuis D178 : Routines (liste, page, édition, choix et réorganisation des
 exercices), la séance (Démarrer, séance, fin), la fiche d'un exercice, le Profil, la connexion.
-Système visuel : `DESIGN.md`. Décisions : `docs/decisions.md`.
+Décisions (dont le système visuel, D161–D176) : `docs/decisions.md`.
 
 ## Lancer (Expo Go)
 

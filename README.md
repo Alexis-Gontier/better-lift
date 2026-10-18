@@ -54,7 +54,6 @@ La CI rejoue la même chaîne sur chaque PR ; `main` n'accepte que des PR fusion
 
 - [Conception](docs/conception.md) — produit, architecture, données, ce qui ne se perd jamais.
 - [Registre des décisions](docs/decisions.md) — les choix en vigueur, que le code cite (« D57 »).
-- [Système visuel du mobile](DESIGN.md).
 - [Déploiement](docs/deploiement.md) — Vercel et APK EAS.
 - [`CLAUDE.md`](CLAUDE.md) et [`.claude/rules/`](.claude/rules/) — consignes pour l'agent de code.
 
