@@ -1,6 +1,6 @@
 # Brancher le web sur l'API, et auditer l'API
 
-Date : 2026-10-18. Suit `2026-10-18-web-records-design.md` (D274–D292). Décisions D293 à D305.
+Date : 2026-10-18. Suit `2026-10-18-web-records-design.md` (D274–D292). Décisions D293 à D309.
 
 ## 1. Contexte
 
@@ -86,15 +86,49 @@ Constats de départ :
   `feat/web-wireframe`, dans `feat/web-api`, une fois les deux premières fusionnées et
   rebasées.
 
+- **D306 — Chaque fichier a sa place** (2026-10-18). Une règle par dossier, écrite dans
+  `.claude/rules/interface-web.md` :
+  - `routes/` : la route seule — `validateSearch`, garde, loader, choix de l'état. Aucune
+    logique, aucun JSX au-delà de l'appel au composant de la feature.
+  - `features/<x>/` : tout ce qui est propre à une page — `queries.ts`, ses composants
+    (`<x>-*.tsx`), sa logique pure (`*.ts`) et ses tests à côté. Une feature n'importe pas
+    une autre feature ; ce qu'elles partagent monte dans `components/` ou `lib/`.
+  - `components/` : les briques communes à plusieurs features (`list-detail`, `editable`,
+    `row-menu`, `body-map`…) ; `components/shell/` la coquille ; `components/states/` les
+    quatre états ; `components/ui/`, `reui/`, `kibo-ui/` le code des registres, non modifié
+    sauf nécessité.
+  - `lib/` : sans React ni feature — config, client d'API, auth, formatage, lecture.
+  - `packages/shared` : le calcul métier commun au web et au mobile (records, 1RM, volume,
+    dates civiles). Le web ne réécrit jamais un calcul que `shared` a déjà.
+- **D307 — Ce que `mocks/` contient de vrai déménage** (2026-10-18). Avant d'effacer `mocks/` :
+  les calculs de séance, de routine et d'exercice (`history`, `routine-stats`,
+  `routine-history`, `exercise-stats`) vont dans `shared` s'ils valent pour le mobile, sinon
+  dans la feature qui les lit, tests compris ; ceux que `shared` fait déjà sont supprimés au
+  profit de `shared`. `addDays` et `TODAY` cèdent la place au calendrier civil de `shared`
+  dans le fuseau du profil, jamais à l'UTC.
+- **D308 — `proto/` devient les états** (2026-10-18). `components/proto/` (`?etat=`, `?v=`)
+  rejoint `components/states/` sous le nom `useEtat` ; les variantes `?v=`, mortes depuis D263,
+  partent. La barre de prototype (`proto-bar`) ne s'affiche qu'en développement.
+- **D309 — Knip voit tout le web** (2026-10-18). `kibo-ui/` et `reui/` sortent des entrées de
+  Knip ; restent `components/ui/` (registre shadcn) et `lib/utils.ts`. Les fichiers jamais
+  importés partent : `kibo-ui/contribution-graph` (calendrier retiré, D288), `ui/calendar`,
+  `ui/popover` — à revérifier en fin de chantier, les retraits de D294 en libéreront d'autres.
+
 ## 3. Architecture côté web
 
 ```
 apps/web/src/
+  routes/              minces : validateSearch, garde, loader (ensureQueryData), état
+  features/<x>/
+    queries.ts         clés, queryOptions, mutations
+    <x>-*.tsx          composants de la page
+    *.ts, *.test.ts    logique propre à la page, testée
+  components/          briques communes ; shell/ ; states/ (useEtat, quatre états)
+  components/ui|reui|kibo-ui/   registres
   lib/config.ts        URL_API, URL_AUTH (prod : même origine, /api ; dev : 3001)
   lib/api.ts           client RPC, ErreurApi, lireReponse()
   lib/auth.ts          authClient, lecture de session, useDeconnexion
-  features/<x>/queries.ts   clés, queryOptions, mutations
-  routes/              loaders (ensureQueryData) ; composants (useSuspenseQuery)
+  lib/                 format, parse, draft-history…
   e2e/                 setup, un fichier par page
 ```
 
@@ -119,10 +153,11 @@ ni dossier.
 **Branche `feat/web-api`**, un commit et des captures par lot :
 
 1. **Socle** : config, client, `ErreurApi`, `QueryClient` dans le contexte, session et
-   gardes (D300, D301) ; retrait des écrans non branchés (D294) ; Playwright installé avec
-   le projet `setup` (D304).
+   gardes (D300, D301) ; retrait des écrans non branchés (D294) ; `proto/` devient
+   `useEtat` (D308) ; Knip élargi et fichiers morts retirés (D309) ; règle d'arborescence
+   écrite (D306) ; Playwright installé avec le projet `setup` (D304).
 2. **Auth** : connexion, inscription, déconnexion ; Compte (nom par `updateUser`, mot de passe
-   par `changePassword`). E2E : connexion, refus, déconnexion, garde.
+   par `changePassword`, appareils connectés par `listSessions` / `revokeSession`). E2E : connexion, refus, déconnexion, garde.
 3. **Exercices** : catalogue paginé, recherche et filtres côté serveur ; fiche avec historique
    et records (`shared`). E2E : recherche, ouverture d'une fiche.
 4. **Routines** : liste, dossiers, ordre, création, édition, note, déplacement, suppression
@@ -131,7 +166,9 @@ ni dossier.
    séance créée par l'API dans le test.
 6. **Paramètres** : objectif et repos (`/preferences`), export CSV. E2E : enregistrer un
    objectif, le relire après rechargement.
-7. **Ménage** : `mocks/` supprimé, Knip propre, `/verif`, une passe E2E complète.
+   Chaque lot déménage d'abord la logique de `mocks/` qu'il consomme (D307).
+7. **Ménage** : `mocks/` supprimé, Knip propre (revérifier D309), `/verif`, une passe E2E
+   complète.
 
 ## 5. Vérification
 
