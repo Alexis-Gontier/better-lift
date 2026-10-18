@@ -132,9 +132,6 @@ export function RoutinePane({ routine }: { routine: MockRoutine }) {
     <>
       <DetailHeader
         title={<RoutineNameInput draft={draft} onChange={setDraft} />}
-        // La ligne d'état garde sa hauteur, vide ou non : la fiche ne saute pas à la première
-        // modification.
-        subtitle={<span className="flex h-5 items-center">{edit.status}</span>}
         actions={edit.actions(<RoutineMenu routine={routine} release={edit.release} />)}
       />
       <DetailColumns

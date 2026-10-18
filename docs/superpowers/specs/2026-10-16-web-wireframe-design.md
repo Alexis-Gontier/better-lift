@@ -302,6 +302,13 @@ et D199 (style), qui seront repris après validation du wireframe.
   des séries prend toute la largeur ; la silhouette, sans intérêt pour une séance passée, part.
   **Exercice** : la colonne reste (animation, muscles et note à côté des courbes) ; ses records
   passent en une carte en lignes avec leur date.
+- **D266 — L'état d'une modification à gauche des flèches** (2026-10-18, révise D261 et D263).
+  « • N modifications non enregistrées » ne vit plus sous le nom (la tête grandissait et la
+  fiche sautait à la première modification) mais dans la rangée d'actions, à gauche de ↶ ↷,
+  pour la routine, la séance et l'exercice. Panneau étroit (moins de 42rem), seul le compte
+  reste (« • 2 »), la phrase entière en infobulle ; le champ du nom se réduit alors à son texte.
+  Ce qui empêche d'enregistrer s'y lit toujours en entier (D252). Le sous-titre redevient fixe :
+  la date d'une séance, le muscle et l'équipement d'un exercice.
 
 ## 3. Coquille
 

@@ -108,13 +108,7 @@ export function SessionPane({
     <>
       <DetailHeader
         title={detail.session.routine}
-        // La date reste lisible pendant une correction : le compte se met à côté.
-        subtitle={
-          <span className="flex flex-wrap items-center gap-x-1">
-            {formatDay(detail.session.date)}
-            {edit.status}
-          </span>
-        }
+        subtitle={formatDay(detail.session.date)}
         actions={edit.actions(<SessionMenu detail={detail} release={edit.release} />)}
       />
       <SessionSummary draft={draft} previous={previous} onChange={setDraft} />

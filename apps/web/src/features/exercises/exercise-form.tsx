@@ -83,7 +83,7 @@ export function ExerciseNameInput({
       maxLength={120}
       autoFocus={autoFocus}
       className={cn(
-        "h-11 w-auto min-w-72 max-w-full px-2 font-medium text-2xl field-sizing-content md:text-2xl",
+        "h-11 w-auto min-w-24 max-w-full @2xl:min-w-72 px-2 font-medium text-2xl field-sizing-content md:text-2xl",
         filled,
       )}
       value={draft.name}

@@ -94,7 +94,7 @@ type Options<T> = {
 /**
  * Un élément toujours modifiable, à la façon de la routine (D243, D261) : le brouillon et son
  * historique, l'état sous le nom, les actions de la tête, Ctrl Z / Ctrl Y / Ctrl S et la fenêtre
- * de sortie. `actions(menu)` montre le menu de l'élément tant qu'il n'est pas modifié.
+ * de sortie. `actions(menu)` montre l'état, puis le menu de l'élément tant qu'il n'est pas modifié.
  */
 export function useEditable<T>(o: Options<T>) {
   const history = useDraftHistory<T>(o.initial);
@@ -119,16 +119,28 @@ export function useEditable<T>(o: Options<T>) {
     });
   }
 
-  // Sous le nom plutôt qu'entre les boutons : la tête tient aux largeurs moyennes.
+  const pending = `${plural(count, "modification")} non enregistrée${count > 1 ? "s" : ""}`;
+  // À gauche des flèches (D266) : la tête ne grandit pas à la première modification. Panneau
+  // étroit, seul le compte reste (« • 2 ») ; la phrase entière est dans l'infobulle.
   const status: ReactNode = dirty && (
-    <span className="flex items-center gap-1.5 whitespace-nowrap px-2" id="element-etat">
-      {!blocker && <span className="size-1.5 shrink-0 rounded-full bg-foreground" />}
-      {blocker ?? `${plural(count, "modification")} non enregistrée${count > 1 ? "s" : ""}`}
+    <span
+      className="flex items-center gap-1.5 whitespace-nowrap text-muted-foreground text-sm"
+      id="element-etat"
+      title={blocker ?? pending}
+    >
+      {blocker ?? (
+        <>
+          <span className="size-1.5 shrink-0 rounded-full bg-foreground" />
+          <span className="@2xl:hidden">{count}</span>
+          <span className="hidden @2xl:inline">{pending}</span>
+        </>
+      )}
     </span>
   );
 
   const actions = (menu: ReactNode) => (
     <>
+      {status}
       {(history.canUndo || history.canRedo) && (
         <HistoryButtons
           canUndo={history.canUndo}
@@ -165,5 +177,5 @@ export function useEditable<T>(o: Options<T>) {
     </>
   );
 
-  return { draft, setDraft: set, dirty, status, actions, guard, release };
+  return { draft, setDraft: set, dirty, actions, guard, release };
 }

@@ -67,8 +67,7 @@ function ExercisePane({ exercise, empty }: { exercise: MockExercise; empty: bool
           exercise.custom ? <ExerciseNameInput draft={draft} onChange={setDraft} /> : exercise.name
         }
         subtitle={
-          edit.status ||
-          (exercise.custom ? "Exercice personnel" : `${exercise.muscle} · ${exercise.equipment}`)
+          exercise.custom ? "Exercice personnel" : `${exercise.muscle} · ${exercise.equipment}`
         }
         actions={edit.actions(null)}
       />
