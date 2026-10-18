@@ -1,6 +1,7 @@
+import type { Preferences } from "@better-lift/shared";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { ErreurApi } from "@/lib/api";
+import { api, ErreurApi, lire } from "@/lib/api";
 import { authClient, chargerSession } from "@/lib/auth";
 
 const RACINE = ["compte"] as const;
@@ -83,5 +84,35 @@ export function useDeconnecterLesAutres() {
         "Les autres appareils n'ont pas pu être déconnectés.",
       ),
     onSuccess: () => client.invalidateQueries({ queryKey: APPAREILS }),
+  });
+}
+
+const PREFERENCES = ["preferences"] as const;
+
+/** Les préférences du compte (D129) : objectif par semaine et repos par défaut. */
+export const preferencesQuery = () =>
+  queryOptions({
+    queryKey: PREFERENCES,
+    queryFn: async (): Promise<Preferences> => {
+      const res = await lire(
+        () => api.preferences.$get(),
+        "Les préférences n'ont pas pu être chargées.",
+      );
+      return res.json();
+    },
+  });
+
+/** L'écriture rend les préférences enregistrées : elles vont droit dans le cache. */
+export function useEnregistrerPreferences() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: Preferences): Promise<Preferences> => {
+      const res = await lire(
+        () => api.preferences.$put({ json: p }),
+        "Les préférences n'ont pas pu être enregistrées.",
+      );
+      return res.json();
+    },
+    onSuccess: (p) => client.setQueryData(PREFERENCES, p),
   });
 }
