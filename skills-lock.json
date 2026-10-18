@@ -85,6 +85,12 @@
       "skillPath": "skills/brutalist-skill/SKILL.md",
       "computedHash": "e66e5a2a8b73cef79ab6546459c665e8b983645689c5f3772f7eed8b9f1e8e0e"
     },
+    "logo-design": {
+      "source": "kaankiziltug/logo-design-skill",
+      "sourceType": "github",
+      "skillPath": "skills/logo-design/SKILL.md",
+      "computedHash": "aca4a65f0f14694de625b5f2fe6469f3e58d5b26bbb99b8068dcc80c982b0a6b"
+    },
     "prisma-cli": {
       "source": "prisma/skills",
       "sourceType": "github",

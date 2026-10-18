@@ -153,7 +153,7 @@ Tous ont déjà été payés une fois. La section 13 de la conception les détai
 
 ## Skills
 
-22 skills installées en fichiers réels sous `.claude/skills/`, commitées. **Jamais de dossier
+26 skills installées en fichiers réels sous `.claude/skills/`, commitées. **Jamais de dossier
 `.agents/`.** Installation, une invocation par skill :
 
 ```
