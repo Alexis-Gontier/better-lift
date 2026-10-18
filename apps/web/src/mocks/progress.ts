@@ -6,9 +6,11 @@ export const PERIODS = [
   { value: "6m", label: "6 mois", days: 182 },
   { value: "1a", label: "1 an", days: 364 },
 ] as const;
-export type Period = (typeof PERIODS)[number]["value"];
+/** Records regarde aussi tout l'historique (D278) ; Progression et Corps s'en tiennent aux quatre. */
+export const RECORD_PERIODS = [...PERIODS, { value: "tout", label: "Tout", days: 3650 }] as const;
+export type Period = (typeof RECORD_PERIODS)[number]["value"];
 
-const daysOf = (period: Period) => PERIODS.find((p) => p.value === period)?.days ?? 91;
+const daysOf = (period: Period) => RECORD_PERIODS.find((p) => p.value === period)?.days ?? 91;
 
 /** Le nombre de semaines de la période. */
 export const weeksOf = (period: Period) => Math.round(daysOf(period) / 7);
