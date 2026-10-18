@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { ListChecks, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { DetailColumns } from "@/components/detail-columns";
 import { useEditable } from "@/components/editable";
 import { DetailHeader } from "@/components/list-detail";
 import {
@@ -28,7 +27,7 @@ import type { SessionDetail } from "@/mocks/history";
 import { useRoutines } from "@/mocks/routine-store";
 import { saveSession } from "@/mocks/session-store";
 import { changedExercises, sessionChangeCount } from "./session-draft";
-import { SessionExercises, SessionOverview } from "./session-editor";
+import { SessionExercises, SessionNote, SessionSummary } from "./session-editor";
 
 /** Le menu ⋯ de la séance : la routine d'origine, puis Supprimer. Sans API, supprimer la referme. */
 function SessionMenu({ detail, release }: { detail: SessionDetail; release: () => void }) {
@@ -85,9 +84,9 @@ function SessionMenu({ detail, release }: { detail: SessionDetail; release: () =
 }
 
 /**
- * La séance ouverte, toujours corrigeable comme une routine (D263, tranche D239 pour A) : les
- * exercices à gauche, chiffres, muscles et note à droite ; modifiée, la tête montre l'historique,
- * le compte, « Tout annuler » et « Enregistrer ».
+ * La séance ouverte, toujours corrigeable comme une routine (D263, tranche D239 pour A) : ses
+ * chiffres en bandeau, ses exercices, sa note, sur toute la largeur (D265) ; modifiée, la tête
+ * montre l'historique, le compte, « Tout annuler » et « Enregistrer ».
  */
 export function SessionPane({
   detail,
@@ -118,18 +117,16 @@ export function SessionPane({
         }
         actions={edit.actions(<SessionMenu detail={detail} release={edit.release} />)}
       />
-      <DetailColumns
-        id="seance-detail"
-        main={
-          <SessionExercises
-            draft={draft}
-            previous={previous}
-            changed={changedExercises(draft, detail)}
-            onChange={setDraft}
-          />
-        }
-        aside={<SessionOverview draft={draft} previous={previous} onChange={setDraft} />}
-      />
+      <SessionSummary draft={draft} previous={previous} onChange={setDraft} />
+      <div className="flex flex-col gap-3">
+        <SessionExercises
+          draft={draft}
+          previous={previous}
+          changed={changedExercises(draft, detail)}
+          onChange={setDraft}
+        />
+      </div>
+      <SessionNote draft={draft} onChange={setDraft} />
       {edit.guard}
     </>
   );

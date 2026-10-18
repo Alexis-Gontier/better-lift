@@ -19,14 +19,7 @@ function HistoryPage() {
   const { state } = useProto();
   const sessions = useSessions();
   return (
-    <ListDetailPage
-      key={state}
-      title="Historique"
-      storageId="historique"
-      // La séance et sa colonne de droite défilent chacune de leur côté (D263).
-      detailScroll="columns"
-      detail={<Outlet />}
-    >
+    <ListDetailPage key={state} title="Historique" storageId="historique" detail={<Outlet />}>
       {state === "chargement" && <SessionListSkeleton />}
       {state === "erreur" && <StateError title="L'historique n'a pas pu se charger" />}
       {state === "vide" && <SessionListEmpty />}

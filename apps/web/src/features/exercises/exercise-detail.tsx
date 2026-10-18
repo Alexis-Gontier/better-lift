@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
 import { ExerciseGif } from "@/components/exercise-media";
+import { SummaryCard } from "@/components/summary-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -177,31 +178,36 @@ export function ExerciseMain({
   );
 }
 
-/** Les records en mini-cartes, comme les chiffres d'une routine (D255). */
+/** Les records en lignes, comme « En bref » d'une routine (D265), avec la date de chacun. */
 export function ExerciseFigures({ history }: { history: Performance[] }) {
   const r = records(history);
   const last = history.at(-1);
-  const tiles = [
-    { label: "Meilleure charge", value: formatKg(r.heaviest.value), date: r.heaviest.date },
-    { label: "1RM estimé", value: formatKg(Math.round(r.best1rm.value)), date: r.best1rm.date },
-    { label: "Meilleur volume", value: formatKg(r.bestVolume.value), date: r.bestVolume.date },
-    { label: "Séances", value: String(history.length), date: last?.date },
-  ];
   return (
-    <div className="grid gap-2 @[13rem]:grid-cols-2">
-      {tiles.map((t) => (
-        <Card key={t.label} size="sm" className="gap-0.5 px-3">
-          <span className="text-muted-foreground text-xs">{t.label}</span>
-          <span className="font-semibold tabular-nums">{t.value}</span>
-          {t.date && (
-            <span className="text-muted-foreground text-xs">
-              {t.label === "Séances" ? "dernière le " : "le "}
-              {formatShortDay(t.date)}
-            </span>
-          )}
-        </Card>
-      ))}
-    </div>
+    <SummaryCard
+      title="Records"
+      rows={[
+        {
+          label: "Meilleure charge",
+          value: formatKg(r.heaviest.value),
+          hint: `le ${formatShortDay(r.heaviest.date)}`,
+        },
+        {
+          label: "1RM estimé",
+          value: formatKg(Math.round(r.best1rm.value)),
+          hint: `le ${formatShortDay(r.best1rm.date)}`,
+        },
+        {
+          label: "Meilleur volume",
+          value: formatKg(r.bestVolume.value),
+          hint: `le ${formatShortDay(r.bestVolume.date)}`,
+        },
+        {
+          label: "Séances",
+          value: String(history.length),
+          hint: last ? `dernière le ${formatShortDay(last.date)}` : undefined,
+        },
+      ]}
+    />
   );
 }
 

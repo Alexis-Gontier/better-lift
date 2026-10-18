@@ -1,6 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { Info, MoreHorizontal, Trophy } from "lucide-react";
 import { useState } from "react";
-import { BodyMap } from "@/components/body-map";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ import { formatDelta, formatKg, formatLoad, formatShortDay } from "@/lib/format"
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { type DoneExercise, doneRecords, doneVolume, type SessionDetail } from "@/mocks/history";
-import { bodyMuscles } from "@/mocks/routine-stats";
 
 // Mêmes colonnes que l'éditeur de routine (D246) ; « Précédent » s'efface dans une carte étroite.
 const SET_GRID =
@@ -180,10 +179,11 @@ export function SessionExercises({
 }
 
 /**
- * La colonne de droite d'une séance (D263) : ses chiffres en mini-cartes, chacun avec son écart
- * à la séance précédente de la même routine ; la durée se corrige ; puis les muscles et la note.
+ * Les chiffres de la séance en bandeau, en tête (D265) : la durée se corrige ; volume et séries
+ * montrent leur écart à la séance précédente de la même routine, dont la date ouvre le relevé.
+ * Une séance n'a pas de colonne de droite : le tableau des séries prend toute la largeur.
  */
-export function SessionOverview({
+export function SessionSummary({
   draft,
   previous,
   onChange,
@@ -207,11 +207,10 @@ export function SessionOverview({
     },
     { label: "Records", value: String(doneRecords(draft)) },
   ];
-  const { primary, secondary } = bodyMuscles(draft.exercises, exerciseBySlug);
   return (
-    <>
-      <div className="grid gap-2 @[13rem]:grid-cols-2">
-        <Card size="sm" className="gap-1 px-3">
+    <Card size="sm" className="@container/sum">
+      <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4 @xl/sum:grid-cols-[auto_repeat(3,minmax(0,1fr))_auto] @xl/sum:items-center">
+        <div className="flex flex-col gap-1">
           <span className="text-muted-foreground text-xs">Durée</span>
           <SetField
             label="Durée en minutes"
@@ -227,52 +226,60 @@ export function SessionOverview({
               }))
             }
           />
-        </Card>
+        </div>
         {figures.map((f) => (
-          <Card key={f.label} size="sm" className="gap-0.5 px-3">
+          <div key={f.label} className="flex flex-col gap-0.5">
             <span className="text-muted-foreground text-xs">{f.label}</span>
             <span className="flex flex-wrap items-baseline gap-x-1.5">
-              <span className="font-semibold tabular-nums">{f.value}</span>
+              <span className="font-semibold text-lg tabular-nums">{f.value}</span>
               {f.delta && (
                 <span className="text-muted-foreground text-xs tabular-nums">{f.delta}</span>
               )}
             </span>
-          </Card>
-        ))}
-        <Card
-          size="sm"
-          className="flex-row items-baseline justify-between gap-2 px-3 @[13rem]:col-span-2"
-        >
-          <span className="text-muted-foreground text-xs">Précédente</span>
-          <span className="font-medium text-sm">
-            {previous ? formatShortDay(previous.session.date) : "Première fois"}
-          </span>
-        </Card>
-      </div>
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle>Muscles travaillés</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mx-auto h-24 w-full max-w-32">
-            <BodyMap primary={primary} secondary={secondary} />
           </div>
-        </CardContent>
-      </Card>
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle>Note</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            aria-label="Note de la séance"
-            placeholder="Ressenti, douleur, réglage…"
-            className={filled}
-            value={draft.notes ?? ""}
-            onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value || undefined }))}
-          />
-        </CardContent>
-      </Card>
-    </>
+        ))}
+        <div className="col-span-2 flex flex-col gap-0.5 @xl/sum:col-span-1 @xl/sum:items-end">
+          <span className="text-muted-foreground text-xs">Comparée à</span>
+          {previous ? (
+            <Link
+              to="/history/$id"
+              params={{ id: previous.session.id }}
+              search
+              className="font-medium text-sm hover:underline"
+            >
+              la séance du {formatShortDay(previous.session.date)}
+            </Link>
+          ) : (
+            <span className="font-medium text-sm">Première fois</span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** La note de la séance, sous les exercices : un ressenti, une douleur, un réglage. */
+export function SessionNote({
+  draft,
+  onChange,
+}: {
+  draft: SessionDetail;
+  onChange: (update: (d: SessionDetail) => SessionDetail) => void;
+}) {
+  return (
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle>Note</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Textarea
+          aria-label="Note de la séance"
+          placeholder="Ressenti, douleur, réglage…"
+          className={filled}
+          value={draft.notes ?? ""}
+          onChange={(e) => onChange((d) => ({ ...d, notes: e.target.value || undefined }))}
+        />
+      </CardContent>
+    </Card>
   );
 }

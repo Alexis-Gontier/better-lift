@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { BodyMap } from "@/components/body-map";
+import { SummaryCard, type SummaryRow } from "@/components/summary-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -9,79 +11,77 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDaysAgo, formatDelta, formatKg, formatMinutes } from "@/lib/format";
+import { formatDaysAgo, formatDelta, formatKg, formatMinutes, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { bodyMuscles, daysSince, estimateMinutes, plannedVolume } from "@/mocks/routine-stats";
 import { useFolders } from "@/mocks/routine-store";
 import type { MockRoutine } from "@/mocks/routines";
+import { useSessions } from "@/mocks/session-store";
 import { TODAY } from "@/mocks/today";
 import type { Draft } from "./routine-draft";
 import { filled } from "./routine-editor";
 
 const NO_FOLDER = "__sans-dossier";
 
-/** Les chiffres de la routine, une mini-carte chacun (D255) : ils suivent la saisie. */
-function Figures({ routine, saved }: { routine: MockRoutine; saved?: MockRoutine }) {
+/**
+ * La routine en bref (D265), une ligne par chiffre : ils suivent la saisie et montrent leur
+ * écart avec la version enregistrée. Le volume prévu n'apparaît qu'avec des charges notées ;
+ * « Dernière fois » ouvre la séance.
+ */
+function Summary({ routine, saved }: { routine: MockRoutine; saved?: MockRoutine }) {
+  const sessions = useSessions();
   const sets = (r: MockRoutine) => r.exercises.reduce((n, e) => n + e.sets.length, 0);
-  // Chaque chiffre garde sa valeur enregistrée : l'écart se lit tant que rien n'est enregistré.
-  const figures = [
+  const warmups = routine.exercises.reduce(
+    (n, e) => n + e.sets.filter((s) => s.type === "warmup").length,
+    0,
+  );
+  const delta = (now: number, was: number | undefined, unit = "") =>
+    was !== undefined && Math.round(was) !== Math.round(now)
+      ? `${formatDelta(now, was)}${unit}`
+      : undefined;
+  const minutes = estimateMinutes(routine.exercises);
+  const volume = plannedVolume(routine.exercises);
+  const last = sessions.find((s) => s.routine === routine.name && s.date === routine.lastDone);
+  const rows: SummaryRow[] = [
     {
-      label: "Durée",
-      value: `~${formatMinutes(estimateMinutes(routine.exercises))}`,
-      now: estimateMinutes(routine.exercises),
-      was: saved && estimateMinutes(saved.exercises),
-      unit: " min",
-    },
-    {
-      label: "Séries",
-      value: String(sets(routine)),
-      now: sets(routine),
-      was: saved && sets(saved),
-    },
-    {
-      label: "Volume prévu",
-      // En base, aucune charge cible n'est notée : sans charge, pas de volume à annoncer.
-      value:
-        plannedVolume(routine.exercises) === 0 ? "—" : formatKg(plannedVolume(routine.exercises)),
-      now: plannedVolume(routine.exercises),
-      was: saved && plannedVolume(saved.exercises),
-      unit: " kg",
+      label: "Durée estimée",
+      value: `~${formatMinutes(minutes)}`,
+      delta: delta(minutes, saved && estimateMinutes(saved.exercises), " min"),
     },
     {
       label: "Exercices",
       value: String(routine.exercises.length),
-      now: routine.exercises.length,
-      was: saved?.exercises.length,
+      delta: delta(routine.exercises.length, saved?.exercises.length),
+    },
+    {
+      label: "Séries",
+      value: String(sets(routine)),
+      delta: delta(sets(routine), saved && sets(saved)),
+      hint: warmups > 0 ? `dont ${plural(warmups, "échauffement")}` : undefined,
+    },
+    // En base, aucune charge cible n'est notée (D262) : sans charge, pas de ligne.
+    ...(volume > 0
+      ? [
+          {
+            label: "Volume prévu",
+            value: formatKg(volume),
+            delta: delta(volume, saved && plannedVolume(saved.exercises), " kg"),
+          },
+        ]
+      : []),
+    {
+      label: "Dernière fois",
+      value: last ? (
+        <Link to="/history/$id" params={{ id: last.id }} className="hover:underline">
+          {formatDaysAgo(daysSince(last.date, TODAY))}
+        </Link>
+      ) : (
+        formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)
+      ),
     },
   ];
-  return (
-    <div className="grid gap-2 @[13rem]:grid-cols-2">
-      {figures.map((f) => (
-        <Card key={f.label} size="sm" className="gap-0.5 px-3">
-          <span className="text-muted-foreground text-xs">{f.label}</span>
-          <span className="flex flex-wrap items-baseline gap-x-1.5">
-            <span className="font-semibold tabular-nums">{f.value}</span>
-            {f.was !== undefined && Math.round(f.was) !== Math.round(f.now) && (
-              <span className="text-muted-foreground text-xs tabular-nums">
-                {formatDelta(f.now, f.was)}
-                {f.unit}
-              </span>
-            )}
-          </span>
-        </Card>
-      ))}
-      <Card
-        size="sm"
-        className="flex-row items-baseline justify-between gap-2 px-3 @[13rem]:col-span-2"
-      >
-        <span className="text-muted-foreground text-xs">Dernière fois</span>
-        <span className="font-medium text-sm">
-          {formatDaysAgo(routine.lastDone ? daysSince(routine.lastDone, TODAY) : null)}
-        </span>
-      </Card>
-    </div>
-  );
+  return <SummaryCard title="En bref" rows={rows} />;
 }
 
 /** Ce que la routine fait travailler : la silhouette seule, en petit (D255). */
@@ -121,7 +121,7 @@ export function RoutineOverview({
   const folders = useFolders();
   return (
     <>
-      <Figures routine={routine} saved={saved} />
+      <Summary routine={routine} saved={saved} />
       <Card size="sm">
         <CardHeader>
           <CardTitle>Muscles travaillés</CardTitle>

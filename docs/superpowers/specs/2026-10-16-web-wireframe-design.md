@@ -291,6 +291,17 @@ et D199 (style), qui seront repris après validation du wireframe.
   routine » (D257). Vide, la liste le dit d'une ligne et la droite guide la première création.
   Briques communes nées de ce passage : `useEditable`, `DetailColumns` (et son squelette),
   `listCardClass`, `DetailPlaceholder` avec icône et action.
+- **D265 — La colonne de droite revue** (2026-10-18, critique). Les mini-cartes empilées une par
+  ligne dans une colonne étroite (D255) laissent place à une **carte en lignes** (`SummaryCard`) :
+  libellé à gauche, valeur à droite qui ne se coupe jamais, écart et date en petit. **Routine** :
+  la colonne reste ; « En bref » donne la durée estimée, les exercices, les séries (dont les
+  échauffements), le volume prévu seulement s'il y a des charges (D262), et « Dernière fois » qui
+  ouvre la séance ; puis muscles et réglages, inchangés. **Séance** : plus de colonne de droite
+  (révise D263) — ses chiffres passent en bandeau en tête (durée en champ, volume et séries avec
+  leur écart, records, « comparée à la séance du… » qui l'ouvre), la note en bas, et le tableau
+  des séries prend toute la largeur ; la silhouette, sans intérêt pour une séance passée, part.
+  **Exercice** : la colonne reste (animation, muscles et note à côté des courbes) ; ses records
+  passent en une carte en lignes avec leur date.
 
 ## 3. Coquille
 
