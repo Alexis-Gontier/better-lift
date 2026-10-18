@@ -39,7 +39,6 @@ export function ExerciseQuickView({
               <DialogTitle>{exercise.name}</DialogTitle>
               <DialogDescription>
                 {exercise.muscle} · {exercise.equipment}
-                {exercise.custom && " · Exercice personnel"}
               </DialogDescription>
             </DialogHeader>
             {exercise.note && (

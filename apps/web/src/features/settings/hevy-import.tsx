@@ -38,7 +38,6 @@ import { mockHevyImport } from "@/mocks/hevy";
 
 const STEPS = ["Fichier", "Correspondance", "Aperçu", "Import"];
 const IGNORE = "__ignorer";
-const CREATE = "__creer";
 
 type Mapping = Record<string, string>;
 
@@ -146,7 +145,6 @@ function MappingStep({
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
-                        <SelectItem value={CREATE}>Créer un exercice personnalisé</SelectItem>
                         <SelectItem value={IGNORE}>Ignorer cet exercice</SelectItem>
                       </SelectGroup>
                     </SelectContent>
@@ -163,7 +161,6 @@ function MappingStep({
 
 function PreviewStep({ fileName, mapping }: { fileName: string; mapping: Mapping }) {
   const kept = mockHevyImport.exercises.filter((e) => mapping[e.name] !== IGNORE);
-  const created = Object.values(mapping).filter((v) => v === CREATE).length;
   const sets = kept.reduce((n, e) => n + e.sets, 0);
   const items = [
     { label: "Séances", value: formatNumber(mockHevyImport.sessions) },
@@ -172,7 +169,7 @@ function PreviewStep({ fileName, mapping }: { fileName: string; mapping: Mapping
       value: `${formatShortDay(mockHevyImport.from)} ${mockHevyImport.from.slice(0, 4)} → ${formatShortDay(mockHevyImport.to)} ${mockHevyImport.to.slice(0, 4)}`,
     },
     { label: "Séries", value: formatNumber(sets) },
-    { label: "Exercices", value: `${kept.length} dont ${created} créés` },
+    { label: "Exercices", value: formatNumber(kept.length) },
   ];
   return (
     <div className="flex flex-col gap-4">

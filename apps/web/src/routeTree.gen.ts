@@ -22,7 +22,6 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth.reset-password'
 import { Route as AppExercisesIndexRouteImport } from './routes/_app.exercises.index'
 import { Route as AppExercisesSlugRouteImport } from './routes/_app.exercises.$slug'
-import { Route as AppExercisesNewRouteImport } from './routes/_app.exercises.new'
 import { Route as AppHistoryIndexRouteImport } from './routes/_app.history.index'
 import { Route as AppHistoryIdRouteImport } from './routes/_app.history.$id'
 import { Route as AppRoutinesIndexRouteImport } from './routes/_app.routines.index'
@@ -97,11 +96,6 @@ const AppExercisesSlugRoute = AppExercisesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AppExercisesRoute,
 } as any)
-const AppExercisesNewRoute = AppExercisesNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AppExercisesRoute,
-} as any)
 const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -164,7 +158,6 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/exercises/$slug': typeof AppExercisesSlugRoute
-  '/exercises/new': typeof AppExercisesNewRoute
   '/history/$id': typeof AppHistoryIdRoute
   '/routines/$id': typeof AppRoutinesIdRoute
   '/routines/new': typeof AppRoutinesNewRoute
@@ -184,7 +177,6 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/exercises/$slug': typeof AppExercisesSlugRoute
-  '/exercises/new': typeof AppExercisesNewRoute
   '/history/$id': typeof AppHistoryIdRoute
   '/routines/$id': typeof AppRoutinesIdRoute
   '/routines/new': typeof AppRoutinesNewRoute
@@ -211,7 +203,6 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_app/': typeof AppIndexRoute
   '/_app/exercises/$slug': typeof AppExercisesSlugRoute
-  '/_app/exercises/new': typeof AppExercisesNewRoute
   '/_app/history/$id': typeof AppHistoryIdRoute
   '/_app/routines/$id': typeof AppRoutinesIdRoute
   '/_app/routines/new': typeof AppRoutinesNewRoute
@@ -237,7 +228,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/exercises/$slug'
-    | '/exercises/new'
     | '/history/$id'
     | '/routines/$id'
     | '/routines/new'
@@ -257,7 +247,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/exercises/$slug'
-    | '/exercises/new'
     | '/history/$id'
     | '/routines/$id'
     | '/routines/new'
@@ -283,7 +272,6 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_app/'
     | '/_app/exercises/$slug'
-    | '/_app/exercises/new'
     | '/_app/history/$id'
     | '/_app/routines/$id'
     | '/_app/routines/new'
@@ -395,13 +383,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExercisesSlugRouteImport
       parentRoute: typeof AppExercisesRoute
     }
-    '/_app/exercises/new': {
-      id: '/_app/exercises/new'
-      path: '/new'
-      fullPath: '/exercises/new'
-      preLoaderRoute: typeof AppExercisesNewRouteImport
-      parentRoute: typeof AppExercisesRoute
-    }
     '/_app/history/': {
       id: '/_app/history/'
       path: '/'
@@ -477,13 +458,11 @@ declare module '@tanstack/react-router' {
 
 interface AppExercisesRouteChildren {
   AppExercisesSlugRoute: typeof AppExercisesSlugRoute
-  AppExercisesNewRoute: typeof AppExercisesNewRoute
   AppExercisesIndexRoute: typeof AppExercisesIndexRoute
 }
 
 const AppExercisesRouteChildren: AppExercisesRouteChildren = {
   AppExercisesSlugRoute: AppExercisesSlugRoute,
-  AppExercisesNewRoute: AppExercisesNewRoute,
   AppExercisesIndexRoute: AppExercisesIndexRoute,
 }
 

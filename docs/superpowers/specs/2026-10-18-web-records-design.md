@@ -102,6 +102,12 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   routine dans son détail (D280), sans lien vers Progression. Les calculs de records, de
   progression et de poids sont retirés des mocks ; on les retrouvera dans l'historique git.
 
+- **D286 — Pas d'exercice personnel** (2026-10-18, révise D240 et D264). Le catalogue suffit :
+  plus de création (`/exercises/new`, « Exercice personnalisé »), ni d'onglets Catalogue | Mes
+  exercices, ni de suppression. Une fiche ne modifie que sa note épinglée. À l'import Hevy, un
+  exercice inconnu se rattache au catalogue ou s'ignore. Côté API, rien à prévoir : `Exercise`
+  reste un catalogue commun, sans propriétaire.
+
 ## 3. Barre latérale
 
 ```

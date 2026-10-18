@@ -5,8 +5,6 @@ export type MockExercise = {
   equipment: string;
   /** Muscles secondaires sollicités. */
   secondary?: string[];
-  /** Créé par l'utilisateur, hors catalogue. */
-  custom?: boolean;
   /** Note personnelle épinglée. */
   note?: string;
 };

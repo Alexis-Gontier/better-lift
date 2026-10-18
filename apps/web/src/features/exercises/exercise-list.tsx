@@ -1,20 +1,11 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { ChevronRight, Dumbbell, Plus, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { listCardClass, listLinkProps } from "@/components/list-detail";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
   Select,
@@ -29,7 +20,6 @@ import { fold } from "@/lib/fold";
 import { formatDaysAgo, formatKg } from "@/lib/format";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { best1rmOf } from "@/mocks/exercise-stats";
-import { useExerciseDraftName } from "@/mocks/exercise-store";
 import { EQUIPMENTS, type MockExercise, MUSCLES } from "@/mocks/exercises";
 import { daysSince } from "@/mocks/routine-stats";
 import { TODAY } from "@/mocks/today";
@@ -49,30 +39,7 @@ function toRow(e: MockExercise): Row {
   };
 }
 
-/** La ligne de l'exercice en cours de création, en tête de liste (D238). */
-function DraftExerciseRow() {
-  const name = useExerciseDraftName();
-  return (
-    <Link
-      to="/exercises/new"
-      {...listLinkProps}
-      className="flex items-center gap-4 rounded-xl border border-dashed px-4 py-3 data-[status=active]:bg-muted/40"
-    >
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
-        <Dumbbell className="size-4" />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className={name.trim() ? "truncate font-medium" : "text-muted-foreground"}>
-          {name.trim() || "Sans nom"}
-        </span>
-        <span className="text-muted-foreground text-xs">Brouillon · pas encore enregistré</span>
-      </div>
-    </Link>
-  );
-}
-
 export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
-  const creating = useRouterState({ select: (s) => s.location.pathname === "/exercises/new" });
   const [query, setQuery] = useState("");
   const [muscle, setMuscle] = useState(ALL);
   const [equipment, setEquipment] = useState(ALL);
@@ -152,10 +119,7 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
         </DragScroll>
       </div>
 
-      {exercises.length === 0 && !creating ? (
-        // Rien à filtrer : la liste est vide, pas la recherche (le dernier exercice personnel supprimé).
-        <CustomExercisesEmpty />
-      ) : rows.length === 0 && !creating ? (
+      {rows.length === 0 ? (
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyTitle>Aucun exercice ne correspond</EmptyTitle>
@@ -165,7 +129,6 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
       ) : (
         // Une carte par exercice, séparées (D258, comme les routines).
         <div className="flex flex-col gap-2">
-          {creating && <DraftExerciseRow />}
           {rows.map((e) => (
             <Card key={e.slug} size="sm" className={listCardClass}>
               <Link
@@ -183,7 +146,6 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
                     {e.muscle} · {e.equipment}
                   </span>
                 </div>
-                {e.custom && <Badge variant="secondary">Personnalisé</Badge>}
                 <div className="hidden w-28 shrink-0 flex-col items-end @xl:flex">
                   <span className="text-sm tabular-nums">
                     {e.best1rm > 0 ? formatKg(Math.round(e.best1rm)) : "—"}
@@ -222,36 +184,11 @@ export function ExerciseListSkeleton() {
   );
 }
 
-/** Aucun exercice personnel : la liste le dit d'une ligne, le panneau de droite guide (D260). */
-export function CustomExercisesEmpty() {
+/** Le catalogue vide : il ne l'est jamais en pratique, mais l'état existe (`?etat=vide`). */
+export function ExerciseListEmpty() {
   return (
     <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
-      Aucun exercice personnel pour l'instant.
+      Le catalogue est vide pour l'instant.
     </p>
-  );
-}
-
-/** Le panneau de droite sans exercice personnel : à quoi il sert, et sa création. */
-export function CustomExercisesOnboarding() {
-  return (
-    <Empty className="flex-1">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Dumbbell />
-        </EmptyMedia>
-        <EmptyTitle>Pas encore d'exercice personnel</EmptyTitle>
-        <EmptyDescription>
-          Ajoutez une machine de votre salle ou une variante absente du catalogue : elle s'utilise
-          ensuite dans les routines comme les autres.
-        </EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button asChild>
-          <Link to="/exercises/new" search>
-            <Plus data-icon="inline-start" /> Créer un exercice
-          </Link>
-        </Button>
-      </EmptyContent>
-    </Empty>
   );
 }
