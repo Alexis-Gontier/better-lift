@@ -38,6 +38,15 @@ export function weeklyVolume(sessions: SessionLike[], today: string, weeks: numb
   });
 }
 
+/** Le nombre d'éléments par semaine sur les `weeks` dernières, la plus ancienne d'abord. */
+export function weeklyCount(items: readonly { date: string }[], today: string, weeks: number) {
+  const last = startOfWeek(today);
+  return Array.from({ length: weeks }, (_, i) => {
+    const week = addDays(last, (i - weeks + 1) * 7);
+    return { week, count: items.filter((x) => startOfWeek(x.date) === week).length };
+  });
+}
+
 /** Semaines consécutives avec au moins un élément, en partant de la semaine en cours si elle compte. */
 export function weekStreak(items: readonly { date: string }[], today: string): number {
   const weeks = new Set(items.filter((s) => s.date <= today).map((s) => startOfWeek(s.date)));

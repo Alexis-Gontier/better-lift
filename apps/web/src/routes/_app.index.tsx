@@ -1,52 +1,51 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 import { Page } from "@/components/page";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
-import { Button } from "@/components/ui/button";
-import { HomeFeed } from "@/features/home/home-feed";
-import { HomePinned } from "@/features/home/home-pinned";
+import {
+  BodyCard,
+  PinnedCard,
+  RecordsCard,
+  RoutinesCard,
+  StrengthCard,
+} from "@/features/home/home-cards";
 import { HomeEmpty, HomeSkeleton } from "@/features/home/home-states";
-import { HomeToBeat } from "@/features/home/home-to-beat";
-import { RecordsStrip } from "@/features/home/records-strip";
+import { HomeTiles } from "@/features/home/home-tiles";
+import { useRecordEvents } from "@/features/records/insights";
+import { usePins } from "@/mocks/pins";
+import { useSessions } from "@/mocks/session-store";
 
 export const Route = createFileRoute("/_app/")({
-  staticData: {
-    crumb: "Accueil",
-    proto: {
-      variants: [
-        { value: "a", label: "Épinglés" },
-        { value: "b", label: "Fil des records" },
-        { value: "c", label: "À battre" },
-      ],
-    },
-  },
+  staticData: { crumb: "Accueil" },
   component: HomePage,
 });
 
-/** L'Accueil parle de records (D277) : la ligne de tête, puis la variante choisie. */
+/**
+ * L'Accueil résume les autres pages (D282) : une rangée de chiffres avec leur tendance, puis une
+ * carte à graphique par sujet. Chaque tuile et chaque carte mène à la page qui détaille.
+ */
 function HomePage() {
-  const { state, variant } = useProto();
+  const { state } = useProto();
+  const sessions = useSessions();
+  const events = useRecordEvents();
+  const { slugs } = usePins();
   return (
-    <Page
-      title="Accueil"
-      actions={
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/records">
-            Tous les records <ArrowUpRight data-icon="inline-end" />
-          </Link>
-        </Button>
-      }
-    >
+    <Page title="Accueil">
       {state === "chargement" && <HomeSkeleton />}
       {state === "erreur" && <StateError title="L'accueil n'a pas pu se charger" />}
       {state === "vide" && <HomeEmpty />}
       {state === "nominal" && (
         <>
-          <RecordsStrip />
-          {variant === "a" && <HomePinned />}
-          {variant === "b" && <HomeFeed />}
-          {variant === "c" && <HomeToBeat />}
+          <HomeTiles sessions={sessions} events={events} />
+          <div className="grid items-stretch gap-4 @4xl:grid-cols-3">
+            <RecordsCard events={events} className="@4xl:col-span-2" />
+            <PinnedCard slugs={slugs} />
+          </div>
+          <div className="grid items-stretch gap-4 @4xl:grid-cols-3">
+            <StrengthCard slugs={slugs} />
+            <RoutinesCard sessions={sessions} />
+            <BodyCard />
+          </div>
         </>
       )}
     </Page>

@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDaysAgo, formatKg, formatNumber } from "@/lib/format";
+import { formatDaysAgo, formatKg } from "@/lib/format";
 import { daysSince } from "@/mocks/routine-stats";
 import { TODAY } from "@/mocks/today";
 import type { Insight } from "./insights";
@@ -72,24 +71,6 @@ export function ReachList({ items, limit }: { items: Insight[]; limit?: number }
               : `bat ${formatKg(Math.round(i.reach?.record ?? 0))}`}
           </span>
         </span>
-      )}
-    />
-  );
-}
-
-/** Le 1RM estimé en hausse sur quatre semaines, le plus fort d'abord (D275). */
-export function TrendList({ items, limit }: { items: Insight[]; limit?: number }) {
-  return (
-    <LiftList
-      title="En progression"
-      description="1RM estimé sur 4 semaines"
-      empty="Aucune hausse sur 4 semaines."
-      items={items.filter((i) => (i.trend?.change ?? 0) > 0)}
-      limit={limit}
-      render={(i) => (
-        <Badge variant="outline" className="shrink-0 tabular-nums">
-          +{formatNumber(i.trend?.change ?? 0)} %
-        </Badge>
       )}
     />
   );

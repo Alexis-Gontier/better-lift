@@ -48,15 +48,6 @@ export const INSIGHTS: Insight[] = mockExercises.flatMap((e) => {
 
 export const insightOf = (slug: string) => INSIGHTS.find((i) => i.slug === slug);
 
-/** Les épinglés d'abord, dans leur ordre ; les autres gardent le leur. */
-export function pinnedFirst<T extends { slug: string }>(items: T[], pins: readonly string[]): T[] {
-  const rank = (slug: string) => {
-    const i = pins.indexOf(slug);
-    return i === -1 ? pins.length : i;
-  };
-  return [...items].sort((a, b) => rank(a.slug) - rank(b.slug));
-}
-
 /** Tous les records battus, le plus récent d'abord. */
 export function useRecordEvents(): RecordEvent[] {
   return recordEvents(useSessions().map(sessionDetail));

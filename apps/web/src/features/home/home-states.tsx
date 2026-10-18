@@ -11,14 +11,22 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Chargement : la ligne de tête, puis une grille de cartes. */
+/** Chargement : les quatre tuiles, puis les deux rangées de cartes. */
 export function HomeSkeleton() {
   return (
     <>
-      <Skeleton className="h-24 rounded-xl" />
-      <div className="grid gap-3 @xl:grid-cols-2 @3xl:grid-cols-3">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <Skeleton key={i} className="h-40 rounded-xl" />
+      <div className="grid gap-4 @xl:grid-cols-2 @4xl:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-36 rounded-xl" />
+        ))}
+      </div>
+      <div className="grid gap-4 @4xl:grid-cols-3">
+        <Skeleton className="h-96 rounded-xl @4xl:col-span-2" />
+        <Skeleton className="h-96 rounded-xl" />
+      </div>
+      <div className="grid gap-4 @4xl:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-80 rounded-xl" />
         ))}
       </div>
     </>

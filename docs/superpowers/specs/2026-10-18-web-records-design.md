@@ -75,6 +75,16 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   **force relative** des exercices épinglés au poids moyen sur 7 jours (« Développé couché
   1,15 × PDC »), avec son évolution sur la période.
 
+- **D282 — L'Accueil résume les autres pages** (2026-10-18, révise D277 : les variantes A, B, C
+  et la ligne de tête partent). En tête, quatre tuiles — records sur 30 jours, séances et volume
+  par semaine sur 4 semaines, poids moyen sur 7 jours —, chacune avec son écart à la période
+  d'avant en pastille et sa mini-courbe sur 12 semaines (30 jours pour le poids) ; un clic ouvre
+  la page. Puis des cartes à graphique, chacune avec « Voir … → » en pied : **Records** (barres
+  par semaine sur 12 semaines, les trois derniers, le nombre à portée), **Épinglés** (1RM, courbe
+  sur 3 mois, évolution sur 4 semaines), **Force** (les trois premiers épinglés chargés en % de
+  leur 1RM au départ des 3 mois), **Routines** (séances par routine sur 3 mois, la dernière),
+  **Corps** (poids moyen sur 90 jours, objectif en pointillés).
+
 ## 3. Barre latérale
 
 ```
@@ -101,8 +111,8 @@ Un commit et une capture par étape, chacune validée à l'écran avant la suiva
 6. **Détail de routine** (D280).
 7. **Corps** (D281).
 
-**Avancement** : les sept étapes sont faites (2026-10-18). Reste ouvert le choix d'une variante
-de l'Accueil (A, B ou C).
+**Avancement** : les sept étapes sont faites (2026-10-18). Le choix d'une variante
+de l'Accueil est tranché par D282 : un résumé à graphiques.
 
 ## 5. Vérification
 
