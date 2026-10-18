@@ -130,6 +130,14 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   Accueil, Routines, Historique, Exercices, à la suite. L'Historique passe avant les Exercices.
   `NAV_ITEMS` remplace `NAV_GROUPS` ; la palette suit le même ordre.
 
+- **D291 — Les pages d'auth sont dessinées** (2026-10-18, précise §4.1 du wireframe). Vrais
+  formulaires shadcn (`Field`, `InputGroup` pour afficher le mot de passe), envoi simulé
+  (`useFakeSubmit`, 700 ms). Deux variantes : carte centrée sur fond `muted` (a), formulaire et
+  panneau d'illustration (b). États : `chargement` fige l'envoi, `erreur` montre l'échec propre à
+  la page — identifiants refusés sans dire lequel, adresse hors `SIGNUP_ALLOWLIST`, envoi raté,
+  lien expiré (dit avant la saisie). L'écran « e-mail envoyé » ne dit pas si le compte existe,
+  comme `requestPasswordReset`.
+
 ## 3. Barre latérale
 
 ```
