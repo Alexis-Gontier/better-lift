@@ -101,6 +101,9 @@ Un commit et une capture par étape, chacune validée à l'écran avant la suiva
 6. **Détail de routine** (D280).
 7. **Corps** (D281).
 
+**Avancement** : les sept étapes sont faites (2026-10-18). Reste ouvert le choix d'une variante
+de l'Accueil (A, B ou C).
+
 ## 5. Vérification
 
 - `typecheck`, `build`, Biome et Knip propres ; les calculs de `mocks/` testés (Vitest), comme

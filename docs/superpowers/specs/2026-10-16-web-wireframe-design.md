@@ -398,11 +398,11 @@ et D199 (style), qui seront repris après validation du wireframe.
 │──────────│───────────────────────────────────────────────────────────│
 │ ⌂ Accueil│                                                           │
 │ ENTRAÎN. │                    contenu de la page                     │
-│ ▦ Planning                                                           │
 │ ☰ Routines                                                           │
 │ ◎ Exercices                                                          │
 │ ⟲ Historique                                                         │
 │ ANALYSE  │                                                           │
+│ ★ Records                                                            │
 │ ↗ Progression                                                        │
 │ ⚖ Corps  │                                                           │
 │──────────│                                                           │
@@ -443,6 +443,8 @@ Variantes : formulaire centré seul (a), deux colonnes formulaire + panneau illu
 
 ### 4.2 Accueil `/`
 
+> Révisé le 2026-10-18 par [`2026-10-18-web-records-design.md`](2026-10-18-web-records-design.md) (D274–D281).
+
 - **Aujourd'hui** : la routine planifiée pour le jour (lien vers elle), ou « Repos », ou
   « Rien de planifié » avec bouton *Planifier*.
 - **Semaine** : 4 chiffres clés (séances, volume, durée, jours d'affilée), chacun comparé à la
@@ -457,6 +459,8 @@ Variantes : grille de cartes façon tableau de bord (a), colonne principale + co
 étroite (b).
 
 ### 4.3 Planning `/planning`
+
+> Révisé le 2026-10-18 par [`2026-10-18-web-records-design.md`](2026-10-18-web-records-design.md) (D274–D281).
 
 - Calendrier **semaine** ou **mois** (`ToggleGroup`), navigation précédent / aujourd'hui / suivant.
 - Jours passés : séances **faites** (plein). Jours à venir : routines **planifiées** (contour).
@@ -507,6 +511,8 @@ Variantes de la liste : lignes denses (a), cartes (b).
 
 ### 4.7 Progression `/progress`
 
+> Révisé le 2026-10-18 par [`2026-10-18-web-records-design.md`](2026-10-18-web-records-design.md) (D274–D281).
+
 Sélecteur de période (4 semaines, 3 mois, 1 an, tout, ou plage personnalisée). Deux onglets :
 
 - **Graphiques** : volume par groupe musculaire (barres et silhouette colorée), fréquence par
@@ -516,6 +522,8 @@ Sélecteur de période (4 semaines, 3 mois, 1 an, tout, ou plage personnalisée)
 Variantes de Graphiques : grille 2 × 2 (a), un grand graphique + sélecteur de métrique (b).
 
 ### 4.8 Corps `/body`
+
+> Révisé le 2026-10-18 par [`2026-10-18-web-records-design.md`](2026-10-18-web-records-design.md) (D274–D281).
 
 - **Poids** : courbe avec moyenne mobile 7 jours, objectif en pointillés, saisie rapide de la
   pesée du jour, tableau des pesées.
