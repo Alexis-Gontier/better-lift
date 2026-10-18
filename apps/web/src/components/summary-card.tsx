@@ -30,13 +30,13 @@ export function SummaryCard({ title, rows }: { title: string; rows: SummaryRow[]
               <dt className="min-w-0 text-muted-foreground text-sm">{r.label}</dt>
               {/* La valeur ne se coupe jamais : c'est le libellé qui passe à la ligne. */}
               <dd className="flex shrink-0 flex-col items-end whitespace-nowrap text-right">
-                <span className="flex items-baseline gap-1.5">
-                  {r.delta && (
-                    <span className="text-muted-foreground text-xs tabular-nums">{r.delta}</span>
-                  )}
-                  <span className="font-medium text-sm tabular-nums">{r.value}</span>
-                </span>
-                {r.hint && <span className="text-muted-foreground text-xs">{r.hint}</span>}
+                <span className="font-medium text-sm tabular-nums">{r.value}</span>
+                {/* L'écart sous la valeur : à côté, il mangeait la place du libellé. */}
+                {(r.delta || r.hint) && (
+                  <span className="text-muted-foreground text-xs tabular-nums">
+                    {[r.delta, r.hint].filter(Boolean).join(" · ")}
+                  </span>
+                )}
               </dd>
             </div>
           ))}
