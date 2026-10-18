@@ -57,7 +57,7 @@ export function WeekStats() {
     <Card>
       <CardHeader>
         <CardTitle>Cette semaine</CardTitle>
-        <CardDescription>Comparée à la semaine dernière</CardDescription>
+        <CardDescription>Comparée à la semaine dernière, à la même date</CardDescription>
         <CardAction>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/planning">

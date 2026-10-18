@@ -38,12 +38,17 @@ function totals(sessions: SessionLike[]): WeekTotals {
   );
 }
 
+/**
+ * La semaine en cours face à la précédente, à la même date (D270) : un vendredi se compare au
+ * lundi–vendredi d'avant, pas à une semaine entière qui fausserait l'écart.
+ */
 export function weekSummary(sessions: SessionLike[], today: string) {
   const current = startOfWeek(today);
   const previous = addDays(current, -7);
+  const sameDay = addDays(today, -7);
   return {
     current: totals(sessions.filter((s) => startOfWeek(s.date) === current && s.date <= today)),
-    previous: totals(sessions.filter((s) => startOfWeek(s.date) === previous)),
+    previous: totals(sessions.filter((s) => startOfWeek(s.date) === previous && s.date <= sameDay)),
   };
 }
 

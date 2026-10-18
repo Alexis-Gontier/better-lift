@@ -28,11 +28,13 @@ describe("dates civiles", () => {
 });
 
 describe("weekSummary", () => {
-  it("compare la semaine en cours à la précédente", () => {
+  it("compare la semaine en cours à la précédente, à la même date", () => {
     const sessions = [
       s("2026-10-13", 5000, 70),
       s("2026-10-15", 4000, 50),
       s("2026-10-07", 3000, 60),
+      // Samedi dernier : après la même date, il ne compte pas encore.
+      s("2026-10-10", 9000, 90),
     ];
     expect(weekSummary(sessions, TODAY)).toEqual({
       current: { count: 2, volume: 9000, minutes: 120 },
