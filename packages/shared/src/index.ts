@@ -58,10 +58,14 @@ export {
 } from "./records.js";
 export {
   ABREGE_TYPE_SERIE,
+  type Dossier,
+  deplacementRoutine,
+  dossierSaisi,
   dureeEstimeeSec,
   etiquettesSeries,
   LIBELLE_TYPE_SERIE,
   meilleureSerie,
+  ordreDossiers,
   ordreRoutines,
   type RoutineDetail,
   type RoutineResume,
