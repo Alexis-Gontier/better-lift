@@ -1,5 +1,6 @@
 import { prisma } from "@better-lift/db";
 import {
+  dureeEstimeeSec,
   normaliserGroupes,
   type RoutineDetail,
   type RoutineResume,
@@ -129,6 +130,11 @@ export function versResume(l: LigneRoutine): RoutineResume {
     nbSeries: l.exercices.reduce((n, e) => n + e.series.length, 0),
     dossierId: l.dossierId,
     derniereSeance: l.seances[0]?.debut.toISOString() ?? null,
+    exercices: l.exercices.map((e) => ({
+      nom: e.exercise.nomFr,
+      musclePrincipal: e.exercise.target,
+    })),
+    dureeEstimeeSec: dureeEstimeeSec(l.exercices),
   };
 }
 

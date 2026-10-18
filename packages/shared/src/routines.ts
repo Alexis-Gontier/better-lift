@@ -75,6 +75,10 @@ export type RoutineResume = {
   dossierId: string | null;
   /** ISO de la dernière séance faite depuis cette routine, `null` si jamais (D310). */
   derniereSeance: string | null;
+  /** Ses exercices, dans l'ordre : la liste du web les cherche et en montre les muscles (D310). */
+  exercices: { nom: string; musclePrincipal: string }[];
+  /** `dureeEstimeeSec` de ses exercices : la liste l'affiche sans lire chaque routine. */
+  dureeEstimeeSec: number;
 };
 
 /** Un dossier de routines (D296). */
