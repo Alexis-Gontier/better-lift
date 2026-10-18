@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   calculerPeriode,
-  joursDeLaSemaine,
   niveauxCalendrier,
   type SeancePeriode,
   semainesRecentes,
@@ -141,37 +140,5 @@ describe("semainesTenues (D126)", () => {
 
   it("ne juge pas la semaine en cours tant qu'elle n'a pas atteint l'objectif", () => {
     expect(semainesTenues(v(3, 3, 1), 3)).toEqual({ tenues: 2, sur: 2 });
-  });
-});
-
-describe("joursDeLaSemaine (D166)", () => {
-  const jour = (cle: string) => ({ jour: cle, volumeKg: 100, seances: ["x"] });
-
-  it("rend les sept jours du lundi au dimanche, entraînés, aujourd'hui et à venir", () => {
-    // Samedi 3 octobre 2026, 18 h à Paris.
-    const j = joursDeLaSemaine(
-      "2026-09-28",
-      [jour("2026-09-28"), jour("2026-10-01")],
-      maintenant,
-      PARIS,
-    );
-    expect(j.map((x) => x.jour)).toEqual([
-      "2026-09-28",
-      "2026-09-29",
-      "2026-09-30",
-      "2026-10-01",
-      "2026-10-02",
-      "2026-10-03",
-      "2026-10-04",
-    ]);
-    expect(j.map((x) => x.entraine)).toEqual([true, false, false, true, false, false, false]);
-    expect(j.map((x) => x.aujourdhui)).toEqual([false, false, false, false, false, true, false]);
-    expect(j.map((x) => x.avenir)).toEqual([false, false, false, false, false, false, true]);
-  });
-
-  it("prend aujourd'hui dans le fuseau : samedi 23 h 30 à Paris n'est pas dimanche", () => {
-    const samediSoir = new Date("2026-10-03T21:30:00.000Z");
-    const j = joursDeLaSemaine("2026-09-28", [], samediSoir, PARIS);
-    expect(j.findIndex((x) => x.aujourdhui)).toBe(5);
   });
 });

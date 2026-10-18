@@ -31,5 +31,4 @@ export function creerClient(
   });
 }
 
-export type Client = ReturnType<typeof creerClient>;
 export type { AppType } from "@better-lift/api";
