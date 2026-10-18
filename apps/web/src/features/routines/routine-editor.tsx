@@ -46,13 +46,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { ExerciseQuickView } from "@/features/exercises/exercise-quick-view";
 import { formatLoad, formatRest, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseBySlug } from "@/mocks/exercises";
 import { lastSets } from "@/mocks/generated-workouts";
 import type { MockRoutineExercise, PlannedSet } from "@/mocks/routines";
 import { ExercisePicker, newRoutineExercise } from "./exercise-picker";
-import { ExerciseQuickView } from "./exercise-quick-view";
 import {
   type ChangeSummary,
   canLinkWithNext,
@@ -105,7 +105,7 @@ export function stepValue(value: string, delta: number, min: number, max = Infin
 }
 
 /** Une valeur de série : − / + autour du champ, l'unité à côté du nombre (D246). */
-function SetField({
+export function SetField({
   value,
   unit,
   label,
@@ -168,7 +168,7 @@ function SetField({
 }
 
 /** Une étiquette de série dans sa case, en couleur selon son type (W, 1, F, D). */
-function SetBadge({ label, tone }: { label: string; tone: string }) {
+export function SetBadge({ label, tone }: { label: string; tone: string }) {
   return (
     <span
       className={cn(

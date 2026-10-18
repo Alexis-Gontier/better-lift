@@ -1,4 +1,5 @@
 import { useRouterState } from "@tanstack/react-router";
+import { MousePointerClick } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { useProto } from "@/components/proto/use-proto";
@@ -7,6 +8,7 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -26,11 +28,14 @@ export const listLinkProps = {
 } as const;
 
 /**
- * La marque de la ligne ouverte : un fond léger et un liseré d'encre à gauche. Le fond reste
- * clair pour que le texte atténué y garde 4,5:1 (D251) ; le liseré dit la sélection.
+ * Un élément de liste est une carte à part (D258) ; ouvert, elle prend un contour d'encre et un
+ * fond léger, sans liseré : la carte entière dit la sélection. À poser sur la `Card` qui
+ * contient le `Link` de l'élément.
  */
-export const selectedRowClass =
-  "data-[status=active]:bg-muted/50 data-[status=active]:shadow-[inset_3px_0_0_var(--foreground)]";
+export const listCardClass = cn(
+  "flex-row items-stretch gap-0 overflow-hidden py-0 transition-colors hover:bg-muted/40",
+  "has-[[data-status=active]]:bg-muted/40 has-[[data-status=active]]:ring-2 has-[[data-status=active]]:ring-foreground/30",
+);
 
 type Props = {
   title: string;
@@ -211,11 +216,38 @@ export function DetailEmpty({
   );
 }
 
-/** Le panneau quand rien n'est ouvert ; sans aucun élément (`vide`), il n'y a rien à choisir. */
-export function DetailPlaceholder({ title, description }: { title: string; description: string }) {
+/**
+ * Le panneau quand rien n'est ouvert (D260) : un état vide franc, qui dit quoi faire et peut
+ * porter une action (`children`). Pendant le chargement ou en erreur, la liste le dit déjà ;
+ * sans aucun élément (`vide`), c'est à l'écran de dire quoi faire (ou rien).
+ */
+export function DetailPlaceholder({
+  title,
+  description,
+  empty,
+  children,
+}: {
+  title: string;
+  description: string;
+  /** Ce que montre le panneau quand la liste est vide. */
+  empty?: ReactNode;
+  children?: ReactNode;
+}) {
   const { state } = useProto();
-  if (state === "vide") return null;
-  return <DetailEmpty title={title} description={description} />;
+  if (state === "chargement" || state === "erreur") return null;
+  if (state === "vide") return empty ?? null;
+  return (
+    <Empty className="flex-1">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <MousePointerClick />
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+      {children && <EmptyContent>{children}</EmptyContent>}
+    </Empty>
+  );
 }
 
 /** Le panneau pendant le chargement : la tête, puis deux blocs. */

@@ -3,7 +3,7 @@ import { ChevronRight, Dumbbell, History, Search, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
 import { ExerciseThumb } from "@/components/exercise-media";
-import { listLinkProps, selectedRowClass } from "@/components/list-detail";
+import { listCardClass, listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fold } from "@/lib/fold";
 import { formatDaysAgo, formatKg } from "@/lib/format";
@@ -58,7 +57,7 @@ function DraftExerciseRow() {
     <Link
       to="/exercises/new"
       {...listLinkProps}
-      className={`flex items-center gap-4 border-b border-dashed px-4 py-3 ${selectedRowClass}`}
+      className="flex items-center gap-4 rounded-xl border border-dashed px-4 py-3 data-[status=active]:bg-muted/40"
     >
       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
         <Dumbbell className="size-4" />
@@ -177,22 +176,24 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
           </EmptyHeader>
         </Empty>
       ) : (
-        <Card className="gap-0 py-0">
+        // Une carte par exercice, séparées (D258, comme les routines).
+        <div className="flex flex-col gap-2">
           {creating && <DraftExerciseRow />}
-          {rows.map((e, i) => (
-            <div key={e.slug}>
-              {i > 0 && <Separator />}
+          {rows.map((e) => (
+            <Card key={e.slug} size="sm" className={listCardClass}>
               <RowMenu actions={exerciseActions(e.slug)}>
                 <Link
                   to="/exercises/$slug"
                   params={{ slug: e.slug }}
                   {...listLinkProps}
-                  className={`flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50 ${selectedRowClass}`}
+                  className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
                 >
                   <ExerciseThumb name={e.name} />
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium">{e.name}</span>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="truncate font-medium" title={e.name}>
+                      {e.name}
+                    </span>
+                    <span className="truncate text-muted-foreground text-xs">
                       {e.muscle} · {e.equipment}
                     </span>
                   </div>
@@ -206,23 +207,32 @@ export function ExerciseList({ exercises }: { exercises: MockExercise[] }) {
                   <span className="hidden w-20 shrink-0 text-right text-muted-foreground text-xs @2xl:block">
                     {formatDaysAgo(e.lastDone ? daysSince(e.lastDone, TODAY) : null)}
                   </span>
-                  <ChevronRight className="size-4 text-muted-foreground" />
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                 </Link>
               </RowMenu>
-            </div>
+            </Card>
           ))}
-        </Card>
+        </div>
       )}
     </>
   );
 }
 
+/** La liste pendant le chargement : la recherche, les filtres, puis des cartes d'exercice. */
 export function ExerciseListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
-      <Skeleton className="h-9 rounded-lg" />
-      <Skeleton className="h-[480px] rounded-xl" />
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-40 rounded-lg" />
+        <Skeleton className="h-9 w-36 rounded-lg" />
+        <Skeleton className="h-9 w-28 rounded-lg" />
+      </div>
+      <div className="flex flex-col gap-2">
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+          <Skeleton key={i} className="h-[4.25rem] rounded-xl" />
+        ))}
+      </div>
     </>
   );
 }

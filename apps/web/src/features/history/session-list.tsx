@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ChevronRight, History, ListChecks, Search, Trash2, Trophy } from "lucide-react";
 import { useState } from "react";
 import { DragScroll } from "@/components/drag-scroll";
-import { listLinkProps, selectedRowClass } from "@/components/list-detail";
+import { listCardClass, listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,9 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { fold } from "@/lib/fold";
 import { formatKg, formatMinutes, formatMonth, formatWeekdayDay, plural } from "@/lib/format";
 import { groupByMonth } from "@/mocks/history";
 import { mockRoutines } from "@/mocks/routines";
@@ -26,12 +26,6 @@ import type { MockSession } from "@/mocks/sessions";
 
 const ALL = "toutes";
 const MONTHS_PER_PAGE = 3;
-
-const fold = (t: string) =>
-  t
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
 
 export function SessionList({ sessions }: { sessions: MockSession[] }) {
   const navigate = useNavigate();
@@ -122,39 +116,38 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
                 {plural(g.sessions.length, "séance")} · {formatKg(volume)}
               </span>
             </div>
-            <Card className="gap-0 py-0">
-              {g.sessions.map((s, i) => (
-                <div key={s.id}>
-                  {i > 0 && <Separator />}
+            {/* Une carte par séance, séparées (D258, comme les routines). */}
+            <div className="flex flex-col gap-2">
+              {g.sessions.map((s) => (
+                <Card key={s.id} size="sm" className={listCardClass}>
                   <RowMenu actions={sessionActions(s)}>
                     <Link
                       to="/history/$id"
                       params={{ id: s.id }}
                       {...listLinkProps}
-                      className={`flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50 ${selectedRowClass}`}
+                      className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
                     >
-                      <span className="w-24 shrink-0 text-muted-foreground text-sm first-letter:uppercase">
-                        {formatWeekdayDay(s.date)}
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate font-medium">{s.routine}</span>
+                        <span className="truncate text-muted-foreground text-xs first-letter:uppercase">
+                          {formatWeekdayDay(s.date)} · {formatMinutes(s.minutes)}
+                        </span>
                       </span>
-                      <span className="min-w-0 flex-1 truncate font-medium">{s.routine}</span>
                       {s.records > 0 && (
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="shrink-0">
                           <Trophy data-icon="inline-start" />
                           {s.records}
                         </Badge>
                       )}
-                      <span className="hidden w-16 shrink-0 text-right text-muted-foreground text-sm tabular-nums @xl:block">
-                        {formatMinutes(s.minutes)}
-                      </span>
-                      <span className="w-24 text-right text-sm tabular-nums">
+                      <span className="shrink-0 text-right text-sm tabular-nums">
                         {formatKg(s.volume)}
                       </span>
-                      <ChevronRight className="size-4 text-muted-foreground" />
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                     </Link>
                   </RowMenu>
-                </div>
+                </Card>
               ))}
-            </Card>
+            </div>
           </section>
         );
       })}
@@ -168,28 +161,51 @@ export function SessionList({ sessions }: { sessions: MockSession[] }) {
   );
 }
 
+/** La liste pendant le chargement : recherche, filtres, puis deux mois et leurs cartes. */
 export function SessionListSkeleton() {
   return (
     <>
       <Skeleton className="h-9 rounded-lg" />
-      <Skeleton className="h-5 w-40 rounded" />
-      <Skeleton className="h-72 rounded-xl" />
-      <Skeleton className="h-5 w-40 rounded" />
-      <Skeleton className="h-72 rounded-xl" />
+      <div className="flex gap-2">
+        {/* Les puces de filtre : « Toutes les routines », puis une par routine. */}
+        <Skeleton className="h-8 w-36 rounded-lg" />
+        <Skeleton className="h-8 w-14 rounded-lg" />
+        <Skeleton className="h-8 w-14 rounded-lg" />
+        <Skeleton className="h-8 w-14 rounded-lg" />
+      </div>
+      {[4, 3].map((count, m) => (
+        <div key={m} className="flex flex-col gap-2">
+          <Skeleton className="my-1 h-5 w-36 rounded" />
+          {Array.from({ length: count }, (_, i) => (
+            <Skeleton key={i} className="h-[3.875rem] rounded-xl" />
+          ))}
+        </div>
+      ))}
     </>
   );
 }
 
+/** Aucune séance : la liste le dit d'une ligne, le panneau de droite explique (D260). */
 export function SessionListEmpty() {
   return (
-    <Empty className="border border-dashed">
+    <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
+      Aucune séance pour l'instant.
+    </p>
+  );
+}
+
+/** Le panneau de droite sans aucune séance : d'où elles viennent, et l'import. */
+export function SessionsOnboarding() {
+  return (
+    <Empty className="flex-1">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <History />
         </EmptyMedia>
         <EmptyTitle>Pas encore de séance</EmptyTitle>
         <EmptyDescription>
-          Les séances se font sur le mobile ; elles apparaîtront ici dès la première.
+          Les séances se font sur le téléphone ; elles arrivent ici dès la première, comparées à la
+          précédente de la même routine.
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

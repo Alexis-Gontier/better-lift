@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DetailPlaceholder } from "@/components/list-detail";
+import { SessionsOnboarding } from "@/features/history/session-list";
 
 export const Route = createFileRoute("/_app/history/")({
   component: () => (
     <DetailPlaceholder
-      title="Choisissez une séance"
-      description="Elle s'ouvre ici, comparée à la précédente de la même routine."
+      title="Aucune séance ouverte"
+      description="Choisissez-en une pour la relire, la comparer à la précédente ou la corriger."
+      empty={<SessionsOnboarding />}
     />
   ),
 });
