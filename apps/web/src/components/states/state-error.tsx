@@ -3,8 +3,11 @@ import { CircleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
-/** Erreur de chargement d'une page ; « Réessayer » retire l'état forcé par l'URL (D303). */
-export function StateError({ title }: { title: string }) {
+/**
+ * Erreur de chargement d'une page ; « Réessayer » retire l'état forcé par l'URL (D303) et relance
+ * la requête quand la page en donne le moyen.
+ */
+export function StateError({ title, reessayer }: { title: string; reessayer?: () => void }) {
   const navigate = useNavigate();
   return (
     <Alert variant="destructive">
@@ -17,7 +20,10 @@ export function StateError({ title }: { title: string }) {
           variant="outline"
           size="sm"
           className="mt-2"
-          onClick={() => navigate({ to: ".", search: (p) => ({ ...p, etat: undefined }) })}
+          onClick={() => {
+            reessayer?.();
+            navigate({ to: ".", search: (p) => ({ ...p, etat: undefined }) });
+          }}
         >
           Réessayer
         </Button>

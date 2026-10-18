@@ -1,103 +1,65 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Laptop, Smartphone } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { StateError } from "@/components/states/state-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDeconnexion } from "@/components/use-deconnexion";
+import { auth } from "@/lib/auth";
 import { formatShortDay } from "@/lib/format";
-import { mockAccount } from "@/mocks/account";
-import { addDays } from "@/mocks/stats";
-import { TODAY } from "@/mocks/today";
+import { jourCivil } from "@/lib/locale";
+import { appareilDe } from "./appareil";
+import {
+  appareilsQuery,
+  useChangerMotDePasse,
+  useDeconnecterAppareil,
+  useDeconnecterLesAutres,
+  useRenommer,
+} from "./queries";
 import { SettingsPage, SettingsSection } from "./settings-section";
 
 /** Better Auth : 8 à 128 caractères par défaut (`minPasswordLength`, `maxPasswordLength`). */
 const PASSWORD = { min: 8, max: 128 } as const;
 
-/**
- * Une session telle que la rend `listSessions` de Better Auth : agent, IP, dates. Pas de ville :
- * il faudrait géolocaliser l'IP. L'appareil se lit dans l'agent ; le mobile passe par Expo.
- */
-type AuthSession = { token: string; userAgent: string; createdAt: string; expiresAt: string };
+const echec = (e: unknown) => toast.error(e instanceof Error ? e.message : "L'action a échoué.");
 
-const SESSIONS: AuthSession[] = [
-  {
-    token: "t1",
-    userAgent: "Mozilla/5.0 (Windows NT 10.0) Chrome/140",
-    createdAt: addDays(TODAY, -2),
-    expiresAt: addDays(TODAY, 5),
-  },
-  {
-    token: "t2",
-    userAgent: "better-lift/0.4 Expo Android",
-    createdAt: addDays(TODAY, -6),
-    expiresAt: addDays(TODAY, 1),
-  },
-  {
-    token: "t3",
-    userAgent: "Mozilla/5.0 (Macintosh) Firefox/141",
-    createdAt: addDays(TODAY, -5),
-    expiresAt: addDays(TODAY, 2),
-  },
-];
-const CURRENT = "t1";
-
-/** « Chrome sur Windows », « Application mobile (Android) » : l'appareil, lu dans l'agent. */
-function deviceOf(ua: string): { label: string; mobile: boolean } {
-  if (/Expo|better-lift/i.test(ua))
-    return { label: `Application mobile${/Android/.test(ua) ? " (Android)" : ""}`, mobile: true };
-  const browser = /Firefox/.test(ua)
-    ? "Firefox"
-    : /Edg/.test(ua)
-      ? "Edge"
-      : /Chrome/.test(ua)
-        ? "Chrome"
-        : "Navigateur";
-  const os = /Windows/.test(ua)
-    ? "Windows"
-    : /Mac/.test(ua)
-      ? "macOS"
-      : /Linux/.test(ua)
-        ? "Linux"
-        : "";
-  return { label: os ? `${browser} sur ${os}` : browser, mobile: false };
-}
-
-type Profile = { name: string };
-
-/** Le profil enregistré, en mémoire : l'API le tiendra (`updateUser`). */
-let savedProfile: Profile = { name: mockAccount.name };
+/** Une date de Better Auth (objet ou chaîne), au format court, dans le fuseau du web. */
+const jour = (d: Date | string) => formatShortDay(jourCivil(d));
 
 /**
  * Le profil (D272, D273) : le nom seul se modifie (`updateUser`), enregistré en quittant le champ ;
- * vide, il reprend sa valeur. L'e-mail se lit : en changer demande
- * `changeEmail` et l'envoi d'e-mails, ni l'un ni l'autre en place.
+ * vide, il reprend sa valeur. L'e-mail se lit : en changer demande `changeEmail` et l'envoi
+ * d'e-mails, ni l'un ni l'autre en place.
  */
 function ProfileSection() {
-  const [name, setName] = useState(savedProfile.name);
+  // La garde de `_app` assure qu'une session est là.
+  const user = auth.session?.user;
+  const [enregistre, setEnregistre] = useState(user?.name ?? "");
+  const [name, setName] = useState(enregistre);
+  const renommer = useRenommer();
   const commit = () => {
     const next = name.trim();
-    if (next === "" || next === savedProfile.name) {
-      setName(savedProfile.name);
+    if (next === "" || next === enregistre) {
+      setName(enregistre);
       return;
     }
-    savedProfile = { name: next };
-    setName(next);
-    toast.success("Réglage enregistré", { id: "reglage-enregistre" });
+    renommer.mutate(next, {
+      onSuccess: () => {
+        setEnregistre(next);
+        setName(next);
+        toast.success("Réglage enregistré", { id: "reglage-enregistre" });
+      },
+      onError: (e) => {
+        setName(enregistre);
+        echec(e);
+      },
+    });
   };
   return (
     <SettingsSection title="Profil" description="Le nom affiché dans l'application.">
@@ -109,6 +71,7 @@ function ProfileSection() {
               id="name"
               maxLength={100}
               value={name}
+              disabled={renommer.isPending}
               onChange={(e) => setName(e.target.value)}
               onBlur={commit}
               onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
@@ -116,7 +79,7 @@ function ProfileSection() {
           </Field>
           <Field>
             <FieldLabel htmlFor="email">E-mail</FieldLabel>
-            <Input id="email" type="email" value={mockAccount.email} readOnly disabled />
+            <Input id="email" type="email" value={user?.email ?? ""} readOnly disabled />
             <FieldDescription>
               Sert à se connecter. Le changer n'est pas encore possible.
             </FieldDescription>
@@ -136,9 +99,25 @@ function PasswordSection() {
   const [next, setNext] = useState("");
   const [again, setAgain] = useState("");
   const [revoke, setRevoke] = useState(true);
+  const changer = useChangerMotDePasse();
   const tooShort = next.length > 0 && next.length < PASSWORD.min;
   const mismatch = again.length > 0 && again !== next;
   const valid = current.length > 0 && next.length >= PASSWORD.min && again === next;
+  const envoyer = () =>
+    changer.mutate(
+      { currentPassword: current, newPassword: next, revokeOtherSessions: revoke },
+      {
+        onSuccess: () => {
+          setCurrent("");
+          setNext("");
+          setAgain("");
+          toast.success(
+            revoke ? "Mot de passe changé, autres appareils déconnectés" : "Mot de passe changé",
+          );
+        },
+        onError: echec,
+      },
+    );
   return (
     <SettingsSection
       title="Mot de passe"
@@ -197,17 +176,10 @@ function PasswordSection() {
         <Button
           variant="outline"
           className="self-start"
-          disabled={!valid}
-          onClick={() => {
-            setCurrent("");
-            setNext("");
-            setAgain("");
-            toast.success(
-              revoke ? "Mot de passe changé, autres appareils déconnectés" : "Mot de passe changé",
-            );
-          }}
+          disabled={!valid || changer.isPending}
+          onClick={envoyer}
         >
-          Changer le mot de passe
+          {changer.isPending ? "Changement…" : "Changer le mot de passe"}
         </Button>
       </FieldGroup>
     </SettingsSection>
@@ -219,17 +191,37 @@ function PasswordSection() {
  * Une se ferme par `revokeSession`, toutes les autres par `revokeOtherSessions`.
  */
 function SessionsSection() {
-  const [sessions, setSessions] = useState(SESSIONS);
-  const others = sessions.filter((s) => s.token !== CURRENT);
-  return (
-    <SettingsSection
-      title="Sessions ouvertes"
-      description="Les appareils connectés à votre compte."
-    >
+  const requete = useQuery(appareilsQuery());
+  const deconnecter = useDeconnecterAppareil();
+  const deconnecterAutres = useDeconnecterLesAutres();
+  const courante = auth.session?.session.token;
+
+  let contenu: ReactNode;
+  if (requete.isPending) {
+    contenu = (
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-10" />
+        <Skeleton className="h-10" />
+      </div>
+    );
+  } else if (requete.isError) {
+    contenu = (
+      <StateError
+        title="Les appareils n'ont pas pu se charger"
+        reessayer={() => void requete.refetch()}
+      />
+    );
+  } else {
+    // L'appareil courant en tête, puis le plus récent d'abord.
+    const rang = (s: { token: string; createdAt: Date | string }) =>
+      s.token === courante ? Number.POSITIVE_INFINITY : new Date(s.createdAt).getTime();
+    const sessions = [...requete.data].sort((a, b) => rang(b) - rang(a));
+    const autres = sessions.filter((s) => s.token !== courante);
+    contenu = (
       <div className="flex flex-col">
         {sessions.map((s, i) => {
-          const device = deviceOf(s.userAgent);
-          const Icon = device.mobile ? Smartphone : Laptop;
+          const appareil = appareilDe(s.userAgent);
+          const Icon = appareil.mobile ? Smartphone : Laptop;
           return (
             <div key={s.token}>
               {i > 0 && <Separator className="my-3" />}
@@ -237,19 +229,19 @@ function SessionsSection() {
                 <Icon className="size-5 text-muted-foreground" />
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span className="flex items-center gap-2 text-sm">
-                    {device.label}
-                    {s.token === CURRENT && <Badge variant="secondary">Cet appareil</Badge>}
+                    {appareil.label}
+                    {s.token === courante && <Badge variant="secondary">Cet appareil</Badge>}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    Ouverte le {formatShortDay(s.createdAt)} · expire le{" "}
-                    {formatShortDay(s.expiresAt)}
+                    Ouverte le {jour(s.createdAt)} · expire le {jour(s.expiresAt)}
                   </span>
                 </div>
-                {s.token !== CURRENT && (
+                {s.token !== courante && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSessions((all) => all.filter((x) => x.token !== s.token))}
+                    disabled={deconnecter.isPending}
+                    onClick={() => deconnecter.mutate(s.token, { onError: echec })}
                   >
                     Déconnecter
                   </Button>
@@ -258,83 +250,62 @@ function SessionsSection() {
             </div>
           );
         })}
-        {others.length > 0 && (
+        {autres.length > 0 && (
           <>
             <Separator className="my-3" />
             <Button
               variant="ghost"
               size="sm"
               className="self-start"
-              onClick={() => {
-                setSessions((all) => all.filter((x) => x.token === CURRENT));
-                toast.success("Autres appareils déconnectés");
-              }}
+              disabled={deconnecterAutres.isPending}
+              onClick={() =>
+                deconnecterAutres.mutate(undefined, {
+                  onSuccess: () => toast.success("Autres appareils déconnectés"),
+                  onError: echec,
+                })
+              }
             >
               Déconnecter tous les autres appareils
             </Button>
           </>
         )}
       </div>
+    );
+  }
+
+  return (
+    <SettingsSection
+      title="Sessions ouvertes"
+      description="Les appareils connectés à votre compte."
+    >
+      {contenu}
+    </SettingsSection>
+  );
+}
+
+/** Quitter la session de cet appareil (D301). */
+function SignOutSection() {
+  const deconnecter = useDeconnexion();
+  return (
+    <SettingsSection title="Déconnexion" description="Quitter votre compte sur cet appareil.">
+      <Button variant="outline" onClick={() => void deconnecter()}>
+        Se déconnecter
+      </Button>
     </SettingsSection>
   );
 }
 
 /**
- * Supprimer le compte (D272), par `deleteUser` : Better Auth le réserve à une option à activer
- * (`user.deleteUser.enabled`) et demande le mot de passe d'un compte à mot de passe.
+ * Compte (D271–D273) : chaque action agit seule ; le nom s'enregistre en quittant le champ. La
+ * suppression du compte n'est pas activée côté API (`deleteUser`) : elle a quitté l'écran (D294).
  */
-function DangerZone() {
-  const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  return (
-    <SettingsSection
-      title="Zone de danger"
-      description="Supprimer le compte efface vos routines, vos séances et vos pesées. C'est définitif."
-    >
-      <AlertDialog onOpenChange={() => setPassword("")}>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive">Supprimer mon compte</Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer le compte ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Confirmez avec votre mot de passe. Exportez vos données avant si vous voulez les
-              garder.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <Input
-            type="password"
-            aria-label="Mot de passe"
-            autoComplete="current-password"
-            placeholder="Mot de passe"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              disabled={password.length === 0}
-              onClick={() => navigate({ to: "/login" })}
-            >
-              Supprimer définitivement
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </SettingsSection>
-  );
-}
-
-/** Compte (D271–D273) : chaque action agit seule ; le nom s'enregistre en quittant le champ. */
 export function AccountSettings() {
   return (
     <SettingsPage title="Compte" description="Profil, mot de passe et appareils connectés.">
       <ProfileSection />
       <PasswordSection />
       <SessionsSection />
-      <DangerZone />
+      <SignOutSection />
     </SettingsPage>
   );
 }
