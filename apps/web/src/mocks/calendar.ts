@@ -67,3 +67,16 @@ export function repeatWeek(planned: Planned[], weekStart: string, weeks: number)
   }
   return [...planned, ...added];
 }
+
+/** Déplace une séance prévue sur un autre jour (glisser-déposer, D269). */
+export function movePlanned(planned: readonly Planned[], id: string, date: string): Planned[] {
+  return planned.map((p) => (p.id === id ? { ...p, date } : p));
+}
+
+/** Les jours qui portent quelque chose, faite ou prévue : les points du mini-calendrier. */
+export function busyDays(
+  planned: readonly Planned[],
+  done: readonly { date: string }[],
+): Set<string> {
+  return new Set([...planned.map((p) => p.date), ...done.map((d) => d.date)]);
+}

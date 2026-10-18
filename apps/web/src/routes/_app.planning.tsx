@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays } from "lucide-react";
-import { useTab } from "@/components/page-tabs";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
@@ -12,45 +11,31 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PLANNING_TABS, PlanningView } from "@/features/planning/planning-view";
+import { PlanningSkeleton, PlanningView } from "@/features/planning/planning-view";
 
 export const Route = createFileRoute("/_app/planning")({
-  staticData: {
-    crumb: "Planning",
-    proto: {
-      variants: [
-        { value: "a", label: "Calendrier" },
-        { value: "c", label: "Agenda" },
-      ],
-    },
-  },
+  staticData: { crumb: "Planning" },
   component: PlanningPage,
 });
 
+/** Le Planning (D269) ; hors de l'état nominal, la barre et la colonne restent, le calendrier cède. */
 function PlanningPage() {
-  const view = useTab(PLANNING_TABS.map((t) => t.value));
-  const { state, variant } = useProto();
-  // A et B : les onglets Semaine et Mois. C : un agenda en liste.
-  if (state === "nominal") return <PlanningView view={view} agenda={variant === "c"} />;
+  const { state } = useProto();
+  if (state === "nominal") return <PlanningView />;
   return (
-    <PlanningView view={view}>
-      {state === "chargement" && (
-        <>
-          <Skeleton className="h-9 w-80 rounded-lg" />
-          <Skeleton className="h-72 rounded-xl" />
-        </>
-      )}
+    <PlanningView>
+      {state === "chargement" && <PlanningSkeleton />}
       {state === "erreur" && <StateError title="Le planning n'a pas pu se charger" />}
       {state === "vide" && (
-        <Empty className="border border-dashed">
+        <Empty className="flex-1 border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <CalendarDays />
             </EmptyMedia>
             <EmptyTitle>Rien de planifié</EmptyTitle>
             <EmptyDescription>
-              Posez une routine sur un jour, puis répétez la semaine pour tracer votre programme.
+              Glissez une routine de la colonne de gauche sur un jour, puis répétez la semaine pour
+              tracer votre programme.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

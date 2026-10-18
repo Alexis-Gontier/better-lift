@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayEntries, monthGrid, repeatWeek, weekDays } from "./calendar";
+import { busyDays, dayEntries, monthGrid, movePlanned, repeatWeek, weekDays } from "./calendar";
 
 const TODAY = "2026-10-16"; // vendredi
 
@@ -66,5 +66,26 @@ describe("repeatWeek", () => {
       "2026-10-19:1",
       "2026-10-26:1",
     ]);
+  });
+});
+
+describe("déplacer une séance prévue", () => {
+  it("change le jour de la seule séance visée", () => {
+    const planned = [
+      { id: "a", date: "2026-10-20", routineId: "1" },
+      { id: "b", date: "2026-10-22", routineId: "2" },
+    ];
+    expect(movePlanned(planned, "a", "2026-10-21")).toEqual([
+      { id: "a", date: "2026-10-21", routineId: "1" },
+      { id: "b", date: "2026-10-22", routineId: "2" },
+    ]);
+  });
+
+  it("marque les jours occupés, faits ou prévus", () => {
+    const days = busyDays(
+      [{ id: "a", date: "2026-10-20", routineId: "1" }],
+      [{ date: "2026-10-13" }],
+    );
+    expect([...days].sort()).toEqual(["2026-10-13", "2026-10-20"]);
   });
 });
