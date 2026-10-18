@@ -356,7 +356,7 @@ et D199 (style), qui seront repris après validation du wireframe.
   sous 48rem. Chaque page porte un en-tête collé sous celui de l'app : son titre, une phrase, et
   l'état d'édition de `useEditable` (« • N modifications non enregistrées », ↶ ↷, Tout annuler,
   Enregistrer, Ctrl S, avertissement en quittant). Ce qui n'est pas un réglage du compte agit
-  seul : l'apparence s'applique tout de suite (réglage d'appareil, D-thème de l'utilisateur), le
+  seul : l'apparence s'applique tout de suite (réglage d'appareil, seul endroit où se règle le thème), le
   mot de passe se change par son propre bouton, les sessions se déconnectent, la suppression
   passe par sa confirmation. Données n'a rien à enregistrer.
 
