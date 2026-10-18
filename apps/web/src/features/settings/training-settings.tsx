@@ -1,4 +1,4 @@
-import { useEditable } from "@/components/editable";
+import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
@@ -22,7 +22,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatPrecise, formatRest } from "@/lib/format";
-import { SettingsPage, SettingsSection } from "./settings-section";
+import { SettingsPage, SettingsSection, useSetting } from "./settings-section";
 
 const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
 const RESTS = ["60", "90", "120", "150", "180"];
@@ -52,25 +52,19 @@ let savedTraining: Training = {
 };
 
 /**
- * Entraînement (D271) : séries et repos, charges et disques, formule du 1RM — un seul brouillon
- * pour la page, enregistré d'un coup.
+ * Entraînement (D271, D273) : objectif et repos, charges et disques, formule du 1RM ; chaque
+ * choix s'enregistre aussitôt.
  */
 export function TrainingSettings() {
-  const edit = useEditable<Training>({
-    initial: () => savedTraining,
-    isDirty: (d) => JSON.stringify(d) !== JSON.stringify(savedTraining),
-    count: (d) =>
-      (Object.keys(d) as (keyof Training)[]).filter(
-        (k) => JSON.stringify(d[k]) !== JSON.stringify(savedTraining[k]),
-      ).length,
-    onSave: (d) => {
-      savedTraining = d;
+  const [d, setTraining] = useSetting(
+    () => savedTraining,
+    (t) => {
+      savedTraining = t;
     },
-    what: "ces réglages",
-    savedMessage: "Réglages enregistrés",
-  });
-  const d = edit.draft;
-  const set = (patch: Partial<Training>) => edit.setDraft((x) => ({ ...x, ...patch }));
+  );
+  const set = (patch: Partial<Training>) => setTraining({ ...d, ...patch });
+  // La barre se tape : elle s'enregistre en quittant le champ, pas à chaque chiffre.
+  const [bar, setBar] = useState(d.bar);
   const togglePlate = (p: number, on: boolean) =>
     set({
       plates: on ? [...d.plates, p].sort((a, b) => b - a) : d.plates.filter((x) => x !== p),
@@ -79,8 +73,7 @@ export function TrainingSettings() {
   return (
     <SettingsPage
       title="Entraînement"
-      description="Repos, charges et calculs proposés partout."
-      actions={edit.actions(null, { status: false })}
+      description="Objectif, repos, charges et calculs proposés partout."
     >
       <SettingsSection title="Objectif et repos">
         <FieldGroup>
@@ -164,8 +157,9 @@ export function TrainingSettings() {
                 id="bar"
                 inputMode="decimal"
                 className="w-28"
-                value={d.bar}
-                onChange={(e) => set({ bar: e.target.value })}
+                value={bar}
+                onChange={(e) => setBar(e.target.value)}
+                onBlur={() => bar !== d.bar && set({ bar })}
               />
             </Field>
           </div>
@@ -214,7 +208,6 @@ export function TrainingSettings() {
           </Field>
         </RadioGroup>
       </SettingsSection>
-      {edit.guard}
     </SettingsPage>
   );
 }

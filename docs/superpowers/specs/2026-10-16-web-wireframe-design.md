@@ -379,6 +379,12 @@ et D199 (style), qui seront repris après validation du wireframe.
   jour de la semaine, l'effort RPE, l'incrément, la barre, les disques ni la formule du 1RM
   (Epley partout dans `shared`) ; côté API, ni import Hevy, ni export JSON, ni suppression des
   données (seul l'export CSV des séances existe).
+- **D273 — Un réglage s'enregistre dès qu'on le choisit** (2026-10-18, révise D271). Plus de
+  ↶ ↷, de « Tout annuler » ni d'« Enregistrer » dans les Paramètres, ni d'avertissement en
+  quittant : chaque choix est définitif, un toast « Réglage enregistré » le confirme. Les champs
+  à taper (le nom, le poids de la barre) s'enregistrent en quittant le champ ou par Entrée ; un
+  nom vide reprend sa valeur. L'édition façon routine (`useEditable`) reste aux routines, aux
+  séances et aux fiches d'exercice.
 
 ## 3. Coquille
 

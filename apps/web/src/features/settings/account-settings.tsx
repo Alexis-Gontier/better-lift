@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { Laptop, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useEditable } from "@/components/editable";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,10 +83,22 @@ type Profile = { name: string };
 let savedProfile: Profile = { name: mockAccount.name };
 
 /**
- * Le profil (D272) : le nom seul se modifie (`updateUser`). L'e-mail se lit : en changer demande
+ * Le profil (D272, D273) : le nom seul se modifie (`updateUser`), enregistré en quittant le champ ;
+ * vide, il reprend sa valeur. L'e-mail se lit : en changer demande
  * `changeEmail` et l'envoi d'e-mails, ni l'un ni l'autre en place.
  */
-function ProfileSection({ draft, setDraft }: { draft: Profile; setDraft: (p: Profile) => void }) {
+function ProfileSection() {
+  const [name, setName] = useState(savedProfile.name);
+  const commit = () => {
+    const next = name.trim();
+    if (next === "" || next === savedProfile.name) {
+      setName(savedProfile.name);
+      return;
+    }
+    savedProfile = { name: next };
+    setName(next);
+    toast.success("Réglage enregistré", { id: "reglage-enregistre" });
+  };
   return (
     <SettingsSection title="Profil" description="Le nom affiché dans l'application.">
       <FieldGroup>
@@ -97,8 +108,10 @@ function ProfileSection({ draft, setDraft }: { draft: Profile; setDraft: (p: Pro
             <Input
               id="name"
               maxLength={100}
-              value={draft.name}
-              onChange={(e) => setDraft({ name: e.target.value })}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={commit}
+              onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             />
           </Field>
           <Field>
@@ -314,30 +327,14 @@ function DangerZone() {
   );
 }
 
-/** Compte (D271, D272) : le nom s'enregistre avec la page ; le reste agit seul. */
+/** Compte (D271–D273) : chaque action agit seule ; le nom s'enregistre en quittant le champ. */
 export function AccountSettings() {
-  const edit = useEditable<Profile>({
-    initial: () => savedProfile,
-    isDirty: (d) => d.name.trim() !== savedProfile.name,
-    count: (d) => Number(d.name.trim() !== savedProfile.name),
-    blocker: (d) => (d.name.trim() === "" ? "Donnez votre nom" : null),
-    onSave: (d) => {
-      savedProfile = { name: d.name.trim() };
-    },
-    what: "votre profil",
-    savedMessage: "Profil enregistré",
-  });
   return (
-    <SettingsPage
-      title="Compte"
-      description="Profil, mot de passe et appareils connectés."
-      actions={edit.actions(null, { status: false })}
-    >
-      <ProfileSection draft={edit.draft} setDraft={(p) => edit.setDraft(p)} />
+    <SettingsPage title="Compte" description="Profil, mot de passe et appareils connectés.">
+      <ProfileSection />
       <PasswordSection />
       <SessionsSection />
       <DangerZone />
-      {edit.guard}
     </SettingsPage>
   );
 }

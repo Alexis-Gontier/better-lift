@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useEditable } from "@/components/editable";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -10,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SettingsPage, SettingsSection } from "./settings-section";
+import { SettingsPage, SettingsSection, useSetting } from "./settings-section";
 
 type Appearance = "clair" | "sombre" | "systeme";
 const THEME_KEY = "better-lift-theme"; // la clé que lit le script de `index.html`
@@ -155,26 +154,16 @@ function AppearanceSection() {
 }
 
 export function PreferencesSettings() {
-  const edit = useEditable<Formats>({
-    initial: () => savedFormats,
-    isDirty: (d) => JSON.stringify(d) !== JSON.stringify(savedFormats),
-    count: (d) =>
-      (Object.keys(d) as (keyof Formats)[]).filter((k) => d[k] !== savedFormats[k]).length,
-    onSave: (d) => {
-      savedFormats = d;
+  const [formats, setFormats] = useSetting(
+    () => savedFormats,
+    (f) => {
+      savedFormats = f;
     },
-    what: "ces préférences",
-    savedMessage: "Préférences enregistrées",
-  });
+  );
   return (
-    <SettingsPage
-      title="Préférences"
-      description="Fuseau, unités, formats et apparence."
-      actions={edit.actions(null, { status: false })}
-    >
-      <Units draft={edit.draft} setDraft={(f) => edit.setDraft(f)} />
+    <SettingsPage title="Préférences" description="Fuseau, unités, formats et apparence.">
+      <Units draft={formats} setDraft={setFormats} />
       <AppearanceSection />
-      {edit.guard}
     </SettingsPage>
   );
 }
