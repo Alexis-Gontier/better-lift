@@ -136,6 +136,9 @@ Constats de départ :
   Exercices lit le catalogue (paginé, recherche et filtres côté serveur) et y joint ces
   valeurs ; le tri « Récents » ne montre que les exercices faits. Monté AVANT le catalogue,
   sinon `/:slug` prendrait « faits » pour un slug.
+  **Précision** (2026-10-18, au lot Exercices) : chaque exercice fait porte aussi sa ligne du
+  catalogue (`ExerciceResume` : nom, groupe, équipement, image), la plus récente d'abord. Le tri
+  « récents » liste ainsi les faits sans charger tout le catalogue.
 - **D313 — Fuseau et unités, en un seul endroit** (2026-10-18). Sans champ en base (D294), le
   web prend le fuseau du navigateur (`Intl.DateTimeFormat().resolvedOptions().timeZone`) et le
   système métrique, fixés dans `lib/locale.ts` : tout découpage de jour et toute charge passent
