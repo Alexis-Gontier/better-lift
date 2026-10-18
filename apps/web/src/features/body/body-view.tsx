@@ -1,8 +1,7 @@
-import { Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,27 +21,23 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filled } from "@/features/routines/routine-editor";
-import { formatKg, formatNumber, formatShortDay, formatWeekdayDay } from "@/lib/format";
+import {
+  formatKg,
+  formatNumber,
+  formatPrecise,
+  formatShortDay,
+  formatWeekdayDay,
+} from "@/lib/format";
 import { parseKg } from "@/lib/parse";
 import { cn } from "@/lib/utils";
-import {
-  averageDelta,
-  goalEta,
-  type Measurement,
-  mockMeasurements,
-  WEIGHT_GOAL,
-} from "@/mocks/body";
-import { inPeriod, type Period } from "@/mocks/progress";
+import { averageDelta, goalEta, relativeStrength, WEIGHT_GOAL, weightAt } from "@/mocks/body";
+import { exerciseHistory } from "@/mocks/exercise-history";
+import { best1rmOf } from "@/mocks/exercise-stats";
+import { exerciseBySlug } from "@/mocks/exercises";
+import { usePins } from "@/mocks/pins";
+import { inPeriod, type Period, periodStart } from "@/mocks/progress";
 import { movingAverage } from "@/mocks/stats";
 import { TODAY } from "@/mocks/today";
 import { mockWeights } from "@/mocks/weights";
@@ -290,73 +285,22 @@ function WeightJournal({
   );
 }
 
-/** Une mesure : sa dernière valeur, son écart sur six mois et sa petite courbe. */
-function MeasurementCard({ m }: { m: Measurement }) {
-  const last = m.points.at(-1)?.value ?? 0;
-  const first = m.points[0]?.value ?? last;
-  const config = { value: { label: m.label, color: "var(--foreground)" } } satisfies ChartConfig;
-  return (
-    <Card size="sm" className="gap-2 px-4">
-      <div className="flex items-start justify-between gap-3">
-        <span className="flex flex-col">
-          <span className="text-muted-foreground text-xs">{m.label}</span>
-          <span className="font-semibold text-xl tabular-nums">
-            {formatNumber(last)} {m.unit}
-          </span>
-        </span>
-        <Badge variant="outline" className="shrink-0 tabular-nums">
-          {signed(last - first, m.unit)}
-        </Badge>
-      </div>
-      <ChartContainer config={config} className="aspect-auto h-12 w-full">
-        <LineChart data={m.points} margin={{ top: 4, bottom: 4, left: 0, right: 0 }}>
-          <YAxis hide domain={["dataMin - 0.5", "dataMax + 0.5"]} />
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                labelFormatter={(_, p) => formatShortDay(String(p[0]?.payload?.date ?? ""))}
-                formatter={(v) => `${formatNumber(Number(v))} ${m.unit}`}
-              />
-            }
-          />
-          <Line
-            dataKey="value"
-            type="monotone"
-            stroke="var(--color-value)"
-            strokeWidth={1.5}
-            dot={{ r: 2 }}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ChartContainer>
-      <span className="text-muted-foreground text-xs">
-        Mesurée le {formatShortDay(m.points.at(-1)?.date ?? TODAY)}, sur six mois
-      </span>
-    </Card>
-  );
-}
-
-export type Entry = "poids" | "mesure";
-
-/** La saisie du jour, pesée ou mesure : là dès l'état vide, pour la première pesée. */
+/** La pesée du jour : là dès l'état vide, pour la première pesée. */
 export function EntryDialog({
-  entry,
+  open,
   onOpenChange,
   onWeight,
-  onMeasure,
 }: {
-  entry: Entry | null;
+  open: boolean;
   onOpenChange: (o: boolean) => void;
   onWeight: (kg: number) => void;
-  onMeasure: (id: string, value: number) => void;
 }) {
   const [value, setValue] = useState("");
-  const [measure, setMeasure] = useState(mockMeasurements[0]?.id ?? "bras");
   const number = parseKg(value);
   const valid = number !== null && number > 0;
   return (
     <Dialog
-      open={entry !== null}
+      open={open}
       onOpenChange={(o) => {
         onOpenChange(o);
         if (!o) setValue("");
@@ -364,38 +308,17 @@ export function EntryDialog({
     >
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{entry === "mesure" ? "Noter une mesure" : "Noter mon poids"}</DialogTitle>
+          <DialogTitle>Noter mon poids</DialogTitle>
           <DialogDescription>Pour aujourd'hui, {formatWeekdayDay(TODAY)}.</DialogDescription>
         </DialogHeader>
         <FieldGroup>
-          {entry === "mesure" && (
-            <Field>
-              <FieldLabel htmlFor="measure-kind">Mesure</FieldLabel>
-              <Select value={measure} onValueChange={setMeasure}>
-                <SelectTrigger id="measure-kind" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {mockMeasurements.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
           <Field>
-            <FieldLabel htmlFor="entry-value">
-              {entry === "mesure" ? "Valeur (cm)" : "Poids (kg)"}
-            </FieldLabel>
+            <FieldLabel htmlFor="entry-value">Poids (kg)</FieldLabel>
             <Input
               id="entry-value"
               inputMode="decimal"
               autoFocus
-              placeholder={entry === "mesure" ? "38,5" : "79,4"}
+              placeholder="79,4"
               value={value}
               onChange={(e) => setValue(e.target.value)}
             />
@@ -409,8 +332,7 @@ export function EntryDialog({
             disabled={!valid}
             onClick={() => {
               if (number === null) return;
-              if (entry === "mesure") onMeasure(measure, number);
-              else onWeight(number);
+              onWeight(number);
               setValue("");
               onOpenChange(false);
             }}
@@ -424,62 +346,81 @@ export function EntryDialog({
 }
 
 /**
- * Corps (D268), une seule page : à gauche le poids (bandeau, courbe sur la période) puis les
- * mensurations ; à droite le journal des pesées. Le wireframe tient tout en mémoire.
+ * La force rapportée au poids (D281) : pour chaque exercice épinglé chargé, le meilleur 1RM estimé
+ * divisé par le poids moyen, aujourd'hui et au début de la période.
+ */
+function RelativeStrength({ weights, period }: { weights: Weighing[]; period: Period }) {
+  const { slugs } = usePins();
+  const start = periodStart(period, TODAY);
+  const nowWeight = weightAt(weights, TODAY);
+  const thenWeight = weightAt(weights, start);
+  const rows = slugs.flatMap((slug) => {
+    const history = exerciseHistory(slug);
+    const best = (until: string) =>
+      Math.max(0, ...history.filter((p) => p.date <= until).map(best1rmOf));
+    const now = nowWeight ? relativeStrength(best(TODAY), nowWeight) : 0;
+    if (now === 0) return [];
+    const then = thenWeight ? relativeStrength(best(start), thenWeight) : 0;
+    return [
+      { slug, name: exerciseBySlug(slug)?.name ?? slug, now, delta: then > 0 ? now - then : null },
+    ];
+  });
+  return (
+    <Card className="gap-0 pb-0">
+      <CardHeader className="pb-3">
+        <CardTitle>Force relative</CardTitle>
+        <CardDescription>1RM estimé des épinglés, en fois le poids de corps</CardDescription>
+      </CardHeader>
+      {rows.length === 0 ? (
+        <p className="border-t px-4 py-6 text-center text-muted-foreground text-sm">
+          Épinglez un exercice chargé pour voir sa force relative.
+        </p>
+      ) : (
+        rows.map((r) => (
+          <div key={r.slug} className="flex items-center gap-3 border-t px-4 py-2.5">
+            <span className="min-w-0 flex-1 truncate text-sm">{r.name}</span>
+            <span className="shrink-0 font-medium text-sm tabular-nums">
+              {formatPrecise(r.now)} × PDC
+            </span>
+            <span className="w-24 shrink-0 text-right text-muted-foreground text-xs tabular-nums">
+              {r.delta === null ? "—" : `${signed(r.delta, "")} sur la période`}
+            </span>
+          </div>
+        ))
+      )}
+    </Card>
+  );
+}
+
+/**
+ * Corps (D281), une seule page : à gauche le poids (bandeau, courbe sur la période) puis la force
+ * relative ; à droite le journal des pesées. Le wireframe tient tout en mémoire.
  */
 export function BodyView({
   period,
-  entry,
-  onEntry,
+  entering,
+  onEntering,
 }: {
   period: Period;
-  entry: Entry | null;
-  onEntry: (entry: Entry | null) => void;
+  entering: boolean;
+  onEntering: (open: boolean) => void;
 }) {
   const [weights, setWeights] = useState<Weighing[]>(mockWeights);
-  const [measurements, setMeasurements] = useState(mockMeasurements);
-
   const addWeight = (kg: number) => {
     setWeights((w) => [...w.filter((x) => x.date !== TODAY), { date: TODAY, kg }]);
     toast.success(`${formatKg(kg)} noté pour aujourd'hui`);
   };
-  const addMeasure = (id: string, value: number) =>
-    setMeasurements((ms) =>
-      ms.map((m) =>
-        m.id === id
-          ? { ...m, points: [...m.points.filter((p) => p.date !== TODAY), { date: TODAY, value }] }
-          : m,
-      ),
-    );
-
   return (
     <>
       <div className="grid items-start gap-4 @4xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex min-w-0 flex-col gap-4">
           <WeightFigures weights={weights} />
           <WeightChart weights={weights} period={period} />
-          <section className="flex flex-col gap-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="font-medium text-lg">Mensurations</h2>
-              <Button variant="outline" size="sm" onClick={() => onEntry("mesure")}>
-                <Plus data-icon="inline-start" /> Noter une mesure
-              </Button>
-            </div>
-            <div className="grid gap-3 @xl:grid-cols-2">
-              {measurements.map((m) => (
-                <MeasurementCard key={m.id} m={m} />
-              ))}
-            </div>
-          </section>
+          <RelativeStrength weights={weights} period={period} />
         </div>
         <WeightJournal weights={weights} onChange={setWeights} />
       </div>
-      <EntryDialog
-        entry={entry}
-        onOpenChange={(o) => !o && onEntry(null)}
-        onWeight={addWeight}
-        onMeasure={addMeasure}
-      />
+      <EntryDialog open={entering} onOpenChange={onEntering} onWeight={addWeight} />
     </>
   );
 }
@@ -491,11 +432,7 @@ export function BodySkeleton() {
       <div className="flex flex-col gap-4">
         <Skeleton className="h-28 rounded-xl" />
         <Skeleton className="h-80 rounded-xl" />
-        <div className="grid gap-3 @xl:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
-          ))}
-        </div>
+        <Skeleton className="h-48 rounded-xl" />
       </div>
       <Skeleton className="h-[36rem] rounded-xl" />
     </div>

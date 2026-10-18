@@ -14,7 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { BodySkeleton, BodyView, type Entry, EntryDialog } from "@/features/body/body-view";
+import { BodySkeleton, BodyView, EntryDialog } from "@/features/body/body-view";
 import { PeriodToggle } from "@/features/progress/period-toggle";
 import { formatKg } from "@/lib/format";
 import type { Period } from "@/mocks/progress";
@@ -24,18 +24,18 @@ export const Route = createFileRoute("/_app/body")({
   component: BodyPage,
 });
 
-/** Corps (D268) : une seule page, sans onglets ; la période et la pesée en tête. */
+/** Corps (D281) : le poids, sur une page ; la période et la pesée en tête. */
 function BodyPage() {
   const { state } = useProto();
   const [period, setPeriod] = useState<Period>("3m");
-  const [entry, setEntry] = useState<Entry | null>(null);
+  const [entering, setEntering] = useState(false);
   return (
     <Page
       title="Corps"
       actions={
         <>
           <PeriodToggle value={period} onChange={setPeriod} />
-          <Button size="sm" onClick={() => setEntry("poids")}>
+          <Button size="sm" onClick={() => setEntering(true)}>
             Noter mon poids
           </Button>
         </>
@@ -56,18 +56,19 @@ function BodyPage() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={() => setEntry("poids")}>Noter mon poids</Button>
+            <Button onClick={() => setEntering(true)}>Noter mon poids</Button>
           </EmptyContent>
         </Empty>
       )}
-      {state === "nominal" && <BodyView period={period} entry={entry} onEntry={setEntry} />}
+      {state === "nominal" && (
+        <BodyView period={period} entering={entering} onEntering={setEntering} />
+      )}
       {/* Hors de l'état nominal, la saisie reste ouvrable : c'est la première pesée. */}
       {state !== "nominal" && (
         <EntryDialog
-          entry={entry}
-          onOpenChange={(o) => !o && setEntry(null)}
+          open={entering}
+          onOpenChange={setEntering}
           onWeight={(kg) => toast.success(`${formatKg(kg)} noté pour aujourd'hui`)}
-          onMeasure={() => toast.success("Mesure notée")}
         />
       )}
     </Page>

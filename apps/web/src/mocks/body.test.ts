@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { averageDelta, goalEta } from "./body";
+import { averageDelta, goalEta, relativeStrength, weightAt } from "./body";
 
 describe("averageDelta", () => {
   it("compare la moyenne sur 7 jours d'aujourd'hui à celle d'il y a N jours", () => {
@@ -25,5 +25,25 @@ describe("goalEta", () => {
   it("ne dit rien si l'on s'éloigne de l'objectif, ou s'il est atteint", () => {
     expect(goalEta(80, 78, 0.3, "2026-10-16")).toBeNull();
     expect(goalEta(78, 78, -0.3, "2026-10-16")).toBeNull();
+  });
+});
+describe("relativeStrength", () => {
+  it("rapporte le 1RM au poids de corps, à deux décimales", () => {
+    expect(relativeStrength(92, 80)).toBe(1.15);
+    expect(relativeStrength(92, 0)).toBe(0);
+  });
+});
+
+describe("weightAt", () => {
+  const weights = [
+    { date: "2026-10-01", kg: 80 },
+    { date: "2026-10-02", kg: 82 },
+    { date: "2026-10-10", kg: 90 },
+  ];
+  it("moyenne les sept dernières pesées jusqu'à la date", () => {
+    expect(weightAt(weights, "2026-10-05")).toBe(81);
+  });
+  it("rien avant la première pesée", () => {
+    expect(weightAt(weights, "2026-09-01")).toBeNull();
   });
 });

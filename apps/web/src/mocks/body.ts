@@ -1,6 +1,4 @@
-import { seeded } from "./random";
 import { addDays, movingAverage } from "./stats";
-import { TODAY } from "./today";
 
 type Weighing = { date: string; kg: number };
 
@@ -15,39 +13,16 @@ export function averageDelta(weights: Weighing[], days: number): number {
   return last === undefined || before === undefined ? 0 : last - before;
 }
 
-export type Measurement = {
-  id: string;
-  label: string;
-  unit: string;
-  points: { date: string; value: number }[];
-};
-
-function series(
-  id: string,
-  label: string,
-  start: number,
-  monthly: number,
-  seed: number,
-): Measurement {
-  const rand = seeded(seed);
-  return {
-    id,
-    label,
-    unit: "cm",
-    points: Array.from({ length: 6 }, (_, i) => ({
-      date: addDays(TODAY, (i - 5) * 30),
-      value: Math.round((start + monthly * i + (rand() - 0.5) * 0.6) * 10) / 10,
-    })),
-  };
+/** Le 1RM estimé rapporté au poids de corps (D281), à deux décimales. */
+export function relativeStrength(oneRm: number, bodyweight: number): number {
+  return bodyweight > 0 ? Math.round((oneRm / bodyweight) * 100) / 100 : 0;
 }
 
-/** Une mesure par mois sur six mois : les bras et la poitrine montent, la taille descend. */
-export const mockMeasurements: Measurement[] = [
-  series("bras", "Tour de bras", 37.5, 0.25, 11),
-  series("taille", "Tour de taille", 86, -0.6, 12),
-  series("cuisse", "Tour de cuisse", 58, 0.2, 13),
-  series("poitrine", "Tour de poitrine", 102, 0.3, 14),
-];
+/** Le poids à une date : la moyenne des sept dernières pesées jusqu'à elle. */
+export function weightAt(weights: readonly Weighing[], date: string): number | null {
+  const upTo = weights.filter((w) => w.date <= date).slice(-7);
+  return upTo.length ? upTo.reduce((n, w) => n + w.kg, 0) / upTo.length : null;
+}
 
 export const WEIGHT_GOAL = 78;
 
