@@ -1,6 +1,6 @@
 # Brancher le web sur l'API, et auditer l'API
 
-Date : 2026-10-18. Suit `2026-10-18-web-records-design.md` (D274–D292). Décisions D293 à D309.
+Date : 2026-10-18. Suit `2026-10-18-web-records-design.md` (D274–D292). Décisions D293 à D313.
 
 ## 1. Contexte
 
@@ -37,6 +37,9 @@ Constats de départ :
   `PUT /routines/ordre`, `GET` et `DELETE /seances/:id` restent : le web les reprend. Les routes
   restantes sont relues : code de statut explicite à chaque `c.json` (le RPC en tire des types
   discriminés), forme `{ erreur }`, un test par code.
+  **Précision** : le tableau de bord du web en production (`main`) lit encore
+  `GET /stats/periode`. L'audit retire `GET /stats` et `GET /stats/exercices` ; `/stats/periode`
+  ne part qu'au lot Ménage du web, quand plus rien ne l'appelle.
 - **D296 — Un dossier est une table** (2026-10-18). `Dossier` (`id`, `userId`, `nom`
   `VarChar(60)` unique par compte, `position`) ; `Routine.dossierId` nullable, `onDelete:
   SetNull` (supprimer un dossier range ses routines dans « Sans dossier », comme le
@@ -57,7 +60,9 @@ Constats de départ :
   de chantier. Les champs prennent les noms de l'API (`nom`, `series`, `chargeKg`…).
 - **D300 — Une couche de requêtes par feature** (2026-10-18). `features/<x>/queries.ts` porte
   les `queryOptions` (une fabrique de clés par feature) et les mutations. Les loaders de
-  route appellent `queryClient.ensureQueryData`, les composants `useSuspenseQuery`. Une
+  route lancent `queryClient.prefetchQuery` sans l'attendre, les composants lisent par
+  `useQuery` et choisissent leur état par `etatAffiche` (D303) : pas de Suspense, qui
+  sortirait chargement et erreur de la page et rendrait `?etat=chargement` impossible. Une
   réponse non `ok` devient une `ErreurApi` (message tiré de `{ erreur }`, statut gardé) par un
   seul utilitaire, `lib/api.ts`. Le `QueryClient` est dans le contexte du routeur. Règle déjà
   payée : toute donnée de la clé de lecture est dans la clé invalidée à l'écriture.
@@ -73,7 +78,9 @@ Constats de départ :
   suppressions en attente. Pas d'endpoint de restauration. Vaut pour routines, dossiers et
   séances.
 - **D303 — Les quatre états restent** (2026-10-18). Chargement, erreur et vide viennent de la
-  requête ; `?etat=` les force toujours, pour la revue (CLAUDE.md).
+  requête ; `?etat=` les force toujours, pour la revue (CLAUDE.md). Une seule fonction pure,
+  `etatAffiche(force, requete, vide)` dans `components/states/`, testée, fait ce choix pour
+  toutes les pages.
 - **D304 — Une suite Playwright de bout en bout** (2026-10-18). Dans `apps/web/e2e/`,
   `pnpm --filter web e2e`. Elle tourne en local contre l'API de développement (branche Neon
   `dev`), sur un compte dédié `e2e@better-lift.local` dont l'adresse et le mot de passe viennent
@@ -81,7 +88,8 @@ Constats de départ :
   Un projet `setup` se connecte une fois et garde l'état (`storageState`). Chaque test crée ce
   qu'il lit, préfixé `e2e-`, et le supprime. Sélecteurs par rôle et libellé. Pas dans la CI :
   elle n'a pas de base ; on l'y mettra avec une branche Neon éphémère si le besoin vient.
-- **D305 — Trois branches** (2026-10-18). `chore/api-audit` et `feat/api-dossiers` partent de
+- **D305 — Trois branches** (2026-10-18). `chore/api-audit` et `feat/api-web` (dossiers, notes
+  et lectures de D310–D312 ; d'abord nommée `feat/api-dossiers`) partent de
   `main` (indépendantes du web, chacune sa PR) ; le branchement du web s'empile sur
   `feat/web-wireframe`, dans `feat/web-api`, une fois les deux premières fusionnées et
   rebasées.
@@ -113,12 +121,31 @@ Constats de départ :
   Knip ; restent `components/ui/` (registre shadcn) et `lib/utils.ts`. Les fichiers jamais
   importés partent : `kibo-ui/contribution-graph` (calendrier retiré, D288), `ui/calendar`,
   `ui/popover` — à revérifier en fin de chantier, les retraits de D294 en libéreront d'autres.
+  Les exports de `packages/shared/src/index.ts` qu'aucune application n'importe sont retirés
+  de l'index (Knip `includeEntryExports` sur `shared`), et leur code s'il ne sert pas en interne.
+- **D310 — Une routine sait quand elle a été faite** (2026-10-18). `RoutineResume` gagne
+  `derniereSeance` (ISO ou `null`) et `dossierId` : la liste du web les affiche sans lire les
+  séances.
+- **D311 — Les séances se filtrent par routine** (2026-10-18). `GET /seances` accepte
+  `routine=<id>` ; les stats d'une routine (D280 : séances, volume et sa tendance, durée,
+  records, réalisation) se calculent sur ces `SeanceResume` (`debut`, `fin`, `volumeKg`,
+  `nbRecords`, `seriesFaites`) face aux séries prévues de la routine. Le calcul vit dans
+  `features/routines/`, testé.
+- **D312 — Les exercices faits** (2026-10-18). `GET /exercices/faits`, derrière une session :
+  par exercice que l'utilisateur a fait, `slug`, `derniereFois`, `meilleur1Rm`. La page
+  Exercices lit le catalogue (paginé, recherche et filtres côté serveur) et y joint ces
+  valeurs ; le tri « Récents » ne montre que les exercices faits. Monté AVANT le catalogue,
+  sinon `/:slug` prendrait « faits » pour un slug.
+- **D313 — Fuseau et unités, en un seul endroit** (2026-10-18). Sans champ en base (D294), le
+  web prend le fuseau du navigateur (`Intl.DateTimeFormat().resolvedOptions().timeZone`) et le
+  système métrique, fixés dans `lib/locale.ts` : tout découpage de jour et toute charge passent
+  par là (`formaterCharge`, `lireCharge`, calendrier de `shared`).
 
 ## 3. Architecture côté web
 
 ```
 apps/web/src/
-  routes/              minces : validateSearch, garde, loader (ensureQueryData), état
+  routes/              minces : validateSearch, garde, loader (prefetchQuery), état
   features/<x>/
     queries.ts         clés, queryOptions, mutations
     <x>-*.tsx          composants de la page
@@ -132,7 +159,7 @@ apps/web/src/
   e2e/                 setup, un fichier par page
 ```
 
-Flux : route → loader → `ensureQueryData(xQuery())` → composant `useSuspenseQuery` → mutation
+Flux : route → loader → `prefetchQuery(xQuery())` → composant `useQuery` + `etatAffiche` → mutation
 → invalidation de la clé de la feature (ou mise à jour du cache quand la réponse porte la
 donnée). Erreur : `ErreurApi` → `errorComponent` de la route (état erreur), 404 → état
 introuvable, 401 → retour à la connexion.
@@ -146,8 +173,8 @@ donc restent sous `basepath: "/app"` sans préfixe en dur.
 **Branche `chore/api-audit`** : retrait des routes `stats` (D295), relecture des codes de statut et
 des tests, Knip, `/verif`.
 
-**Branche `feat/api-dossiers`** : migration (D296), services et routes (D297), `shared` (D298),
-tests de service et de route, vérification que le mobile édite une routine sans perdre note
+**Branche `feat/api-web`** : migration (D296), services et routes (D297), `shared` (D298),
+lectures pour le web (D310–D312), tests de service et de route, vérification que le mobile édite une routine sans perdre note
 ni dossier.
 
 **Branche `feat/web-api`**, un commit et des captures par lot :
@@ -167,7 +194,7 @@ ni dossier.
 6. **Paramètres** : objectif et repos (`/preferences`), export CSV. E2E : enregistrer un
    objectif, le relire après rechargement.
    Chaque lot déménage d'abord la logique de `mocks/` qu'il consomme (D307).
-7. **Ménage** : `mocks/` supprimé, Knip propre (revérifier D309), `/verif`, une passe E2E
+7. **Ménage** : `mocks/` supprimé, `GET /stats/periode` retiré de l'API (D295), Knip propre (revérifier D309), `/verif`, une passe E2E
    complète.
 
 ## 5. Vérification
