@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LogOut, Palette, Search, Settings } from "lucide-react";
+import { LogOut, Search, Settings } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,22 +8,15 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { APPEARANCES, type Appearance, setAppearance, useAppearance } from "@/lib/theme";
 import { initials, mockAccount } from "@/mocks/account";
 import { AppBreadcrumb } from "./app-breadcrumb";
 
 function AccountMenu() {
-  const appearance = useAppearance();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,30 +38,12 @@ function AccountMenu() {
               <Settings /> Paramètres
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <Palette /> Thème
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuRadioGroup
-                value={appearance}
-                onValueChange={(v) => setAppearance(v as Appearance)}
-              >
-                {APPEARANCES.map((a) => (
-                  <DropdownMenuRadioItem key={a.value} value={a.value}>
-                    {a.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+          <DropdownMenuItem asChild>
+            <Link to="/login">
+              <LogOut /> Se déconnecter
+            </Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/login">
-            <LogOut /> Se déconnecter
-          </Link>
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
