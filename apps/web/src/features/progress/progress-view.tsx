@@ -1,29 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Trophy } from "lucide-react";
 import { Line, LineChart, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RecordsTable } from "@/features/records/records-table";
-import {
-  formatKg,
-  formatLoad,
-  formatMinutes,
-  formatNumber,
-  formatShortDay,
-  plural,
-} from "@/lib/format";
+import { formatKg, formatMinutes, formatNumber, formatShortDay, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { best1rmOf } from "@/mocks/exercise-stats";
@@ -280,82 +262,10 @@ function Regularity({ sessions, period }: { sessions: MockSession[]; period: Per
   );
 }
 
-/** Les derniers records de la période ; le tableau complet s'ouvre à côté (D267). */
-function RecentRecords({ sessions, period }: { sessions: MockSession[]; period: Period }) {
-  const recent = sessions
-    .flatMap((s) =>
-      sessionDetail(s).exercises.flatMap((e) =>
-        e.sets
-          .filter((x) => x.record)
-          .map((x) => ({
-            id: `${s.id}-${e.slug}`,
-            slug: e.slug,
-            set: x,
-            date: s.date,
-            session: s.id,
-          })),
-      ),
-    )
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 8);
-  return (
-    <Card className="gap-0 pb-0">
-      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
-        <div className="flex flex-col gap-1">
-          <CardTitle>Derniers records</CardTitle>
-          <CardDescription>Le 1RM estimé battu, série par série</CardDescription>
-        </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm">
-              Tous les records
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-full overflow-y-auto sm:max-w-3xl">
-            <SheetHeader>
-              <SheetTitle>Tous les records</SheetTitle>
-              <SheetDescription>Par exercice, sur la période choisie.</SheetDescription>
-            </SheetHeader>
-            <div className="@container flex flex-col gap-4 px-4 pb-6">
-              <RecordsTable period={period} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </CardHeader>
-      {recent.length === 0 ? (
-        <p className="border-t px-4 py-6 text-center text-muted-foreground text-sm">
-          Aucun record battu sur la période.
-        </p>
-      ) : (
-        recent.map((r) => (
-          <Link
-            key={r.id}
-            to="/history/$id"
-            params={{ id: r.session }}
-            className="flex items-center gap-3 border-t px-4 py-2.5 transition-colors hover:bg-muted/40"
-          >
-            <Trophy className="size-4 shrink-0 text-muted-foreground" />
-            <span className="min-w-0 flex-1 truncate text-sm">
-              {exerciseBySlug(r.slug)?.name ?? r.slug}
-            </span>
-            <span className="shrink-0 text-sm tabular-nums">
-              {formatLoad(r.set.kg)} × {r.set.reps}
-            </span>
-            <span className="w-16 shrink-0 text-right text-muted-foreground text-xs">
-              {formatShortDay(r.date)}
-            </span>
-            <ArrowUpRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
-        ))
-      )}
-    </Card>
-  );
-}
-
 /**
  * Progression (D267) : est-ce que je progresse ? D'abord les chiffres de la période face à la
- * précédente, puis la force exercice par exercice, la dose par muscle, la régularité et les
- * derniers records.
+ * précédente, puis la force exercice par exercice, la dose par muscle et la régularité. Les
+ * records ont leur page (D278).
  */
 export function ProgressView({ sessions, period }: { sessions: MockSession[]; period: Period }) {
   const current = inPeriod(sessions, period, TODAY);
@@ -365,10 +275,7 @@ export function ProgressView({ sessions, period }: { sessions: MockSession[]; pe
       <Strength sessions={current} period={period} />
       <div className="grid gap-4 @4xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <SetsPerMuscle sessions={current} period={period} />
-        <div className="flex flex-col gap-4">
-          <Regularity sessions={sessions} period={period} />
-          <RecentRecords sessions={current} period={period} />
-        </div>
+        <Regularity sessions={sessions} period={period} />
       </div>
     </>
   );
@@ -387,10 +294,7 @@ export function ProgressSkeleton() {
       </div>
       <div className="grid gap-4 @4xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Skeleton className="h-96 rounded-xl" />
-        <div className="flex flex-col gap-4">
-          <Skeleton className="h-40 rounded-xl" />
-          <Skeleton className="h-52 rounded-xl" />
-        </div>
+        <Skeleton className="h-40 rounded-xl" />
       </div>
     </>
   );
