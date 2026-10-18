@@ -2,7 +2,6 @@
 export const mockAccount = {
   name: "Alexis Gontier",
   email: "alexis@example.com",
-  timezone: "Europe/Paris",
 };
 
 /** Les initiales d'un nom : « Alexis Gontier » → « AG ». */

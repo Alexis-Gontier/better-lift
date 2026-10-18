@@ -26,8 +26,12 @@ import { SettingsPage, SettingsSection } from "./settings-section";
 
 const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
 const RESTS = ["60", "90", "120", "150", "180"];
+const NONE = "aucun";
 
 type Training = {
+  /** Séances visées par semaine, 1 à 7, ou aucune (`Preferences.objectifHebdo`). */
+  weekly: string;
+  /** Repos des exercices sans repos propre, ou aucun (`Preferences.reposDefautSec`). */
   rest: string;
   rpe: boolean;
   increment: string;
@@ -38,6 +42,7 @@ type Training = {
 
 /** Le réglage enregistré, en mémoire : l'API le tiendra sur le compte. */
 let savedTraining: Training = {
+  weekly: "3",
   rest: "120",
   rpe: false,
   increment: "2.5",
@@ -77,8 +82,27 @@ export function TrainingSettings() {
       description="Repos, charges et calculs proposés partout."
       actions={edit.actions(null, { status: false })}
     >
-      <SettingsSection title="Séries et repos">
+      <SettingsSection title="Objectif et repos">
         <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="weekly">Objectif par semaine</FieldLabel>
+            <Select value={d.weekly} onValueChange={(weekly) => set({ weekly })}>
+              <SelectTrigger id="weekly" className="w-full sm:w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={NONE}>Pas d'objectif</SelectItem>
+                  {["1", "2", "3", "4", "5", "6", "7"].map((n) => (
+                    <SelectItem key={n} value={n}>
+                      {n} séance{n === "1" ? "" : "s"}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <FieldDescription>Suivi sur l'Accueil et dans la régularité.</FieldDescription>
+          </Field>
           <Field>
             <FieldLabel htmlFor="rest">Repos par défaut</FieldLabel>
             <Select value={d.rest} onValueChange={(rest) => set({ rest })}>
@@ -87,6 +111,7 @@ export function TrainingSettings() {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
+                  <SelectItem value={NONE}>Aucun</SelectItem>
                   {RESTS.map((r) => (
                     <SelectItem key={r} value={r}>
                       {formatRest(Number(r))}
@@ -95,7 +120,9 @@ export function TrainingSettings() {
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <FieldDescription>Proposé à chaque nouvel exercice d'une routine.</FieldDescription>
+            <FieldDescription>
+              Proposé à chaque nouvel exercice d'une routine, et pris quand une routine n'en a pas.
+            </FieldDescription>
           </Field>
           <Field orientation="horizontal">
             <FieldContent>
