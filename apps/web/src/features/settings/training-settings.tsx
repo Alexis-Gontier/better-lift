@@ -51,6 +51,10 @@ let savedTraining: Training = {
   formula: "epley",
 };
 
+/** Les séances visées par semaine, lues par l'Accueil ; `null` sans objectif. */
+export const weeklyGoal = (): number | null =>
+  savedTraining.weekly === NONE ? null : Number(savedTraining.weekly);
+
 /**
  * Entraînement (D271, D273) : objectif et repos, charges et disques, formule du 1RM ; chaque
  * choix s'enregistre aussitôt.

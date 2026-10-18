@@ -347,13 +347,14 @@ export const ContributionGraphCalendar = ({
 
   return (
     <div className={cn("max-w-full overflow-x-auto overflow-y-hidden", className)} {...props}>
+      {/* Retouche locale : le titre accessible en français. */}
       <svg
         className="block overflow-visible"
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         width={width}
       >
-        <title>Contribution Graph</title>
+        <title>Calendrier d'assiduité</title>
         {!hideMonthLabels && (
           <g className="fill-current">
             {monthLabels.map(({ label, weekIndex }) => (

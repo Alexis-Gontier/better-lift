@@ -108,6 +108,16 @@ On reste dans le wireframe : données factices, quatre états par l'URL (`?etat=
   exercice inconnu se rattache au catalogue ou s'ignore. Côté API, rien à prévoir : `Exercise`
   reste un catalogue commun, sans propriétaire.
 
+- **D287 — L'Accueil est un tableau de bord** (2026-10-18, révise D283). Records, Progression
+  et Corps partis, il ne double plus rien. De haut en bas : quatre cartes chiffrées — la semaine
+  face à l'objectif des Paramètres (barre, semaines d'affilée), puis volume, séances et records
+  des 4 dernières semaines, chacun face aux 4 d'avant (pastille fléchée) ; le **calendrier
+  d'assiduité** façon GitHub sur 12 mois (Kibo *Contribution Graph*, une case par jour, lundi en
+  haut, teinte par quartile du volume du jour, calé sur la fin quand il défile) ; le **volume par
+  semaine** sur 16 semaines (barres) ; les **5 dernières séances** à côté des **séances par
+  routine** sur 3 mois. Les calculs vivent dans `mocks/dashboard.ts`, testés. Quatre états par
+  `?etat=` ; `vide` reprend l'accueil de l'Historique (import Hevy).
+
 ## 3. Barre latérale
 
 ```
