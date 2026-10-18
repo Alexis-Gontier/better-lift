@@ -20,13 +20,13 @@ export function routesExercices(depot: DepotExercices = depotPrisma) {
     .get("/", zValidator("query", requeteCatalogue), async (c) => {
       const requete = c.req.valid("query");
       const { exercices, total } = await depot.lister(requete);
-      return c.json({ exercices, total, page: requete.page, taille: requete.taille });
+      return c.json({ exercices, total, page: requete.page, taille: requete.taille }, 200);
     })
     .get("/:slug", async (c) => {
       const exercice = await depot.parSlug(c.req.param("slug"));
       // 404 et non 200 à corps vide : côté client, c'est ce qui distingue un
       // état d'erreur d'un écran blanc.
       if (!exercice) return c.json({ erreur: "Exercice introuvable." }, 404);
-      return c.json(exercice);
+      return c.json(exercice, 200);
     });
 }

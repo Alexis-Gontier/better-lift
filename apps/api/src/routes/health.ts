@@ -14,10 +14,13 @@ export const health = new Hono().get("/", async (c) => {
     db = false;
   }
 
-  return c.json({
-    status: db ? ("ok" as const) : ("degraded" as const),
-    version: process.env.npm_package_version ?? "0.0.0",
-    db,
-    uptimeSec: Math.floor((Date.now() - demarrage) / 1000),
-  });
+  return c.json(
+    {
+      status: db ? ("ok" as const) : ("degraded" as const),
+      version: process.env.npm_package_version ?? "0.0.0",
+      db,
+      uptimeSec: Math.floor((Date.now() - demarrage) / 1000),
+    },
+    200,
+  );
 });

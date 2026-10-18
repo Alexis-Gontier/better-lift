@@ -169,5 +169,7 @@ describe("routes des routines", () => {
     ).id;
     expect((await envoyer("PUT", "/routines/ordre", "alice", { ids: [b, a] })).status).toBe(204);
     expect((await envoyer("PUT", "/routines/ordre", "bob", { ids: [b, a] })).status).toBe(404);
+    // Un identifiant en double est une saisie fausse, pas une routine introuvable.
+    expect((await envoyer("PUT", "/routines/ordre", "alice", { ids: [a, a] })).status).toBe(400);
   });
 });

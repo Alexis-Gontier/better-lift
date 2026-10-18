@@ -43,15 +43,18 @@ export function routesSeances(
       .use(exigerSession(lireSession))
       .get("/", zValidator("query", pagination), async (c) => {
         const { page, taille } = c.req.valid("query");
-        return c.json({ ...(await lecture.lister(c.get("userId"), page, taille)), page, taille });
+        return c.json(
+          { ...(await lecture.lister(c.get("userId"), page, taille)), page, taille },
+          200,
+        );
       })
       // AVANT `/:id` : sinon « precedentes » serait pris pour un identifiant.
       .get("/precedentes", zValidator("query", listeSlugs), async (c) =>
-        c.json(await lecture.precedentes(c.get("userId"), c.req.valid("query").slugs)),
+        c.json(await lecture.precedentes(c.get("userId"), c.req.valid("query").slugs), 200),
       )
       .get("/:id", async (c) => {
         const seance = await lecture.lire(c.get("userId"), c.req.param("id"));
-        return seance ? c.json(seance) : c.json({ erreur: "Séance introuvable." }, 404);
+        return seance ? c.json(seance, 200) : c.json({ erreur: "Séance introuvable." }, 404);
       })
       .delete("/:id", async (c) => {
         const ok = await depot.supprimer(c.get("userId"), c.req.param("id"));

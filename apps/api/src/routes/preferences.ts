@@ -12,8 +12,8 @@ import type { DepotPreferences } from "../services/preferences.js";
 export function routesPreferences(depot: DepotPreferences, lireSession: LireSession) {
   return new Hono()
     .use(exigerSession(lireSession))
-    .get("/", async (c) => c.json(await depot.lire(c.get("userId"))))
+    .get("/", async (c) => c.json(await depot.lire(c.get("userId")), 200))
     .put("/", zValidator("json", preferences), async (c) =>
-      c.json(await depot.ecrire(c.get("userId"), c.req.valid("json"))),
+      c.json(await depot.ecrire(c.get("userId"), c.req.valid("json")), 200),
     );
 }
