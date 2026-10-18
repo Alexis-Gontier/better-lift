@@ -14,9 +14,9 @@ export {
   versBrouillon,
   versSaisie,
 } from "./brouillon-routine.js";
-export { cleJour, formatJour } from "./calendar.js";
+export { formatJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
-export { courbeUnRm, type Ecart, ecartSerie } from "./ecart.js";
+export { courbeUnRm } from "./ecart.js";
 export {
   ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
@@ -34,7 +34,7 @@ export {
   mettreEnFile,
 } from "./file-envoi.js";
 export { recordsBattus } from "./fin-seance.js";
-export { LIBELLE_ZONE, type ZoneTravaillee, zonesTravaillees } from "./muscles.js";
+export { LIBELLE_ZONE, zonesTravaillees } from "./muscles.js";
 export {
   ajusterSurPave,
   type ChampPave,
@@ -110,14 +110,11 @@ export {
 export {
   type Bilan,
   calculerPeriode,
-  type JourEntraine,
-  niveauxCalendrier,
   PERIODES,
   type Periode,
   type RecordRecent,
   SEMAINES_PERIODE,
   type StatsPeriode,
-  semainesTenues,
 } from "./stats.js";
 export {
   defaireGroupe,

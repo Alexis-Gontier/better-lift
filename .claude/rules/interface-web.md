@@ -5,6 +5,25 @@ paths:
 
 # Interface web
 
+## Arborescence (D306)
+
+Conception : [`2026-10-18-web-api-design.md`](../../docs/superpowers/specs/2026-10-18-web-api-design.md).
+
+- `routes/` : la route seule — `validateSearch`, garde, loader, choix de l'état. Aucune
+  logique, aucun JSX au-delà de l'appel au composant de la feature.
+- `features/<x>/` : tout ce qui est propre à une page — `queries.ts`, ses composants
+  (`<x>-*.tsx`), sa logique pure (`*.ts`) et ses tests à côté. Une feature n'importe pas
+  une autre feature ; ce qu'elles partagent monte dans `components/` ou `lib/`.
+- `components/` : les briques communes à plusieurs features (`list-detail`, `editable`,
+  `row-menu`, `body-map`…) ; `components/shell/` la coquille ; `components/states/` les
+  quatre états ; `components/ui/`, `reui/`, `kibo-ui/` le code des registres, non modifié
+  sauf nécessité. Les hooks communs vont dans `hooks/`.
+- `lib/` : sans React ni feature — config, client d'API, auth, formatage, lecture.
+- `packages/shared` : le calcul métier commun au web et au mobile (records, 1RM, volume,
+  dates civiles). Le web ne réécrit jamais un calcul que `shared` a déjà.
+- Knip voit tout le web (D309) : seuls `components/ui/` et `lib/utils.ts` sont des entrées ;
+  le code des registres (`reui/`, `kibo-ui/`) n'est dispensé que de ses exports inutilisés.
+
 ## Coquille (D69–D73, D81)
 
 Conception : [`2026-09-24-coquille-shadcn-design.md`](../../docs/superpowers/specs/2026-09-24-coquille-shadcn-design.md),

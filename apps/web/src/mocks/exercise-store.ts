@@ -13,10 +13,3 @@ export function useExercises(): MockExercise[] {
   version.use();
   return mockExercises;
 }
-
-/** Remplace l'exercice de même slug. */
-export function saveExercise(exercise: MockExercise) {
-  const i = mockExercises.findIndex((e) => e.slug === exercise.slug);
-  if (i !== -1) mockExercises[i] = exercise;
-  version.set(version.get() + 1);
-}

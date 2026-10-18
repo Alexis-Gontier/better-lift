@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  calculerPeriode,
-  niveauxCalendrier,
-  type SeancePeriode,
-  semainesRecentes,
-  semainesTenues,
-} from "./stats.js";
+import { calculerPeriode, type SeancePeriode, semainesRecentes } from "./stats.js";
 
 const PARIS = "Europe/Paris";
 // Samedi 3 octobre 2026, 18 h à Paris : la semaine en cours commence le lundi 28 septembre.
@@ -113,32 +107,5 @@ describe("calculerPeriode (D125)", () => {
       { zone: "triceps", series: 6 },
     ]);
     expect(p.volumes).toEqual([{ lundi: "2026-09-28", volumeKg: 1200, seances: 2 }]);
-  });
-});
-
-describe("niveauxCalendrier (D126)", () => {
-  const j = (jour: string, volumeKg: number) => ({ jour, volumeKg, seances: [] });
-
-  it("classe les jours par quartile de leur propre volume", () => {
-    const n = niveauxCalendrier([j("a", 400), j("b", 100), j("c", 300), j("d", 200)]);
-    expect([n.get("b"), n.get("d"), n.get("c"), n.get("a")]).toEqual([1, 2, 3, 4]);
-  });
-
-  it("donne le même niveau à volume égal, et le plus haut à un jour seul", () => {
-    const n = niveauxCalendrier([j("a", 100), j("b", 100), j("c", 300), j("d", 400)]);
-    expect(n.get("a")).toBe(n.get("b"));
-    expect(niveauxCalendrier([j("x", 0)]).get("x")).toBe(4);
-  });
-});
-
-describe("semainesTenues (D126)", () => {
-  const v = (...n: number[]) => n.map((seances) => ({ seances }));
-
-  it("compte les semaines où l'objectif est atteint", () => {
-    expect(semainesTenues(v(3, 1, 4, 3), 3)).toEqual({ tenues: 3, sur: 4 });
-  });
-
-  it("ne juge pas la semaine en cours tant qu'elle n'a pas atteint l'objectif", () => {
-    expect(semainesTenues(v(3, 3, 1), 3)).toEqual({ tenues: 2, sur: 2 });
   });
 });

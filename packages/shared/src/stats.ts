@@ -115,7 +115,7 @@ export type SeancePeriode = {
 type Totaux = { seances: number; series: number; dureeMin: number; volumeKg: number };
 
 /** Un jour entraîné : son volume et ses séances (le calendrier ouvre la première). */
-export type JourEntraine = { jour: string; volumeKg: number; seances: string[] };
+type JourEntraine = { jour: string; volumeKg: number; seances: string[] };
 
 export type StatsPeriode = {
   periode: Periode;
@@ -199,38 +199,5 @@ export function calculerPeriode(
         musclesSecondaires: e.musclesSecondaires,
       })),
     ),
-  };
-}
-
-/**
- * L'intensité de chaque jour entraîné dans le calendrier (D126), de 1 à 4 :
- * son rang parmi les jours de la période, par quartile de volume. Relative à
- * soi, pas à un seuil en kilos : une semaine légère reste lisible.
- */
-export function niveauxCalendrier(jours: readonly JourEntraine[]): Map<string, number> {
-  const tries = [...jours].sort((a, b) => a.volumeKg - b.volumeKg);
-  const niveaux = new Map<string, number>();
-  tries.forEach((j, i) => {
-    // À volume égal, le même niveau : on prend le rang du dernier ex aequo.
-    let rang = i;
-    while (rang + 1 < tries.length && tries[rang + 1]?.volumeKg === j.volumeKg) rang++;
-    niveaux.set(j.jour, Math.min(4, Math.max(1, Math.ceil((4 * (rang + 1)) / tries.length))));
-  });
-  return niveaux;
-}
-
-/**
- * Les semaines de la période où l'objectif est tenu (D126, D128). La semaine en
- * cours ne compte que si elle l'a déjà atteint : elle n'est pas finie.
- */
-export function semainesTenues(
-  volumes: readonly { seances: number }[],
-  objectif: number,
-): { tenues: number; sur: number } {
-  const courante = volumes.at(-1);
-  const comptees = courante && courante.seances < objectif ? volumes.slice(0, -1) : volumes;
-  return {
-    tenues: comptees.filter((v) => v.seances >= objectif).length,
-    sur: comptees.length,
   };
 }

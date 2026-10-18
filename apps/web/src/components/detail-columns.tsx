@@ -3,7 +3,7 @@ import { useDefaultLayout } from "react-resizable-panels";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useWidth } from "@/lib/use-width";
+import { useWidth } from "@/hooks/use-width";
 
 /** Défilement du contenu d'une `ScrollArea` : il s'étire en largeur au lieu de couper sinon. */
 const scrollBlock =

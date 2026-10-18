@@ -23,12 +23,10 @@
       "project": "src/**/*.ts"
     },
     "apps/web": {
-      "entry": [
-        "src/components/ui/**/*.{ts,tsx}",
-        "src/components/kibo-ui/**/*.tsx",
-        "src/components/reui/**/*.tsx",
-        "src/lib/utils.ts"
-      ],
+      "entry": ["src/components/ui/**/*.{ts,tsx}", "src/lib/utils.ts"],
+      "ignoreIssues": {
+        "src/components/{reui,kibo-ui}/**": ["exports", "types"]
+      },
       "project": "src/**/*.{ts,tsx,css}"
     },
     "apps/mobile": {

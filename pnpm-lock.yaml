@@ -226,12 +226,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@better-lift/api-client':
-        specifier: workspace:*
-        version: link:../../packages/api-client
-      '@better-lift/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -265,9 +259,6 @@ importers:
       cn:
         specifier: ^0.3.2
         version: 0.3.2
-      date-fns:
-        specifier: ^4.4.0
-        version: 4.4.0
       lucide-react:
         specifier: ^1.47.0
         version: 1.47.0(react@19.2.3)
@@ -283,9 +274,6 @@ importers:
       react-body-highlighter:
         specifier: 2.0.5
         version: 2.0.5(react@19.2.3)
-      react-day-picker:
-        specifier: ^10.0.2
-        version: 10.0.2(@types/react@19.2.4)(react@19.2.3)
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
@@ -301,9 +289,6 @@ importers:
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
     devDependencies:
       '@better-lift/config':
         specifier: workspace:*
@@ -1027,9 +1012,6 @@ packages:
   '@conventional-changelog/template@1.4.0':
     resolution: {integrity: sha512-aalGyl7dbB5PArRebDIX43ZvBlXrYm9uWzGJ26t+4SzJVPsOuvfILGGbw5X4yX7i50YEmJ8zvbiWnqH/AAnZqg==}
     engines: {node: '>=22'}
-
-  '@date-fns/tz@1.5.0':
-    resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -3833,9 +3815,6 @@ packages:
     resolution: {integrity: sha512-ndfJ/JxxMd3nw31uyKoY2naivF+r29V+Lc0svZxe1JvvIRmi8hUsrMvdOwgS1o6uBHmiz91geQ0ylPP0aj1VUA==}
     engines: {node: '>=12'}
 
-  date-fns@4.4.0:
-    resolution: {integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==}
-
   debounce-fn@4.0.0:
     resolution: {integrity: sha512-8pYCQiL9Xdcg0UPSD3d+0KMlOjp+KGU5EPwYddgzQ7DATsg4fuUDjQtsYLmWjnk2obnNHgV3vE2Y4jejSOJVBQ==}
     engines: {node: '>=10'}
@@ -5670,16 +5649,6 @@ packages:
     peerDependencies:
       react: '>=16'
 
-  react-day-picker@10.0.2:
-    resolution: {integrity: sha512-QetiKtZWE9Uaw/pM/SYNv6WPYOTRnSJ2puL0GgwkmUFMIwiY0dtjH1W4B7DOVXVNQM0ZOClGpH/heOfBSzWeiA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@types/react': '>=16.8.0'
-      react: '>=16.8.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-
   react-devtools-core@6.1.5:
     resolution: {integrity: sha512-ePrwPfxAnB+7hgnEr8vpKxL9cmnp7F322t8oqcPshbIQQhDKgFDW4tjhF2wjVbdXF9O/nyuy3sQWd9JGpiLPvA==}
 
@@ -7503,8 +7472,6 @@ snapshots:
       conventional-commits-parser: 7.1.2
 
   '@conventional-changelog/template@1.4.0': {}
-
-  '@date-fns/tz@1.5.0': {}
 
   '@dnd-kit/accessibility@3.1.1(react@19.2.3)':
     dependencies:
@@ -11206,8 +11173,6 @@ snapshots:
 
   d3-timer@3.0.1: {}
 
-  date-fns@4.4.0: {}
-
   debounce-fn@4.0.0:
     dependencies:
       mimic-fn: 3.1.0
@@ -13341,14 +13306,6 @@ snapshots:
   react-body-highlighter@2.0.5(react@19.2.3):
     dependencies:
       react: 19.2.3
-
-  react-day-picker@10.0.2(@types/react@19.2.4)(react@19.2.3):
-    dependencies:
-      '@date-fns/tz': 1.5.0
-      date-fns: 4.4.0
-      react: 19.2.3
-    optionalDependencies:
-      '@types/react': 19.2.4
 
   react-devtools-core@6.1.5:
     dependencies:

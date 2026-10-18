@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/empty";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useWidth } from "@/lib/use-width";
+import { useWidth } from "@/hooks/use-width";
 import { cn } from "@/lib/utils";
 
 /**

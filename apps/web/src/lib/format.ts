@@ -74,9 +74,7 @@ export const formatMonth = (month: string) => monthYear.format(asDate(`${month}-
 /** « jeu. 15 oct. » */
 export const formatWeekdayDay = (date: string) => weekdayDay.format(asDate(date));
 
-const precise = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
 /** Deux décimales : un disque de 1,25 kg ne s'arrondit pas à 1,3. */
-export const formatPrecise = (n: number) => precise.format(n);
 
 /** Les initiales d'un nom : « Alexis Gontier » → « AG ». */
 export function initials(name: string): string {
