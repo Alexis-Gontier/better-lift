@@ -31,7 +31,7 @@ import {
   sessionVolume,
 } from "@/mocks/exercise-stats";
 import type { MockExercise } from "@/mocks/exercises";
-import { mockGoals } from "@/mocks/goals";
+import { targetOf } from "@/mocks/targets";
 
 const chartConfig = {
   oneRm: { label: "1RM estimé", color: "var(--chart-2)" },
@@ -41,7 +41,7 @@ const chartConfig = {
 const setsText = (p: Performance) => p.sets.map((s) => `${s.kg ?? "—"} × ${s.reps}`).join(" · ");
 
 function ProgressChart({ exercise, history }: { exercise: MockExercise; history: Performance[] }) {
-  const goal = mockGoals.find((g) => g.slug === exercise.slug);
+  const target = targetOf(exercise.slug);
   const data = history.map((p) => ({
     date: p.date,
     oneRm: Math.round(best1rmOf(p) * 10) / 10,
@@ -54,7 +54,9 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
       <CardHeader>
         <CardTitle>Progression</CardTitle>
         <CardDescription>
-          {goal ? `Objectif : ${formatKg(goal.target)} en pointillés` : "Toutes les séances"}
+          {target !== undefined
+            ? `Cible : ${formatKg(target)} en pointillés`
+            : "Toutes les séances"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,7 +82,7 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
                 // Bornes rondes, aux 5 kg : sinon l'axe affiche « 123.3 ».
                 domain={[
                   (min: number) => Math.max(0, Math.floor((min - 5) / 5) * 5),
-                  (max: number) => Math.ceil((Math.max(max, goal?.target ?? 0) + 5) / 5) * 5,
+                  (max: number) => Math.ceil((Math.max(max, target ?? 0) + 5) / 5) * 5,
                 ]}
               />
               <ChartTooltip
@@ -99,12 +101,8 @@ function ProgressChart({ exercise, history }: { exercise: MockExercise; history:
                 }
               />
               <ChartLegend content={<ChartLegendContent />} />
-              {goal && (
-                <ReferenceLine
-                  y={goal.target}
-                  stroke="var(--muted-foreground)"
-                  strokeDasharray="4 4"
-                />
+              {target !== undefined && (
+                <ReferenceLine y={target} stroke="var(--muted-foreground)" strokeDasharray="4 4" />
               )}
               <Line
                 dataKey="oneRm"

@@ -14,6 +14,7 @@ import {
   fromExerciseDraft,
   toExerciseDraft,
 } from "@/features/exercises/exercise-form";
+import { PinButton } from "@/features/records/pin-button";
 import { exerciseHistory } from "@/mocks/exercise-history";
 import { saveExercise, useExercises } from "@/mocks/exercise-store";
 import type { MockExercise } from "@/mocks/exercises";
@@ -69,7 +70,12 @@ function ExercisePane({ exercise, empty }: { exercise: MockExercise; empty: bool
         subtitle={
           exercise.custom ? "Exercice personnel" : `${exercise.muscle} · ${exercise.equipment}`
         }
-        actions={edit.actions(null)}
+        actions={
+          <>
+            <PinButton slug={exercise.slug} />
+            {edit.actions(null)}
+          </>
+        }
       />
       <DetailColumns
         id="exercice-fiche"

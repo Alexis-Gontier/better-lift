@@ -4,7 +4,6 @@ import { Page } from "@/components/page";
 import { useProto } from "@/components/proto/use-proto";
 import { StateError } from "@/components/states/state-error";
 import { Button } from "@/components/ui/button";
-import { GoalsCard } from "@/features/home/goals-card";
 import { HomeEmpty, HomeSkeleton } from "@/features/home/home-states";
 import { RecentRecords, RecentSessions } from "@/features/home/recent-lists";
 import { WeightCard } from "@/features/home/weight-card";
@@ -37,7 +36,6 @@ function HomePage() {
           <RecentRecords />
           <div className="flex flex-col gap-4">
             <WeightCard />
-            <GoalsCard />
           </div>
         </div>
       )}
