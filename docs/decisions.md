@@ -1,0 +1,313 @@
+# Registre des décisions
+
+L'état présent, une ligne par décision. Le code cite ces numéros en commentaire (« D57 ») : chacun
+y renvoie ici. Une décision est un choix du moment, pas un dogme : si elle gêne, on en écrit une
+nouvelle qui la révise, et on met cette page à jour dans la même PR.
+
+Seules figurent les décisions **en vigueur**, et celles **retirées que le code cite encore**
+(marquées *retirée*, avec ce qui les remplace). Les autres ont quitté ce registre le 19 octobre
+2026 ; leur texte complet reste dans l'historique git (`git show 7375aff:docs/superpowers/specs/`).
+
+Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobile-mvp-pages`,
+`feat/web-refonte`) et n'ont jamais atteint `main`.
+
+## Produit et architecture
+
+- **D1** — Base Neon en UE (Francfort) : le Royaume-Uni n'a qu'une adéquation révocable.
+- **D2** — Node 24, pas de Cloudflare Workers.
+- **D3** — Web et mobile passent par l'API ; jamais d'accès direct à la base depuis un client.
+- **D12** — Contrat par Hono RPC, pas d'OpenAPI. Zod dans `shared` est la source unique.
+- **D14** — Français seulement, aucune machinerie d'internationalisation.
+- **D17** — Web en SPA Vite, sans rendu serveur.
+- **D18** — Un seul projet Vercel : SPA et API sur la même origine, donc aucun CORS en production.
+- **D22** — Inscription fermée par une liste blanche d'adresses (`SIGNUP_ALLOWLIST`).
+- **D25** — L'interface passe avant la logique : on dessine et valide un écran, avec ses quatre
+  états (vide, chargement, erreur, nominal), avant de le brancher.
+- **D178** — Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
+  Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
+  redirige vers `/routines`.
+- **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
+- **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
+  une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
+
+## Données et API
+
+- **D4** — 1RM estimé par Epley, `poids × (1 + reps / 30)`, arrondi au dixième ; 1 rep vaut la
+  charge, 0 rep vaut 0.
+- **D5** — Le poids de corps est exclu du volume ; un échauffement aussi.
+- **D11** — *Révisée par D145* : les supersets sont dans l'interface.
+- **D13** — Records dérivés à la lecture, aucune table (voir D63–D65).
+- **D15** — Pas de vérification d'adresse e-mail (la liste blanche la rend inutile) ; donc aucun
+  envoi d'e-mail, ni mot de passe oublié.
+- **D20** — Catalogue aplati, sans table de traductions.
+- **D47** — Cibles série par série : type, reps et charge, tous facultatifs.
+- **D50** — `PUT /routines/:id` remplace toute la routine (exercices, séries) dans une transaction.
+- **D51** — Suppression réelle d'une routine, sans `deletedAt` : une séance ne dépend pas d'elle.
+- **D52** — Charge stockée en kg ; tout affichage et toute saisie passent par `formaterCharge` /
+  `lireCharge` de `shared`, le système d'unités fixé en un seul endroit par surface.
+- **D53** — Toute route de données personnelles exige une session (`exigerSession`) ; la donnée
+  d'autrui répond 404, jamais 403.
+- **D56** — L'identifiant d'une séance est généré par le client ; `POST /seances` est idempotent.
+- **D57** — Le corps de `POST /seances` n'est pas strict et accepte un exercice archivé : perdre
+  un entraînement réel est pire qu'un champ ignoré.
+- **D58** — Aucun total stocké sur une séance : volume, séries et durée se dérivent.
+- **D90** — Note libre par exercice de séance (`SeanceExercice.note`, 500 caractères).
+- **D110** — *Accueil retiré (D178)*. Restent dans `shared/accueil.ts` : `routineASuivre` (la
+  routine qui suit la dernière faite, dans l'ordre de la liste — sert à Démarrer et à Routines)
+  et `resumeSemaine` (fin de séance). Le résumé d'une séance porte `nbRecords`.
+- **D112** — *Écran Stats retiré* ; reste `GET /stats/bilan` (bilan de toujours du Profil) et son
+  calcul dans `shared/stats.ts`.
+- **D119** — *Fil de l'Accueil retiré (D178)*. Restent `meilleureSerie` / `meilleureSerieComptee`
+  (`shared/apercu.ts`) et `versFil` côté API, qui alimente `GET /seances`.
+- **D129** — Objectif hebdomadaire et repos par défaut sont **sur le compte** (table
+  `Preferences`, `GET` / `PUT /preferences`) ; thème et vibrations restent sur l'appareil.
+- **D293** — Seuls dossiers et notes de routine ont gagné une API pour le web ; note et cible
+  d'exercice, correction de séance, import Hevy, préférences étendues n'en ont pas.
+- **D295** — Les routes sans écran partent avec leur service et leurs tests (`/stats`,
+  `/stats/periode`, `/stats/exercices` retirées). Chaque `c.json` porte un code explicite, et
+  chaque code a son test.
+- **D296** — Un dossier est une table (`Dossier` : nom unique par compte, `position`) ;
+  `Routine.dossierId` nullable en `SetNull`, `Routine.note` (1000 caractères).
+- **D297** — `GET /routines` rend `{ routines, dossiers }` ; `POST`, `PATCH`, `DELETE
+  /dossiers/:id`, `PUT /dossiers/ordre`, `PATCH /routines/:id` (`dossierId`). Nom pris : 409.
+- **D298** — Le mobile renvoie tels quels `note` et `dossierId`, qu'il n'affiche pas : un `PUT`
+  ne doit rien effacer.
+- **D310** — `RoutineResume` porte `derniereSeance`, `dossierId`, `exercices` (nom, muscle) et
+  `dureeEstimeeSec`.
+- **D311** — `GET /seances?routine=<id>` ; les stats d'une routine se calculent côté web sur ces
+  résumés.
+- **D312** — `GET /exercices/faits` (avant `/:slug`) : par exercice fait, sa ligne du catalogue,
+  `derniereFois`, `meilleur1Rm`, le plus récent d'abord.
+
+## Authentification
+
+- **D30** — La liste blanche mord sur `databaseHooks.user.create.before` : valable pour tout
+  chemin de création, présent ou futur. Le garde par route ne sert qu'au message lisible.
+- **D31** — E-mail et mot de passe seulement. Pas de connexion GitHub ni d'autre fournisseur
+  (tranché le 19 octobre 2026).
+- **D35** — `estAutorisee` est une fonction pure de `shared`, testée.
+- **D100** — Mobile : la garde ne renvoie à la connexion que sur une absence de session
+  confirmée, jamais sur une erreur de lecture (hors ligne en salle).
+- **D301** — Web : la session est lue avant le premier rendu et posée dans le contexte du
+  routeur ; `_app` garde en `beforeLoad` (vers `/login?redirect=`), `_auth` renvoie un connecté
+  vers l'Accueil. API injoignable = pas de session, jamais une page blanche.
+
+## Catalogue
+
+- **D39** — Colonne `nomRecherche` normalisée, remplie au semis.
+- **D40** — `normaliserRecherche` vit dans `shared` et sert à l'écriture comme à la lecture.
+- **D41** — `bodyPart` reste une enum anglaise ; le libellé français vient de `shared`.
+- **D42** — Le client d'API vit dans `packages/api-client`.
+- **D44** — Le nom anglais (`name`) reste, le français (`nomFr`) s'ajoute ; on affiche le
+  français, on cherche sur les deux.
+- **D45** — `noms-fr.json` est une donnée écrite (id → nom), relue en diff ; un test vérifie que
+  chaque id a son nom.
+- **D46** — Les animations sont affichées depuis le dépôt du dataset, figé sur un commit, avec
+  « © Gym visual » ; aucun média dans le dépôt.
+- **D97** — Mobile : le catalogue complet descend une fois et se filtre sur le téléphone
+  (`filtrerCatalogue` de `shared`).
+- **D286** — Pas d'exercice personnel : le catalogue suffit, `Exercise` n'a pas de propriétaire.
+
+## Records
+
+- **D63** — Records à la Hevy : charge max, 1RM estimé (12 reps au plus), meilleur volume d'une
+  série ; au poids du corps, reps max. Séries faites, hors échauffement.
+- **D64** — Un badge marque le record battu **à ce moment-là**, pas le record actuel.
+- **D65** — Tout est dérivé à la lecture (`shared/records.ts`).
+- **D66** — Mobile : fuseau `Europe/Paris` fixé en un seul endroit (`lib/fuseau.ts`) ; le web
+  prend celui du navigateur (D313). Jamais l'UTC pour découper un jour.
+- **D67** — « La dernière fois » est copiée dans le brouillon au démarrage : disponible hors
+  ligne. Elle s'aligne position par position sur toutes les séries précédentes.
+
+## Séance (mobile et `shared`)
+
+- **D10** — File d'envoi : une séance en attente quitte l'écran ; une séance refusée y reste,
+  avec son message.
+- **D55** — Le brouillon vit en AsyncStorage sous une clé unique (Expo Go, pas de MMKV), et
+  transite par le disque, jamais par un paramètre de route.
+- **D59** — Les cases sont pré-remplies par les cibles de la routine.
+- **D61** — La logique de séance vit dans `shared`, pure et testée ; le mobile garde le disque
+  et les écrans.
+- **D79** — Écran maintenu allumé pendant la séance ; repos ajustable de −15 s / +15 s.
+- **D87** — « Précédent » est une colonne de la ligne de série ; l'appui recopie.
+- **D88** — Échelle compacte en séance : cases de 36, cible tenue à 48 par `hitSlop`.
+- **D89** — Les actions rares d'un exercice sont dans un menu ⋯ en feuille basse.
+- **D91** — Repos réglable par exercice depuis sa puce.
+- **D92** — Le numéro de série s'appuie : choisir son type ou la supprimer.
+- **D93** — Ajouter et remplacer passent par la modale `choisir-exercices` (`?mode=remplacer`).
+- **D95** — Les onglets reviennent en arrière par l'historique (`backBehavior="history"`).
+- **D96** — Cache de requêtes persistant, **filtré** par présence de donnée (`gardeHorsLigne`) :
+  routines, records, stats, préférences, catalogue complet, précédents. La déconnexion l'efface.
+- **D98** — Démarrer lit le réseau d'abord sous délai, le cache en repli, le cache direct hors
+  ligne. Jamais de `fetchQuery` nu dans un chemin de salle.
+- **D99** — L'envoi se relance au retour du réseau et du premier plan.
+- **D105** — Un seul aplat par écran ; « Terminer » est secondaire.
+- **D107** — Bandeau « séance en cours », neutre, au-dessus de la barre ; tout le bandeau ramène
+  à la séance.
+- **D108** — Direction « Carnet » : puces repos et note sous le nom, ligne de série en états,
+  valeurs fantômes.
+- **D109** — Pavé numérique intégré ; le clavier système ne s'ouvre pas.
+- **D111** — Fin de séance : records battus calculés sur le téléphone contre le cache ; sans série
+  validée, rien ne s'enregistre.
+- **D113** — On vibre pour confirmer ce qui se fait sans regarder, jamais pour décorer ;
+  réglage « Vibrations » sur le téléphone. `useReducedMotion` remplace les glissements par des
+  fondus.
+- **D114** — Micro-textes : tutoiement, phrases courtes avec un point, pas d'exclamation.
+- **D116** — La ✓ est une case à cocher : vide à faire, pleine à l'encre une fois faite. La
+  prochaine série se repère par un liseré, sans couleur d'action.
+- **D120** — Démarrer est une feuille basse ouverte par le rond central.
+- **D130** — Fin de séance, la récompense d'abord : records, écarts avec la dernière séance de la
+  même routine, note de séance (`Seance.note`).
+- **D167** — La feuille Démarrer a un bouton Fermer en plus du glisser.
+- **D168** — L'horloge de salle : chaque repos lancé monte une feuille aux deux tiers (décompte
+  en affiche orange, « Ensuite », −15 s · +15 s · Passer) ; glissée vers le bas, elle devient
+  le bandeau.
+- **D169** — En-tête de séance resserré : chevron, nom, « 3 / 15 séries », « Terminer » en
+  secondaire à droite, barre de progression.
+- **D170** — Fin de séance : « Séance terminée », records en contour, écarts, note,
+  « Enregistrer » en aplat.
+
+## Supersets
+
+- **D145** — `supersetGroupe` facultatif sur l'exercice de routine et de séance ; absent, il vaut
+  `null`.
+- **D146** — Un groupe est une suite consécutive de même numéro ; `normaliserGroupes` corrige au
+  lieu de refuser, et l'API normalise à l'écriture.
+- **D147** — Opérations : « Superset avec le suivant », « Retirer du superset », « Défaire le
+  superset ».
+- **D148** — Réordonner, retirer, remplacer, ajouter : une règle par geste, toutes finies par
+  `normaliserGroupes` (`deplacerAvecGroupes`, jamais `arrayMove`).
+- **D149** — Le repos part quand le tour est complet ; durée du dernier membre, repli sur le repos
+  par défaut. Le repos des autres membres est gardé mais masqué.
+- **D150** — Prochaine série tour par tour (A1, B1, A2…).
+- **D151** — Repère identique partout : filet de 3 px et étiquette « Superset A », rôle
+  `superset` (`#9a8cf0` / `#5a4bbf`).
+- **D152** — Les actions vivent dans le menu ⋯ et sur l'étiquette.
+- **D153** — Le détail d'une séance rend `supersetGroupe` ; l'historique web le relit en lecture
+  seule.
+
+## Interface mobile
+
+- **D28** — Une seule couleur pour l'action et le record, distinguée par la forme : l'action est
+  un aplat, le record un contour (texte coloré sur fond teinté, flèche montante). La couleur
+  est l'orange depuis D161.
+- **D36** — Le danger a sa propre couleur et ne porte jamais l'action ni le record.
+- **D74** — *Révisée par D178* : les onglets sont Routines · Démarrer · Profil.
+- **D80** — Dépendances d'Expo Go seulement.
+- **D82** — Le mobile crée, modifie et supprime les routines sans le web.
+- **D83** — Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
+- **D84** — Les muscles se peignent en couleur d'action : exception bornée au dessin du corps.
+- **D85** — La copie de travail de l'éditeur de routine vit dans `shared`
+  (`brouillon-routine.ts`), le système d'unités en paramètre.
+- **D101** — Couleurs par rôle, deux valeurs (sombre / clair) ; valeurs actuelles en D161.
+- **D102** — Les styles se construisent depuis le thème courant (`creerStyles` / `useStyles`),
+  jamais par un `StyleSheet.create` au niveau du module.
+- **D103** — *Révisée par D163* (Barlow remplace Archivo).
+- **D104** — Espacements en base 4, cible tactile de 48, ligne de série de 52 ; rayons révisés
+  par D164.
+- **D118** — Langage commun des pages : `Section`, `Vignette` (fond blanc), `Tuile`,
+  `BoutonContour`, `FeuilleBasse` ; un chiffre se distingue par sa taille, pas sa couleur.
+- **D121** — *Révisée par D171* : le catalogue n'a plus de vue dans Routines.
+- **D122** — Page d'une routine : on la lit avant de la modifier ; « Lancer » en contour.
+- **D123** — *Détail d'une séance retiré du mobile (D178)* ; `ecartSerie` de `shared` reste.
+- **D124** — Fiche d'un exercice : une page qui défile (1RM estimé et sa courbe, records,
+  historique, consignes). Son historique n'ouvre plus rien (D178).
+- **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*. Restent la `Tuile` à écart et le
+  token `calendrier` de la palette, sans écran qui le lise.
+- **D128** — Profil : bilan de toujours, objectif hebdomadaire, repos par défaut, thème
+  (Système · Sombre · Clair), vibrations, export CSV, compte, envoi.
+- **D161** — Palette « Underground orange » : valeurs dans `lib/palette.ts`, contrastes tenus par
+  `palette.test.ts`.
+- **D162** — L'orange ne porte que l'action et le record ; exceptions bornées : carte du corps,
+  horloge de salle.
+- **D163** — Barlow pour l'interface ; Barlow Condensed 800 en capitales (l'« affiche ») pour
+  titres de page, noms en tête, chrono, horloge, valeurs de record — jamais dans un contrôle.
+- **D164** — Rayons 6 (cartes, boutons, cellules), 16 (feuilles), pilule (puces) ; profondeur
+  par les surfaces, sans ombre.
+- **D165** — Onglet actif dans une pilule `surface3` (Material 3) ; rond orange central
+  Démarrer / Reprendre.
+- **D171** — Onglet Routines : une liste de cartes, sans segments ni « Lancer » ; le rond lance,
+  la carte ouvre.
+- **D172** — Page d'une routine : « Lancer » en contour, la carte du corps repliée derrière une
+  ligne.
+- **D174** — Fiche d'un exercice : vignette et nom, puis 1RM, records, historique, consignes.
+- **D175** — Profil groupé par portée : Entraînement (compte) · Ce téléphone · Données · Compte ;
+  la file d'envoi n'apparaît que si une séance attend.
+- **D176** — Chargement en squelette de page ; rien sous une seconde ; état vide qui dit l'état et
+  mène à l'action.
+
+## Interface web
+
+- **D228** — Hors shadcn, tout composant externe se fait valider avant installation.
+- **D229** — Pas de logo : le nom « better-lift » en texte (`Brand`).
+- **D231** — shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
+  (`components/ui/**`) reste tel que livré ; Biome n'y lève pas les règles d'accessibilité.
+- **D232** — Clavier : Ctrl K (palette) et Ctrl B (barre latérale) seulement.
+- **D233** — Gabarit de page `Page` : contenu centré, titre sobre, onglets et actions en tête.
+- **D234** — Routines, Exercices, Historique : liste | détail redimensionnable sur toute la
+  surface (`ListDetailPage`), largeur mémorisée.
+- **D235** — L'élément ouvert vit dans le chemin (`$id`, `$slug`, `new`), route enfant rendue par
+  `<Outlet />` ; la liste reste montée. Rien d'ouvert : le panneau le dit, sans redirection.
+- **D236** — Les onglets d'un élément ouvert vivent dans l'en-tête du panneau de droite.
+- **D238** — Pas de page de modification : on modifie là où on lit ; créer insère une ligne
+  brouillon en tête de liste, rien n'est créé avant d'enregistrer.
+- **D239** — Quitter un élément modifié non enregistré demande confirmation
+  (`useUnsavedGuard`).
+- **D242** — Tête de détail collante ; créer est un formulaire (« Créer ») ; confirmations par
+  toast `sonner` avec *Annuler*.
+- **D243** — La routine ouverte EST l'éditeur.
+- **D244** — Vignette carrée d'exercice (image fixe) dans les listes, GIF dans la fiche.
+- **D246**, **D248**, **D249** — Carte d'exercice de l'éditeur : poignée à gauche, repos en
+  liste, séries en champs − / + ; le type de série s'ouvre sur son étiquette, en couleur comme
+  Hevy (W échauffement ambre, F échec rose, D dégressive bleue) — seule couleur du web.
+- **D250** — Un champ modifiable a un fond teinté, sans contour.
+- **D251** — Ligne ouverte : fond `muted/50` et liseré de 3 px ; `--muted-foreground` à
+  `oklch(0.52)` pour tenir 4,5:1.
+- **D252** — Un bouton d'enregistrement grisé dit pourquoi (`saveBlocker`) ; « Même charge
+  partout », « Recopier la dernière fois ».
+- **D253** — Cartes d'exercice repliées à l'ouverture, avec le résumé des séries
+  (`setsSummary`).
+- **D254**, **D255** — Colonne de droite de l'éditeur en cartes ; exercices et colonne
+  défilent chacun.
+- **D257** — Routines en dossiers repliables ; glisser change de dossier ; création en pied de
+  liste.
+- **D258** — Une carte par routine ; l'ouverte prend un contour d'encre.
+- **D260** — États de `/routines` : rien d'ouvert, vide guidé, squelettes à la forme réelle,
+  erreur dans la liste seule.
+- **D261** — Historique des modifications (↶ ↷, Ctrl Z / Ctrl Y, Ctrl S), « Tout annuler »
+  rattrapable, cartes marquées « Modifié » / « Nouveau ».
+- **D262** — Ajout de plusieurs exercices par un dialogue en cartes ; fiche rapide ; un seul
+  panneau sous 760 px ; bornes de `routineSaisie` (50 exercices, 20 séries, 1 000 kg, 999 reps).
+- **D263**, **D264** — Séance et fiche d'exercice reprennent la tête de l'éditeur ; elles sont en
+  **lecture seule** depuis D294.
+- **D265** — Résumés en carte à lignes (`SummaryCard`) : libellé à gauche, valeur à droite.
+- **D266** — L'état d'une modification se lit à gauche des flèches ↶ ↷.
+- **D271** — Paramètres : navigation à gauche (Compte, Préférences, Entraînement, Données).
+- **D272** — Les Paramètres collent à Better Auth et à la base : nom modifiable, e-mail en
+  lecture, `changePassword`, sessions (`listSessions`, `revokeSession`).
+- **D273** — Un réglage s'enregistre dès qu'on le choisit, confirmé par un toast.
+- **D280** — Le détail d'une routine porte ses stats (dernière fois, séances, tendance du volume,
+  records).
+- **D283** — L'Accueil est vide : son contenu viendra quand l'usage dira ce qui y sert.
+- **D289** — Paramètres s'ouvre par le menu du compte ou la palette, pas par la barre.
+- **D290** — Barre latérale en une liste : Accueil, Routines, Historique, Exercices.
+- **D294** — Ce qui n'est pas branché quitte l'interface (import Hevy, export JSON, préférences
+  sans champ, correction de séance, note et cible d'exercice, mot de passe oublié).
+- **D299** — Les écrans consomment les types de l'API (inférés par le RPC) ; les calculs viennent
+  de `shared`.
+- **D300** — Une couche de requêtes par feature (`features/<x>/queries.ts`) ; les loaders
+  préchargent sans attendre, la page lit par `useQuery`, pas de Suspense ; toute réponse non
+  `ok` devient une `ErreurApi` (`lib/api.ts`).
+- **D302** — Supprimer est différé : la ligne quitte le cache, le `DELETE` part à la fin du toast
+  « Annuler » (5 s) ; un départ de page envoie les suppressions en attente.
+- **D303** — Les quatre états viennent de la requête ; `?etat=` les force toujours ;
+  `etatAffiche` choisit pour toutes les pages.
+- **D304** — Suite Playwright de bout en bout (`apps/web/e2e/`), compte `e2e@better-lift.local`
+  sur la branche Neon `dev`, données préfixées `e2e-` et nettoyées. Pas en CI (pas de base).
+- **D306** — Une règle par dossier : voir `.claude/rules/interface-web.md`.
+- **D307** — Les calculs du web vont dans `shared` s'ils valent pour le mobile, sinon dans la
+  feature qui les lit ; jamais l'UTC pour découper un jour.
+- **D308** — `?etat=` est lu par `useEtat` (`components/states/`) ; la barre d'état ne
+  s'affiche qu'en développement.
+- **D309** — Knip voit tout le web ; seuls `components/ui/` et `lib/utils.ts` sont des entrées.
+- **D313** — Fuseau du navigateur et système métrique, fixés dans `lib/locale.ts` seul.

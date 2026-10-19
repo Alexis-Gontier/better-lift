@@ -23,4 +23,6 @@ paths:
 - **Les médias sont affichés, jamais copiés** (D46). Les données du dataset sont MIT, les GIF
   appartiennent à **Gym visual** : `gifUrl` pointe vers le dépôt du dataset, figé sur un commit,
   et « © Gym visual » accompagne chaque animation. Aucun média n'entre dans le dépôt.
-- Requêtes MCP Neon : toujours `database_name: "betterlift"` (voir CLAUDE.md, section MCP).
+- Requêtes MCP Neon : toujours `database_name: "betterlift"` (voir CLAUDE.md).
+- Une migration se crée par `/migration <nom>` ; elle reste **additive**, car la production
+  migre pendant son build (`docs/deploiement.md`).

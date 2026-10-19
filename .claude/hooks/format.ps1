@@ -2,7 +2,7 @@
 # Branche sur PostToolUse (Edit|Write). Recoit le JSON du hook sur stdin.
 #
 # Ne bloque jamais : toute anomalie sort en 0 et laisse l'edition passer.
-# Sans Biome installe (avant le lot 0), le hook ne fait rien.
+# Sans Biome installe, le hook ne fait rien.
 
 $ErrorActionPreference = 'SilentlyContinue'
 
