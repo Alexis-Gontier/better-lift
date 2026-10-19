@@ -8,8 +8,7 @@ import { useSeance } from "./seance";
 import { nouvelId } from "./temps";
 
 /**
- * Démarrer une séance, vide ou depuis une routine : partagé par la page d'une
- * routine, la carte « À suivre » de l'Accueil et la feuille Démarrer (D120).
+ * Démarrer une séance, vide ou depuis une routine, depuis l'accueil (D316).
  *
  * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
  * relit le DISQUE au moment de l'appui, pas l'état d'un écran.
@@ -22,7 +21,7 @@ export function useDemarrer() {
   const feuille = useFeuille();
   const informer = useInformer();
 
-  // `push` : le retour de la séance ramène aux onglets.
+  // `push` : le retour de la séance ramène à l'accueil.
   const aller = () => router.push("/seance");
 
   const lancer = async (creer: () => ReturnType<typeof demarrerVide>) => {

@@ -10,6 +10,7 @@ import { ActivityIndicator, ScrollView, Switch, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FileEnvoi } from "../../components/file-envoi";
 import { Appuyable } from "../../components/ui/appuyable";
+import { EnteteRetour } from "../../components/ui/entete-retour";
 import { Tuile } from "../../components/ui/tuile";
 import { authClient } from "../../lib/auth-client";
 import { useConfirmer, useFeuille, useInformer } from "../../lib/confirmation";
@@ -130,9 +131,8 @@ export default function Profil() {
 
   return (
     <SafeAreaView style={styles.ecran} edges={["top"]}>
-      <Text style={styles.titre} accessibilityRole="header">
-        Profil
-      </Text>
+      {/* Plus un onglet (D316) : un retour vers l'accueil. */}
+      <EnteteRetour titre="Profil" />
       <ScrollView contentContainerStyle={styles.contenu}>
         <View style={[styles.carte, styles.bilan]}>
           <Text style={styles.nom} numberOfLines={1}>
@@ -284,12 +284,6 @@ function Ligne({
 
 const useStyles = creerStyles((couleurs) => ({
   ecran: { flex: 1, backgroundColor: couleurs.canevas },
-  titre: {
-    ...affiche,
-    color: couleurs.encre,
-    fontSize: taille.titre,
-    padding: espace.l,
-  },
   contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xxl, gap: espace.l },
   section: {
     color: couleurs.encreAttenuee,

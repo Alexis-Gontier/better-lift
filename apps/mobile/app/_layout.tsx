@@ -30,7 +30,7 @@ export default function RootLayout() {
   const couleurs = useCouleurs();
 
   return (
-    // Le glisser-déposer des exercices (édition d'une routine) exige la racine
+    // Le glisser-déposer (réorganiser la séance) exige la racine
     // de gestes au sommet de l'arbre.
     <GestureHandlerRootView style={{ flex: 1 }}>
       {/* Le cache des lectures survit à l'arrêt de l'app (D96) : routines,
@@ -54,11 +54,11 @@ export default function RootLayout() {
                 contentStyle: { backgroundColor: couleurs.canevas },
               }}
             >
-              {/* Les onglets EN PREMIER : une pile qui déclare ses écrans prend le
+              {/* L'accueil EN PREMIER : une pile qui déclare ses écrans prend le
               premier pour route initiale — déclarée seule, la modale ouvrait
               l'application. */}
-              <Stack.Screen name="(onglets)" />
-              {/* Le catalogue s'ouvre par-dessus l'édition d'une routine, et y revient. */}
+              <Stack.Screen name="(connecte)" />
+              {/* Le catalogue s'ouvre par-dessus la séance, et y revient. */}
               <Stack.Screen name="choisir-exercices" options={{ presentation: "modal" }} />
               {/* L'ordre des exercices de la séance en cours (D89). */}
               <Stack.Screen name="reorganiser" options={{ presentation: "modal" }} />
