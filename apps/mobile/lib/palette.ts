@@ -35,11 +35,6 @@ export type Couleurs = {
   action: string;
   /** Texte et icône posés sur l'aplat. */
   surAction: string;
-  /**
-   * Icône et libellé de l'onglet actif. À l'encre (D165) : la couleur ne dit
-   * plus la position, l'indicateur en pilule de Material 3 s'en charge.
-   */
-  ongletActif: string;
   /** Texte et flèche du badge record. */
   recordEncre: string;
   /** Fond teinté du badge record. */
@@ -59,10 +54,6 @@ export type Couleurs = {
    * ni le danger.
    */
   superset: string;
-  /** Muscles principaux sur la carte du corps (D84). */
-  corps: string;
-  /** Muscles secondaires sur la carte du corps. */
-  corpsSecondaire: string;
   /**
    * Fond des vignettes et GIF d'exercice. Blanc dans LES DEUX registres : les
    * images du catalogue sont détourées sur blanc, un fond sombre les encadrerait.
@@ -84,7 +75,6 @@ export const sombre: Couleurs = {
   encreAttenuee: "#a3a3a3",
   action: "#fafafa",
   surAction: "#171717",
-  ongletActif: "#fafafa",
   recordEncre: "#fafafa",
   recordFond: "#262626",
   recordLigne: "#a3a3a3",
@@ -93,8 +83,6 @@ export const sombre: Couleurs = {
   dangerEncre: "#f87171",
   voile: "rgba(0, 0, 0, 0.6)",
   superset: "#a3a3a3",
-  corps: "#a3a3a3",
-  corpsSecondaire: "#525252",
   fondImage: "#ffffff",
 };
 
@@ -112,7 +100,6 @@ export const clair: Couleurs = {
   encreAttenuee: "#595959",
   action: "#171717",
   surAction: "#fafafa",
-  ongletActif: "#0a0a0a",
   recordEncre: "#0a0a0a",
   recordFond: "#f5f5f5",
   recordLigne: "#525252",
@@ -121,7 +108,5 @@ export const clair: Couleurs = {
   dangerEncre: "#b91c1c",
   voile: "rgba(0, 0, 0, 0.4)",
   superset: "#525252",
-  corps: "#525252",
-  corpsSecondaire: "#d4d4d4",
   fondImage: "#ffffff",
 };
