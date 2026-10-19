@@ -6,8 +6,8 @@
  *
  * L'orange ne porte que deux rôles, distingués par la forme : l'action en aplat
  * (`action` / `surAction`), le record en contour (`record*`). Exceptions bornées
- * (D162) : la carte du corps (`corps*`) et le calendrier. Le danger a sa propre
- * couleur.
+ * (D162) : la carte du corps (`corps*`) et l'horloge de salle. Le danger a sa
+ * propre couleur.
  */
 export type Couleurs = {
   /** Fond d'écran. */
@@ -68,12 +68,6 @@ export type Couleurs = {
   /** Muscles secondaires sur la carte du corps. */
   corpsSecondaire: string;
   /**
-   * Le calendrier des Stats (D126, D127) : jour sans séance (0), puis quatre
-   * niveaux d'effort. Deuxième exception à l'orange après la carte du corps, de
-   * même nature : une intensité d'entraînement, jamais une action ni un record.
-   */
-  calendrier: readonly [string, string, string, string, string];
-  /**
    * Fond des vignettes et GIF d'exercice. Blanc dans LES DEUX registres : les
    * images du catalogue sont détourées sur blanc, un fond sombre les encadrerait.
    */
@@ -112,13 +106,6 @@ export const sombre: Couleurs = {
   superset: "#9a8cf0",
   corps: ORANGE,
   corpsSecondaire: "rgba(244, 122, 32, 0.45)",
-  calendrier: [
-    "#242824",
-    "rgba(244, 122, 32, 0.25)",
-    "rgba(244, 122, 32, 0.5)",
-    "rgba(244, 122, 32, 0.75)",
-    ORANGE,
-  ],
   fondImage: "#ffffff",
 };
 
@@ -149,12 +136,5 @@ export const clair: Couleurs = {
   superset: "#5a4bbf",
   corps: ORANGE_CLAIR,
   corpsSecondaire: "rgba(254, 112, 0, 0.4)",
-  calendrier: [
-    "#e1e1dc",
-    "rgba(254, 112, 0, 0.22)",
-    "rgba(254, 112, 0, 0.45)",
-    "rgba(254, 112, 0, 0.7)",
-    "#e06300",
-  ],
   fondImage: "#ffffff",
 };
