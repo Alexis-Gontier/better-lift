@@ -40,7 +40,7 @@ await build({
   entryPoints: ["apps/api/src/vercel.ts"],
   bundle: true,
   platform: "node",
-  target: "node22",
+  target: "node24",
   format: "esm",
   outfile: `${FONCTION}/index.mjs`,
   // Certaines dépendances sont en CommonJS et appellent `require` : en ESM,
@@ -53,7 +53,7 @@ await build({
 writeFileSync(
   `${FONCTION}/.vc-config.json`,
   JSON.stringify({
-    runtime: "nodejs22.x",
+    runtime: "nodejs24.x",
     handler: "index.mjs",
     launcherType: "Nodejs",
     shouldAddHelpers: false,
