@@ -31,9 +31,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { catalogueQuery, EQUIPEMENTS } from "@/lib/catalogue";
+import { faitsQuery } from "@/lib/exercices";
 import { formatKg, formatShortDay } from "@/lib/format";
 import { jourCivil } from "@/lib/locale";
-import { faitsQuery } from "./queries";
 
 const TOUS = "tous";
 type Tri = "nom" | "recent";

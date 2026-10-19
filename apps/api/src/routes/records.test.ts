@@ -28,6 +28,7 @@ const fait: ExerciceFait = {
   recherche: "developpe couche bench press",
   derniereFois: "2026-10-03T17:00:00.000Z",
   meilleur1Rm: 99.2,
+  records: [],
 };
 
 /** Seule alice a un historique, et seul « bench » existe. */

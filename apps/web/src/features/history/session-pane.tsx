@@ -146,8 +146,10 @@ function SessionSummary({ seance }: { seance: SeanceDetail }) {
 }
 
 // Mêmes colonnes que l'éditeur de routine (D246) ; « Précédent » s'efface dans une carte étroite.
+// La dernière colonne a une largeur fixe : chaque ligne est sa propre grille, une colonne `auto`
+// élargie par un trophée décalerait les autres.
 const SET_GRID =
-  "grid grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-3 @[30rem]/sets:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]";
+  "grid grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_4rem] items-center gap-3 @[30rem]/sets:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_4rem]";
 const PREVIOUS_COL = "hidden @[30rem]/sets:block";
 
 type ExerciceFait = SeanceDetail["exercices"][number];

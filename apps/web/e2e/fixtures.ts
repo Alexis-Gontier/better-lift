@@ -16,7 +16,8 @@ export const test = base.extend<{ api: APIRequestContext }>({
   },
 });
 
-type Serie = { chargeKg: number | null; reps: number };
+// Faite par défaut ; `faite: false` pose une série sautée.
+type Serie = { chargeKg: number | null; reps: number; faite?: boolean };
 
 /**
  * Pose une séance faite par l'API (comme le mobile la poste), son identifiant préfixé : un test

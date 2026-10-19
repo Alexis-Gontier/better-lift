@@ -154,17 +154,25 @@ export function SessionList() {
                       className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
                     >
                       <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate font-medium">{s.nom}</span>
+                        {/* Les records à droite du nom : à droite des chiffres, le badge
+                            décalait le volume d'une carte à l'autre. */}
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className="truncate font-medium">{s.nom}</span>
+                          {s.nbRecords > 0 && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0"
+                              aria-label={plural(s.nbRecords, "record")}
+                            >
+                              <Trophy data-icon="inline-start" />
+                              {s.nbRecords}
+                            </Badge>
+                          )}
+                        </span>
                         <span className="truncate text-muted-foreground text-xs first-letter:uppercase">
                           {formatWeekdayDay(jourCivil(s.debut))} · {formatMinutes(minutesDe(s))}
                         </span>
                       </span>
-                      {s.nbRecords > 0 && (
-                        <Badge variant="outline" className="shrink-0">
-                          <Trophy data-icon="inline-start" />
-                          {s.nbRecords}
-                        </Badge>
-                      )}
                       <span className="shrink-0 text-right text-sm tabular-nums">
                         {formatKg(Math.round(s.volumeKg))}
                       </span>
