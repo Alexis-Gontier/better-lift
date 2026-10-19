@@ -1,18 +1,8 @@
 import "../global.css";
-import {
-  Barlow_400Regular,
-  Barlow_500Medium,
-  Barlow_600SemiBold,
-  Barlow_700Bold,
-  useFonts,
-} from "@expo-google-fonts/barlow";
-import { BarlowCondensed_800ExtraBold } from "@expo-google-fonts/barlow-condensed";
 import { PortalHost } from "@rn-primitives/portal";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ConfirmationProvider } from "../lib/confirmation";
 import {
@@ -35,26 +25,9 @@ void appliquerThemeGarde();
 export { EcranErreur as ErrorBoundary } from "../components/ui/ecran-erreur";
 
 brancherReseauEtPremierPlan();
-// L'écran de démarrage reste affiché jusqu'au chargement des polices : sans lui,
-// le premier écran s'afficherait une fraction de seconde dans la police système.
-void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const couleurs = useCouleurs();
-  const [policesPretes, erreurPolices] = useFonts({
-    Barlow_400Regular,
-    Barlow_500Medium,
-    Barlow_600SemiBold,
-    Barlow_700Bold,
-    BarlowCondensed_800ExtraBold,
-  });
-  // Une police qui ne charge pas ne doit pas bloquer l'app : elle s'affiche dans
-  // la police système plutôt que de rester sur l'écran de démarrage.
-  const pret = policesPretes || erreurPolices !== null;
-  useEffect(() => {
-    if (pret) void SplashScreen.hideAsync();
-  }, [pret]);
-  if (!pret) return null;
 
   return (
     // Le glisser-déposer des exercices (édition d'une routine) exige la racine

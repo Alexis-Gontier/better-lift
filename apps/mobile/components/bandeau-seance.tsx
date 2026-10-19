@@ -4,7 +4,7 @@ import { ChevronUp } from "lucide-react-native";
 import { Text, View } from "react-native";
 import { useSeance } from "../lib/seance";
 import { formaterDuree, useMaintenant } from "../lib/temps";
-import { CIBLE, creerStyles, espace, polices, rayon, taille, useCouleurs } from "../lib/theme";
+import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
 import { Appuyable } from "./ui/appuyable";
 
 /**
@@ -77,7 +77,7 @@ const useStyles = creerStyles((couleurs) => ({
   temps: {
     color: couleurs.encreSecondaire,
     fontSize: taille.petit + 1,
-    fontFamily: polices.affiche,
+    fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
 }));

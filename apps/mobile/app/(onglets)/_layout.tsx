@@ -10,7 +10,7 @@ import { PreparerHorsLigne } from "../../components/preparer-hors-ligne";
 import { Appuyable } from "../../components/ui/appuyable";
 import { authClient } from "../../lib/auth-client";
 import { useSeance } from "../../lib/seance";
-import { creerStyles, polices, useCouleurs } from "../../lib/theme";
+import { creerStyles, useCouleurs } from "../../lib/theme";
 
 /**
  * Icônes Lucide, comme le web. L'onglet actif se pose dans une pilule (D165,
@@ -99,7 +99,7 @@ export default function Onglets() {
             borderTopColor: couleurs.ligne,
             paddingTop: 8,
           },
-          tabBarLabelStyle: { fontSize: 11, fontFamily: polices.demiGras, marginTop: 2 },
+          tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
           // L'appui pâlit l'onglet (Appuyable), sans ondulation Android qui
           // déborderait de la barre.
           tabBarButton: ({ ref: _ref, ...props }) => (

@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formaterDuree } from "../../lib/temps";
-import { CIBLE, creerStyles, espace, PLAFOND_TEXTE_DENSE, polices, rayon } from "../../lib/theme";
+import { CIBLE, creerStyles, espace, PLAFOND_TEXTE_DENSE, rayon } from "../../lib/theme";
 import { Appuyable } from "../ui/appuyable";
 
 /**
@@ -107,7 +107,7 @@ const useStyles = creerStyles((couleurs) => ({
     color: couleurs.encre,
     fontSize: 34,
     lineHeight: 36,
-    fontFamily: polices.affiche,
+    fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
   tempsFini: { color: couleurs.encre },
