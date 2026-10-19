@@ -21,7 +21,7 @@ Préparer ses séances, les remplir sans friction pendant l'effort, voir sa prog
 
 | Surface | Rôle | Écrans |
 |---|---|---|
-| **Mobile** | L'outil de salle : une main, entre deux séries, parfois sans réseau | Routines (liste, page, édition), Démarrer, séance, fin de séance, fiche d'exercice, Profil, connexion |
+| **Mobile** | L'outil de salle : une main, entre deux séries, parfois sans réseau | Accueil (routines à lancer, séance vide), séance, fin de séance, Profil, connexion |
 | **Web** | L'atelier : préparer et relire, grand écran et clavier. Pas de séance en direct | Accueil (vide), Routines (dossiers, éditeur), Historique, Exercices, Paramètres |
 
 ### Vocabulaire
@@ -48,7 +48,7 @@ de progression, notifications push, social, nutrition, programmes tout faits, e-
 ```
 apps/
   web/        Vite + React 19 (SPA), TanStack Router + Query, shadcn/ui — servi sous /app
-  mobile/     Expo SDK 57 (Expo Go), Expo Router, TanStack Query, AsyncStorage
+  mobile/     Expo SDK 57 (Expo Go), Expo Router, Reusables + Uniwind, TanStack Query, AsyncStorage
   api/        Hono + Better Auth — Node en dev, fonction Vercel en prod
 packages/
   db/         Prisma 7 : schéma, migrations, catalogue et semis
