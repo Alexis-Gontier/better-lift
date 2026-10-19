@@ -53,28 +53,45 @@ function AccountMenu() {
   );
 }
 
-/** Repli de la sidebar et fil d'Ariane, recherche au centre, compte à droite. */
+/**
+ * Repli de la sidebar et fil d'Ariane, recherche au centre, compte à droite. La recherche suit la
+ * largeur de l'en-tête (`cqw`) ; sous 42 rem elle laisse place à une loupe à côté du compte, et
+ * le raccourci Ctrl K ne s'affiche qu'au large.
+ */
 export function SiteHeader({ onSearch }: { onSearch: () => void }) {
   return (
-    <header className="sticky top-0 z-10 grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b bg-background px-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
-        <AppBreadcrumb />
-      </div>
-      <Button
-        variant="outline"
-        className="w-72 justify-start font-normal text-muted-foreground"
-        onClick={onSearch}
-      >
-        <Search />
-        Rechercher…
-        <KbdGroup className="ml-auto">
-          <Kbd>Ctrl</Kbd>
-          <Kbd>K</Kbd>
-        </KbdGroup>
-      </Button>
-      <div className="flex justify-end">
-        <AccountMenu />
+    // Un conteneur ne s'interroge pas lui-même : la mise en page vit dans le div intérieur. En
+    // flex sous le seuil (le fil d'Ariane prend toute la place), en grille au-dessus.
+    <header className="@container/header sticky top-0 z-10 h-12 shrink-0 border-b bg-background px-4">
+      <div className="@[42rem]/header:grid flex h-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <SidebarTrigger className="-ml-1 shrink-0 text-muted-foreground hover:text-foreground" />
+          <AppBreadcrumb />
+        </div>
+        <Button
+          variant="outline"
+          className="@[42rem]/header:flex hidden w-[clamp(9rem,28cqw,18rem)] justify-start font-normal text-muted-foreground"
+          onClick={onSearch}
+        >
+          <Search />
+          Rechercher…
+          <KbdGroup className="@[52rem]/header:flex ml-auto hidden">
+            <Kbd>Ctrl</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>
+        </Button>
+        <div className="col-start-3 flex shrink-0 items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="@[42rem]/header:hidden text-muted-foreground"
+            aria-label="Rechercher"
+            onClick={onSearch}
+          >
+            <Search />
+          </Button>
+          <AccountMenu />
+        </div>
       </div>
     </header>
   );

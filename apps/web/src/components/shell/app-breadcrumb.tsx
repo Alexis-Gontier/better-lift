@@ -25,14 +25,15 @@ export function AppBreadcrumb() {
     }));
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
+    // Sur une ligne : la dernière miette se tronque plutôt que de passer sous la recherche.
+    <Breadcrumb className="min-w-0">
+      <BreadcrumbList className="flex-nowrap">
         {crumbs.map((c, i) => (
           <Fragment key={c.id}>
             {i > 0 && <BreadcrumbSeparator />}
-            <BreadcrumbItem>
+            <BreadcrumbItem className={i === crumbs.length - 1 ? "min-w-0" : "shrink-0"}>
               {i === crumbs.length - 1 ? (
-                <BreadcrumbPage>{c.label}</BreadcrumbPage>
+                <BreadcrumbPage className="truncate">{c.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
                   <Link to={c.pathname}>{c.label}</Link>

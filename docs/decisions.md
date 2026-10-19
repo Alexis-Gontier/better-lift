@@ -316,3 +316,6 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   viennent des exercices faits (`records` ajouté à D312), sans nouvelle route. Dans l'historique,
   le compte de records se lit à droite du nom de la séance, et le trophée d'une série vit dans
   une colonne de largeur fixe pour ne pas décaler sa ligne.
+- **D315** — En-tête : la recherche suit la largeur de l'en-tête et devient une loupe sous
+  42 rem (Ctrl K affiché au-delà de 52 rem) ; le fil d'Ariane tient sur une ligne et tronque sa
+  dernière miette.
