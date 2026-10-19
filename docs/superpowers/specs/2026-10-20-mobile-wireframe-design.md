@@ -54,11 +54,13 @@ et une capture sur l'émulateur, en sombre et en clair.
    de Reusables.
 3. Retirer d'un coup : `(onglets)` et sa barre, la page d'une routine, `routine-edition`, la fiche
    d'un exercice et ses composants, `feuille-demarrer`, la carte du corps
-   (`react-native-body-highlighter`), Barlow (`@expo-google-fonts/*`), `lib/palette.ts` et son
-   test, `logo.tsx`. Knip doit rester vert.
+   (`react-native-body-highlighter`), Barlow (`@expo-google-fonts/*`), `logo.tsx`. Knip doit
+   rester vert.
 4. Refaire la connexion (le nom en texte, sans accroche) et le nouvel accueil.
 5. Tant que les lots 2 et 3 ne sont pas faits, la séance, la fin et le Profil gardent leur code
-   actuel, adapté au minimum pour compiler sans l'ancien thème.
+   actuel. L'ancien thème (`lib/theme.ts`, `lib/palette.ts`) reste pour eux, **passé au gris**
+   (valeurs `neutral`, police système, plus d'affiche) : un doublon provisoire des tokens de
+   `global.css`, supprimé au lot 3 avec son dernier usage.
 
 ### Lot 2 — la séance
 
