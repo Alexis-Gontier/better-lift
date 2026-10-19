@@ -75,6 +75,10 @@ export function RecordsPage() {
     );
   if (etat === "vide") return <RecordsEmpty />;
 
+  // Une colonne sans aucune valeur s'efface : « Répétitions » n'a de sens qu'au poids du corps.
+  const colonnes = COLONNES.filter((c) =>
+    exercices.some((e) => e.records.some((r) => r.type === c.type)),
+  );
   const q = normaliserRecherche(saisie);
   const visibles = exercices.filter((e) => !q || normaliserRecherche(e.recherche).includes(q));
 
@@ -95,7 +99,7 @@ export function RecordsPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="pl-4">Exercice</TableHead>
-              {COLONNES.map((c) => (
+              {colonnes.map((c) => (
                 <TableHead key={c.type}>{c.titre}</TableHead>
               ))}
             </TableRow>
@@ -103,7 +107,7 @@ export function RecordsPage() {
           <TableBody>
             {visibles.length === 0 && (
               <TableRow>
-                <TableCell colSpan={COLONNES.length + 1} className="py-6 text-center">
+                <TableCell colSpan={colonnes.length + 1} className="py-6 text-center">
                   <span className="text-muted-foreground">Aucun exercice ne correspond.</span>
                 </TableCell>
               </TableRow>
@@ -116,13 +120,13 @@ export function RecordsPage() {
                     params={{ slug: e.slug }}
                     className="flex max-w-72 items-center gap-3 font-medium hover:underline"
                   >
-                    <ExerciseThumb name={e.nom} src={e.image} className="size-8" />
+                    <ExerciseThumb name={e.nom} src={e.image} className="hidden size-8 sm:flex" />
                     <span className="truncate" title={e.nom}>
                       {e.nom}
                     </span>
                   </Link>
                 </TableCell>
-                {COLONNES.map((c) => {
+                {colonnes.map((c) => {
                   const r = e.records.find((x) => x.type === c.type);
                   return (
                     <TableCell key={c.type} className="tabular-nums">
