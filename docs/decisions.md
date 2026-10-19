@@ -212,8 +212,8 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D123** — *Détail d'une séance retiré du mobile (D178)* ; `ecartSerie` de `shared` reste.
 - **D124** — Fiche d'un exercice : une page qui défile (1RM estimé et sa courbe, records,
   historique, consignes). Son historique n'ouvre plus rien (D178).
-- **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*. Restent la `Tuile` à écart et le
-  token `calendrier` de la palette, sans écran qui le lise.
+- **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*, son calendrier et son token avec.
+  Reste la `Tuile` à écart.
 - **D128** — Profil : bilan de toujours, objectif hebdomadaire, repos par défaut, thème
   (Système · Sombre · Clair), vibrations, export CSV, compte, envoi.
 - **D161** — Palette « Underground orange » : valeurs dans `lib/palette.ts`, contrastes tenus par

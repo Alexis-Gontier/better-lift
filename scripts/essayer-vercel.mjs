@@ -23,6 +23,9 @@ const TYPES = {
   ".css": "text/css",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".ico": "image/x-icon",
+  ".json": "application/json",
+  ".woff2": "font/woff2",
 };
 
 createServer((req, res) => {
