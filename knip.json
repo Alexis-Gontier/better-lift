@@ -30,7 +30,10 @@
       "project": "src/**/*.{ts,tsx,css}"
     },
     "apps/mobile": {
-      "entry": "app/**/*.{ts,tsx}",
+      "entry": ["app/**/*.{ts,tsx}", "lib/utils.ts"],
+      "ignoreIssues": {
+        "components/ui/{text,button,input,label,icon,separator}.tsx": ["exports", "types"]
+      },
       "project": ["app/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"]
     }
   }

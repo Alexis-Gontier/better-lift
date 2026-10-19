@@ -7,6 +7,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/barlow";
 import { BarlowCondensed_800ExtraBold } from "@expo-google-fonts/barlow-condensed";
+import { PortalHost } from "@rn-primitives/portal";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -89,6 +90,8 @@ export default function RootLayout() {
               {/* L'ordre des exercices de la séance en cours (D89). */}
               <Stack.Screen name="reorganiser" options={{ presentation: "modal" }} />
             </Stack>
+            {/* Les menus et fenêtres de Reusables s'y rendent (D316). */}
+            <PortalHost />
           </ConfirmationProvider>
         </SeanceProvider>
       </PersistQueryClientProvider>
