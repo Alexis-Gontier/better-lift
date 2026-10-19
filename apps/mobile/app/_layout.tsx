@@ -1,3 +1,4 @@
+import "../global.css";
 import {
   Barlow_400Regular,
   Barlow_500Medium,
