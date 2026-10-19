@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { ListDetailPage } from "@/components/list-detail";
 import { ExerciseList } from "@/features/exercises/exercise-list";
-import { faitsQuery } from "@/features/exercises/queries";
 import { catalogueQuery } from "@/lib/catalogue";
+import { faitsQuery } from "@/lib/exercices";
 
 export const Route = createFileRoute("/_app/exercises")({
   staticData: { crumb: "Exercices" },

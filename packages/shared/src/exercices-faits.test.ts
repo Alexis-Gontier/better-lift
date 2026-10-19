@@ -18,9 +18,21 @@ describe("resumerExercicesFaits (D312)", () => {
       s("squat", "2026-10-02T08:00:00.000Z", 100, 5),
     ]);
     // 80 × (1 + 5/30) = 93,3 bat 82,5 × 1,1 = 90,8 ; 100 × (1 + 5/30) = 116,7.
-    expect(r).toEqual([
+    expect(r.map(({ records: _, ...c }) => c)).toEqual([
       { slug: "bench", derniereFois: "2026-10-08T08:00:00.000Z", meilleur1Rm: 93.3 },
       { slug: "squat", derniereFois: "2026-10-02T08:00:00.000Z", meilleur1Rm: 116.7 },
+    ]);
+  });
+
+  it("rend les records de `recordsDe`, chacun daté de sa séance", () => {
+    const [bench] = resumerExercicesFaits([
+      s("bench", "2026-10-08T08:00:00.000Z", 82.5, 3),
+      s("bench", "2026-10-01T08:00:00.000Z", 80, 5),
+    ]);
+    expect(bench?.records.map((x) => [x.type, x.valeur, x.date])).toEqual([
+      ["CHARGE", 82.5, "2026-10-08T08:00:00.000Z"],
+      ["UN_RM", 93.3, "2026-10-01T08:00:00.000Z"],
+      ["VOLUME", 400, "2026-10-01T08:00:00.000Z"],
     ]);
   });
 
@@ -30,9 +42,9 @@ describe("resumerExercicesFaits (D312)", () => {
         s("dips", "2026-10-01T08:00:00.000Z", null, 10),
         s("curl", "2026-10-03T08:00:00.000Z", 20, 10, false),
       ]),
-    ).toEqual([
+    ).toMatchObject([
       { slug: "dips", derniereFois: "2026-10-01T08:00:00.000Z", meilleur1Rm: null },
-      { slug: "curl", derniereFois: "2026-10-03T08:00:00.000Z", meilleur1Rm: null },
+      { slug: "curl", derniereFois: "2026-10-03T08:00:00.000Z", meilleur1Rm: null, records: [] },
     ]);
   });
 });
