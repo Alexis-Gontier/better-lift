@@ -363,7 +363,16 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D273** — Un réglage s'enregistre dès qu'on le choisit, confirmé par un toast.
 - **D280** — Le détail d'une routine porte ses stats (dernière fois, séances, tendance du volume,
   records).
-- **D283** — L'Accueil est vide : son contenu viendra quand l'usage dira ce qui y sert.
+- **D283** — *Révisée par D330.* L'Accueil est vide : son contenu viendra quand l'usage dira ce qui y sert.
+- **D330** — L'Accueil du web est un tableau de bord, bilan d'abord : la semaine en cours en
+  bandeau (jours entraînés, objectif hebdomadaire) ; une période **4 sem. · 3 mois · 1 an**,
+  dernier choix gardé dans le navigateur (`localStorage`, 3 mois par défaut ; ni URL ni
+  gestionnaire d'état) ; quatre chiffres clés comparés à la période précédente (flèche et signe,
+  sans couleur) ; tendance en aire (semaines, ou mois sur un an) à côté des dernières séances ;
+  séries par muscle et silhouette à côté des records récents. Pas de routine à suivre.
+  `GET /tableau-de-bord?depuis=` rend les faits par séance (records rejoués sur tout
+  l'historique, seuls les exercices faits colorent la silhouette) ; le web les agrège dans son
+  fuseau par `shared/tableau-de-bord.ts`.
 - **D289** — Paramètres s'ouvre par le menu du compte ou la palette, pas par la barre.
 - **D290** — Barre latérale en une liste : Accueil, Routines, Historique, Exercices.
 - **D294** — Ce qui n'est pas branché quitte l'interface (import Hevy, export JSON, préférences
