@@ -228,7 +228,7 @@ export default function Seance() {
       <ScrollView
         ref={defilement}
         // De la marge en bas : le bandeau de repos ne cache jamais la dernière série.
-        contentContainerClassName="pb-48"
+        contentContainerClassName="px-3 pt-3 pb-48"
         keyboardShouldPersistTaps="handled"
         onScroll={(e) => {
           defilementY.current = e.nativeEvent.contentOffset.y;
@@ -298,7 +298,7 @@ export default function Seance() {
             </View>
           );
         })}
-        <View className="gap-2 p-3">
+        <View className="gap-2">
           {/* Sans exercice, il n'y a pas de ✓ : ajouter devient l'action pleine (D105). */}
           <Button variant={vide ? "default" : "secondary"} className="h-12" onPress={ajouter}>
             <Icon

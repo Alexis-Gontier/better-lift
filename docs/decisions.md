@@ -286,6 +286,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   la file d'envoi n'apparaît que si une séance attend.
 - **D176** — Chargement en squelette de page ; rien sous une seconde ; état vide qui dit l'état et
   mène à l'action.
+- **D325** — Complète D317 : en séance, chaque exercice tient dans une carte bordée
+  (`rounded-lg`), comme les cartes de routine (D320), au lieu d'un trait entre deux exercices ;
+  nom en `text-base`. L'écart entre deux cartes vit dans le repère de superset, dont le filet
+  relie toujours les membres.
 
 ## Interface web
 
