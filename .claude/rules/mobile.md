@@ -70,7 +70,10 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   (`components/bandeau-seance.tsx`) puis les onglets. Un onglet s'ouvre sur `TitreOnglet`.
 - Routines (D320) : « Séance vide » en tête, puis les routines par dossier, comme le web
   (`DossierRoutines` repliable, `LigneRoutine` en carte ; calculs de `shared/liste-routines.ts`).
-  L'appui lance la séance par `lib/demarrer.ts`. `optionsRoutines()` rend `{ routines, dossiers }`.
+  La carte a deux actions (D321) : le segment « Lancer » lance par `lib/demarrer.ts`, le reste
+  ouvre `app/routine/[id].tsx` (lecture seule, pile racine, exercices repliés par
+  `CarteExerciceRoutine`, carte des muscles `CarteMuscles` — couleurs du dessin lues par
+  `useCSSVariable`). `optionsRoutines()` rend `{ routines, dossiers }`.
   Historique : état vide pour l'instant.
 - La pilule de l'onglet actif est toujours montée et se montre par l'opacité : sous Android, un
   fond ajouté à une vue déjà affichée perdait son arrondi.

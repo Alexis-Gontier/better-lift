@@ -26,7 +26,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D178** — *Révisée par D316.* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
   Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
   redirige vers `/routines`.
-- **D316** — *Révisée par D319 (barre d'onglets).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
+- **D316** — *Révisée par D319 (barre d'onglets) et D321 (page d'une routine).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
   direction artistique viendra une fois l'app construite. Lot 1 : un seul accueil, sans onglets
   (« Séance vide », routines qui se lancent d'un appui, Profil en en-tête, bandeau
   « Reprendre ») ; retirés : l'édition des routines (le web prépare), la page d'une routine et sa
@@ -54,13 +54,21 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   (ni Lucide, ni accessoire au-dessus de la barre sous Android). Le bandeau « Reprendre » se
   pose au-dessus de la barre, sur les trois onglets ; « Séance vide » reste en tête de Routines.
   L'onglet Historique n'a qu'un état vide pour l'instant ; son contenu viendra.
-- **D320** — Révise D298 : l'onglet Routines du mobile range les routines **par dossier**, comme
+- **D320** — *Révisée par D321 (la carte a deux actions).* Révise D298 : l'onglet Routines du mobile range les routines **par dossier**, comme
   le web (D257) — têtes repliables (chevron, nom, nombre ; tout déplié à l'ouverture, l'état
   replié n'est pas gardé), « Sans dossier » en dernier, aucune tête quand le compte n'a pas de
   dossier. Une carte par routine : nom, « 5 exercices · muscles », « ~30 min », « Il y a 17 j ».
   L'appui lance toujours la séance, sans chevron (D316). Les dossiers se gèrent sur le web.
   `parDossier`, `musclesRoutine`, `dureeRoutine`, `joursEcoules`, `ilYa` vivent dans
   `shared/liste-routines.ts`, lus par les deux surfaces.
+- **D321** — Révise D316 (page d'une routine retirée) et D320 (toute la carte lance) : comme
+  Hevy, la carte d'une routine a deux actions — le segment de droite « Lancer », en aplat
+  `primary` sur toute la hauteur, lance la séance ; le reste ouvre la page de la routine
+  (`app/routine/[id].tsx`), en lecture seule : résumé, « Lancer », note, exercices repliés
+  comme dans l'éditeur du web (D253 ; ouverts : séries et repos ; nom sur une ligne, vignette
+  carrée), et la **carte des muscles** face et dos comme opengym (`react-native-body-highlighter`,
+  `shared/muscles.ts` : principaux à l'encre, secondaires en gris, légende). Ni modification ni lien vers
+  le web. Le résumé des séries (`resumeSeries`) vit dans `shared`, lu par le web et le mobile.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
@@ -230,7 +238,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D74** — *Révisée par D316.* *Révisée par D178* : les onglets sont Routines · Démarrer · Profil.
 - **D80** — Dépendances d'Expo Go seulement.
 - **D82** — *Révisée par D316.* Le mobile crée, modifie et supprime les routines sans le web.
-- **D83** — *Révisée par D316.* Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
+- **D83** — *Révisée par D316, rétablie en gris par D321.* Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
 - **D84** — *Révisée par D316.* Les muscles se peignent en couleur d'action : exception bornée au dessin du corps.
 - **D85** — La copie de travail de l'éditeur de routine vit dans `shared`
   (`brouillon-routine.ts`), le système d'unités en paramètre.

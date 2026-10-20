@@ -1,5 +1,6 @@
 import { parDossier, type RoutineResume, routineASuivre } from "@better-lift/shared";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
@@ -42,6 +43,7 @@ function ListeRoutines({
   onLancer: (id: string) => void;
   ouverture: string | null;
 }) {
+  const router = useRouter();
   const requete = useQuery(optionsRoutines());
   const seances = useInfiniteQuery(optionsSeances());
   // Les dossiers repliés, le temps que l'app reste ouverte : tout s'ouvre déplié.
@@ -82,6 +84,7 @@ function ListeRoutines({
           routine={r}
           aSuivre={suivante?.id === r.id}
           enOuverture={ouverture === r.id}
+          onOuvrir={() => router.push(`/routine/${r.id}`)}
           onLancer={() => onLancer(r.id)}
         />
       ))}
