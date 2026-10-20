@@ -100,7 +100,6 @@ export {
   validerSerie,
   versEnvoi,
 } from "./seance.js";
-export type { Bilan } from "./stats.js";
 export {
   type GroupeSuperset,
   groupeDe,
