@@ -19,6 +19,14 @@ export const LIBELLE_PERIODE: Record<Periode, string> = {
 
 export const requeteTableauDeBord = z.object({ depuis: z.iso.datetime() });
 
+/**
+ * La recherche de l'Accueil du web : la période, facultative pour qu'un lien vers l'Accueil
+ * n'ait pas à la donner ; une valeur inconnue est ignorée plutôt que de faire échouer la page.
+ */
+export const rechercheAccueil = z.object({
+  periode: z.enum(PERIODES).optional().catch(undefined),
+});
+
 /** Une série qui a battu au moins un record, à ce moment-là (D64). */
 export type RecordSeance = {
   slug: string;

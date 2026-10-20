@@ -120,6 +120,7 @@ export {
   PERIODES,
   type Periode,
   type RecordSeance,
+  rechercheAccueil,
   recordsRecents,
   repartitionMuscles,
   semaineEnCours,

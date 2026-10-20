@@ -17,8 +17,11 @@ couleur ne porte jamais seule un sens).
 
 ## Page, de haut en bas
 
-1. **En-tête** — `Page` « Accueil », à droite un `ToggleGroup` **4 sem. · 3 mois · 1 an**
-   (défaut 3 mois), gardé dans l'URL (`?periode=4s|3m|1a`) pour le partage et le retour.
+1. **En-tête** — `Page` « Accueil », à droite un `ToggleGroup` **4 sem. · 3 mois · 1 an**.
+   La période vit dans l'URL (`?periode=4s|3m|1a`, `rechercheAccueil` de `shared`, Zod
+   `.catch`) ; sans elle, on reprend le dernier choix de ce navigateur (`localStorage`), puis
+   3 mois. Pas de gestionnaire d'état : l'URL est l'état (doctrine TanStack Router), le
+   stockage ne sert que de défaut.
 2. **Chiffres clés** — quatre cartes en ligne (deux par ligne sous `md`, une sous `sm`) :
    **Séances**, **Volume**, **Séries**, **Records battus** (séries ayant battu au moins un
    record, comme `nbRecords`), sur la période. Chacune montre la
@@ -28,9 +31,9 @@ couleur ne porte jamais seule un sens).
 3. **Cette semaine** — carte : les 7 jours du lundi au dimanche (pastille pleine = jour
    entraîné, contour = aujourd'hui), « 2 / 3 séances » face à l'objectif hebdomadaire
    (`preferences.objectifHebdo`, D129 ; sans objectif, le compte seul).
-4. **Tendance** — carte : histogramme (Recharts via `components/ui/chart`), une barre par
-   **semaine** (4 sem., 3 mois) ou par **mois** (1 an), avec une bascule **Séances · Volume**.
-   Barres et non ligne : chaque intervalle est un compte discret. Infobulle au survol, axe des
+4. **Tendance** — carte : aire (Recharts via `components/ui/chart`, courbe monotone et dégradé),
+   un point par **semaine** (4 sem., 3 mois) ou par **mois** (1 an), avec une bascule
+   **Séances · Volume**. Infobulle au survol, axe des
    dates court (« 6 oct. », « oct. »). Animations coupées (`isAnimationActive={false}`).
 5. **Muscles** — carte : barres horizontales triées par séries décroissantes (une ligne par
    zone, libellé de `LIBELLE_ZONE`, valeur en texte au bout), et `BodyMap` du web à côté

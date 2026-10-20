@@ -31,6 +31,7 @@ import { FIXTURE } from "./fixture";
 import { HomeSkeleton } from "./home-skeleton";
 import { KpiCards } from "./kpi-cards";
 import { MusclesCard } from "./muscles-card";
+import { retenirPeriode } from "./periode";
 import { RecentRecords, RecentSessions } from "./recent-lists";
 import { ThisWeek } from "./this-week";
 import { TrendChart } from "./trend-chart";
@@ -57,9 +58,11 @@ export function HomePage({ periode }: { periode: Periode }) {
       size="sm"
       spacing={0}
       value={periode}
-      onValueChange={(v) =>
-        v && navigate({ to: ".", search: (p) => ({ ...p, periode: v as Periode }), replace: true })
-      }
+      onValueChange={(v) => {
+        if (!v) return;
+        retenirPeriode(v as Periode);
+        navigate({ to: ".", search: (p) => ({ ...p, periode: v as Periode }), replace: true });
+      }}
       aria-label="Période"
     >
       {PERIODES.map((p) => (
