@@ -38,7 +38,7 @@ export {
   parDossier,
   resumeSeries,
 } from "./liste-routines.js";
-export { LIBELLE_ZONE, zonesTravaillees } from "./muscles.js";
+export { LIBELLE_ZONE, type Zone, zoneDuMuscle, zonesTravaillees } from "./muscles.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
@@ -111,5 +111,23 @@ export {
   retirerDuGroupe,
   roleRepos,
 } from "./supersets.js";
+export {
+  type Bornes,
+  bornesPeriode,
+  type ChiffresCles,
+  chiffresCles,
+  depuisPour,
+  type FaitSeance,
+  LIBELLE_PERIODE,
+  PERIODES,
+  type Periode,
+  type RecordSeance,
+  recordsRecents,
+  repartitionMuscles,
+  requeteTableauDeBord,
+  semaineEnCours,
+  type TableauDeBord,
+  tendance,
+} from "./tableau-de-bord.js";
 export type { UnitSystem } from "./units.js";
 export { GROUPES, type Groupe, LIBELLE_GROUPE } from "./vocabulaire.js";
