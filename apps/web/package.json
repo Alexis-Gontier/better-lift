@@ -30,7 +30,6 @@
     "next-themes": "^0.4.6",
     "radix-ui": "^1.6.7",
     "react": "catalog:",
-    "react-body-highlighter": "2.0.5",
     "react-dom": "catalog:",
     "react-resizable-panels": "^4.14.5",
     "recharts": "3.8.0",

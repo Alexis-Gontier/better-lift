@@ -315,6 +315,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   symbole ; le nom n'est pas masqué mais rogné par la largeur, pour suivre l'animation. Les pages
   d'authentification portent le même assemblage en tête. L'Accueil prend l'icône
   `LayoutDashboard`.
+- **D331** — La silhouette du web (`BodyMap`) reprend le dessin du mobile : les tracés de
+  `react-native-body-highlighter` (MIT, copiés dans `components/body-map-traces.ts` avec leur
+  licence), dessinés en SVG simple ; zones par `zonesTravaillees` de `shared`, comme sur le
+  téléphone ; principaux en `foreground`, secondaires en `muted-foreground`, le reste du corps
+  (tête, mains, pieds) en `--body-map`. `react-body-highlighter`, aux polygones anguleux, part.
 - **D231** — shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
   (`components/ui/**`) reste tel que livré ; Biome n'y lève pas les règles d'accessibilité.
 - **D232** — Clavier : Ctrl K (palette) et Ctrl B (barre latérale) seulement.
