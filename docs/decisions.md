@@ -65,7 +65,9 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   Hevy, la carte d'une routine a deux actions — le segment de droite « Lancer », en aplat
   `primary` sur toute la hauteur, lance la séance ; le reste ouvre la page de la routine
   (`app/routine/[id].tsx`), en lecture seule : résumé, « Lancer », note, exercices repliés
-  comme dans l'éditeur du web (D253 ; ouverts : séries et repos). Ni modification ni lien vers
+  comme dans l'éditeur du web (D253 ; ouverts : séries et repos ; nom sur une ligne, vignette
+  carrée), et la **carte des muscles** face et dos comme opengym (`react-native-body-highlighter`,
+  `shared/muscles.ts` : principaux à l'encre, secondaires en gris, légende). Ni modification ni lien vers
   le web. Le résumé des séries (`resumeSeries`) vit dans `shared`, lu par le web et le mobile.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
@@ -236,7 +238,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D74** — *Révisée par D316.* *Révisée par D178* : les onglets sont Routines · Démarrer · Profil.
 - **D80** — Dépendances d'Expo Go seulement.
 - **D82** — *Révisée par D316.* Le mobile crée, modifie et supprime les routines sans le web.
-- **D83** — *Révisée par D316.* Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
+- **D83** — *Révisée par D316, rétablie en gris par D321.* Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
 - **D84** — *Révisée par D316.* Les muscles se peignent en couleur d'action : exception bornée au dessin du corps.
 - **D85** — La copie de travail de l'éditeur de routine vit dans `shared`
   (`brouillon-routine.ts`), le système d'unités en paramètre.

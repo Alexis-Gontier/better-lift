@@ -5,6 +5,7 @@ import { ChevronLeft, Play } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { CarteExerciceRoutine } from "@/components/routine/carte-exercice-routine";
+import { CarteMuscles } from "@/components/routine/carte-muscles";
 import { RepereSuperset } from "@/components/seance/repere-superset";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
@@ -92,6 +93,7 @@ export default function PageRoutine() {
           <Text>Lancer</Text>
         </Button>
         {routine.note ? <Text className="text-muted-foreground">{routine.note}</Text> : null}
+        <CarteMuscles exercices={exercices} />
 
         <View className="gap-2">
           <View className="flex-row items-center justify-between">

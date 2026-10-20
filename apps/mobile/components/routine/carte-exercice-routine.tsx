@@ -55,22 +55,22 @@ export function CarteExerciceRoutine({
         <Icon as={ouvert ? ChevronDown : ChevronRight} className="size-5 text-muted-foreground" />
         {exercice.image ? (
           // Fond blanc : les images du catalogue sont détourées sur blanc.
-          <View className="size-10 overflow-hidden rounded-full bg-white">
+          <View className="size-12 overflow-hidden rounded-md bg-white">
             <Image
               source={{ uri: exercice.image }}
-              style={{ width: 40, height: 40 }}
+              style={{ width: 48, height: 48 }}
               contentFit="cover"
               cachePolicy="disk"
               autoplay={false}
             />
           </View>
         ) : (
-          <View className="size-10 items-center justify-center rounded-full bg-secondary">
+          <View className="size-12 items-center justify-center rounded-md bg-secondary">
             <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
           </View>
         )}
         <View className="flex-1 gap-0.5">
-          <Text className="font-medium" numberOfLines={2}>
+          <Text className="font-medium" numberOfLines={1}>
             {exercice.nom}
           </Text>
           <Text className="text-muted-foreground text-sm" numberOfLines={1}>
