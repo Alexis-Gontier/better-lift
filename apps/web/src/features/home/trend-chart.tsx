@@ -31,7 +31,9 @@ const tonnes = (kg: number) =>
 
 /**
  * La tendance (D330) : un point par semaine, ou par mois sur un an, en aire. L'aire lit
- * l'évolution d'un coup d'œil ; un intervalle vide tombe à zéro, il se voit.
+ * l'évolution d'un coup d'œil ; un intervalle vide tombe à zéro, il se voit. Le dernier
+ * intervalle n'est pas fini : son segment est en pointillé (D333), pour qu'un début de semaine
+ * ne se lise pas comme une chute.
  */
 export function TrendChart({
   points,
@@ -46,6 +48,13 @@ export function TrendChart({
   const date = (d: string) =>
     unite === "mois" ? formatShortMonth(d.slice(0, 7)) : formatShortDay(d);
   const total = points.reduce((n, p) => n + p[mesure], 0);
+  // Deux séries qui se rejoignent sur l'avant-dernier point : le fini, puis l'en-cours.
+  const dernier = points.length - 1;
+  const donnees = points.map((p, i) => ({
+    debut: p.debut,
+    fini: i < dernier ? p[mesure] : null,
+    enCours: i >= dernier - 1 ? p[mesure] : null,
+  }));
   return (
     <Card className={className}>
       <CardHeader>
@@ -68,7 +77,7 @@ export function TrendChart({
       {/* Le graphique prend toute la hauteur de la carte, alignée sur celle des muscles. */}
       <CardContent className="flex flex-1 flex-col">
         <ChartContainer config={chartConfig} className="aspect-auto min-h-64 w-full flex-1">
-          <AreaChart data={points} margin={{ left: 0, right: 8, top: 8 }}>
+          <AreaChart data={donnees} margin={{ left: 0, right: 8, top: 8 }}>
             <defs>
               {/* Le dégradé suit la couleur de la série, donc le thème. */}
               <linearGradient id="tendance-aire" x1="0" y1="0" x2="0" y2="1">
@@ -92,27 +101,45 @@ export function TrendChart({
               tickFormatter={mesure === "volumeKg" ? tonnes : formatNumber}
             />
             <ChartTooltip
-              content={
+              content={({ active, payload, label }) => (
                 <ChartTooltipContent
+                  active={active}
+                  label={label}
+                  // Au point de jonction, les deux séries portent la même valeur : une seule ligne.
+                  payload={payload?.slice(0, 1)}
                   labelFormatter={(_, p) => {
                     const d = String(p[0]?.payload?.debut ?? "");
-                    return unite === "mois"
-                      ? formatMonth(d.slice(0, 7))
-                      : `Semaine du ${formatShortDay(d)}`;
+                    const libelle =
+                      unite === "mois"
+                        ? formatMonth(d.slice(0, 7))
+                        : `Semaine du ${formatShortDay(d)}`;
+                    return d === points[dernier]?.debut ? `${libelle} (en cours)` : libelle;
                   }}
                   formatter={(v) =>
                     mesure === "volumeKg" ? formatKg(Number(v)) : plural(Number(v), "séance")
                   }
                 />
-              }
+              )}
             />
             <Area
-              dataKey={mesure}
+              dataKey="fini"
+              name={mesure}
               // Monotone : la courbe ne passe jamais sous zéro entre deux points.
               type="monotone"
               stroke={`var(--color-${mesure})`}
               strokeWidth={2}
               fill="url(#tendance-aire)"
+              isAnimationActive={false}
+            />
+            <Area
+              dataKey="enCours"
+              name={mesure}
+              type="monotone"
+              stroke={`var(--color-${mesure})`}
+              strokeWidth={2}
+              strokeDasharray="4 4"
+              fill="url(#tendance-aire)"
+              fillOpacity={0.5}
               isAnimationActive={false}
             />
           </AreaChart>

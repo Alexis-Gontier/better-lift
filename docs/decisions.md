@@ -387,6 +387,9 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   à la zone la plus travaillée de la période ; légende « Moins · Plus », le compte de séries au
   survol d'une zone et dans le libellé accessible. Les autres silhouettes (exercice, routine,
   mobile) gardent principal / secondaire.
+- **D333** — Sur la tendance de l'Accueil, le dernier intervalle (semaine ou mois en cours) n'est
+  pas fini : son segment est en pointillé, l'infobulle dit « (en cours) ». Un lundi ne se lit
+  plus comme une chute. Il reste affiché plutôt qu'écarté : la semaine en cours compte.
 - **D289** — Paramètres s'ouvre par le menu du compte ou la palette, pas par la barre.
 - **D290** — Barre latérale en une liste : Accueil, Routines, Historique, Exercices.
 - **D294** — Ce qui n'est pas branché quitte l'interface (import Hevy, export JSON, préférences
