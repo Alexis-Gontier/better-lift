@@ -21,7 +21,7 @@ export function PreparerHorsLigne() {
 
   useEffect(() => {
     if (!routines.data) return;
-    for (const r of routines.data) {
+    for (const r of routines.data.routines) {
       void client
         .fetchQuery(optionsRoutine(r.id))
         .then((d) => {
