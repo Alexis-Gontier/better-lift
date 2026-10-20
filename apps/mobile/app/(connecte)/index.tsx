@@ -1,42 +1,27 @@
 import { routineASuivre } from "@better-lift/shared";
 import { useInfiniteQuery, useQueries, useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { Plus, User } from "lucide-react-native";
+import { Plus } from "lucide-react-native";
 import { FlatList, View } from "react-native";
 import { LigneRoutine } from "@/components/accueil/ligne-routine";
-import { BandeauSeance } from "@/components/bandeau-seance";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
 import { Chargement, Erreur, Vide } from "@/components/ui/etats";
 import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
+import { TitreOnglet } from "@/components/ui/titre-onglet";
 import { useDemarrer } from "@/lib/demarrer";
 import { optionsRoutine, optionsRoutines, optionsSeances } from "@/lib/requetes";
 
 /**
- * L'accueil, seul écran de navigation (D316) : la séance vide, les routines qui
- * se lancent d'un appui, le Profil en haut à droite, la séance en cours en bas.
+ * L'onglet Routines (D316, D319) : la séance vide, les routines qui se lancent
+ * d'un appui. La séance en cours s'affiche au-dessus de la barre d'onglets.
  */
 export default function Accueil() {
-  const router = useRouter();
   const { vide, routine, ouverture } = useDemarrer();
   return (
-    <Ecran className="flex-1 bg-background" edges={["top", "bottom"]}>
-      <View className="h-14 flex-row items-center justify-between pr-2 pl-4">
-        <Text className="font-semibold text-2xl" accessibilityRole="header">
-          Routines
-        </Text>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-12"
-          onPress={() => router.push("/profil")}
-          accessibilityLabel="Profil"
-        >
-          <Icon as={User} className="size-6 text-foreground" />
-        </Button>
-      </View>
+    <Ecran className="flex-1 bg-background" edges={["top"]}>
+      <TitreOnglet titre="Routines" />
       <View className="px-4 pb-3">
         <Button variant="outline" className="h-12" onPress={() => void vide()}>
           <Icon as={Plus} className="size-5 text-foreground" />
@@ -44,7 +29,6 @@ export default function Accueil() {
         </Button>
       </View>
       <ListeRoutines onLancer={(id) => void routine(id)} ouverture={ouverture} />
-      <BandeauSeance />
     </Ecran>
   );
 }

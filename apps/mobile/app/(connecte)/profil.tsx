@@ -8,10 +8,10 @@ import { Pressable, ScrollView, Switch, View } from "react-native";
 import { FileEnvoi } from "@/components/file-envoi";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
-import { EnteteRetour } from "@/components/ui/entete-retour";
 import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
+import { TitreOnglet } from "@/components/ui/titre-onglet";
 import { authClient } from "@/lib/auth-client";
 import { useConfirmer, useFeuille } from "@/lib/confirmation";
 import { persister } from "@/lib/hors-ligne";
@@ -88,8 +88,8 @@ export default function Profil() {
       : void seDeconnecter();
 
   return (
-    <Ecran className="flex-1 bg-background" edges={["top", "bottom"]}>
-      <EnteteRetour titre="Profil" />
+    <Ecran className="flex-1 bg-background" edges={["top"]}>
+      <TitreOnglet titre="Profil" />
       <ScrollView contentContainerClassName="gap-4 px-4 pb-8">
         {/* Rien en attente : la section n'existe pas (D175). */}
         <FileEnvoi />
