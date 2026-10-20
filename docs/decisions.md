@@ -54,6 +54,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   (ni Lucide, ni accessoire au-dessus de la barre sous Android). Le bandeau « Reprendre » se
   pose au-dessus de la barre, sur les trois onglets ; « Séance vide » reste en tête de Routines.
   L'onglet Historique n'a qu'un état vide pour l'instant ; son contenu viendra.
+- **D326** — Révise D316 et D322 (« les écrans restent sans logo ») pour la seule connexion du
+  mobile : le logo « La charge » (tuile de l'icône, 72) et le nom, centrés dans le haut que le
+  formulaire laisse libre. `components/logo.tsx` le dessine en `react-native-svg` aux couleurs
+  du thème (`primary` / `primary-foreground`), donc inversé en sombre comme le favicon (D323).
 - **D320** — *Révisée par D321 (la carte a deux actions).* Révise D298 : l'onglet Routines du mobile range les routines **par dossier**, comme
   le web (D257) — têtes repliables (chevron, nom, nombre ; tout déplié à l'ouverture, l'état
   replié n'est pas gardé), « Sans dossier » en dernier, aucune tête quand le compte n'a pas de

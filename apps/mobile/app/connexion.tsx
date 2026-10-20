@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, type TextInput, View } from "react-native";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
 import { Icon } from "@/components/ui/icon";
@@ -20,7 +21,7 @@ const MESSAGES: Record<GenreRefus, string> = {
 };
 
 /**
- * Le nom en texte, sans logo (D229, D316), le formulaire en bas : le bouton
+ * Le logo et le nom (D326), le formulaire en bas : le bouton
  * tombe sous le pouce, et le clavier remonte le tout plutôt que de le recouvrir.
  */
 export default function Connexion() {
@@ -62,7 +63,11 @@ export default function Connexion() {
           contentContainerClassName="grow justify-end gap-6 p-6"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="font-semibold text-muted-foreground">better-lift</Text>
+          {/* Le logo occupe le haut, que le formulaire laisse libre ; le clavier le resserre. */}
+          <View className="flex-1 items-center justify-center gap-3 py-6">
+            <Logo taille={72} />
+            <Text className="font-semibold text-xl">better-lift</Text>
+          </View>
           <View className="gap-1">
             <Text className="font-semibold text-2xl" accessibilityRole="header">
               Connexion
