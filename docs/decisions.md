@@ -287,6 +287,9 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 
 - **D228** — Hors shadcn, tout composant externe se fait valider avant installation.
 - **D229** — Pas de logo : le nom « better-lift » en texte (`Brand`).
+- **D323** — Complète D229 : l'onglet porte l'icône de l'app mobile (D322) en favicon
+  (`apps/web/public` : `favicon.svg`, inversé en mode sombre comme le `primary` ; `favicon.ico`
+  16–48 px ; `apple-touch-icon.png`). Les écrans gardent le nom en texte.
 - **D231** — shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
   (`components/ui/**`) reste tel que livré ; Biome n'y lève pas les règles d'accessibilité.
 - **D232** — Clavier : Ctrl K (palette) et Ctrl B (barre latérale) seulement.
