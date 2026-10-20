@@ -33,7 +33,7 @@ function jourEnMs(cle: string): number {
 }
 
 /** Le lundi de la semaine de `maintenant` dans le fuseau, et le rang du jour (0 = lundi). */
-export function lundiCourant(maintenant: Date, fuseau: string): { lundiMs: number; rang: number } {
+function lundiCourant(maintenant: Date, fuseau: string): { lundiMs: number; rang: number } {
   const aujourdhuiMs = jourEnMs(cleJour(maintenant.toISOString(), fuseau));
   // getUTCDay : 0 = dimanche. On veut 0 = lundi.
   const rang = (new Date(aujourdhuiMs).getUTCDay() + 6) % 7;

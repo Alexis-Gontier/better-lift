@@ -5,10 +5,10 @@ import { Keyboard, Pressable, type TextInput, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { PLAFOND_TEXTE_DENSE } from "@/lib/theme";
 import { SYSTEME_UNITES } from "@/lib/unites";
 import { cn } from "@/lib/utils";
 import { vibrer } from "@/lib/vibrations";
+import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 
 /**
  * Les états d'une ligne (D116), comme une case à cocher : à faire, la case est
@@ -20,7 +20,7 @@ export type EtatSerie = "faite" | "prochaine" | "a-venir";
 /** La ligne « dernière fois » : « 82,5 × 6 », « 10 reps », ou un tiret. */
 function textePrecedent(p?: { reps: number | null; chargeKg: number | null; faite: boolean }) {
   if (!p?.faite) return "—";
-  if (p.chargeKg === null) return `${p.reps ?? "—"} reps`;
+  if (p.chargeKg === null) return p.reps === null ? "—" : `${p.reps} reps`;
   return `${chargeEnTexte(p.chargeKg, SYSTEME_UNITES)} × ${p.reps ?? "—"}`;
 }
 

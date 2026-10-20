@@ -3,7 +3,6 @@ import { Modal, Pressable, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { creerStyles, espace, rayon } from "../../lib/theme";
 
 /** Tirée de 80 px vers le bas, ou lancée plus vite que 800 px/s, la feuille se ferme. */
 const SEUIL_FERMETURE = 80;
@@ -22,7 +21,6 @@ export function FeuilleBasse({
   onFermer: () => void;
   children: ReactNode;
 }) {
-  const styles = useStyles();
   const { bottom } = useSafeAreaInsets();
   // La feuille suit le doigt vers le bas, jamais vers le haut. Relâchée trop
   // tôt, elle revient ; au-delà du seuil, elle se ferme — le geste attendu de
@@ -54,36 +52,20 @@ export function FeuilleBasse({
     >
       {/* Sous Android, le contenu d'un Modal vit hors de la racine des gestes de
           l'app : il lui faut la sienne. */}
-      <GestureHandlerRootView style={styles.racine}>
-        <Pressable style={styles.voile} onPress={onFermer} accessibilityLabel="Fermer" />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Pressable className="flex-1 bg-black/50" onPress={onFermer} accessibilityLabel="Fermer" />
         <GestureDetector gesture={glisser}>
-          <Animated.View style={[styles.feuille, { paddingBottom: bottom + espace.s }, suivre]}>
-            <View style={styles.poignee} />
-            {children}
+          <Animated.View style={[{ maxHeight: "85%" }, suivre]}>
+            <View
+              className="rounded-t-2xl border-border border-t bg-popover px-2 pt-2"
+              style={{ paddingBottom: bottom + 8 }}
+            >
+              <View className="mb-2 h-1 w-9 self-center rounded-full bg-border" />
+              {children}
+            </View>
           </Animated.View>
         </GestureDetector>
       </GestureHandlerRootView>
     </Modal>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  racine: { flex: 1 },
-  voile: { flex: 1, backgroundColor: couleurs.voile },
-  feuille: {
-    maxHeight: "85%",
-    backgroundColor: couleurs.surface2,
-    borderTopLeftRadius: rayon.feuille,
-    borderTopRightRadius: rayon.feuille,
-    paddingHorizontal: espace.s,
-    paddingTop: espace.s,
-  },
-  poignee: {
-    alignSelf: "center",
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: couleurs.ligneForte,
-    marginBottom: espace.s,
-  },
-}));

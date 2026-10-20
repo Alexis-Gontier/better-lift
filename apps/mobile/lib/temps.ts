@@ -38,7 +38,3 @@ export function libelleRepos(sec: number | null): string {
 export function nouvelId(): string {
   return `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
-
-/** La durée d'une séance en minutes, arrondie : on lit « 62 min », pas « 61,7 ». */
-export const dureeMin = (s: { debut: string; fin: string }) =>
-  Math.round((Date.parse(s.fin) - Date.parse(s.debut)) / 60000);

@@ -32,8 +32,7 @@
           "icon": "./assets/monochrome.png",
           "color": "#f47a20"
         }
-      ],
-      "expo-sharing"
+      ]
     ],
     "android": {
       "package": "com.algont.betterlift",

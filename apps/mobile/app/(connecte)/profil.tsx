@@ -1,47 +1,35 @@
-import { formaterCharge, PREFERENCES_DEFAUT } from "@better-lift/shared";
+import { PREFERENCES_DEFAUT } from "@better-lift/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
-import { File, Paths } from "expo-file-system";
 import { useRouter } from "expo-router";
-import * as Sharing from "expo-sharing";
-import { ChevronRight, Download } from "lucide-react-native";
-import { type ReactNode, useState } from "react";
-import { ActivityIndicator, ScrollView, Switch, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { FileEnvoi } from "../../components/file-envoi";
-import { Appuyable } from "../../components/ui/appuyable";
-import { EnteteRetour } from "../../components/ui/entete-retour";
-import { Tuile } from "../../components/ui/tuile";
-import { authClient } from "../../lib/auth-client";
-import { useConfirmer, useFeuille, useInformer } from "../../lib/confirmation";
-import { persister } from "../../lib/hors-ligne";
-import {
-  chargerExport,
-  optionsBilan,
-  optionsPreferences,
-  useEcrirePreferences,
-} from "../../lib/requetes";
-import { useSeance } from "../../lib/seance";
-import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
-import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
-import { type ChoixTheme, useChoixTheme } from "../../lib/theme-choix";
-import { SYSTEME_UNITES } from "../../lib/unites";
-import { useVibrations } from "../../lib/vibrations";
+import { ChevronRight } from "lucide-react-native";
+import type { ReactNode } from "react";
+import { Pressable, ScrollView, Switch, View } from "react-native";
+import { FileEnvoi } from "@/components/file-envoi";
+import { Button } from "@/components/ui/button";
+import { Ecran } from "@/components/ui/ecran";
+import { EnteteRetour } from "@/components/ui/entete-retour";
+import { Icon } from "@/components/ui/icon";
+import { Separator } from "@/components/ui/separator";
+import { Text } from "@/components/ui/text";
+import { authClient } from "@/lib/auth-client";
+import { useConfirmer, useFeuille } from "@/lib/confirmation";
+import { persister } from "@/lib/hors-ligne";
+import { optionsPreferences, useEcrirePreferences } from "@/lib/requetes";
+import { useSeance } from "@/lib/seance";
+import { CHOIX_REPOS, libelleRepos } from "@/lib/temps";
+import { type ChoixTheme, useChoixTheme } from "@/lib/theme-choix";
+import { cn } from "@/lib/utils";
+import { useVibrations } from "@/lib/vibrations";
 
-const DEPUIS = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" });
 const THEMES: Record<ChoixTheme, string> = { systeme: "Système", sombre: "Sombre", clair: "Clair" };
-const libelleObjectif = (n: number | null) =>
-  n ? `${n} séance${n > 1 ? "s" : ""} / semaine` : "Aucun";
 
 /**
- * Le profil (D128) : le bilan de toujours, l'entraînement (objectif, repos par
- * défaut — sur le compte, D129), les réglages du téléphone (thème, vibrations),
- * l'export, le compte et la file d'envoi. Aucun aplat : rien ici n'est
- * l'action principale d'une séance (D105).
+ * Le Profil, au minimum (D318) : ce qui sert en salle — thème, repos par défaut
+ * (sur le compte, D129), vibrations — et la déconnexion. Le bilan, l'objectif et
+ * l'export vivent sur le web. Une séance pas encore envoyée passe avant tout.
  */
 export default function Profil() {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
   const router = useRouter();
   const client = useQueryClient();
   const { data: session } = authClient.useSession();
@@ -49,24 +37,12 @@ export default function Profil() {
   const [vibrations, reglerVibrations] = useVibrations();
   const demander = useConfirmer();
   const enAttente = file.filter((e) => e.erreur === null).length;
-  const bilan = useQuery(optionsBilan());
   const preferences = useQuery(optionsPreferences());
   const ecrire = useEcrirePreferences();
   const [theme, reglerTheme] = useChoixTheme();
   const feuille = useFeuille();
-  const informer = useInformer();
-  const [exportEnCours, setExportEnCours] = useState(false);
   const prefs = preferences.data ?? PREFERENCES_DEFAUT;
 
-  const choisirObjectif = () =>
-    feuille({
-      titre: "Objectif hebdomadaire",
-      options: [null, 1, 2, 3, 4, 5, 6, 7].map((n) => ({
-        libelle: libelleObjectif(n),
-        choisie: prefs.objectifHebdo === n,
-        onPress: () => ecrire.mutate({ ...prefs, objectifHebdo: n }),
-      })),
-    });
   const choisirRepos = () =>
     feuille({
       titre: "Repos par défaut",
@@ -85,24 +61,6 @@ export default function Profil() {
         onPress: () => reglerTheme(t),
       })),
     });
-
-  // Toutes les séries en CSV, écrites dans le cache puis confiées au partage du
-  // système : l'utilisateur choisit où les envoyer (mail, Drive, fichiers).
-  const exporter = async () => {
-    setExportEnCours(true);
-    try {
-      const fichier = new File(Paths.cache, "better-lift.csv");
-      fichier.write(await chargerExport());
-      await Sharing.shareAsync(fichier.uri, {
-        mimeType: "text/csv",
-        dialogTitle: "Exporter mes séances",
-      });
-    } catch {
-      informer("Export impossible", "Vérifie la connexion, puis réessaie.");
-    } finally {
-      setExportEnCours(false);
-    }
-  };
 
   const seDeconnecter = async () => {
     await authClient.signOut();
@@ -130,205 +88,93 @@ export default function Profil() {
       : void seDeconnecter();
 
   return (
-    <SafeAreaView style={styles.ecran} edges={["top"]}>
-      {/* Plus un onglet (D316) : un retour vers l'accueil. */}
+    <Ecran className="flex-1 bg-background" edges={["top", "bottom"]}>
       <EnteteRetour titre="Profil" />
-      <ScrollView contentContainerStyle={styles.contenu}>
-        <View style={[styles.carte, styles.bilan]}>
-          <Text style={styles.nom} numberOfLines={1}>
-            {session?.user.name || session?.user.email || "—"}
-          </Text>
-          {bilan.data?.depuis ? (
-            <Text style={styles.detail}>Depuis {DEPUIS.format(Date.parse(bilan.data.depuis))}</Text>
-          ) : null}
-          <View style={styles.tuiles}>
-            <Tuile libelle="Séances" valeur={bilan.data ? String(bilan.data.nbSeances) : "—"} />
-            <Tuile
-              libelle="Soulevé au total"
-              valeur={bilan.data ? formaterCharge(bilan.data.volumeKg, SYSTEME_UNITES) : "—"}
-            />
-          </View>
-        </View>
-
-        {/* Une séance pas encore arrivée au serveur passe avant les réglages ; sans
-            rien en attente, la section n'existe pas (D175). */}
+      <ScrollView contentContainerClassName="gap-4 px-4 pb-8">
+        {/* Rien en attente : la section n'existe pas (D175). */}
         <FileEnvoi />
 
-        <Section titre="Entraînement">
-          <Ligne
-            libelle="Objectif"
-            detail="Progrès dit les semaines tenues."
-            onPress={choisirObjectif}
-            inactif={!preferences.data}
-          >
-            <Text style={styles.valeur}>{libelleObjectif(prefs.objectifHebdo)}</Text>
+        <View className="overflow-hidden rounded-lg border border-border">
+          <Ligne libelle="Thème" onPress={choisirTheme}>
+            <Text className="text-muted-foreground">{THEMES[theme]}</Text>
           </Ligne>
+          <Separator />
           <Ligne
             libelle="Repos par défaut"
             detail="Pour les exercices sans repos propre."
             onPress={choisirRepos}
             inactif={!preferences.data}
-            dernier
           >
-            <Text style={styles.valeur}>
+            <Text className="text-muted-foreground">
               {prefs.reposDefautSec ? libelleRepos(prefs.reposDefautSec) : "Aucun"}
             </Text>
           </Ligne>
-        </Section>
-
-        <Section titre="Ce téléphone">
-          <Ligne libelle="Thème" detail="Ce téléphone seulement." onPress={choisirTheme}>
-            <Text style={styles.valeur}>{THEMES[theme]}</Text>
-          </Ligne>
-          <Ligne libelle="Vibrations" detail="Série validée, fin du repos." dernier>
+          <Separator />
+          <Ligne libelle="Vibrations" detail="Série validée, fin du repos.">
             <Switch
               value={vibrations}
               onValueChange={reglerVibrations}
               accessibilityLabel="Vibrations"
-              // Un état, ni une action ni un record : l'encre, pas l'orange.
-              trackColor={{ true: couleurs.encre, false: couleurs.surface3 }}
-              thumbColor={couleurs.surface1}
+              trackColorOnClassName="accent-primary"
+              trackColorOffClassName="accent-input"
+              thumbColorClassName="accent-background"
             />
           </Ligne>
-        </Section>
+        </View>
 
-        <Section titre="Données">
-          <Ligne
-            libelle="Exporter mes séances"
-            detail="Toutes les séries, en CSV."
-            onPress={() => void exporter()}
-            inactif={exportEnCours}
-            dernier
-          >
-            {exportEnCours ? (
-              <ActivityIndicator size="small" color={couleurs.encreTertiaire} />
-            ) : (
-              <Download size={20} color={couleurs.encreSecondaire} />
-            )}
-          </Ligne>
-        </Section>
+        <View className="gap-0.5 px-1">
+          <Text className="text-muted-foreground text-sm" numberOfLines={1}>
+            {session?.user.email ?? "—"}
+          </Text>
+          <Text className="text-muted-foreground text-sm">
+            Version {Constants.expoConfig?.version ?? "—"}
+          </Text>
+        </View>
 
-        <Section titre="Compte">
-          <Ligne libelle="Adresse">
-            <Text style={styles.valeur} numberOfLines={1}>
-              {session?.user.email ?? "—"}
-            </Text>
-          </Ligne>
-          <Ligne libelle="Version" dernier>
-            <Text style={styles.valeur}>{Constants.expoConfig?.version ?? "—"}</Text>
-          </Ligne>
-        </Section>
-
-        <Appuyable style={styles.deconnexion} onPress={confirmer} accessibilityRole="button">
-          <Text style={styles.dangerTexte}>Se déconnecter</Text>
-        </Appuyable>
+        <Button variant="outline" className="h-12" onPress={confirmer}>
+          <Text className="text-destructive">Se déconnecter</Text>
+        </Button>
       </ScrollView>
-    </SafeAreaView>
-  );
-}
-
-function Section({ titre, children }: { titre: string; children: ReactNode }) {
-  const styles = useStyles();
-  return (
-    <View>
-      <Text style={styles.section} accessibilityRole="header">
-        {titre}
-      </Text>
-      <View style={styles.carte}>{children}</View>
-    </View>
+    </Ecran>
   );
 }
 
 function Ligne({
   libelle,
   detail,
-  dernier,
   onPress,
   inactif,
   children,
 }: {
   libelle: string;
   detail?: string;
-  dernier?: boolean;
   /** Une ligne qui ouvre un choix : appuyable en entier, chevron au bout. */
   onPress?: () => void;
   inactif?: boolean;
   children: ReactNode;
 }) {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
   const contenu = (
     <>
-      <View style={styles.gauche}>
-        <Text style={styles.libelle}>{libelle}</Text>
-        {detail ? <Text style={styles.detail}>{detail}</Text> : null}
+      <View className="flex-1 gap-0.5">
+        <Text className="font-medium">{libelle}</Text>
+        {detail ? <Text className="text-muted-foreground text-sm">{detail}</Text> : null}
       </View>
       {children}
-      {onPress ? <ChevronRight size={18} color={couleurs.encreAttenuee} /> : null}
+      {onPress ? <Icon as={ChevronRight} className="size-4.5 text-muted-foreground" /> : null}
     </>
   );
+  const classe = "min-h-14 flex-row items-center gap-3 px-4 py-3";
   return onPress ? (
-    <Appuyable
+    <Pressable
       onPress={onPress}
       disabled={inactif}
-      style={[styles.ligne, !dernier && styles.separe, inactif && styles.inactif]}
+      className={cn(classe, "active:bg-accent", inactif && "opacity-50")}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!inactif }}
     >
       {contenu}
-    </Appuyable>
+    </Pressable>
   ) : (
-    <View style={[styles.ligne, !dernier && styles.separe]}>{contenu}</View>
+    <View className={classe}>{contenu}</View>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  ecran: { flex: 1, backgroundColor: couleurs.canevas },
-  contenu: { paddingHorizontal: espace.l, paddingBottom: espace.xxl, gap: espace.l },
-  section: {
-    color: couleurs.encreAttenuee,
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: espace.s,
-  },
-  carte: {
-    borderRadius: rayon.carte,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface1,
-  },
-  ligne: {
-    minHeight: CIBLE + 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    paddingHorizontal: espace.l,
-    paddingVertical: espace.s,
-  },
-  separe: { borderBottomWidth: 1, borderBottomColor: couleurs.ligne },
-  inactif: { opacity: 0.5 },
-  bilan: { padding: espace.l, gap: espace.xs },
-  nom: { ...affiche, color: couleurs.encre, fontSize: taille.grand + 4 },
-  tuiles: { flexDirection: "row", gap: espace.m, marginTop: espace.m },
-  // Le libellé prend la place libre et pousse la valeur ou l'interrupteur au bord.
-  gauche: { flex: 1, minWidth: 96, gap: 2 },
-  libelle: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  detail: { color: couleurs.encreTertiaire, fontSize: taille.petit },
-  valeur: {
-    flexShrink: 1,
-    textAlign: "right",
-    color: couleurs.encreSecondaire,
-    fontSize: taille.courant,
-  },
-  deconnexion: {
-    minHeight: CIBLE,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderColor: couleurs.ligneForte,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dangerTexte: { color: couleurs.dangerEncre, fontSize: taille.courant, fontWeight: "600" },
-}));

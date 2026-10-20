@@ -1,4 +1,4 @@
-export { resumeSemaine, routineASuivre } from "./accueil.js";
+export { routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
 export { apercuExercices } from "./apercu.js";
 export {

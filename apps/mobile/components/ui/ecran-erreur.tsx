@@ -1,8 +1,8 @@
 import type { ErrorBoundaryProps } from "expo-router";
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { CIBLE, creerStyles, espace, rayon, taille } from "../../lib/theme";
-import { Appuyable } from "./appuyable";
+import { View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Ecran } from "@/components/ui/ecran";
+import { Text } from "@/components/ui/text";
 
 /**
  * Ce qu'Expo Router affiche quand un écran plante, au lieu d'un écran mort
@@ -14,20 +14,19 @@ export function EcranErreur({
   retry,
   message = "L'écran n'a pas pu s'afficher. Réessaie ; si ça recommence, relance l'application.",
 }: ErrorBoundaryProps & { message?: string }) {
-  const styles = useStyles();
   return (
-    <SafeAreaView style={styles.ecran}>
-      <View style={styles.centre} accessibilityRole="alert">
-        <Text style={styles.titre} accessibilityRole="header">
+    <Ecran className="flex-1 bg-background p-6">
+      <View className="flex-1 justify-center gap-3" accessibilityRole="alert">
+        <Text className="font-semibold text-2xl" accessibilityRole="header">
           Quelque chose s'est mal passé.
         </Text>
-        <Text style={styles.texte}>{message}</Text>
-        {__DEV__ ? <Text style={styles.detail}>{error.message}</Text> : null}
+        <Text className="text-muted-foreground">{message}</Text>
+        {__DEV__ ? <Text className="text-destructive text-sm">{error.message}</Text> : null}
       </View>
-      <Appuyable onPress={retry} style={styles.bouton} accessibilityRole="button">
-        <Text style={styles.boutonTexte}>Réessayer</Text>
-      </Appuyable>
-    </SafeAreaView>
+      <Button className="h-12" onPress={retry}>
+        <Text>Réessayer</Text>
+      </Button>
+    </Ecran>
   );
 }
 
@@ -40,19 +39,3 @@ export function EcranErreurSeance(props: ErrorBoundaryProps) {
     />
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  ecran: { flex: 1, backgroundColor: couleurs.canevas, padding: espace.xl },
-  centre: { flex: 1, justifyContent: "center", gap: espace.m },
-  titre: { color: couleurs.encre, fontSize: taille.titre, fontWeight: "600" },
-  texte: { color: couleurs.encreSecondaire, fontSize: taille.courant, lineHeight: 22 },
-  detail: { color: couleurs.dangerEncre, fontSize: taille.petit },
-  bouton: {
-    minHeight: CIBLE + 8,
-    borderRadius: rayon.bouton,
-    backgroundColor: couleurs.action,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  boutonTexte: { color: couleurs.surAction, fontSize: taille.courant, fontWeight: "700" },
-}));

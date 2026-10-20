@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -7,21 +7,19 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { CIBLE, creerStyles, espace, rayon, taille } from "../../lib/theme";
-import { Appuyable } from "./appuyable";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 
 /**
  * Les quatre états de chaque écran (chargement, erreur, vide — le nominal est
  * l'écran lui-même). Une seule implémentation : un écran qui les dessinerait à
  * sa façon finirait par en oublier un.
- */
-/**
- * Le chargement d'une page (D176) : un squelette de cartes, pas un indicateur
- * au milieu du contenu (NN/g : de 1 à 10 s, la forme de la page rassure). Il
- * pulse doucement, immobile si le téléphone demande moins d'animations.
+ *
+ * Le chargement d'une page (D176) : un squelette de lignes, pas un indicateur
+ * au milieu du contenu. Il pulse doucement, immobile si le téléphone demande
+ * moins d'animations.
  */
 export function Chargement() {
-  const styles = useStyles();
   const reduit = useReducedMotion();
   const opacite = useSharedValue(1);
   useEffect(() => {
@@ -31,61 +29,38 @@ export function Chargement() {
   const pulse = useAnimatedStyle(() => ({ opacity: opacite.value }));
   return (
     <Animated.View
-      style={[styles.squelette, pulse]}
+      style={[{ flex: 1 }, pulse]}
       accessible
       accessibilityLabel="Chargement"
       accessibilityRole="progressbar"
     >
-      <View style={[styles.bloc, { height: 96 }]} />
-      <View style={[styles.bloc, { height: 64 }]} />
-      <View style={[styles.bloc, { height: 64 }]} />
+      <View className="flex-1 gap-3 p-4">
+        <View className="h-14 rounded-md bg-muted" />
+        <View className="h-14 rounded-md bg-muted" />
+        <View className="h-14 rounded-md bg-muted" />
+      </View>
     </Animated.View>
   );
 }
 
 export function Erreur({ message, onReessayer }: { message: string; onReessayer: () => void }) {
-  const styles = useStyles();
   return (
-    <View style={styles.centre}>
-      <Text style={styles.texte}>{message}</Text>
-      <Appuyable onPress={onReessayer} style={styles.bouton} accessibilityRole="button">
-        <Text style={styles.boutonTexte}>Réessayer</Text>
-      </Appuyable>
+    <View className="flex-1 items-center justify-center gap-3 p-6">
+      <Text className="text-center text-muted-foreground">{message}</Text>
+      <Button variant="outline" className="h-12" onPress={onReessayer}>
+        <Text>Réessayer</Text>
+      </Button>
     </View>
   );
 }
 
 export function Vide({ titre, message }: { titre: string; message: string }) {
-  const styles = useStyles();
   return (
-    <View style={styles.centre}>
-      <Text style={styles.titre} accessibilityRole="header">
+    <View className="flex-1 items-center justify-center gap-2 p-6">
+      <Text className="font-semibold" accessibilityRole="header">
         {titre}
       </Text>
-      <Text style={styles.texte}>{message}</Text>
+      <Text className="text-center text-muted-foreground">{message}</Text>
     </View>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  squelette: { flex: 1, gap: espace.m, padding: espace.l },
-  bloc: { borderRadius: rayon.carte, backgroundColor: couleurs.surface1 },
-  centre: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: espace.m,
-    padding: espace.xl,
-  },
-  titre: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  texte: { color: couleurs.encreTertiaire, fontSize: taille.petit + 1, textAlign: "center" },
-  bouton: {
-    minHeight: CIBLE,
-    paddingHorizontal: espace.xl,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderColor: couleurs.ligneForte,
-    justifyContent: "center",
-  },
-  boutonTexte: { color: couleurs.encre, fontSize: taille.courant },
-}));
