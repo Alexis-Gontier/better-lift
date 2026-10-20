@@ -114,7 +114,9 @@ export {
 export {
   type Bornes,
   bornesPeriode,
+  type ChargeZone,
   type ChiffresCles,
+  chargeMuscles,
   chiffresCles,
   depuisPour,
   type FaitSeance,
@@ -123,7 +125,6 @@ export {
   type Periode,
   type RecordSeance,
   recordsRecents,
-  repartitionMuscles,
   requeteTableauDeBord,
   semaineEnCours,
   type TableauDeBord,

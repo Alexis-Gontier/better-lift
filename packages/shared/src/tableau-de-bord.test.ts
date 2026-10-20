@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   bornesPeriode,
+  chargeMuscles,
   chiffresCles,
   depuisPour,
   type FaitSeance,
   recordsRecents,
-  repartitionMuscles,
   requeteTableauDeBord,
   semaineEnCours,
   tendance,
@@ -22,7 +22,7 @@ const seance = (debut: string, p: Partial<FaitSeance> = {}): FaitSeance => ({
   fin: debut,
   seriesFaites: 10,
   volumeKg: 1000,
-  muscles: { principaux: ["Pectoraux", "Triceps"], secondaires: ["Épaules"] },
+  muscles: [{ principal: "Pectoraux", secondaires: ["Triceps", "Épaules"], series: 4 }],
   records: [],
   ...p,
 });
@@ -132,25 +132,38 @@ describe("tendance", () => {
   });
 });
 
-describe("repartitionMuscles", () => {
-  it("réunit les muscles de la période", () => {
+describe("chargeMuscles", () => {
+  it("compte 1 par série en principal, ½ en secondaire, sur la période", () => {
     const b = bornesPeriode("4s", MAINTENANT, PARIS);
-    const m = repartitionMuscles(
+    const m = chargeMuscles(
       [
         seance("2026-10-14T17:00:00.000Z"),
         seance("2026-10-13T17:00:00.000Z", {
-          muscles: { principaux: ["Quadriceps"], secondaires: ["Fessiers", "Pectoraux"] },
+          muscles: [
+            { principal: "Quadriceps", secondaires: ["Fessiers"], series: 4 },
+            // Le haut des pectoraux rejoint la zone principale : une seule fois, à 1.
+            { principal: "Pectoraux", secondaires: ["Haut des pectoraux"], series: 4 },
+          ],
         }),
         seance("2026-09-01T17:00:00.000Z", {
-          muscles: { principaux: ["Biceps"], secondaires: [] },
+          muscles: [{ principal: "Biceps", secondaires: [], series: 10 }],
         }), // hors période
       ],
       b,
       PARIS,
     );
-    expect(m.principaux).toEqual(["Pectoraux", "Triceps", "Quadriceps"]);
-    // Un muscle principal ailleurs n'est pas aussi secondaire.
-    expect(m.secondaires).toEqual(["Épaules", "Fessiers"]);
+    expect(m).toEqual([
+      { zone: "chest", series: 8, niveau: 4 },
+      { zone: "quadriceps", series: 4, niveau: 2 },
+      { zone: "triceps", series: 2, niveau: 1 },
+      { zone: "deltoids", series: 2, niveau: 1 },
+      { zone: "gluteal", series: 2, niveau: 1 },
+    ]);
+  });
+
+  it("rien sur la période : aucune zone", () => {
+    const b = bornesPeriode("4s", MAINTENANT, PARIS);
+    expect(chargeMuscles([seance("2026-09-01T17:00:00.000Z")], b, PARIS)).toEqual([]);
   });
 });
 

@@ -1,13 +1,13 @@
 import {
   type Bornes,
   bornesPeriode,
+  chargeMuscles,
   chiffresCles,
   depuisPour,
   LIBELLE_PERIODE,
   PERIODES,
   type Periode,
   recordsRecents,
-  repartitionMuscles,
   semaineEnCours,
   type TableauDeBord,
   tendance,
@@ -112,7 +112,6 @@ function Tableau({ donnees, bornes }: { donnees: TableauDeBord; bornes: Bornes }
   const maintenant = new Date();
   const { seances } = donnees;
   const semaine = semaineEnCours(seances, maintenant, FUSEAU);
-  const muscles = repartitionMuscles(seances, bornes, FUSEAU);
   return (
     <div className="flex flex-col gap-4">
       <ThisWeek
@@ -129,7 +128,7 @@ function Tableau({ donnees, bornes }: { donnees: TableauDeBord; bornes: Bornes }
           points={tendance(seances, bornes, FUSEAU)}
           unite={bornes.unite}
         />
-        <MusclesCard {...muscles} />
+        <MusclesCard charge={chargeMuscles(seances, bornes, FUSEAU)} />
       </div>
       <div className="grid @4xl:grid-cols-2 gap-4">
         <RecentSessions seances={seances.slice(0, 5)} />

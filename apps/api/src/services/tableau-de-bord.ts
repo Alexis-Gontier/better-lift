@@ -36,16 +36,13 @@ export const depotTableauDeBord: DepotTableauDeBord = {
 
     const seances = lignes.map((l): FaitSeance => {
       const detail = versDetail(l, anterieurA(histo, l.debut));
-      const principaux = new Set<string>();
-      const secondaires = new Set<string>();
+      const muscles: FaitSeance["muscles"] = [];
       for (const e of l.exercices) {
         const m = parExercice.get(e.exerciseId);
-        // Un exercice sans série faite hors échauffement (D5) n'a rien travaillé : il ne colore
-        // pas la silhouette.
-        const fait = e.series.some((s) => s.faite && s.type !== "ECHAUFFEMENT");
-        if (!m || !fait) continue;
-        principaux.add(m.target);
-        for (const s of m.secondary) secondaires.add(s);
+        // Seules les séries faites hors échauffement (D5) chauffent la silhouette (D332).
+        const series = e.series.filter((s) => s.faite && s.type !== "ECHAUFFEMENT").length;
+        if (!m || series === 0) continue;
+        muscles.push({ principal: m.target, secondaires: m.secondary, series });
       }
       return {
         id: detail.id,
@@ -54,10 +51,7 @@ export const depotTableauDeBord: DepotTableauDeBord = {
         fin: detail.fin,
         seriesFaites: detail.seriesFaites,
         volumeKg: detail.volumeKg,
-        muscles: {
-          principaux: [...principaux],
-          secondaires: [...secondaires].filter((m) => !principaux.has(m)),
-        },
+        muscles,
         records: detail.exercices.flatMap((e) =>
           e.series
             .filter((s) => s.records.length > 0)

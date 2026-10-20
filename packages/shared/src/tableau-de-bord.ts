@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { cleJour } from "./calendar.js";
+import { type Zone, zoneDuMuscle } from "./muscles.js";
 import type { TypeRecord } from "./records.js";
 
 /**
@@ -34,8 +35,11 @@ export type FaitSeance = {
   fin: string;
   seriesFaites: number;
   volumeKg: number;
-  /** Les muscles du catalogue, pour la carte du corps du web. */
-  muscles: { principaux: string[]; secondaires: string[] };
+  /**
+   * Un élément par exercice fait : ses muscles du catalogue et ses séries faites hors
+   * échauffement (D5), pour la carte de chaleur du web (D332).
+   */
+  muscles: { principal: string; secondaires: string[]; series: number }[];
   records: RecordSeance[];
 };
 
@@ -161,18 +165,41 @@ export function tendance(seances: readonly FaitSeance[], b: Bornes, fuseau: stri
   return points;
 }
 
-/** Les muscles travaillés sur la période, réunis pour la silhouette. */
-export function repartitionMuscles(seances: readonly FaitSeance[], b: Bornes, fuseau: string) {
-  const principaux = new Set<string>();
-  const secondaires = new Set<string>();
+/** Une zone de la silhouette et ses séries de la période ; `niveau` 4 = la plus travaillée. */
+export type ChargeZone = { zone: Zone; series: number; niveau: 1 | 2 | 3 | 4 };
+
+/**
+ * La carte de chaleur des muscles (D332), comme Hevy : une série compte 1 pour la zone du muscle
+ * principal, ½ pour chaque zone secondaire — une zone ne compte qu'une fois par exercice, au plus
+ * fort de ses rôles. Les niveaux se rapportent à la zone la plus travaillée, pour que la carte
+ * reste lisible sur 4 semaines comme sur un an. La plus travaillée d'abord.
+ */
+export function chargeMuscles(
+  seances: readonly FaitSeance[],
+  b: Bornes,
+  fuseau: string,
+): ChargeZone[] {
+  const total = new Map<Zone, number>();
   for (const s of seances.filter((x) => dans(x, b, fuseau))) {
-    for (const m of s.muscles.principaux) principaux.add(m);
-    for (const m of s.muscles.secondaires) secondaires.add(m);
+    for (const e of s.muscles) {
+      const poids = new Map<Zone, number>();
+      for (const m of e.secondaires) {
+        const z = zoneDuMuscle(m);
+        if (z) poids.set(z, 0.5);
+      }
+      const p = zoneDuMuscle(e.principal);
+      if (p) poids.set(p, 1);
+      for (const [z, w] of poids) total.set(z, (total.get(z) ?? 0) + w * e.series);
+    }
   }
-  return {
-    principaux: [...principaux],
-    secondaires: [...secondaires].filter((m) => !principaux.has(m)),
-  };
+  const max = Math.max(...total.values());
+  return [...total]
+    .sort((x, y) => y[1] - x[1])
+    .map(([zone, series]) => ({
+      zone,
+      series,
+      niveau: Math.min(4, Math.max(1, Math.ceil((series / max) * 4))) as ChargeZone["niveau"],
+    }));
 }
 
 /** Les `n` derniers records battus sur la période, la séance la plus récente d'abord. */

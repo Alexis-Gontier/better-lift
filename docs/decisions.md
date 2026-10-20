@@ -374,11 +374,19 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   dernier choix gardé dans le navigateur (`localStorage`, 3 mois par défaut ; ni URL ni
   gestionnaire d'état) ; quatre chiffres clés comparés à la période précédente (flèche et signe,
   sans couleur) ; tendance en aire (semaines, ou mois sur un an) et, à sa droite, la silhouette
-  des muscles travaillés (sans compte de séries) ; dernières séances et records récents côte à
+  des muscles en carte de chaleur (D332) ; dernières séances et records récents côte à
   côte. Pas de routine à suivre.
   `GET /tableau-de-bord?depuis=` rend les faits par séance (records rejoués sur tout
   l'historique, seuls les exercices faits colorent la silhouette) ; le web les agrège dans son
   fuseau par `shared/tableau-de-bord.ts`.
+- **D332** — Révise D330 et D331 pour l'Accueil : sur une période, principal / secondaire ne dit
+  plus rien (tout finit principal), la silhouette devient une **carte de chaleur des séries**,
+  comme Hevy. Une série faite hors échauffement compte 1 pour la zone du muscle principal, ½ pour
+  chaque zone secondaire, une zone une seule fois par exercice au plus fort de ses rôles
+  (`chargeMuscles`). Quatre teintes, du ton du corps vers l'encre (`color-mix`), paliers relatifs
+  à la zone la plus travaillée de la période ; légende « Moins · Plus », le compte de séries au
+  survol d'une zone et dans le libellé accessible. Les autres silhouettes (exercice, routine,
+  mobile) gardent principal / secondaire.
 - **D289** — Paramètres s'ouvre par le menu du compte ou la palette, pas par la barre.
 - **D290** — Barre latérale en une liste : Accueil, Routines, Historique, Exercices.
 - **D294** — Ce qui n'est pas branché quitte l'interface (import Hevy, export JSON, préférences

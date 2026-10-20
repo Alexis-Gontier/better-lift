@@ -65,7 +65,8 @@ Wireframe shadcn en gris, branché sur l'API. Décisions : `docs/decisions.md`, 
 - Composants shadcn plutôt que maison. **Tout composant externe hors shadcn se fait valider avant
   installation** (D228).
 - **Silhouette** (`BodyMap`, D331) : le dessin du mobile, tracés dans `body-map-traces.ts`
-  (données MIT, ne pas reformater à la main) ; elle prend des noms de muscles du catalogue.
+  (données MIT, ne pas reformater à la main) ; elle prend des noms de muscles du catalogue
+  (principal / secondaire), ou sur l'Accueil une carte de chaleur `charge` (D332).
 - La seule couleur porteuse de sens est le type de série (`lib/series.ts`, `SetBadge`) : W
   ambre, F rose (le rouge est au danger), D bleu.
 
