@@ -4,6 +4,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useCSSVariable } from "uniwind";
 import { ConfirmationProvider } from "../lib/confirmation";
 import {
   brancherReseauEtPremierPlan,
@@ -13,7 +14,6 @@ import {
   UNE_SEMAINE,
 } from "../lib/hors-ligne";
 import { SeanceProvider } from "../lib/seance";
-import { useCouleurs } from "../lib/theme";
 import { appliquerThemeGarde } from "../lib/theme-choix";
 
 // Le thème choisi dans le Profil (D128), appliqué dès le chargement : avant le
@@ -27,7 +27,8 @@ export { EcranErreur as ErrorBoundary } from "../components/ui/ecran-erreur";
 brancherReseauEtPremierPlan();
 
 export default function RootLayout() {
-  const couleurs = useCouleurs();
+  // Le fond des écrans pendant les transitions : le token, lu par Uniwind (D316).
+  const fond = useCSSVariable("--color-background") as string | undefined;
 
   return (
     // Le glisser-déposer (réorganiser la séance) exige la racine
@@ -51,7 +52,7 @@ export default function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: couleurs.canevas },
+                contentStyle: { backgroundColor: fond },
               }}
             >
               {/* L'accueil EN PREMIER : une pile qui déclare ses écrans prend le

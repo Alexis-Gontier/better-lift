@@ -5,10 +5,9 @@ paths:
 
 # Mobile
 
-Écrans depuis D316 : l'accueil (routines à lancer, séance vide), la séance (avec choix et
-réorganisation des exercices), la fin, le Profil, la connexion. Le mobile est repris en
-wireframe en trois lots (spec `docs/superpowers/specs/2026-10-20-mobile-wireframe-design.md`).
-Décisions : `docs/decisions.md`.
+Écrans (D316–D318) : l'accueil (routines à lancer, séance vide), la séance (avec choix et
+réorganisation des exercices), la fin, le Profil, la connexion. Style wireframe en gris, la
+direction artistique viendra après l'épreuve. Décisions : `docs/decisions.md`.
 
 ## Lancer (Expo Go)
 
@@ -46,12 +45,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **Metro ne relit `global.css`, les alias `@/` du `tsconfig` ni une dépendance ajoutée qu'au
   démarrage** : relancer avec `--clear`. Expo Go garde alors l'ancien bundle : `force-stop` puis
   le lien `exp://127.0.0.1:8081` deux fois.
-- **L'ancien thème est provisoire** : `lib/theme.ts` (`creerStyles`, `useCouleurs`) et
-  `lib/palette.ts`, passés au gris, ne servent plus qu'à la séance, la fin et le Profil jusqu'à
-  leur réécriture (lots 2 et 3). Ne pas l'étendre. `palette.test.ts` tient les contrastes et
-  l'absence de teinte.
 - **Thème** : Système · Sombre · Clair, gardé sur le téléphone (`lib/theme-choix.ts`), appliqué
-  par `Uniwind.setTheme` ET `Appearance.setColorScheme` (l'ancien thème lit `useColorScheme`).
+  par `Uniwind.setTheme` et `Appearance.setColorScheme` (composants natifs, barre d'état).
 - Cible de 48 au minimum ; un titre porte `accessibilityRole="header"`.
 - **Questions et menus : `useConfirmer` / `useFeuille` / `useInformer`** (`lib/confirmation.tsx`),
   jamais `Alert.alert` : l'alerte native reste blanche en sombre et ne distingue pas le danger.
@@ -60,7 +55,10 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **États** : `Chargement`, `Erreur`, `Vide` (`components/ui/etats.tsx`) ; une attente de moins
   d'une seconde n'affiche rien.
 - **Taille du texte du système** suivie partout, sauf dans les éléments de hauteur fixe de la
-  séance, plafonnés par `maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}`.
+  séance, plafonnés par `maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}`
+  (`components/seance/texte-dense.ts`).
+- Le fond des images du catalogue est blanc dans les deux thèmes (`bg-white`) : elles sont
+  détourées sur blanc.
 - **Écran de secours** : `ErrorBoundary` exporté par `app/_layout.tsx` et `app/seance.tsx`
   (`components/ui/ecran-erreur.tsx`) ; il ne lit aucun contexte de l'app.
 - `PortalHost` est posé à la racine : les menus et fenêtres de Reusables s'y rendent.
@@ -105,17 +103,16 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **Vibrations** : toujours par `lib/vibrations.ts`, jamais `expo-haptics` en direct — le réglage
   du Profil les coupe toutes là.
 - Écran maintenu allumé (`useKeepAwake`) ; vignettes par `expo-image` (cache disque).
-- **Fin de séance** : records battus calculés sur le téléphone (`recordsBattus`) contre les
+- **Fin de séance** (D318) : records battus calculés sur le téléphone (`recordsBattus`) contre les
   records en cache (`["records", slug]`, préchargés pour les exercices des routines) ; un
   exercice aux records inconnus est écarté. Sans série validée, rien ne s'enregistre. Une séance
   envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
 
-## Profil
+## Profil (D318)
 
-- Bilan de toujours (`GET /stats/bilan`), file d'envoi **seulement si une séance attend**, puis
-  Entraînement (objectif et repos par défaut, sur le compte, écrits de façon optimiste, gardés
-  hors ligne) · Ce téléphone (thème, vibrations) · Données (export CSV) · Compte. Réduit au
-  lot 3 (D316) : thème, repos par défaut, vibrations, déconnexion.
+- Thème, repos par défaut (sur le compte, écrit de façon optimiste, gardé hors ligne),
+  vibrations, file d'envoi **seulement si une séance attend**, déconnexion (prévient si une
+  séance est en cours ou attend). Le bilan, l'objectif et l'export vivent sur le web.
 
 ## Hors ligne (D96–D100)
 

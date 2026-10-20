@@ -40,6 +40,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   (−15 s / +15 s, Passer), comme Hevy ; l'horloge plein écran part. Les supersets restent, leur
   repère réduit à un filet gris. Toute écriture de l'écran part de la séance du moment
   (`changer`), pour que la fin d'une saisie et la coche qui ferme le clavier ne s'écrasent pas.
+- **D318** — Lot 3 de D316, qui clôt le chantier. Fin de séance : bilan (durée, séries,
+  volume), records battus dans un contour, note, séries non validées, hors ligne ; l'écart avec
+  la dernière séance et le message de régularité partent. Profil au minimum : thème, repos par
+  défaut, vibrations, file d'envoi si une séance attend, déconnexion ; le bilan, l'objectif et
+  l'export restent au web (`expo-file-system`, `expo-sharing` retirés). L'ancien thème
+  (`lib/theme.ts`, `lib/palette.ts` et son test) est supprimé : tout le mobile passe par
+  Reusables et les tokens de `global.css`.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
@@ -170,7 +177,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D116** — La ✓ est une case à cocher : vide à faire, pleine à l'encre une fois faite. La
   prochaine série se repère par un liseré, sans couleur d'action.
 - **D120** — *Révisée par D316.* Démarrer est une feuille basse ouverte par le rond central.
-- **D130** — Fin de séance, la récompense d'abord : records, écarts avec la dernière séance de la
+- **D130** — *Révisée par D318.* Fin de séance, la récompense d'abord : records, écarts avec la dernière séance de la
   même routine, note de séance (`Seance.note`).
 - **D167** — La feuille Démarrer a un bouton Fermer en plus du glisser.
 - **D168** — *Révisée par D317.* L'horloge de salle : chaque repos lancé monte une feuille aux deux tiers (décompte
@@ -213,11 +220,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D84** — *Révisée par D316.* Les muscles se peignent en couleur d'action : exception bornée au dessin du corps.
 - **D85** — La copie de travail de l'éditeur de routine vit dans `shared`
   (`brouillon-routine.ts`), le système d'unités en paramètre.
-- **D101** — Couleurs par rôle, deux valeurs (sombre / clair) ; valeurs actuelles en D161.
-- **D102** — Les styles se construisent depuis le thème courant (`creerStyles` / `useStyles`),
+- **D101** — *Révisée par D318.* Couleurs par rôle, deux valeurs (sombre / clair) ; valeurs actuelles en D161.
+- **D102** — *Révisée par D318.* Les styles se construisent depuis le thème courant (`creerStyles` / `useStyles`),
   jamais par un `StyleSheet.create` au niveau du module.
 - **D103** — *Révisée par D163* (Barlow remplace Archivo).
-- **D104** — Espacements en base 4, cible tactile de 48, ligne de série de 52 ; rayons révisés
+- **D104** — *Révisée par D318.* Espacements en base 4, cible tactile de 48, ligne de série de 52 ; rayons révisés
   par D164.
 - **D118** — *Révisée par D316.* Langage commun des pages : `Section`, `Vignette` (fond blanc), `Tuile`,
   `BoutonContour`, `FeuilleBasse` ; un chiffre se distingue par sa taille, pas sa couleur.
@@ -228,7 +235,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   historique, consignes). Son historique n'ouvre plus rien (D178).
 - **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*, son calendrier et son token avec.
   Reste la `Tuile` à écart.
-- **D128** — Profil : bilan de toujours, objectif hebdomadaire, repos par défaut, thème
+- **D128** — *Révisée par D318.* Profil : bilan de toujours, objectif hebdomadaire, repos par défaut, thème
   (Système · Sombre · Clair), vibrations, export CSV, compte, envoi.
 - **D161** — *Révisée par D316.* Palette « Underground orange » : valeurs dans `lib/palette.ts`, contrastes tenus par
   `palette.test.ts`.
@@ -245,7 +252,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D172** — *Révisée par D316.* Page d'une routine : « Lancer » en contour, la carte du corps repliée derrière une
   ligne.
 - **D174** — *Révisée par D316.* Fiche d'un exercice : vignette et nom, puis 1RM, records, historique, consignes.
-- **D175** — Profil groupé par portée : Entraînement (compte) · Ce téléphone · Données · Compte ;
+- **D175** — *Révisée par D318.* Profil groupé par portée : Entraînement (compte) · Ce téléphone · Données · Compte ;
   la file d'envoi n'apparaît que si une séance attend.
 - **D176** — Chargement en squelette de page ; rien sous une seconde ; état vide qui dit l'état et
   mène à l'action.

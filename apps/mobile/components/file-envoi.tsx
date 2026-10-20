@@ -1,16 +1,15 @@
 import { useRouter } from "expo-router";
-import { Text, View } from "react-native";
-import { useConfirmer, useInformer } from "../lib/confirmation";
-import { useSeance } from "../lib/seance";
-import { CIBLE, creerStyles, espace, rayon, taille } from "../lib/theme";
-import { Appuyable } from "./ui/appuyable";
+import { View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { useConfirmer, useInformer } from "@/lib/confirmation";
+import { useSeance } from "@/lib/seance";
 
 /**
  * Les séances terminées qui n'ont pas encore atteint le serveur : en attente
  * (réseau) ou refusées (données). Rien ne s'affiche quand la file est vide.
  */
 export function FileEnvoi() {
-  const styles = useStyles();
   const router = useRouter();
   const { file, envoiEnCours, synchroniser, reprendreRefusee, supprimerRefusee } = useSeance();
   const enAttente = file.filter((e) => e.erreur === null);
@@ -21,42 +20,40 @@ export function FileEnvoi() {
   return (
     <>
       {enAttente.length > 0 ? (
-        <View style={styles.bloc}>
-          <Text style={styles.texte}>
+        <View className="gap-2 rounded-lg border border-border p-3">
+          <Text className="text-muted-foreground text-sm">
             {enAttente.length === 1
               ? "1 séance en attente d'envoi"
               : `${enAttente.length} séances en attente d'envoi`}
           </Text>
-          <Appuyable
+          <Button
+            variant="outline"
+            className="self-start"
             onPress={() => void synchroniser()}
             disabled={envoiEnCours}
-            style={styles.bouton}
-            accessibilityRole="button"
           >
-            <Text style={styles.boutonTexte}>{envoiEnCours ? "Envoi…" : "Réessayer"}</Text>
-          </Appuyable>
+            <Text>{envoiEnCours ? "Envoi…" : "Réessayer"}</Text>
+          </Button>
         </View>
       ) : null}
 
       {refusees.map((e) => (
-        <View key={e.seance.id} style={[styles.bloc, styles.refusee]}>
-          <Text style={styles.texte}>
+        <View key={e.seance.id} className="gap-2 rounded-lg border border-destructive p-3">
+          <Text className="text-muted-foreground text-sm">
             « {e.seance.nom} » refusée : {e.erreur}
           </Text>
-          <View style={{ flexDirection: "row", gap: espace.s }}>
-            <Appuyable
-              style={styles.bouton}
-              accessibilityRole="button"
+          <View className="flex-row gap-2">
+            <Button
+              variant="outline"
               onPress={async () => {
                 if (await reprendreRefusee(e.seance.id)) router.push("/seance");
                 else informer("Une séance est en cours", "Termine-la avant de reprendre celle-ci.");
               }}
             >
-              <Text style={styles.boutonTexte}>Reprendre</Text>
-            </Appuyable>
-            <Appuyable
-              style={styles.bouton}
-              accessibilityRole="button"
+              <Text>Reprendre</Text>
+            </Button>
+            <Button
+              variant="outline"
               onPress={() =>
                 confirmer({
                   titre: "Supprimer cette séance ?",
@@ -67,36 +64,11 @@ export function FileEnvoi() {
                 })
               }
             >
-              <Text style={styles.danger}>Supprimer</Text>
-            </Appuyable>
+              <Text className="text-destructive">Supprimer</Text>
+            </Button>
           </View>
         </View>
       ))}
     </>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  bloc: {
-    padding: espace.m,
-    borderRadius: rayon.carte,
-    borderWidth: 1,
-    borderColor: couleurs.ligneForte,
-    backgroundColor: couleurs.surface1,
-    gap: espace.s,
-  },
-  refusee: { borderColor: couleurs.dangerEncre },
-  texte: { color: couleurs.encreSecondaire, fontSize: taille.petit + 1 },
-  bouton: {
-    minHeight: CIBLE - 4,
-    paddingHorizontal: espace.l,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderColor: couleurs.ligneForte,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
-  },
-  boutonTexte: { color: couleurs.encre, fontSize: taille.courant },
-  danger: { color: couleurs.dangerEncre, fontSize: taille.courant },
-}));

@@ -1,37 +1,41 @@
 import {
   bilanSeance,
+  chargeEnTexte,
   formaterCharge,
   formatJour,
   LIBELLE_RECORD,
   recordsBattus,
-  resumeSemaine,
   secondesEcoulees,
 } from "@better-lift/shared";
-import { onlineManager, useInfiniteQuery, useQueries } from "@tanstack/react-query";
+import { onlineManager, useQueries } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ArrowUp, CircleDashed, CloudOff } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Appuyable } from "../components/ui/appuyable";
-import { BadgeRecord, formaterSerie } from "../components/ui/badge-record";
-import { FUSEAU } from "../lib/fuseau";
-import { optionsRecords, optionsSeances } from "../lib/requetes";
-import { useSeance } from "../lib/seance";
-import { dureeMin, formaterDuree } from "../lib/temps";
-import { affiche, CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
-import { SYSTEME_UNITES } from "../lib/unites";
-import { vibrer } from "../lib/vibrations";
+import { ScrollView, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Ecran } from "@/components/ui/ecran";
+import { Icon } from "@/components/ui/icon";
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { FUSEAU } from "@/lib/fuseau";
+import { optionsRecords } from "@/lib/requetes";
+import { useSeance } from "@/lib/seance";
+import { formaterDuree } from "@/lib/temps";
+import { SYSTEME_UNITES } from "@/lib/unites";
+import { vibrer } from "@/lib/vibrations";
+
+/** « 85 kg × 5 », ou « 12 reps » au poids du corps. La charge passe par les unités. */
+function formaterSerie(chargeKg: number | null, reps: number | null): string {
+  if (chargeKg === null) return `${reps ?? "—"} reps`;
+  return `${chargeEnTexte(chargeKg, SYSTEME_UNITES)} kg × ${reps ?? "—"}`;
+}
 
 /**
- * La fin de séance, la récompense d'abord (D130) : les records battus (sinon la
- * régularité), le bilan comparé à la dernière séance de la même routine, une
+ * La fin de séance (D130, D318) : les records battus d'abord, le bilan, une
  * note, puis l'enregistrement. Une séance sans série validée ne s'enregistre
  * pas — elle se reprend.
  */
 export default function Fin() {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
   const router = useRouter();
   const { seance, terminer, modifier } = useSeance();
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
@@ -41,7 +45,6 @@ export default function Fin() {
   const slugs = seance ? [...new Set(seance.exercices.map((e) => e.slug))] : [];
   // Les records d'avant : en cache hors ligne pour les exercices des routines (D96).
   const records = useQueries({ queries: slugs.map((slug) => optionsRecords(slug)) });
-  const historique = useInfiniteQuery(optionsSeances());
   if (!seance) return null;
 
   const { seriesFaites, volumeKg } = bilanSeance(seance);
@@ -49,23 +52,17 @@ export default function Fin() {
 
   if (seriesFaites === 0) {
     return (
-      <SafeAreaView style={styles.ecran}>
-        <View style={styles.contenu}>
-          <Text style={styles.titre} accessibilityRole="header">
+      <Ecran className="flex-1 bg-background p-4">
+        <View className="flex-1 justify-center gap-2">
+          <Text className="font-semibold text-2xl" accessibilityRole="header">
             Pas encore de série.
           </Text>
-          <Text style={styles.texte}>Valide au moins une série pour enregistrer.</Text>
+          <Text className="text-muted-foreground">Valide au moins une série pour enregistrer.</Text>
         </View>
-        <View style={styles.pied}>
-          <Appuyable
-            style={({ pressed }) => [styles.secondaire, pressed && styles.appuye]}
-            onPress={reprendre}
-            accessibilityRole="button"
-          >
-            <Text style={styles.secondaireTexte}>Reprendre la séance</Text>
-          </Appuyable>
-        </View>
-      </SafeAreaView>
+        <Button variant="outline" className="h-12" onPress={reprendre}>
+          <Text>Reprendre la séance</Text>
+        </Button>
+      </Ecran>
     );
   }
 
@@ -80,21 +77,7 @@ export default function Fin() {
   const avant = Object.fromEntries(slugs.map((slug, i) => [slug, records[i]?.data]));
   const { battus, incomplet } = recordsBattus(seance, avant);
   const chargement = records.some((r) => r.isPending && r.fetchStatus === "fetching");
-  // La régularité, faute de record : cette séance comprise.
-  const deLaSemaine = historique.data
-    ? resumeSemaine(
-        [...historique.data.pages.flatMap((p) => p.seances), { debut: seance.debut, volumeKg }],
-        fin,
-        FUSEAU,
-      ).seances
-    : null;
   const horsLigne = !onlineManager.isOnline();
-  // La dernière séance de la même routine, dans le fil déjà chargé (D130) ; une
-  // séance vide n'a rien à quoi se comparer.
-  const precedente = seance.routineId
-    ? historique.data?.pages.flatMap((p) => p.seances).find((x) => x.routineId === seance.routineId)
-    : undefined;
-  const minutes = Math.round(secondesEcoulees(seance.debut, fin) / 60);
 
   const enregistrer = async () => {
     if (enregistrement) return;
@@ -107,304 +90,118 @@ export default function Fin() {
   };
 
   return (
-    <SafeAreaView style={styles.ecran}>
-      <ScrollView contentContainerStyle={styles.contenu}>
-        <Text style={styles.titre} accessibilityRole="header">
-          Séance terminée
-        </Text>
-        <Text style={styles.sous}>
-          {seance.nom} · {formatJour(seance.debut, FUSEAU)}
-        </Text>
+    <Ecran className="flex-1 bg-background">
+      <ScrollView contentContainerClassName="gap-4 p-4">
+        <View className="gap-1">
+          <Text className="font-semibold text-2xl" accessibilityRole="header">
+            Séance terminée
+          </Text>
+          <Text className="text-muted-foreground">
+            {seance.nom} · {formatJour(seance.debut, FUSEAU)}
+          </Text>
+        </View>
 
-        {chargement ? null : battus.length > 0 ? (
-          // Le bloc entier en contour record (D170) : la récompense d'abord, dans son registre.
-          <View style={styles.records}>
-            {/* La récompense d'abord (D130) : le moment où l'app peut dire « tu progresses ». */}
-            <View style={styles.vedette}>
-              <View style={styles.medaille}>
-                <ArrowUp size={22} strokeWidth={2.6} color={couleurs.recordEncre} />
-                <Text style={styles.medailleTexte}>{battus.length}</Text>
-              </View>
-              <Text style={styles.vedetteTitre} accessibilityRole="header">
+        <View className="flex-row rounded-lg border border-border">
+          <Chiffre libelle="Durée" valeur={formaterDuree(secondesEcoulees(seance.debut, fin))} />
+          <Chiffre libelle="Séries" valeur={String(seriesFaites)} />
+          <Chiffre libelle="Volume" valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} />
+        </View>
+        {echauffementFait ? (
+          <Text className="text-muted-foreground text-sm">
+            L'échauffement ne compte pas dans le volume.
+          </Text>
+        ) : null}
+
+        {/* Le record est un contour (D28) : la récompense, sans couleur. */}
+        {!chargement && battus.length > 0 ? (
+          <View className="gap-2 rounded-lg border-2 border-foreground p-3">
+            <View className="flex-row items-center gap-2">
+              <Icon as={ArrowUp} className="size-5 text-foreground" strokeWidth={2.6} />
+              <Text className="font-semibold text-lg" accessibilityRole="header">
                 {battus.length === 1 ? "1 record battu" : `${battus.length} records battus`}
               </Text>
             </View>
             {battus.map((b, i) => (
-              <View key={`${b.slug}-${i}`} style={styles.record}>
-                <View style={styles.recordGauche}>
-                  <Text style={styles.recordNom} numberOfLines={2}>
+              <View key={`${b.slug}-${i}`} className="flex-row items-center gap-3">
+                <View className="flex-1">
+                  <Text className="font-medium" numberOfLines={2}>
                     {b.nom}
                   </Text>
-                  <BadgeRecord libelle={b.types.map((t) => LIBELLE_RECORD[t]).join(" · ")} />
+                  <Text className="text-muted-foreground text-sm">
+                    {b.types.map((t) => LIBELLE_RECORD[t]).join(" · ")}
+                  </Text>
                 </View>
-                <Text style={styles.recordValeur}>{formaterSerie(b.chargeKg, b.reps)}</Text>
+                <Text className="font-semibold tabular-nums">
+                  {formaterSerie(b.chargeKg, b.reps)}
+                </Text>
               </View>
             ))}
           </View>
-        ) : (
-          <Text style={styles.texte}>
-            Pas de record aujourd'hui. La régularité compte plus
-            {deLaSemaine
-              ? ` : c'est ta ${deLaSemaine}${deLaSemaine === 1 ? "ʳᵉ" : "ᵉ"} séance de la semaine.`
-              : "."}
-          </Text>
-        )}
+        ) : null}
         {incomplet && !chargement ? (
-          <Text style={styles.note}>
+          <Text className="text-muted-foreground text-sm">
             Les records des autres exercices se calculeront à l'envoi, dans l'historique.
           </Text>
         ) : null}
 
-        <View style={styles.chiffres}>
-          <Chiffre
-            valeur={formaterDuree(secondesEcoulees(seance.debut, fin))}
-            libelle="Durée"
-            ecart={precedente ? ecart(minutes - dureeMin(precedente), (n) => `${n} min`) : null}
-          />
-          <Chiffre
-            valeur={String(seriesFaites)}
-            libelle="Séries"
-            ecart={precedente ? ecart(seriesFaites - precedente.seriesFaites, String) : null}
-          />
-          <Chiffre
-            valeur={formaterCharge(volumeKg, SYSTEME_UNITES)}
-            libelle="Volume"
-            ecart={
-              precedente
-                ? ecart(volumeKg - precedente.volumeKg, (n) => formaterCharge(n, SYSTEME_UNITES))
-                : null
-            }
-          />
-        </View>
-        {precedente ? (
-          <Text style={styles.note}>
-            Écarts avec la dernière {seance.nom}, le {formatJour(precedente.debut, FUSEAU)}.
-          </Text>
-        ) : null}
-        {echauffementFait ? (
-          <Text style={styles.note}>L'échauffement ne compte pas dans le volume.</Text>
-        ) : null}
-
-        <TextInput
+        <Input
           value={seance.note ?? ""}
           onChangeText={(note) => modifier({ ...seance, note })}
           placeholder="Ajouter une note sur la séance…"
-          placeholderTextColor={couleurs.encreAttenuee}
-          style={styles.saisieNote}
+          className="h-auto min-h-18 py-2"
           multiline
           maxLength={1000}
           accessibilityLabel="Note de la séance"
         />
       </ScrollView>
 
-      <View style={styles.pied}>
+      <View className="gap-2 border-border border-t p-4">
         {nonValidees > 0 ? (
-          <View style={styles.encart} accessibilityRole="alert">
-            <CircleDashed size={18} color={couleurs.encreSecondaire} />
-            <Text style={styles.encartTexte}>
-              {nonValidees === 1
-                ? "1 série non validée : elle ne comptera pas."
-                : `${nonValidees} séries non validées : elles ne compteront pas.`}
-            </Text>
-          </View>
+          <Encart icone={CircleDashed} role="alert">
+            {nonValidees === 1
+              ? "1 série non validée : elle ne comptera pas."
+              : `${nonValidees} séries non validées : elles ne compteront pas.`}
+          </Encart>
         ) : null}
-        {horsLigne ? <HorsLigne /> : null}
-        <Appuyable
-          style={({ pressed }) => [styles.aplat, (pressed || enregistrement) && styles.aplatAppuye]}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: enregistrement, busy: enregistrement }}
-          disabled={enregistrement}
-          onPress={() => void enregistrer()}
-        >
-          <Text style={styles.aplatTexte}>
-            {enregistrement ? "Enregistrement…" : "Enregistrer la séance"}
-          </Text>
-        </Appuyable>
-        <Appuyable style={styles.tertiaire} onPress={reprendre} accessibilityRole="button">
-          <Text style={styles.tertiaireTexte}>Reprendre la séance</Text>
-        </Appuyable>
+        {/* Hors ligne, un fait et pas une alerte : la séance part seule au retour du réseau (D99). */}
+        {horsLigne ? (
+          <Encart icone={CloudOff}>
+            Pas de réseau. La séance reste sur ton téléphone et partira seule au retour du réseau.
+          </Encart>
+        ) : null}
+        <Button className="h-12" disabled={enregistrement} onPress={() => void enregistrer()}>
+          <Text>{enregistrement ? "Enregistrement…" : "Enregistrer la séance"}</Text>
+        </Button>
+        <Button variant="ghost" className="h-12" onPress={reprendre}>
+          <Text>Reprendre la séance</Text>
+        </Button>
       </View>
-    </SafeAreaView>
+    </Ecran>
   );
 }
 
-/** Hors ligne, un fait et pas une alerte : la séance part seule au retour du réseau (D99). */
-function HorsLigne() {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
+function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   return (
-    <View style={styles.horsLigne}>
-      <CloudOff size={18} color={couleurs.encreSecondaire} />
-      <Text style={styles.horsLigneTexte}>
-        Pas de réseau. La séance reste sur ton téléphone et partira seule au retour du réseau.
-      </Text>
+    <View className="flex-1 items-center gap-0.5 py-3">
+      <Text className="text-muted-foreground text-xs">{libelle}</Text>
+      <Text className="font-semibold text-lg tabular-nums">{valeur}</Text>
     </View>
   );
 }
 
-/** « ↗ +115 kg », « ↘ −1 », « = » : l'écart avec la dernière séance de la routine (D130). */
-function ecart(delta: number, unite: (n: number) => string): string {
-  const arrondi = Math.round(delta * 10) / 10;
-  return arrondi === 0 ? "=" : `${arrondi > 0 ? "↗ +" : "↘ −"}${unite(Math.abs(arrondi))}`;
-}
-
-function Chiffre({
-  valeur,
-  libelle,
-  ecart,
+function Encart({
+  icone,
+  role,
+  children,
 }: {
-  valeur: string;
-  libelle: string;
-  ecart?: string | null;
+  icone: typeof CloudOff;
+  role?: "alert";
+  children: string;
 }) {
-  const styles = useStyles();
   return (
-    <View style={styles.chiffre}>
-      <Text style={styles.libelle}>{libelle}</Text>
-      <Text style={styles.valeur}>
-        {valeur}
-        {ecart ? <Text style={styles.ecartChiffre}> {ecart}</Text> : null}
-      </Text>
+    <View className="flex-row items-center gap-2" accessibilityRole={role}>
+      <Icon as={icone} className="size-4.5 text-muted-foreground" />
+      <Text className="flex-1 text-muted-foreground text-sm">{children}</Text>
     </View>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  vedette: { alignItems: "center", gap: espace.s, marginBottom: espace.s },
-  // Le record est un contour (D28) : orange en texte sur fond teinté.
-  medaille: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 1.5,
-    borderColor: couleurs.recordLigne,
-    backgroundColor: couleurs.recordFond,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 2,
-  },
-  medailleTexte: { ...affiche, color: couleurs.recordEncre, fontSize: 28 },
-  vedetteTitre: { color: couleurs.encre, fontSize: taille.grand + 2, fontWeight: "800" },
-  ecartChiffre: {
-    color: couleurs.encreSecondaire,
-    fontSize: taille.petit,
-    fontVariant: ["tabular-nums"],
-    marginTop: 2,
-  },
-  saisieNote: {
-    minHeight: 72,
-    padding: espace.m,
-    borderRadius: rayon.cellule,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface2,
-    color: couleurs.encre,
-    fontSize: taille.courant,
-    textAlignVertical: "top",
-  },
-  ecran: { flex: 1, backgroundColor: couleurs.canevas, justifyContent: "space-between" },
-  contenu: { padding: espace.xl, paddingTop: espace.xxl * 2, gap: espace.s },
-  // Un seul usage de cette taille : la fin de séance (D103).
-  titre: { ...affiche, color: couleurs.encre, fontSize: 48, lineHeight: 48 },
-  sous: { color: couleurs.encreSecondaire, fontSize: taille.courant },
-  texte: { color: couleurs.encreSecondaire, fontSize: taille.courant, marginTop: espace.l },
-  note: { color: couleurs.encreTertiaire, fontSize: taille.petit, marginTop: espace.s },
-  chiffres: {
-    marginTop: espace.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: couleurs.ligne,
-  },
-  chiffre: {
-    minHeight: CIBLE,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: couleurs.ligne,
-  },
-  records: {
-    padding: espace.l,
-    borderRadius: rayon.carte,
-    borderWidth: 1.5,
-    borderColor: couleurs.recordLigne,
-    backgroundColor: couleurs.recordFond,
-  },
-  valeur: {
-    color: couleurs.encre,
-    fontSize: taille.courant,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  libelle: { color: couleurs.encreSecondaire, fontSize: taille.courant },
-  section: {
-    color: couleurs.encreAttenuee,
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginTop: espace.xl,
-    marginBottom: espace.s,
-  },
-  record: {
-    minHeight: CIBLE + 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    borderBottomWidth: 1,
-    borderBottomColor: couleurs.ligne,
-  },
-  recordGauche: { flex: 1, gap: espace.xs, paddingVertical: espace.s },
-  recordNom: { color: couleurs.encre, fontSize: 15, fontWeight: "600" },
-  recordValeur: {
-    color: couleurs.encre,
-    fontSize: 15,
-    fontWeight: "600",
-    fontVariant: ["tabular-nums"],
-  },
-  pied: { padding: espace.xl, gap: espace.s },
-  // Un fait à savoir avant d'enregistrer, pas une alerte : même encart que le hors ligne.
-  encart: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    padding: espace.m,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: couleurs.ligneForte,
-  },
-  encartTexte: { flex: 1, color: couleurs.encreSecondaire, fontSize: 14 },
-  horsLigne: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    padding: espace.m,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: couleurs.ligneForte,
-  },
-  horsLigneTexte: { flex: 1, color: couleurs.encreSecondaire, fontSize: 14 },
-  aplat: {
-    minHeight: CIBLE + 8,
-    borderRadius: rayon.bouton,
-    backgroundColor: couleurs.action,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  aplatAppuye: { opacity: 0.85 },
-  aplatTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
-  tertiaire: { minHeight: CIBLE, alignItems: "center", justifyContent: "center" },
-  tertiaireTexte: { color: couleurs.encreSecondaire, fontSize: taille.courant },
-  secondaire: {
-    minHeight: CIBLE + 8,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderColor: couleurs.ligneForte,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appuye: { backgroundColor: couleurs.surface2 },
-  secondaireTexte: { color: couleurs.encre, fontSize: taille.courant + 1, fontWeight: "700" },
-}));

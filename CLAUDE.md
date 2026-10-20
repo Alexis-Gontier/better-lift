@@ -71,7 +71,7 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 Les skills superpowers écrivent leurs specs et plans dans `docs/superpowers/` : ce sont des
 documents de chantier. **Une fois le chantier fusionné**, reporter ses décisions dans
 `docs/decisions.md` (et ce qui change dans `docs/conception.md` ou `.claude/rules/`), puis
-supprimer la spec et le plan. Les numéros de décision continuent après D317.
+supprimer la spec et le plan. Les numéros de décision continuent après D318.
 
 ## Environnement
 

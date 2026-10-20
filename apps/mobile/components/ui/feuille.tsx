@@ -1,8 +1,9 @@
 import type { LucideIcon } from "lucide-react-native";
 import { Check } from "lucide-react-native";
-import { Text, View } from "react-native";
-import { creerStyles, espace, rayon, taille, useCouleurs } from "../../lib/theme";
-import { Appuyable } from "./appuyable";
+import { Pressable, View } from "react-native";
+import { Icon } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
+import { cn } from "@/lib/utils";
 import { FeuilleBasse } from "./feuille-basse";
 
 export type OptionFeuille = {
@@ -39,71 +40,53 @@ export function Feuille({
   options: OptionFeuille[];
   onFermer: () => void;
 }) {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
   return (
     <FeuilleBasse visible={visible} onFermer={onFermer}>
       {message ? (
-        <View style={styles.question}>
-          <Text style={styles.questionTitre} accessibilityRole="header">
+        <View className="gap-1 px-3 pt-1 pb-3">
+          <Text className="font-semibold text-xl" accessibilityRole="header">
             {titre}
           </Text>
-          <Text style={styles.questionMessage}>{message}</Text>
+          <Text className="text-muted-foreground">{message}</Text>
         </View>
       ) : titre ? (
-        <Text style={styles.titre} accessibilityRole="header" numberOfLines={1}>
+        <Text
+          className="px-3 py-2 text-muted-foreground text-sm"
+          accessibilityRole="header"
+          numberOfLines={1}
+        >
           {titre}
         </Text>
       ) : null}
       {options.map((o) => {
-        const Icone = o.icone;
         const couleur = o.inactive
-          ? couleurs.encreAttenuee
+          ? "text-muted-foreground"
           : o.danger
-            ? couleurs.dangerEncre
-            : couleurs.encre;
+            ? "text-destructive"
+            : "text-foreground";
         return (
-          <Appuyable
+          <Pressable
             key={o.libelle}
             disabled={Boolean(o.inactive)}
             onPress={() => {
               onFermer();
               o.onPress?.();
             }}
-            style={({ pressed }) => [styles.option, pressed && styles.appuyee]}
+            className="min-h-12 flex-row items-center gap-3 rounded-md px-3 active:bg-accent"
             accessibilityRole="button"
             accessibilityState={{ disabled: Boolean(o.inactive), selected: o.choisie }}
           >
-            {Icone ? <Icone size={20} color={couleur} /> : null}
-            <Text style={[styles.libelle, { color: couleur }]}>{o.libelle}</Text>
-            {o.inactive ? <Text style={styles.indication}>{o.inactive}</Text> : null}
-            {o.choisie ? <Check size={18} color={couleurs.encre} strokeWidth={2.6} /> : null}
-          </Appuyable>
+            {o.icone ? <Icon as={o.icone} className={cn("size-5", couleur)} /> : null}
+            <Text className={cn("flex-1", couleur)}>{o.libelle}</Text>
+            {o.inactive ? (
+              <Text className="text-muted-foreground text-sm">{o.inactive}</Text>
+            ) : null}
+            {o.choisie ? (
+              <Icon as={Check} className="size-4.5 text-foreground" strokeWidth={2.6} />
+            ) : null}
+          </Pressable>
         );
       })}
     </FeuilleBasse>
   );
 }
-
-const useStyles = creerStyles((couleurs) => ({
-  titre: {
-    color: couleurs.encreTertiaire,
-    fontSize: taille.petit,
-    paddingHorizontal: espace.m,
-    paddingVertical: espace.s,
-  },
-  question: { paddingHorizontal: espace.m, paddingTop: espace.xs, paddingBottom: espace.m, gap: 4 },
-  questionTitre: { color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
-  questionMessage: { color: couleurs.encreSecondaire, fontSize: taille.courant, lineHeight: 22 },
-  option: {
-    minHeight: 48,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    paddingHorizontal: espace.m,
-    borderRadius: rayon.cellule,
-  },
-  appuyee: { backgroundColor: couleurs.surface3 },
-  libelle: { flex: 1, fontSize: taille.courant },
-  indication: { color: couleurs.encreAttenuee, fontSize: taille.petit },
-}));

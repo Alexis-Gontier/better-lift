@@ -3,8 +3,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { formaterDuree } from "@/lib/temps";
-import { PLAFOND_TEXTE_DENSE } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 
 /**
  * Le repos restant, en bas de l'écran comme chez Hevy (D317) — là où le pouce et

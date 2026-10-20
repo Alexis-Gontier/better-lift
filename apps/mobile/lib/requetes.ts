@@ -223,22 +223,3 @@ export function useEcrirePreferences() {
     onSettled: () => client.invalidateQueries({ queryKey: ["preferences"] }),
   });
 }
-
-/** Le bilan de toujours, pour l'en-tête du Profil (D128). */
-export function optionsBilan() {
-  return queryOptions({
-    queryKey: ["stats", "bilan"],
-    queryFn: async () => {
-      const res = await api.stats.bilan.$get();
-      if (!res.ok) throw new Error("Le bilan n'a pas pu se calculer.");
-      return res.json();
-    },
-  });
-}
-
-/** Toutes les séries en CSV (D128), le texte du fichier. */
-export async function chargerExport(): Promise<string> {
-  const res = await api.export["seances.csv"].$get();
-  if (!res.ok) throw new Error("L'export n'a pas pu être préparé.");
-  return res.text();
-}

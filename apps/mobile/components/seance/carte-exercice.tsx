@@ -33,10 +33,10 @@ import { Text } from "@/components/ui/text";
 import { useConfirmer } from "@/lib/confirmation";
 import { optionsExercice } from "@/lib/requetes";
 import { CHOIX_REPOS, libelleRepos } from "@/lib/temps";
-import { PLAFOND_TEXTE_DENSE } from "@/lib/theme";
 import { UNITE } from "@/lib/unites";
 import { cn } from "@/lib/utils";
 import { type EtatSerie, LigneSerie } from "./ligne-serie";
+import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 
 /**
  * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
