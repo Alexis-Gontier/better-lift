@@ -43,6 +43,11 @@ describe("les réponses d'erreur de l'app composée", () => {
     expect(await res.json()).toEqual({ erreur: "Ressource introuvable." });
   });
 
+  it("monte /tableau-de-bord derrière la session (D330)", async () => {
+    const res = await app.request("/tableau-de-bord?depuis=2026-08-23T00:00:00.000Z");
+    expect(res.status).toBe(401);
+  });
+
   it("ne sert plus /stats ni /stats/bilan (D295, D328)", async () => {
     expect((await app.request("/stats")).status).toBe(404);
     expect((await app.request("/stats/bilan")).status).toBe(404);

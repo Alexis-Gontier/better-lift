@@ -14,10 +14,12 @@ import { routesPreferences } from "./routes/preferences.js";
 import { routesRecords } from "./routes/records.js";
 import { routesRoutines } from "./routes/routines.js";
 import { routesSeances } from "./routes/seances.js";
+import { routesTableauDeBord } from "./routes/tableau-de-bord.js";
 import { depotDossiers } from "./services/dossiers.js";
 import { depotPreferences } from "./services/preferences.js";
 import { depotPrisma as depotRoutines } from "./services/routines.js";
 import { depotLecture, depotPrisma as depotSeances } from "./services/seances.js";
+import { depotTableauDeBord } from "./services/tableau-de-bord.js";
 
 // Ce module construit l'app, sans aucun effet de bord (pas de `serve()`) : il
 // peut donc être importé tel quel par les tests, y compris pour vérifier le
@@ -66,6 +68,7 @@ const routes = app
   .route("/routines", routesRoutines(depotRoutines, depotDossiers, lireSession))
   .route("/dossiers", routesDossiers(depotDossiers, lireSession))
   .route("/seances", routesSeances(depotSeances, depotLecture, lireSession))
+  .route("/tableau-de-bord", routesTableauDeBord(depotTableauDeBord, lireSession))
   .route("/preferences", routesPreferences(depotPreferences, lireSession))
   .route("/export", routesExport(depotLecture, lireSession));
 
