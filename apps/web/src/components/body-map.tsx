@@ -1,72 +1,60 @@
-import { useMemo, useSyncExternalStore } from "react";
-import Model, { type Muscle } from "react-body-highlighter";
-
-/** Nos groupes musculaires, traduits dans le vocabulaire de la silhouette. */
-const MUSCLE_MAP: Record<string, Muscle[]> = {
-  Pectoraux: ["chest"],
-  "Haut des pectoraux": ["chest"],
-  Épaules: ["front-deltoids", "back-deltoids"],
-  Deltoïdes: ["front-deltoids", "back-deltoids"],
-  "Deltoïdes postérieurs": ["back-deltoids"],
-  Triceps: ["triceps"],
-  Biceps: ["biceps"],
-  "Avant-bras": ["forearm"],
-  "Grand dorsal": ["upper-back"],
-  "Haut du dos": ["upper-back", "trapezius"],
-  Trapèzes: ["trapezius"],
-  Rhomboïdes: ["upper-back"],
-  Quadriceps: ["quadriceps"],
-  "Ischio-jambiers": ["hamstring"],
-  Adducteurs: ["adductor"],
-  Fessiers: ["gluteal"],
-  Mollets: ["calves", "left-soleus", "right-soleus"],
-};
-
-const toMuscles = (groups: string[]) => groups.flatMap((g) => MUSCLE_MAP[g] ?? []);
-
-/** La silhouette reçoit des couleurs en attribut SVG : on lit les rôles du thème une fois. */
-function themeColor(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-
-const isDark = () => document.documentElement.classList.contains("dark");
-
-function subscribeTheme(onChange: () => void) {
-  const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-  return () => observer.disconnect();
-}
+import { LIBELLE_ZONE, zonesTravaillees } from "@better-lift/shared";
+import { cn } from "@/lib/utils";
+import { DOS, FACE, type Partie } from "./body-map-traces";
 
 type Props = { primary: string[]; secondary?: string[] };
 
-/** Silhouette avant / arrière : principal en foncé, secondaires en clair. */
+/**
+ * Silhouette face et dos (D331), le dessin du mobile : principaux à l'encre, secondaires en
+ * gris, le reste du corps — tête, mains, pieds compris — au ton de la carte. Les muscles du
+ * catalogue passent par `zonesTravaillees` de `shared`, comme sur le téléphone ; les couleurs
+ * sont des classes de tokens, donc la silhouette suit le thème sans relire le DOM.
+ */
 export function BodyMap({ primary, secondary = [] }: Props) {
-  // Le thème change par la classe `dark` de <html> : la silhouette relit alors ses couleurs.
-  const dark = useSyncExternalStore(subscribeTheme, isDark);
-  const colors = useMemo(
-    () => ({
-      body: themeColor("--body-map"),
-      secondary: themeColor("--muted-foreground"),
-      primary: themeColor("--foreground"),
-    }),
-    [dark],
-  );
-  // La fréquence d'un muscle choisit sa couleur : principal compté deux fois, secondaire une.
-  const data = [
-    { name: "secondaire", muscles: toMuscles(secondary) },
-    { name: "principal", muscles: toMuscles(primary) },
-    { name: "principal-bis", muscles: toMuscles(primary) },
-  ];
-  const props = {
-    data,
-    bodyColor: colors.body,
-    highlightedColors: [colors.secondary, colors.primary],
-    style: { width: "100%", maxWidth: "9rem" },
-  };
+  const zones = zonesTravaillees([
+    ...primary.map((m) => ({ musclePrincipal: m, musclesSecondaires: [] })),
+    { musclePrincipal: "", musclesSecondaires: secondary },
+  ]);
+  const niveau = new Map(zones.map((z) => [z.zone as string, z.niveau]));
+  const libelle = zones.length
+    ? `Muscles travaillés : ${zones.map((z) => LIBELLE_ZONE[z.zone]).join(", ")}`
+    : "Silhouette";
+
   return (
-    <div className="flex justify-center gap-4">
-      <Model {...props} type="anterior" />
-      <Model {...props} type="posterior" />
+    <div className="flex justify-center gap-4" role="img" aria-label={libelle}>
+      <Silhouette parties={FACE} viewBox="0 0 724 1448" niveau={niveau} />
+      <Silhouette parties={DOS} viewBox="724 0 724 1448" niveau={niveau} />
     </div>
+  );
+}
+
+function Silhouette({
+  parties,
+  viewBox,
+  niveau,
+}: {
+  parties: readonly Partie[];
+  viewBox: string;
+  niveau: Map<string, "principal" | "secondaire">;
+}) {
+  return (
+    <svg viewBox={viewBox} className="h-auto w-full max-w-36" aria-hidden>
+      {parties.map((p) => (
+        <g
+          key={p.slug}
+          className={cn(
+            niveau.get(p.slug) === "principal"
+              ? "fill-foreground"
+              : niveau.get(p.slug) === "secondaire"
+                ? "fill-muted-foreground"
+                : "fill-(--body-map)",
+          )}
+        >
+          {p.d.map((d) => (
+            <path key={d} d={d} />
+          ))}
+        </g>
+      ))}
+    </svg>
   );
 }
