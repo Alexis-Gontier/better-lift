@@ -11,14 +11,16 @@ export function MusclesCard({
   zones,
   principaux,
   secondaires,
+  className,
 }: {
   zones: { zone: Zone; series: number }[];
   principaux: string[];
   secondaires: string[];
+  className?: string;
 }) {
   const max = zones[0]?.series ?? 0;
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Muscles</CardTitle>
         <CardDescription>Séries par muscle principal, hors échauffement</CardDescription>
@@ -29,7 +31,7 @@ export function MusclesCard({
             Aucune séance sur la période.
           </p>
         ) : (
-          <div className="grid @3xl:grid-cols-[1fr_auto] items-center gap-8">
+          <div className="grid @3xl:grid-cols-[1fr_auto] items-center gap-6">
             <ul className="flex flex-col gap-2.5">
               {zones.map(({ zone, series }) => (
                 <li key={zone} className="flex items-center gap-3 text-sm">

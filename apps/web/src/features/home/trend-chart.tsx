@@ -66,7 +66,7 @@ export function TrendChart({
         </CardAction>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
+        <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
           <BarChart data={points} margin={{ left: 0, right: 8 }}>
             <CartesianGrid vertical={false} />
             <XAxis

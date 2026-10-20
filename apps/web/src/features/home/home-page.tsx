@@ -97,24 +97,25 @@ function Tableau({ donnees, periode }: { donnees: TableauDeBord; periode: Period
   const muscles = repartitionMuscles(seances, bornes, FUSEAU);
   return (
     <div className="flex flex-col gap-4">
+      <ThisWeek
+        jours={semaine.jours}
+        seances={semaine.seances}
+        aujourdhui={rangDuJour(maintenant)}
+        objectif={donnees.objectifHebdo}
+      />
       <KpiCards chiffres={chiffresCles(seances, bornes, FUSEAU)} />
+      {/* Chaque liste à côté d'un bloc de sa hauteur : 2/3 – 1/3, empilés en colonne étroite. */}
       <div className="grid @4xl:grid-cols-3 gap-4">
-        <ThisWeek
-          jours={semaine.jours}
-          seances={semaine.seances}
-          aujourdhui={rangDuJour(maintenant)}
-          objectif={donnees.objectifHebdo}
-        />
         <TrendChart
           className="@4xl:col-span-2"
           points={tendance(seances, bornes, FUSEAU)}
           unite={bornes.unite}
         />
-      </div>
-      <MusclesCard {...muscles} />
-      <div className="grid @4xl:grid-cols-2 gap-4">
-        <RecentRecords records={recordsRecents(seances, bornes, FUSEAU, 5)} />
         <RecentSessions seances={seances.slice(0, 5)} />
+      </div>
+      <div className="grid @4xl:grid-cols-3 gap-4">
+        <MusclesCard className="@4xl:col-span-2" {...muscles} />
+        <RecentRecords records={recordsRecents(seances, bornes, FUSEAU, 5)} />
       </div>
     </div>
   );
