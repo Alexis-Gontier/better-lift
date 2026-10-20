@@ -315,6 +315,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   symbole ; le nom n'est pas masqué mais rogné par la largeur, pour suivre l'animation. Les pages
   d'authentification portent le même assemblage en tête. L'Accueil prend l'icône
   `LayoutDashboard`.
+- **D331** — La silhouette du web (`BodyMap`) reprend le dessin du mobile : les tracés de
+  `react-native-body-highlighter` (MIT, copiés dans `components/body-map-traces.ts` avec leur
+  licence), dessinés en SVG simple ; zones par `zonesTravaillees` de `shared`, comme sur le
+  téléphone ; principaux en `foreground`, secondaires en `muted-foreground`, le reste du corps
+  (tête, mains, pieds) en `--body-map`. `react-body-highlighter`, aux polygones anguleux, part.
 - **D231** — shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
   (`components/ui/**`) reste tel que livré ; Biome n'y lève pas les règles d'accessibilité.
 - **D232** — Clavier : Ctrl K (palette) et Ctrl B (barre latérale) seulement.
@@ -363,7 +368,25 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D273** — Un réglage s'enregistre dès qu'on le choisit, confirmé par un toast.
 - **D280** — Le détail d'une routine porte ses stats (dernière fois, séances, tendance du volume,
   records).
-- **D283** — L'Accueil est vide : son contenu viendra quand l'usage dira ce qui y sert.
+- **D283** — *Révisée par D330.* L'Accueil est vide : son contenu viendra quand l'usage dira ce qui y sert.
+- **D330** — L'Accueil du web est un tableau de bord, bilan d'abord : la semaine en cours en
+  bandeau (jours entraînés, objectif hebdomadaire) ; une période **4 sem. · 3 mois · 1 an**,
+  dernier choix gardé dans le navigateur (`localStorage`, 3 mois par défaut ; ni URL ni
+  gestionnaire d'état) ; quatre chiffres clés comparés à la période précédente (flèche et signe,
+  sans couleur) ; tendance en aire (semaines, ou mois sur un an) et, à sa droite, la silhouette
+  des muscles en carte de chaleur (D332) ; dernières séances et records récents côte à
+  côte. Pas de routine à suivre.
+  `GET /tableau-de-bord?depuis=` rend les faits par séance (records rejoués sur tout
+  l'historique, seuls les exercices faits colorent la silhouette) ; le web les agrège dans son
+  fuseau par `shared/tableau-de-bord.ts`.
+- **D332** — Révise D330 et D331 pour l'Accueil : sur une période, principal / secondaire ne dit
+  plus rien (tout finit principal), la silhouette devient une **carte de chaleur des séries**,
+  comme Hevy. Une série faite hors échauffement compte 1 pour la zone du muscle principal, ½ pour
+  chaque zone secondaire, une zone une seule fois par exercice au plus fort de ses rôles
+  (`chargeMuscles`). Quatre teintes, du ton du corps vers l'encre (`color-mix`), paliers relatifs
+  à la zone la plus travaillée de la période ; légende « Moins · Plus », le compte de séries au
+  survol d'une zone et dans le libellé accessible. Les autres silhouettes (exercice, routine,
+  mobile) gardent principal / secondaire.
 - **D289** — Paramètres s'ouvre par le menu du compte ou la palette, pas par la barre.
 - **D290** — Barre latérale en une liste : Accueil, Routines, Historique, Exercices.
 - **D294** — Ce qui n'est pas branché quitte l'interface (import Hevy, export JSON, préférences

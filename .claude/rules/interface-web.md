@@ -52,6 +52,10 @@ Wireframe shadcn en gris, branché sur l'API. Décisions : `docs/decisions.md`, 
 
 - Barre latérale shadcn repliable en icônes, logo et nom en tête (D329), d'une seule liste (`components/shell/nav.ts`) : Accueil · Routines ·
   Historique · Records · Exercices. Paramètres s'ouvre par le menu du compte ou la palette (Ctrl K).
+- **Accueil** (D330) : `features/home/`, une requête `tableauDeBordQuery(depuis)` qui lit les
+  faits des séances ; tout s'agrège dans `shared/tableau-de-bord.ts`, dans le fuseau du web. La
+  période vit dans `localStorage` (`features/home/periode.ts`). Supprimer une séance invalide
+  `["tableau-de-bord"]`.
 - Routines, Historique, Exercices : `ListDetailPage` (liste | détail redimensionnable, largeur
   mémorisée). **L'élément ouvert vit dans le chemin** (`$id`, `$slug`, `new`), en route enfant
   rendue par `<Outlet />` ; la liste reste montée et garde ses filtres. Une ligne est un `Link`
@@ -60,6 +64,9 @@ Wireframe shadcn en gris, branché sur l'API. Décisions : `docs/decisions.md`, 
   thème est un réglage d'appareil (`localStorage`, lu par le script de `index.html`).
 - Composants shadcn plutôt que maison. **Tout composant externe hors shadcn se fait valider avant
   installation** (D228).
+- **Silhouette** (`BodyMap`, D331) : le dessin du mobile, tracés dans `body-map-traces.ts`
+  (données MIT, ne pas reformater à la main) ; elle prend des noms de muscles du catalogue
+  (principal / secondaire), ou sur l'Accueil une carte de chaleur `charge` (D332).
 - La seule couleur porteuse de sens est le type de série (`lib/series.ts`, `SetBadge`) : W
   ambre, F rose (le rouge est au danger), D bleu.
 
