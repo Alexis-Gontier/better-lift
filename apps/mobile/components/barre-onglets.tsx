@@ -53,12 +53,15 @@ export function BarreOnglets({ state, navigation }: Props) {
               accessibilityLabel={onglet.libelle}
               className="min-h-16 flex-1 items-center justify-center gap-1 py-2"
             >
-              <View
-                className={cn(
-                  "h-8 w-16 items-center justify-center rounded-full",
-                  actif && "bg-secondary",
-                )}
-              >
+              <View className="h-8 w-16 items-center justify-center">
+                {/* La pilule, toujours montée, montrée par l'opacité : un fond
+                    ajouté après coup perdait son arrondi sous Android. */}
+                <View
+                  className={cn(
+                    "absolute inset-0 rounded-full bg-secondary",
+                    !actif && "opacity-0",
+                  )}
+                />
                 <Icon
                   as={onglet.icone}
                   className={cn("size-6", actif ? "text-foreground" : "text-muted-foreground")}
