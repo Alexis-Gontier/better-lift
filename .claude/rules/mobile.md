@@ -121,7 +121,7 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   faites). Records battus calculés sur le téléphone (`recordsBattus`) contre les
   records en cache (`["records", slug]`, préchargés pour les exercices des routines) ; un
   exercice aux records inconnus est écarté. Sans série validée, rien ne s'enregistre. Une séance
-  envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
+  envoyée invalide `["seances"]`, et `["records"]`.
 
 ## Profil (D318)
 

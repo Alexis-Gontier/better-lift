@@ -43,6 +43,11 @@ describe("les réponses d'erreur de l'app composée", () => {
     expect(await res.json()).toEqual({ erreur: "Ressource introuvable." });
   });
 
+  it("ne sert plus /stats ni /stats/bilan (D295, D328)", async () => {
+    expect((await app.request("/stats")).status).toBe(404);
+    expect((await app.request("/stats/bilan")).status).toBe(404);
+  });
+
   // Monté après le catalogue, « faits » serait pris pour un slug : la route du catalogue
   // lèverait sur le mock de la base (500). Avant lui, c'est la garde de session qui répond.
   it("/exercices/faits n'est pas pris pour un slug du catalogue (D312)", async () => {

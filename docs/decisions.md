@@ -110,8 +110,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D110** — *Accueil retiré (D178)*. Restent dans `shared/accueil.ts` : `routineASuivre` (la
   routine qui suit la dernière faite, dans l'ordre de la liste — sert à Démarrer et à Routines)
   et `resumeSemaine` (fin de séance). Le résumé d'une séance porte `nbRecords`.
-- **D112** — *Écran Stats retiré* ; reste `GET /stats/bilan` (bilan de toujours du Profil) et son
-  calcul dans `shared/stats.ts`.
+- **D112** — *Écran Stats retiré, puis `GET /stats/bilan` (D328).*
 - **D119** — *Fil de l'Accueil retiré (D178)*. Restent `meilleureSerie` / `meilleureSerieComptee`
   (`shared/apercu.ts`) et `versFil` côté API, qui alimente `GET /seances`.
 - **D129** — Objectif hebdomadaire et repos par défaut sont **sur le compte** (table
@@ -121,6 +120,9 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D295** — Les routes sans écran partent avec leur service et leurs tests (`/stats`,
   `/stats/periode`, `/stats/exercices` retirées). Chaque `c.json` porte un code explicite, et
   chaque code a son test.
+- **D328** — Suite de D295 : `GET /stats/bilan` part, sans client depuis le Profil minimal
+  (D318), avec `services/stats.ts`, son test, le type `Bilan` et `shared/stats.ts`
+  (`semainesRecentes`, sans appelant). La clé `["stats"]` quitte le cache hors ligne du mobile.
 - **D296** — Un dossier est une table (`Dossier` : nom unique par compte, `position`) ;
   `Routine.dossierId` nullable en `SetNull`, `Routine.note` (1000 caractères).
 - **D297** — `GET /routines` rend `{ routines, dossiers }` ; `POST`, `PATCH`, `DELETE
