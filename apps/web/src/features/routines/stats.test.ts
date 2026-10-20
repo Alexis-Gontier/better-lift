@@ -1,10 +1,9 @@
-import type { Brouillon, RoutineResume, SeanceResume } from "@better-lift/shared";
+import type { Brouillon, SeanceResume } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 import {
   minutesEstimees,
   musclesRoutine,
   nomLibre,
-  parDossier,
   seriesPrevues,
   statsRoutine,
   tendance,
@@ -59,37 +58,7 @@ describe("musclesRoutine", () => {
   });
 });
 
-const routine = (id: string, dossierId: string | null): RoutineResume => ({
-  id,
-  nom: id,
-  nbExercices: 1,
-  nbSeries: 1,
-  dossierId,
-  derniereSeance: null,
-  exercices: [],
-  dureeEstimeeSec: 0,
-});
-
-describe("parDossier", () => {
-  it("range dans l'ordre des dossiers, « Sans dossier » en dernier", () => {
-    const g = parDossier(
-      [routine("r1", null), routine("r2", "d2"), routine("r3", "inconnu")],
-      [
-        { id: "d1", nom: "PPL" },
-        { id: "d2", nom: "Full body" },
-      ],
-    );
-    expect(g.map((x) => [x.dossier?.nom ?? null, x.routines.map((r) => r.id)])).toEqual([
-      ["PPL", []],
-      ["Full body", ["r2"]],
-      [null, ["r1", "r3"]],
-    ]);
-  });
-
-  it("n'affiche pas « Sans dossier » quand tout est rangé", () => {
-    expect(parDossier([routine("r1", "d1")], [{ id: "d1", nom: "PPL" }])).toHaveLength(1);
-  });
-
+describe("nomLibre", () => {
   it("trouve un nom de dossier libre", () => {
     expect(nomLibre("Nouveau dossier", ["Nouveau dossier", "Nouveau dossier 2"])).toBe(
       "Nouveau dossier 3",

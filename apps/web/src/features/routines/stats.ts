@@ -2,7 +2,6 @@ import {
   type Brouillon,
   dureeEstimeeSec,
   lireCharge,
-  type RoutineResume,
   type SeanceResume,
 } from "@better-lift/shared";
 import { SYSTEME } from "@/lib/locale";
@@ -39,20 +38,6 @@ export function musclesRoutine(
   const primary = new Set(exercices.map((e) => e.musclePrincipal).filter(Boolean));
   const secondary = new Set(exercices.flatMap((e) => e.musclesSecondaires));
   return { primary: [...primary], secondary: [...secondary].filter((m) => !primary.has(m)) };
-}
-
-/** Les routines rangées par dossier, dans l'ordre des dossiers ; « Sans dossier » en dernier, s'il a des routines. */
-export function parDossier(
-  routines: readonly RoutineResume[],
-  dossiers: readonly { id: string; nom: string }[],
-): { dossier: { id: string; nom: string } | null; routines: RoutineResume[] }[] {
-  const connus = new Set(dossiers.map((d) => d.id));
-  const groupes = dossiers.map((d) => ({
-    dossier: d,
-    routines: routines.filter((r) => r.dossierId === d.id),
-  }));
-  const libres = routines.filter((r) => r.dossierId === null || !connus.has(r.dossierId));
-  return libres.length > 0 ? [...groupes, { dossier: null, routines: libres }] : groupes;
 }
 
 /** « Nouveau dossier », « Nouveau dossier 2 »… : un nom qui n'est pas pris. */
