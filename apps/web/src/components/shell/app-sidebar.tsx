@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Brand } from "@/components/brand";
+import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -23,9 +24,17 @@ export function AppSidebar() {
   const { pathname } = useLocation();
   return (
     <Sidebar collapsible="icon">
-      {/* Le nom, aligné sur la hauteur du header ; masqué quand la barre est repliée. */}
-      <SidebarHeader className="h-12 justify-center px-4">
-        <Link to="/" className="group-data-[collapsible=icon]:hidden">
+      {/* Le symbole et le nom (D329), sur la hauteur du header. Le symbole (20 px) est centré
+          sur la colonne des icônes du menu, le nom commence au même x que leurs libellés ;
+          repliée, la barre ne laisse que le symbole. Le nom n'est pas masqué mais rogné, pour
+          suivre la largeur pendant l'animation. */}
+      <SidebarHeader className="h-12 justify-center">
+        <Link
+          to="/"
+          aria-label="better-lift, accueil"
+          className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-md px-1.5 outline-hidden ring-sidebar-ring focus-visible:ring-2"
+        >
+          <Logo className="size-5" />
           <Brand />
         </Link>
       </SidebarHeader>

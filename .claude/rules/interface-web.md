@@ -50,7 +50,7 @@ Wireframe shadcn en gris, branché sur l'API. Décisions : `docs/decisions.md`, 
 
 ## Coquille et écrans
 
-- Barre latérale shadcn d'une seule liste (`components/shell/nav.ts`) : Accueil · Routines ·
+- Barre latérale shadcn repliable en icônes, logo et nom en tête (D329), d'une seule liste (`components/shell/nav.ts`) : Accueil · Routines ·
   Historique · Records · Exercices. Paramètres s'ouvre par le menu du compte ou la palette (Ctrl K).
 - Routines, Historique, Exercices : `ListDetailPage` (liste | détail redimensionnable, largeur
   mémorisée). **L'élément ouvert vit dans le chemin** (`$id`, `$slug`, `new`), en route enfant
