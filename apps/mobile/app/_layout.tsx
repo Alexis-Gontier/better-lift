@@ -59,6 +59,8 @@ export default function RootLayout() {
               premier pour route initiale — déclarée seule, la modale ouvrait
               l'application. */}
               <Stack.Screen name="(connecte)" />
+              {/* La page d'une routine (D321), par-dessus les onglets. */}
+              <Stack.Screen name="routine/[id]" />
               {/* Le catalogue s'ouvre par-dessus la séance, et y revient. */}
               <Stack.Screen name="choisir-exercices" options={{ presentation: "modal" }} />
               {/* L'ordre des exercices de la séance en cours (D89). */}

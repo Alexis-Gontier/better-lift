@@ -17,7 +17,8 @@ export function RepereSuperset({
 }: {
   groupe: GroupeSuperset | null;
   index: number;
-  onEtiquette: () => void;
+  /** Sans elle (page d'une routine, en lecture seule), l'étiquette n'ouvre rien. */
+  onEtiquette?: () => void;
   children: ReactNode;
 }) {
   if (!groupe) return <>{children}</>;
@@ -32,7 +33,13 @@ export function RepereSuperset({
         )}
       />
       <View className="min-w-0 flex-1">
-        {premier ? (
+        {premier && !onEtiquette ? (
+          <View className="min-h-8 justify-center">
+            <Text className="font-bold text-muted-foreground text-xs uppercase tracking-widest">
+              Superset {groupe.lettre}
+            </Text>
+          </View>
+        ) : premier ? (
           <Pressable
             onPress={onEtiquette}
             hitSlop={8}
