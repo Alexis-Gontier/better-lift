@@ -107,7 +107,7 @@ const avant = (s: FaitSeance, b: Bornes, fuseau: string) => {
   return j >= b.precedente && j < b.debut;
 };
 
-export type Chiffres = { seances: number; volumeKg: number; series: number; records: number };
+type Chiffres = { seances: number; volumeKg: number; series: number; records: number };
 export type ChiffresCles = { actuelle: Chiffres; precedente: Chiffres | null };
 
 function compter(seances: readonly FaitSeance[]): Chiffres {

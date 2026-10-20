@@ -61,6 +61,10 @@ const weekdayDay = new Intl.DateTimeFormat("fr-FR", {
   timeZone: "UTC",
 });
 
+const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
+
+/** « oct. » pour un mois `YYYY-MM` : l'axe d'un graphique sur un an. */
+export const formatShortMonth = (month: string) => shortMonth.format(asDate(`${month}-01`));
 /** « octobre 2026 » pour un mois `YYYY-MM`. */
 export const formatMonth = (month: string) => monthYear.format(asDate(`${month}-01`));
 /** « jeu. 15 oct. » */
