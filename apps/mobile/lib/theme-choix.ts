@@ -1,18 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { Appearance } from "react-native";
+import { Uniwind } from "uniwind";
 
 /**
  * Le thème choisi (D128, D129) : celui du système par défaut, ou forcé — en
  * salle on veut souvent le sombre. Gardé sur le téléphone : c'est un réglage
- * d'appareil. `Appearance.setColorScheme` fait suivre `useColorScheme`, donc
- * `useCouleurs`, à toute l'application.
+ * d'appareil. Uniwind sert les classes (D316) ; `Appearance` fait suivre
+ * `useColorScheme`, donc l'ancien `useCouleurs`, au même choix.
  */
 export type ChoixTheme = "systeme" | "sombre" | "clair";
 
 const CLE = "better-lift:theme";
 
 function appliquer(choix: ChoixTheme) {
+  Uniwind.setTheme(choix === "sombre" ? "dark" : choix === "clair" ? "light" : "system");
   Appearance.setColorScheme(
     choix === "sombre" ? "dark" : choix === "clair" ? "light" : "unspecified",
   );

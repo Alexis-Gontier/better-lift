@@ -4,19 +4,15 @@ export { apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
   brouillonValide,
-  chargeInvalide,
   type ExerciceBrouillon,
   empreinte,
   nouvelExercice,
-  reposInvalide,
-  repsInvalides,
   type SerieBrouillon,
   versBrouillon,
   versSaisie,
 } from "./brouillon-routine.js";
 export { cleJour, formatJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
-export { courbeUnRm } from "./ecart.js";
 export {
   ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
@@ -34,7 +30,6 @@ export {
   mettreEnFile,
 } from "./file-envoi.js";
 export { recordsBattus } from "./fin-seance.js";
-export { LIBELLE_ZONE, zonesTravaillees } from "./muscles.js";
 export {
   ajusterSurPave,
   type ChampPave,
@@ -63,15 +58,12 @@ export {
   deplacementRoutine,
   dossierSaisi,
   dureeEstimeeSec,
-  etiquettesSeries,
   LIBELLE_TYPE_SERIE,
-  meilleureSerie,
   ordreDossiers,
   ordreRoutines,
   type RoutineDetail,
   type RoutineResume,
   type RoutineSaisie,
-  resumeSeries,
   routineSaisie,
   TYPES_SERIE,
   type TypeSerie,
@@ -109,8 +101,6 @@ export {
 } from "./seance.js";
 export type { Bilan } from "./stats.js";
 export {
-  defaireGroupe,
-  deplacerAvecGroupes,
   type GroupeSuperset,
   groupeDe,
   groupes,

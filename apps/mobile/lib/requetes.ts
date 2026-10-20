@@ -1,4 +1,4 @@
-import type { ExerciceResume, Preferences, RoutineSaisie } from "@better-lift/shared";
+import type { ExerciceResume, Preferences } from "@better-lift/shared";
 import {
   infiniteQueryOptions,
   onlineManager,
@@ -108,7 +108,7 @@ type Precedents = Record<
  * `["seances", …]` : l'envoi d'une séance invalide `["seances"]`, donc aussi
  * ceci. La clé trie les slugs : le même ensemble donne la même entrée.
  */
-export function optionsPrecedents(slugs: string[]) {
+function optionsPrecedents(slugs: string[]) {
   const cle = [...new Set(slugs)].sort().join(",");
   return queryOptions({
     queryKey: ["seances", "precedents", cle],
@@ -196,63 +196,6 @@ async function joindre<T>(appel: () => Promise<T>): Promise<T> {
   } catch {
     throw new Error("Le serveur est injoignable. Vérifie ta connexion, puis réessaie.");
   }
-}
-
-function useInvalider() {
-  const client = useQueryClient();
-  return () => client.invalidateQueries({ queryKey: ["routines"] });
-}
-
-export function useCreerRoutine() {
-  const invalider = useInvalider();
-  return useMutation({
-    mutationFn: async (r: RoutineSaisie) => {
-      const res = await joindre(() => api.routines.$post({ json: r }));
-      if (!res.ok) return echec(res, "La routine n'a pas pu être créée.");
-      return (await res.json()).id;
-    },
-    onSuccess: invalider,
-  });
-}
-
-export function useRemplacerRoutine(id: string) {
-  const invalider = useInvalider();
-  return useMutation({
-    mutationFn: async (r: RoutineSaisie) => {
-      const res = await joindre(() => api.routines[":id"].$put({ param: { id }, json: r }));
-      if (!res.ok) return echec(res, "La routine n'a pas pu être enregistrée.");
-    },
-    onSuccess: invalider,
-  });
-}
-
-export function useSupprimerRoutine() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const res = await joindre(() => api.routines[":id"].$delete({ param: { id } }));
-      if (!res.ok) return echec(res, "La routine n'a pas pu être supprimée.");
-    },
-    // Le détail d'une routine supprimée se RETIRE du cache : l'invalider le
-    // referait, la page encore montée dessous recevrait un 404, et les
-    // tentatives de TanStack Query tiendraient la suppression en attente.
-    onSuccess: (_, id) => {
-      client.removeQueries({ queryKey: ["routines", "detail", id] });
-      return client.invalidateQueries({ queryKey: ["routines", "liste"] });
-    },
-  });
-}
-
-/** Les séances d'un exercice, pour sa fiche (D124). */
-export function optionsHistoriqueExercice(slug: string) {
-  return queryOptions({
-    queryKey: ["seances", "exercice", slug],
-    queryFn: async () => {
-      const res = await api.exercices[":slug"].historique.$get({ param: { slug } });
-      if (!res.ok) throw new Error("L'historique de l'exercice n'a pas pu être chargé.");
-      return (await res.json()).seances;
-    },
-  });
 }
 
 /** Les préférences du compte (D129), gardées hors ligne : la séance lit le repos par défaut. */

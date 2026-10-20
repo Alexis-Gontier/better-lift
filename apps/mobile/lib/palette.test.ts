@@ -72,7 +72,11 @@ describe.each([
     }
   });
 
-  it("le lime a quitté la palette (D161)", () => {
-    expect(JSON.stringify(c)).not.toMatch(/a8cf45|168, ?207, ?69|4d6a12/i);
+  it("le registre est gris : seuls le danger et le voile ont une teinte (D316)", () => {
+    const teintes = ["danger", "surDanger", "dangerEncre", "voile"];
+    for (const [role, valeur] of Object.entries(c)) {
+      if (teintes.includes(role)) continue;
+      expect(valeur, role).toMatch(/^#([0-9a-f]{2})\1\1$/i);
+    }
   });
 });

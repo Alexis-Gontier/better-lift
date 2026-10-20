@@ -1,13 +1,9 @@
 /**
- * Le système de couleurs du mobile (D101, D161) : UN token par rôle, DEUX
- * valeurs (sombre, clair). TypeScript pur, sans React Native : `palette.test.ts`
- * mesure chaque contraste. En salle, à bout de bras, il faut des cibles larges et
- * un contraste franc.
- *
- * L'orange ne porte que deux rôles, distingués par la forme : l'action en aplat
- * (`action` / `surAction`), le record en contour (`record*`). Exceptions bornées
- * (D162) : la carte du corps (`corps*`) et l'horloge de salle. Le danger a sa
- * propre couleur.
+ * PROVISOIRE (D316) : l'ancien système de couleurs, gardé pour la séance, la fin
+ * et le Profil jusqu'à leur réécriture (lots 2 et 3), puis supprimé. Ses valeurs
+ * sont la palette `neutral` de `global.css` : le code neuf passe par les classes
+ * Uniwind, jamais par ce fichier. UN token par rôle, DEUX valeurs (sombre,
+ * clair) ; `palette.test.ts` mesure chaque contraste.
  */
 export type Couleurs = {
   /** Fond d'écran. */
@@ -22,7 +18,7 @@ export type Couleurs = {
   ligne: string;
   /**
    * Le fond d'une série faite : NETTEMENT distinct du canevas — c'est ce qu'on
-   * vérifie d'un coup d'œil entre deux séries. Neutre : l'orange reste à l'action.
+   * vérifie d'un coup d'œil entre deux séries.
    */
   ligneFaite: string;
   /** Contours de boutons, ✓ à venir, filet d'attente. */
@@ -39,11 +35,6 @@ export type Couleurs = {
   action: string;
   /** Texte et icône posés sur l'aplat. */
   surAction: string;
-  /**
-   * Icône et libellé de l'onglet actif. À l'encre (D165) : la couleur ne dit
-   * plus la position, l'indicateur en pilule de Material 3 s'en charge.
-   */
-  ongletActif: string;
   /** Texte et flèche du badge record. */
   recordEncre: string;
   /** Fond teinté du badge record. */
@@ -60,13 +51,9 @@ export type Couleurs = {
   voile: string;
   /**
    * Le repère d'un superset (D151) : filet et étiquette. Ni l'action ni le record
-   * (orange), ni le danger. 5,3:1 et plus sur les surfaces, dans les deux registres.
+   * ni le danger.
    */
   superset: string;
-  /** Muscles principaux sur la carte du corps (D84). */
-  corps: string;
-  /** Muscles secondaires sur la carte du corps. */
-  corpsSecondaire: string;
   /**
    * Fond des vignettes et GIF d'exercice. Blanc dans LES DEUX registres : les
    * images du catalogue sont détourées sur blanc, un fond sombre les encadrerait.
@@ -74,67 +61,52 @@ export type Couleurs = {
   fondImage: string;
 };
 
-const ORANGE = "#f47a20";
-/** L'orange franc de Basic-Fit, pour le registre clair (D161). */
-const ORANGE_CLAIR = "#fe7000";
-
 export const sombre: Couleurs = {
-  canevas: "#121412",
-  surface1: "#1b1e1b",
-  surface2: "#242824",
-  surface3: "#2c312c",
-  ligne: "#2b302b",
-  ligneFaite: "#262b26",
-  ligneForte: "#3d433d",
-  encre: "#f3f4f1",
-  encreSecondaire: "#c3c8c3",
-  encreTertiaire: "#9aa09b",
-  // 5,2:1 sur les feuilles (surface2), 6,4:1 sur le canevas.
-  encreAttenuee: "#939a93",
-  action: ORANGE,
-  surAction: "#121412",
-  // D165 : l'onglet actif n'est plus coloré ; l'indicateur en pilule arrive au lot 2.
-  ongletActif: "#f3f4f1",
-  recordEncre: ORANGE,
-  recordFond: "rgba(244, 122, 32, 0.14)",
-  recordLigne: "rgba(244, 122, 32, 0.4)",
-  danger: "#c42443",
+  canevas: "#0a0a0a",
+  surface1: "#171717",
+  surface2: "#262626",
+  surface3: "#262626",
+  ligne: "#262626",
+  ligneFaite: "#262626",
+  ligneForte: "#525252",
+  encre: "#fafafa",
+  encreSecondaire: "#d4d4d4",
+  encreTertiaire: "#a3a3a3",
+  encreAttenuee: "#a3a3a3",
+  action: "#fafafa",
+  surAction: "#171717",
+  recordEncre: "#fafafa",
+  recordFond: "#262626",
+  recordLigne: "#a3a3a3",
+  danger: "#dc2626",
   surDanger: "#ffffff",
-  // Rouge rosé : l'ancien rouge se confondait avec l'orange de l'action.
-  dangerEncre: "#ff4d6d",
+  dangerEncre: "#f87171",
   voile: "rgba(0, 0, 0, 0.6)",
-  superset: "#9a8cf0",
-  corps: ORANGE,
-  corpsSecondaire: "rgba(244, 122, 32, 0.45)",
+  superset: "#a3a3a3",
   fondImage: "#ffffff",
 };
 
 export const clair: Couleurs = {
-  canevas: "#f4f4f2",
-  surface1: "#ffffff",
-  surface2: "#ebebe7",
-  surface3: "#e1e1dc",
-  ligne: "#dcdcd7",
-  ligneFaite: "#e6e6e1",
-  ligneForte: "#b9bdb6",
-  encre: "#121412",
-  encreSecondaire: "#3b403c",
-  encreTertiaire: "#5c625d",
-  // 4,8:1 sur les feuilles (surface2), 5,2:1 sur le canevas.
-  encreAttenuee: "#626862",
-  action: ORANGE_CLAIR,
-  surAction: "#121412",
-  ongletActif: "#121412",
-  // L'orange en texte ne se lit pas sur fond clair : le record passe à l'orange brûlé.
-  recordEncre: "#a84800",
-  recordFond: "rgba(254, 112, 0, 0.1)",
-  recordLigne: "rgba(168, 72, 0, 0.4)",
-  danger: "#c4213f",
+  canevas: "#ffffff",
+  surface1: "#fafafa",
+  surface2: "#f5f5f5",
+  surface3: "#e5e5e5",
+  ligne: "#e5e5e5",
+  ligneFaite: "#ededed",
+  ligneForte: "#a3a3a3",
+  encre: "#0a0a0a",
+  encreSecondaire: "#404040",
+  encreTertiaire: "#525252",
+  encreAttenuee: "#595959",
+  action: "#171717",
+  surAction: "#fafafa",
+  recordEncre: "#0a0a0a",
+  recordFond: "#f5f5f5",
+  recordLigne: "#525252",
+  danger: "#dc2626",
   surDanger: "#ffffff",
-  dangerEncre: "#c4213f",
+  dangerEncre: "#b91c1c",
   voile: "rgba(0, 0, 0, 0.4)",
-  superset: "#5a4bbf",
-  corps: ORANGE_CLAIR,
-  corpsSecondaire: "rgba(254, 112, 0, 0.4)",
+  superset: "#525252",
   fondImage: "#ffffff",
 };

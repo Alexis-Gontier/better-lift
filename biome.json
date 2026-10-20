@@ -15,7 +15,8 @@
       "!**/generated",
       "!**/routeTree.gen.ts",
       "!packages/db/catalogue/source.json",
-      "!packages/db/catalogue/noms-fr.json"
+      "!packages/db/catalogue/noms-fr.json",
+      "!apps/mobile/uniwind-types.d.ts"
     ]
   },
   "formatter": {
@@ -35,6 +36,12 @@
     "parser": { "tailwindDirectives": true }
   },
   "overrides": [
+    {
+      "includes": ["apps/mobile/global.css"],
+      "linter": {
+        "rules": { "suspicious": { "noDuplicateCustomProperties": "off" } }
+      }
+    },
     {
       "includes": [
         "apps/web/src/components/ui/**",

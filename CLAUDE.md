@@ -50,7 +50,8 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
   web, `?etat=` force chacun. On dessine et valide un écran avant de brancher ses données.
 - Une couleur pour l'action et le record, distinguées par la forme : l'action est un aplat, le
   record un contour. Le danger a la sienne. Un token par rôle, deux valeurs (sombre / clair),
-  jamais de couleur en dur. Mobile : orange (`apps/mobile/lib/palette.ts`, D161) ; web : wireframe shadcn en gris.
+  jamais de couleur en dur. Mobile : wireframe Reusables en gris (`apps/mobile/global.css`,
+  D316) ; web : wireframe shadcn en gris.
 
 ## Git et PR
 
@@ -70,7 +71,7 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 Les skills superpowers écrivent leurs specs et plans dans `docs/superpowers/` : ce sont des
 documents de chantier. **Une fois le chantier fusionné**, reporter ses décisions dans
 `docs/decisions.md` (et ce qui change dans `docs/conception.md` ou `.claude/rules/`), puis
-supprimer la spec et le plan. Les numéros de décision continuent après D313.
+supprimer la spec et le plan. Les numéros de décision continuent après D316.
 
 ## Environnement
 

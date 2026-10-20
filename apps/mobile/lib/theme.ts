@@ -1,61 +1,10 @@
-import { StyleSheet, type TextStyle, useColorScheme } from "react-native";
+import { StyleSheet, useColorScheme } from "react-native";
 
 import { type Couleurs, clair, sombre } from "./palette";
 
 /** Les couleurs du thème courant, qui suit celui du téléphone (D102). */
 export function useCouleurs(): Couleurs {
   return useColorScheme() === "light" ? clair : sombre;
-}
-
-/**
- * Les polices (D163) : une famille, deux largeurs. Barlow pour toute
- * l'interface ; Barlow Condensed (l'« affiche ») seulement pour les titres de
- * page, les noms en tête, le chrono et les valeurs de record — jamais dans un
- * bouton, une étiquette ni un tableau. Chargées par `expo-font` dans
- * `app/_layout.tsx`. Une police chargée ne se met pas en gras toute seule sous
- * Android : chaque graisse est une famille à part.
- */
-export const polices = {
-  regulier: "Barlow_400Regular",
-  moyen: "Barlow_500Medium",
-  demiGras: "Barlow_600SemiBold",
-  gras: "Barlow_700Bold",
-  affiche: "BarlowCondensed_800ExtraBold",
-} as const;
-
-function famillePour(graisse: TextStyle["fontWeight"]): string {
-  switch (String(graisse ?? "500")) {
-    case "400":
-    case "normal":
-      return polices.regulier;
-    case "600":
-      return polices.demiGras;
-    case "700":
-    case "bold":
-    case "800":
-    case "900":
-      return polices.gras;
-    default:
-      return polices.moyen;
-  }
-}
-
-/**
- * Pose la famille Barlow de la bonne graisse sur chaque style de texte, et
- * retire `fontWeight`, qu'Android appliquerait par-dessus en faux gras.
- */
-function avecPolices<T extends object>(styles: T): T {
-  const sortie: Record<string, unknown> = {};
-  for (const [nom, style] of Object.entries(styles)) {
-    const s = style as TextStyle;
-    if (s && typeof s === "object" && ("fontSize" in s || "fontWeight" in s)) {
-      const { fontWeight, ...reste } = s;
-      sortie[nom] = { fontFamily: s.fontFamily ?? famillePour(fontWeight), ...reste };
-    } else {
-      sortie[nom] = style;
-    }
-  }
-  return sortie as T;
 }
 
 /**
@@ -76,7 +25,7 @@ export function creerStyles<T extends StyleSheet.NamedStyles<T>>(
     const c = useCouleurs();
     let styles = parTheme.get(c);
     if (!styles) {
-      styles = StyleSheet.create(avecPolices(fabrique(c)));
+      styles = StyleSheet.create(fabrique(c));
       parTheme.set(c, styles);
     }
     return styles;
@@ -115,13 +64,7 @@ export const espace = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 } as const;
 export const rayon = { cellule: 6, bouton: 6, bandeau: 6, carte: 6, feuille: 16 } as const;
 
 /**
- * L'affiche (D163) : Barlow Condensed en capitales, pour les titres de page, le
- * nom en tête d'une routine ou d'un exercice, le chrono, les valeurs de record.
- * `fontFamily` posée ici, `creerStyles` la respecte. À étaler dans un style :
- * `{ ...affiche, color, fontSize }`.
+ * PROVISOIRE (D316) : l'ancienne « affiche », sans Barlow ni capitales, pour les
+ * écrans pas encore réécrits. Partira au lot 3.
  */
-export const affiche = {
-  fontFamily: polices.affiche,
-  textTransform: "uppercase",
-  letterSpacing: 0.3,
-} as const;
+export const affiche = { fontWeight: "700" } as const;

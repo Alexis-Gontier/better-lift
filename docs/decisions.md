@@ -23,9 +23,17 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D22** — Inscription fermée par une liste blanche d'adresses (`SIGNUP_ALLOWLIST`).
 - **D25** — L'interface passe avant la logique : on dessine et valide un écran, avec ses quatre
   états (vide, chargement, erreur, nominal), avant de le brancher.
-- **D178** — Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
+- **D178** — *Révisée par D316.* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
   Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
   redirige vers `/routines`.
+- **D316** — Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
+  direction artistique viendra une fois l'app construite. Lot 1 : un seul accueil, sans onglets
+  (« Séance vide », routines qui se lancent d'un appui, Profil en en-tête, bandeau
+  « Reprendre ») ; retirés : l'édition des routines (le web prépare), la page d'une routine et sa
+  carte du corps, la fiche d'un exercice, la feuille Démarrer, le logo et l'accroche, Barlow.
+  React Native Reusables sur Uniwind, tokens `neutral` dans `global.css`, police système.
+  L'ancien thème (`lib/theme.ts`, `lib/palette.ts`) reste, passé au gris, pour la séance, la fin
+  et le Profil jusqu'aux lots 2 et 3.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
@@ -142,7 +150,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   ligne. Jamais de `fetchQuery` nu dans un chemin de salle.
 - **D99** — L'envoi se relance au retour du réseau et du premier plan.
 - **D105** — Un seul aplat par écran ; « Terminer » est secondaire.
-- **D107** — Bandeau « séance en cours », neutre, au-dessus de la barre ; tout le bandeau ramène
+- **D107** — *Révisée par D316.* Bandeau « séance en cours », neutre, au-dessus de la barre ; tout le bandeau ramène
   à la séance.
 - **D108** — Direction « Carnet » : puces repos et note sous le nom, ligne de série en états,
   valeurs fantômes.
@@ -155,7 +163,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D114** — Micro-textes : tutoiement, phrases courtes avec un point, pas d'exclamation.
 - **D116** — La ✓ est une case à cocher : vide à faire, pleine à l'encre une fois faite. La
   prochaine série se repère par un liseré, sans couleur d'action.
-- **D120** — Démarrer est une feuille basse ouverte par le rond central.
+- **D120** — *Révisée par D316.* Démarrer est une feuille basse ouverte par le rond central.
 - **D130** — Fin de séance, la récompense d'abord : records, écarts avec la dernière séance de la
   même routine, note de séance (`Seance.note`).
 - **D167** — La feuille Démarrer a un bouton Fermer en plus du glisser.
@@ -192,11 +200,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   un aplat, le record un contour (texte coloré sur fond teinté, flèche montante). La couleur
   est l'orange depuis D161.
 - **D36** — Le danger a sa propre couleur et ne porte jamais l'action ni le record.
-- **D74** — *Révisée par D178* : les onglets sont Routines · Démarrer · Profil.
+- **D74** — *Révisée par D316.* *Révisée par D178* : les onglets sont Routines · Démarrer · Profil.
 - **D80** — Dépendances d'Expo Go seulement.
-- **D82** — Le mobile crée, modifie et supprime les routines sans le web.
-- **D83** — Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
-- **D84** — Les muscles se peignent en couleur d'action : exception bornée au dessin du corps.
+- **D82** — *Révisée par D316.* Le mobile crée, modifie et supprime les routines sans le web.
+- **D83** — *Révisée par D316.* Carte des muscles (`react-native-body-highlighter`) sur la page d'une routine.
+- **D84** — *Révisée par D316.* Les muscles se peignent en couleur d'action : exception bornée au dessin du corps.
 - **D85** — La copie de travail de l'éditeur de routine vit dans `shared`
   (`brouillon-routine.ts`), le système d'unités en paramètre.
 - **D101** — Couleurs par rôle, deux valeurs (sombre / clair) ; valeurs actuelles en D161.
@@ -205,32 +213,32 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D103** — *Révisée par D163* (Barlow remplace Archivo).
 - **D104** — Espacements en base 4, cible tactile de 48, ligne de série de 52 ; rayons révisés
   par D164.
-- **D118** — Langage commun des pages : `Section`, `Vignette` (fond blanc), `Tuile`,
+- **D118** — *Révisée par D316.* Langage commun des pages : `Section`, `Vignette` (fond blanc), `Tuile`,
   `BoutonContour`, `FeuilleBasse` ; un chiffre se distingue par sa taille, pas sa couleur.
 - **D121** — *Révisée par D171* : le catalogue n'a plus de vue dans Routines.
-- **D122** — Page d'une routine : on la lit avant de la modifier ; « Lancer » en contour.
+- **D122** — *Révisée par D316.* Page d'une routine : on la lit avant de la modifier ; « Lancer » en contour.
 - **D123** — *Détail d'une séance retiré du mobile (D178)* ; `ecartSerie` de `shared` reste.
-- **D124** — Fiche d'un exercice : une page qui défile (1RM estimé et sa courbe, records,
+- **D124** — *Révisée par D316.* Fiche d'un exercice : une page qui défile (1RM estimé et sa courbe, records,
   historique, consignes). Son historique n'ouvre plus rien (D178).
 - **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*, son calendrier et son token avec.
   Reste la `Tuile` à écart.
 - **D128** — Profil : bilan de toujours, objectif hebdomadaire, repos par défaut, thème
   (Système · Sombre · Clair), vibrations, export CSV, compte, envoi.
-- **D161** — Palette « Underground orange » : valeurs dans `lib/palette.ts`, contrastes tenus par
+- **D161** — *Révisée par D316.* Palette « Underground orange » : valeurs dans `lib/palette.ts`, contrastes tenus par
   `palette.test.ts`.
-- **D162** — L'orange ne porte que l'action et le record ; exceptions bornées : carte du corps,
+- **D162** — *Révisée par D316.* L'orange ne porte que l'action et le record ; exceptions bornées : carte du corps,
   horloge de salle.
-- **D163** — Barlow pour l'interface ; Barlow Condensed 800 en capitales (l'« affiche ») pour
+- **D163** — *Révisée par D316.* Barlow pour l'interface ; Barlow Condensed 800 en capitales (l'« affiche ») pour
   titres de page, noms en tête, chrono, horloge, valeurs de record — jamais dans un contrôle.
-- **D164** — Rayons 6 (cartes, boutons, cellules), 16 (feuilles), pilule (puces) ; profondeur
+- **D164** — *Révisée par D316.* Rayons 6 (cartes, boutons, cellules), 16 (feuilles), pilule (puces) ; profondeur
   par les surfaces, sans ombre.
-- **D165** — Onglet actif dans une pilule `surface3` (Material 3) ; rond orange central
+- **D165** — *Révisée par D316.* Onglet actif dans une pilule `surface3` (Material 3) ; rond orange central
   Démarrer / Reprendre.
-- **D171** — Onglet Routines : une liste de cartes, sans segments ni « Lancer » ; le rond lance,
+- **D171** — *Révisée par D316.* Onglet Routines : une liste de cartes, sans segments ni « Lancer » ; le rond lance,
   la carte ouvre.
-- **D172** — Page d'une routine : « Lancer » en contour, la carte du corps repliée derrière une
+- **D172** — *Révisée par D316.* Page d'une routine : « Lancer » en contour, la carte du corps repliée derrière une
   ligne.
-- **D174** — Fiche d'un exercice : vignette et nom, puis 1RM, records, historique, consignes.
+- **D174** — *Révisée par D316.* Fiche d'un exercice : vignette et nom, puis 1RM, records, historique, consignes.
 - **D175** — Profil groupé par portée : Entraînement (compte) · Ce téléphone · Données · Compte ;
   la file d'envoi n'apparaît que si une séance attend.
 - **D176** — Chargement en squelette de page ; rien sous une seconde ; état vide qui dit l'état et

@@ -92,7 +92,7 @@ function lireEntier(texte: string, max: number): number | null {
 }
 
 export const repsInvalides = (t: string) => Number.isNaN(lireEntier(t, 999));
-export const reposInvalide = (t: string) => Number.isNaN(lireEntier(t, 3600));
+const reposInvalide = (t: string) => Number.isNaN(lireEntier(t, 3600));
 export const chargeInvalide = (t: string, systeme: UnitSystem) =>
   Number.isNaN(lireCharge(t, systeme));
 
