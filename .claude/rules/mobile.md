@@ -113,7 +113,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **Vibrations** : toujours par `lib/vibrations.ts`, jamais `expo-haptics` en direct — le réglage
   du Profil les coupe toutes là.
 - Écran maintenu allumé (`useKeepAwake`) ; vignettes par `expo-image` (cache disque).
-- **Fin de séance** (D318) : records battus calculés sur le téléphone (`recordsBattus`) contre les
+- **Fin de séance** (D318, D324) : bilan, records, puis chaque exercice (meilleure série, séries
+  faites). Records battus calculés sur le téléphone (`recordsBattus`) contre les
   records en cache (`["records", slug]`, préchargés pour les exercices des routines) ; un
   exercice aux records inconnus est écarté. Sans série validée, rien ne s'enregistre. Une séance
   envoyée invalide `["seances"]`, `["records"]` et `["stats"]`.
