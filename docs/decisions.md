@@ -308,6 +308,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D323** — Complète D229 : l'onglet porte l'icône de l'app mobile (D322) en favicon
   (`apps/web/public` : `favicon.svg`, inversé en mode sombre comme le `primary` ; `favicon.ico`
   16–48 px ; `apple-touch-icon.png`). Les écrans gardent le nom en texte.
+- **D329** — Révise D229 et D323 pour la barre latérale : son en-tête assemble le symbole
+  « La charge » seul, sans tuile (`Logo`, `currentColor`, `viewBox` recadré sur le dessin), et le
+  nom. Le symbole (20 px) est centré sur la colonne des icônes du menu ; l'écart (6 px) fait
+  commencer le nom au même x que les libellés du menu. Repliée en icônes, la barre ne garde que le
+  symbole ; le nom n'est pas masqué mais rogné par la largeur, pour suivre l'animation. Les pages
+  d'authentification portent le même assemblage en tête. L'Accueil prend l'icône
+  `LayoutDashboard`.
 - **D231** — shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
   (`components/ui/**`) reste tel que livré ; Biome n'y lève pas les règles d'accessibilité.
 - **D232** — Clavier : Ctrl K (palette) et Ctrl B (barre latérale) seulement.
