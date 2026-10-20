@@ -53,7 +53,9 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   Toute feuille se ferme en glissant vers le bas ; sous Android, le contenu d'un `Modal` porte
   sa propre `GestureHandlerRootView`.
 - **États** : `Chargement`, `Erreur`, `Vide` (`components/ui/etats.tsx`) ; une attente de moins
-  d'une seconde n'affiche rien.
+  d'une seconde n'affiche rien. `Chargement` prend la `forme` de l'écran (D327) : un nouvel
+  écran de données y ajoute la sienne. Pour la voir, forcer `true ||` sur la condition le temps
+  d'une capture (le mobile n'a pas de `?etat=`).
 - **Taille du texte du système** suivie partout, sauf dans les éléments de hauteur fixe de la
   séance, plafonnés par `maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}`
   (`components/seance/texte-dense.ts`).

@@ -55,7 +55,7 @@ export default function PageRoutine() {
     if (detail.isPending && detail.fetchStatus === "paused") {
       return <Vide titre="Hors ligne" message="La routine apparaîtra au retour du réseau." />;
     }
-    if (detail.isPending) return <Chargement />;
+    if (detail.isPending) return <Chargement forme="routine" />;
     if (detail.isError && !detail.data) {
       return (
         <Erreur message="La routine n'a pas pu se charger." onReessayer={() => detail.refetch()} />
