@@ -112,9 +112,11 @@ export {
   roleRepos,
 } from "./supersets.js";
 export {
+  type Bornes,
   bornesPeriode,
   type ChiffresCles,
   chiffresCles,
+  depuisPour,
   type FaitSeance,
   LIBELLE_PERIODE,
   PERIODES,

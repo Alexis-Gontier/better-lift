@@ -70,6 +70,7 @@ export function useSupprimerSeance() {
       // Pas d'invalidation du détail : elle referait un GET de la séance partie, soit un 404.
       client.removeQueries({ queryKey: seancesKeys.detail(id) });
     },
-    apres: [["routines"], exercicesKeys.all],
+    // L'Accueil dérive aussi des séances (D330) : clé littérale, une feature n'en importe pas une autre.
+    apres: [["routines"], exercicesKeys.all, ["tableau-de-bord"]],
   });
 }

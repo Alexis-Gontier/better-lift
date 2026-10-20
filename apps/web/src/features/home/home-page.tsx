@@ -1,6 +1,8 @@
 import {
+  type Bornes,
   bornesPeriode,
   chiffresCles,
+  depuisPour,
   LIBELLE_PERIODE,
   PERIODES,
   type Periode,
@@ -10,9 +12,10 @@ import {
   type TableauDeBord,
   tendance,
 } from "@better-lift/shared";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Dumbbell } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Page } from "@/components/page";
 import { etatAffiche } from "@/components/states/etat";
 import { StateError } from "@/components/states/state-error";
@@ -28,11 +31,11 @@ import {
 } from "@/components/ui/empty";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FUSEAU, jourCivil } from "@/lib/locale";
-import { FIXTURE } from "./fixture";
 import { HomeSkeleton } from "./home-skeleton";
 import { KpiCards } from "./kpi-cards";
 import { MusclesCard } from "./muscles-card";
 import { periodeRetenue, retenirPeriode } from "./periode";
+import { tableauDeBordQuery } from "./queries";
 import { RecentRecords, RecentSessions } from "./recent-lists";
 import { ThisWeek } from "./this-week";
 import { TrendChart } from "./trend-chart";
@@ -48,10 +51,15 @@ const rangDuJour = (maintenant: Date) => (new Date(jourCivil(maintenant)).getUTC
 export function HomePage() {
   const [periode, setPeriode] = useState(periodeRetenue);
   const force = useEtat();
-  // Dessin (tâche 2 du plan) : des données factices, branchées sur l'API ensuite.
-  const donnees: TableauDeBord = FIXTURE;
-  const requete = { isPending: false, isError: false, refetch: () => {} };
-  const etat = etatAffiche(force, requete, donnees.total === 0);
+  // Les bornes ne bougent qu'avec la période : la clé de la requête reste stable entre deux rendus.
+  const bornes = useMemo(() => bornesPeriode(periode, new Date(), FUSEAU), [periode]);
+  // Changer de période garde l'ancien tableau à l'écran le temps de la lecture, sans squelette.
+  const requete = useQuery({
+    ...tableauDeBordQuery(depuisPour(bornes)),
+    placeholderData: keepPreviousData,
+  });
+  const donnees = requete.data;
+  const etat = etatAffiche(force, requete, donnees?.total === 0);
 
   const choixPeriode = (
     <ToggleGroup
@@ -84,19 +92,24 @@ export function HomePage() {
       {etat === "chargement" ? (
         <HomeSkeleton />
       ) : etat === "erreur" ? (
-        <StateError title="L'accueil n'a pas pu se charger" reessayer={requete.refetch} />
+        <StateError
+          title="L'accueil n'a pas pu se charger"
+          reessayer={() => void requete.refetch()}
+        />
       ) : etat === "vide" ? (
         <HomeEmpty />
+      ) : donnees ? (
+        <Tableau donnees={donnees} bornes={bornes} />
       ) : (
-        <Tableau donnees={donnees} periode={periode} />
+        // `?etat=nominal` forcé avant l'arrivée des données : le squelette, pas un écran vide.
+        <HomeSkeleton />
       )}
     </Page>
   );
 }
 
-function Tableau({ donnees, periode }: { donnees: TableauDeBord; periode: Periode }) {
+function Tableau({ donnees, bornes }: { donnees: TableauDeBord; bornes: Bornes }) {
   const maintenant = new Date();
-  const bornes = bornesPeriode(periode, maintenant, FUSEAU);
   const { seances } = donnees;
   const semaine = semaineEnCours(seances, maintenant, FUSEAU);
   const muscles = repartitionMuscles(seances, bornes, FUSEAU);
