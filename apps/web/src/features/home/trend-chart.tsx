@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -30,8 +30,8 @@ const tonnes = (kg: number) =>
   kg >= 1000 ? `${formatNumber(Math.round(kg / 1000))} t` : formatKg(kg);
 
 /**
- * La tendance (D330) : une barre par semaine, ou par mois sur un an. Des barres et non une
- * ligne : chaque intervalle est un compte discret, et un intervalle vide se voit.
+ * La tendance (D330) : un point par semaine, ou par mois sur un an, en aire. L'aire lit
+ * l'évolution d'un coup d'œil ; un intervalle vide tombe à zéro, il se voit.
  */
 export function TrendChart({
   points,
@@ -67,7 +67,14 @@ export function TrendChart({
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
-          <BarChart data={points} margin={{ left: 0, right: 8 }}>
+          <AreaChart data={points} margin={{ left: 0, right: 8, top: 8 }}>
+            <defs>
+              {/* Le dégradé suit la couleur de la série, donc le thème. */}
+              <linearGradient id="tendance-aire" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={`var(--color-${mesure})`} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={`var(--color-${mesure})`} stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="debut"
@@ -84,7 +91,6 @@ export function TrendChart({
               tickFormatter={mesure === "volumeKg" ? tonnes : formatNumber}
             />
             <ChartTooltip
-              cursor={false}
               content={
                 <ChartTooltipContent
                   labelFormatter={(_, p) => {
@@ -99,13 +105,16 @@ export function TrendChart({
                 />
               }
             />
-            <Bar
+            <Area
               dataKey={mesure}
-              fill={`var(--color-${mesure})`}
-              radius={4}
+              // Monotone : la courbe ne passe jamais sous zéro entre deux points.
+              type="monotone"
+              stroke={`var(--color-${mesure})`}
+              strokeWidth={2}
+              fill="url(#tendance-aire)"
               isAnimationActive={false}
             />
-          </BarChart>
+          </AreaChart>
         </ChartContainer>
         <p className="sr-only">
           {mesure === "volumeKg"
