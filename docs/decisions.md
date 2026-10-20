@@ -34,6 +34,12 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   React Native Reusables sur Uniwind, tokens `neutral` dans `global.css`, police système.
   L'ancien thème (`lib/theme.ts`, `lib/palette.ts`) reste, passé au gris, pour la séance, la fin
   et le Profil jusqu'aux lots 2 et 3.
+- **D317** — Lot 2 de D316, la séance en wireframe : saisie au **clavier du système** (une case
+  vide montre la cible en indication, la valeur s'écrit à la sortie du champ, une saisie
+  invalide n'est jamais écrite) ; le pavé maison part. Le repos tient dans **un bandeau** en bas
+  (−15 s / +15 s, Passer), comme Hevy ; l'horloge plein écran part. Les supersets restent, leur
+  repère réduit à un filet gris. Toute écriture de l'écran part de la séance du moment
+  (`changer`), pour que la fin d'une saisie et la coche qui ferme le clavier ne s'écrasent pas.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
@@ -154,7 +160,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   à la séance.
 - **D108** — Direction « Carnet » : puces repos et note sous le nom, ligne de série en états,
   valeurs fantômes.
-- **D109** — Pavé numérique intégré ; le clavier système ne s'ouvre pas.
+- **D109** — *Révisée par D317.* Pavé numérique intégré ; le clavier système ne s'ouvre pas.
 - **D111** — Fin de séance : records battus calculés sur le téléphone contre le cache ; sans série
   validée, rien ne s'enregistre.
 - **D113** — On vibre pour confirmer ce qui se fait sans regarder, jamais pour décorer ;
@@ -167,7 +173,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D130** — Fin de séance, la récompense d'abord : records, écarts avec la dernière séance de la
   même routine, note de séance (`Seance.note`).
 - **D167** — La feuille Démarrer a un bouton Fermer en plus du glisser.
-- **D168** — L'horloge de salle : chaque repos lancé monte une feuille aux deux tiers (décompte
+- **D168** — *Révisée par D317.* L'horloge de salle : chaque repos lancé monte une feuille aux deux tiers (décompte
   en affiche orange, « Ensuite », −15 s · +15 s · Passer) ; glissée vers le bas, elle devient
   le bandeau.
 - **D169** — En-tête de séance resserré : chevron, nom, « 3 / 15 séries », « Terminer » en
@@ -188,7 +194,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D149** — Le repos part quand le tour est complet ; durée du dernier membre, repli sur le repos
   par défaut. Le repos des autres membres est gardé mais masqué.
 - **D150** — Prochaine série tour par tour (A1, B1, A2…).
-- **D151** — Repère identique partout : filet de 3 px et étiquette « Superset A », rôle
+- **D151** — *Révisée par D317.* Repère identique partout : filet de 3 px et étiquette « Superset A », rôle
   `superset` (`#9a8cf0` / `#5a4bbf`).
 - **D152** — Les actions vivent dans le menu ⋯ et sur l'étiquette.
 - **D153** — Le détail d'une séance rend `supersetGroupe` ; l'historique web le relit en lecture

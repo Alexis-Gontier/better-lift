@@ -4,13 +4,17 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, Dumbbell, Search, X } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { FlatList, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Appuyable } from "../components/ui/appuyable";
-import { Chargement, Erreur, Vide } from "../components/ui/etats";
-import { type ExerciceChoisi, rendreChoix } from "../lib/choix-exercices";
-import { optionsCatalogueComplet } from "../lib/requetes";
-import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/theme";
+import { FlatList, Pressable, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Ecran } from "@/components/ui/ecran";
+import { Chargement, Erreur, Vide } from "@/components/ui/etats";
+import { Icon } from "@/components/ui/icon";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Text } from "@/components/ui/text";
+import { type ExerciceChoisi, rendreChoix } from "@/lib/choix-exercices";
+import { optionsCatalogueComplet } from "@/lib/requetes";
+import { cn } from "@/lib/utils";
 
 /**
  * Choisir des exercices dans le catalogue (D93) : une recherche, et une
@@ -18,8 +22,6 @@ import { CIBLE, creerStyles, espace, rayon, taille, useCouleurs } from "../lib/t
  * En `?mode=remplacer`, un seul choix, rendu dès l'appui.
  */
 export default function ChoisirExercices() {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
   const router = useRouter();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const unique = mode === "remplacer";
@@ -50,33 +52,35 @@ export default function ChoisirExercices() {
   };
 
   return (
-    <SafeAreaView style={styles.ecran} edges={["top", "bottom"]}>
-      <View style={styles.entete}>
-        <Appuyable
+    <Ecran className="flex-1 bg-background" edges={["top", "bottom"]}>
+      <View className="h-14 flex-row items-center gap-1 px-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-12"
           onPress={() => router.back()}
-          style={styles.fermer}
-          accessibilityRole="button"
           accessibilityLabel="Fermer"
         >
-          <X size={24} color={couleurs.encre} />
-        </Appuyable>
-        <Text style={styles.titre} accessibilityRole="header">
+          <Icon as={X} className="size-6 text-foreground" />
+        </Button>
+        <Text className="flex-1 font-semibold text-xl" accessibilityRole="header">
           {unique ? "Remplacer l'exercice" : "Ajouter des exercices"}
         </Text>
       </View>
 
-      <View style={styles.recherche}>
-        <Search size={18} color={couleurs.encreTertiaire} />
-        <TextInput
+      <View className="px-4 pb-3">
+        <Input
           value={filtre}
           onChangeText={setFiltre}
           placeholder="Chercher un exercice"
-          placeholderTextColor={couleurs.encreAttenuee}
-          style={styles.champ}
+          className="h-12 pl-10"
           autoCorrect={false}
           returnKeyType="search"
           accessibilityLabel="Chercher un exercice"
         />
+        <View className="absolute top-0 bottom-3 left-7 justify-center" pointerEvents="none">
+          <Icon as={Search} className="size-4.5 text-muted-foreground" />
+        </View>
       </View>
 
       {/* Jamais chargé et hors ligne : la requête attend le réseau (D97). */}
@@ -96,140 +100,70 @@ export default function ChoisirExercices() {
         <Vide titre="Aucun exercice trouvé" message={`Rien ne correspond à « ${filtre} ».`} />
       ) : (
         <FlatList
+          className="flex-1"
           data={resultats}
           keyExtractor={(x) => x.slug}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.liste}
+          ItemSeparatorComponent={Filet}
           renderItem={({ item }) => {
             const coche = choix.some((c) => c.slug === item.slug);
             return (
-              <Appuyable
-                style={[styles.ligne, coche && styles.ligneCochee]}
+              <Pressable
+                className="min-h-17 flex-row items-center gap-3 px-4 py-2 active:bg-accent"
                 onPress={() => basculer({ slug: item.slug, nom: item.nom, image: item.image })}
                 accessibilityRole={unique ? "button" : "checkbox"}
                 accessibilityState={unique ? undefined : { checked: coche }}
               >
-                {item.image ? (
-                  <Image
-                    source={{ uri: item.image }}
-                    style={styles.vignette}
-                    contentFit="cover"
-                    cachePolicy="disk"
-                  />
-                ) : (
-                  <View style={[styles.vignette, styles.sansImage]}>
-                    <Dumbbell size={20} color={couleurs.encreAttenuee} />
-                  </View>
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.nom} numberOfLines={2}>
+                {/* Fond blanc : les images du catalogue sont dessinées sur blanc. */}
+                <View className="size-13 items-center justify-center overflow-hidden rounded-md bg-white">
+                  {item.image ? (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={{ width: 52, height: 52 }}
+                      contentFit="cover"
+                      cachePolicy="disk"
+                    />
+                  ) : (
+                    <Icon as={Dumbbell} className="size-5 text-muted-foreground" />
+                  )}
+                </View>
+                <View className="flex-1">
+                  <Text className="font-medium" numberOfLines={2}>
                     {item.nom}
                   </Text>
-                  <Text style={styles.sous} numberOfLines={1}>
+                  <Text className="text-muted-foreground text-sm" numberOfLines={1}>
                     {LIBELLE_GROUPE[item.groupe]} · {item.equipement}
                   </Text>
                 </View>
                 {unique ? null : (
-                  <View style={[styles.case, coche && styles.caseCochee]}>
-                    {coche ? <Check size={16} color={couleurs.canevas} strokeWidth={3} /> : null}
+                  <View
+                    className={cn(
+                      "size-6.5 items-center justify-center rounded-md border-2 border-input",
+                      coche && "border-primary bg-primary",
+                    )}
+                  >
+                    {coche ? (
+                      <Icon as={Check} className="size-4 text-primary-foreground" strokeWidth={3} />
+                    ) : null}
                   </View>
                 )}
-              </Appuyable>
+              </Pressable>
             );
           }}
         />
       )}
 
       {unique ? null : (
-        <View style={styles.pied}>
-          <Appuyable
-            style={[styles.ajouter, choix.length === 0 && styles.inactif]}
-            disabled={choix.length === 0}
-            onPress={ajouter}
-            accessibilityRole="button"
-          >
-            <Text style={styles.ajouterTexte}>
-              {choix.length === 0 ? "Coche des exercices" : `Ajouter (${choix.length})`}
-            </Text>
-          </Appuyable>
+        <View className="border-border border-t p-4">
+          <Button className="h-12" disabled={choix.length === 0} onPress={ajouter}>
+            <Text>{choix.length === 0 ? "Coche des exercices" : `Ajouter (${choix.length})`}</Text>
+          </Button>
         </View>
       )}
-    </SafeAreaView>
+    </Ecran>
   );
 }
 
-const useStyles = creerStyles((couleurs) => ({
-  ecran: { flex: 1, backgroundColor: couleurs.canevas },
-  entete: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.xs,
-    paddingHorizontal: espace.s,
-    paddingVertical: espace.s,
-  },
-  fermer: { width: CIBLE, height: CIBLE, alignItems: "center", justifyContent: "center" },
-  titre: { flex: 1, color: couleurs.encre, fontSize: taille.grand, fontWeight: "700" },
-  recherche: {
-    height: CIBLE,
-    marginHorizontal: espace.l,
-    marginBottom: espace.m,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.s,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface2,
-    paddingHorizontal: espace.m,
-  },
-  champ: { flex: 1, height: "100%", color: couleurs.encre, fontSize: taille.courant },
-  liste: { paddingHorizontal: espace.l, gap: espace.s, paddingBottom: espace.l },
-  ligne: {
-    minHeight: CIBLE + 20,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.m,
-    padding: espace.s,
-    borderRadius: rayon.bouton,
-    borderWidth: 1,
-    borderColor: couleurs.ligne,
-    backgroundColor: couleurs.surface1,
-  },
-  // La sélection se dit par le contour d'encre et la case, pas par l'orange :
-  // cocher n'est ni l'action ni un record.
-  ligneCochee: { borderColor: couleurs.encreSecondaire },
-  // Fond blanc : les images du dataset sont dessinées sur blanc.
-  vignette: {
-    width: 52,
-    height: 52,
-    borderRadius: rayon.cellule,
-    backgroundColor: couleurs.fondImage,
-  },
-  sansImage: { alignItems: "center", justifyContent: "center", backgroundColor: couleurs.surface3 },
-  nom: { color: couleurs.encre, fontSize: taille.courant, fontWeight: "600" },
-  sous: { color: couleurs.encreTertiaire, fontSize: taille.petit },
-  case: {
-    width: 26,
-    height: 26,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: couleurs.ligneForte,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  caseCochee: { backgroundColor: couleurs.encre, borderColor: couleurs.encre },
-  pied: {
-    padding: espace.l,
-    borderTopWidth: 1,
-    borderTopColor: couleurs.ligne,
-  },
-  ajouter: {
-    minHeight: CIBLE + 8,
-    borderRadius: rayon.bouton,
-    backgroundColor: couleurs.action,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  inactif: { opacity: 0.4 },
-  ajouterTexte: { color: couleurs.surAction, fontSize: taille.courant + 1, fontWeight: "700" },
-}));
+function Filet() {
+  return <Separator className="ml-4" />;
+}

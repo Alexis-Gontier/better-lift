@@ -49,3 +49,11 @@ const FORMAT_CHAMP = new Intl.NumberFormat("fr-FR", {
 export function chargeEnTexte(kg: number, systeme: UnitSystem): string {
   return FORMAT_CHAMP.format(systeme === "imperial" ? kgToLb(kg) : kg);
 }
+
+/** Un entier de 0 à 999, ou `null` si vide ; `NaN` signale une saisie à corriger. */
+export function lireReps(texte: string): number | null {
+  const propre = texte.trim();
+  if (propre === "") return null;
+  if (!/^\d+$/.test(propre) || Number(propre) > 999) return Number.NaN;
+  return Number(propre);
+}

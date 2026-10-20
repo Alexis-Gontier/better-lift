@@ -1,7 +1,6 @@
 import {
   ABREGE_TYPE_SERIE,
   ATTRIBUTION_MEDIAS,
-  type ChampPave,
   type ExerciceEnCours,
   LIBELLE_TYPE_SERIE,
   type RoleRepos,
@@ -25,30 +24,25 @@ import {
   Unlink2,
 } from "lucide-react-native";
 import { useState } from "react";
-import { Text, TextInput, View } from "react-native";
-import { useConfirmer } from "../../lib/confirmation";
-import { optionsExercice } from "../../lib/requetes";
-import { CHOIX_REPOS, libelleRepos } from "../../lib/temps";
-import {
-  affiche,
-  CIBLE,
-  creerStyles,
-  espace,
-  PLAFOND_TEXTE_DENSE,
-  rayon,
-  taille,
-  useCouleurs,
-} from "../../lib/theme";
-import { UNITE } from "../../lib/unites";
-import { Appuyable } from "../ui/appuyable";
-import { Feuille, type OptionFeuille } from "../ui/feuille";
-import { COLONNES, type EtatSerie, LigneSerie } from "./ligne-serie";
+import { Pressable, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Feuille, type OptionFeuille } from "@/components/ui/feuille";
+import { Icon } from "@/components/ui/icon";
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { useConfirmer } from "@/lib/confirmation";
+import { optionsExercice } from "@/lib/requetes";
+import { CHOIX_REPOS, libelleRepos } from "@/lib/temps";
+import { PLAFOND_TEXTE_DENSE } from "@/lib/theme";
+import { UNITE } from "@/lib/unites";
+import { cn } from "@/lib/utils";
+import { type EtatSerie, LigneSerie } from "./ligne-serie";
 
 /**
  * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
  * autres portent leur lettre — l'échauffement ne décale pas « série 1 ».
  */
-export function etiquettes(series: SerieEnCours[]): string[] {
+function etiquettes(series: SerieEnCours[]): string[] {
   let n = 0;
   return series.map((s) => (s.type === "NORMALE" ? String(++n) : ABREGE_TYPE_SERIE[s.type]));
 }
@@ -56,22 +50,15 @@ export function etiquettes(series: SerieEnCours[]): string[] {
 const etatDe = (faite: boolean, prochaine: boolean): EtatSerie =>
   faite ? "faite" : prochaine ? "prochaine" : "a-venir";
 
-/** Puce de 32 : 8 au-dessus et dessous pour une cible de 48, 4 sur les côtés pour
- * que deux puces voisines (8 d'écart) ne se disputent pas le doigt. */
-const HITSLOP_PUCE = { top: 8, bottom: 8, left: 4, right: 4 } as const;
-
 type Feuilles = { quoi: "menu" } | { quoi: "repos" } | { quoi: "serie"; iS: number } | null;
 
 /**
- * Un exercice de la séance, direction « Carnet » (D108) : un bloc pleine
- * largeur — en-tête, deux puces (repos, note), tableau des séries — et les
- * actions rares dans le menu ⋯.
+ * Un exercice de la séance (D108, D317) : en-tête, deux puces (repos, note),
+ * tableau des séries ; les actions rares dans le menu ⋯.
  */
 export function CarteExercice({
   exercice,
   prochaine,
-  edition,
-  onEditer,
   onPositionLigne,
   onModifierSerie,
   onValiderSerie,
@@ -101,10 +88,7 @@ export function CarteExercice({
   onDelier: () => void;
   /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D116). */
   prochaine: number | null;
-  /** La case en cours de saisie au pavé, si elle est dans cet exercice (D109). */
-  edition: { iS: number; champ: ChampPave; texte: string; invalide: boolean } | null;
-  onEditer: (iS: number, champ: ChampPave) => void;
-  /** La position d'une ligne dans le bloc : l'écran la fait défiler au-dessus du pavé. */
+  /** La position d'une ligne dans le bloc : l'écran y défile après une coche. */
   onPositionLigne: (iS: number, y: number) => void;
   onModifierSerie: (
     iS: number,
@@ -119,8 +103,6 @@ export function CarteExercice({
   onRemplacer: () => void;
   onRetirer: () => void;
 }) {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
   // La fiche est en cache à vie (le catalogue ne change qu'au semis) : le GIF
   // d'un exercice déjà vu s'affiche même hors ligne, depuis le cache disque.
   const fiche = useQuery(optionsExercice(exercice.slug));
@@ -187,11 +169,20 @@ export function CarteExercice({
         ? `Série ${libelles[feuille.iS]}`
         : exercice.nom;
 
+  const texteRepos =
+    repos === "groupe"
+      ? exercice.reposSec
+        ? `Après le groupe · ${libelleRepos(exercice.reposSec)}`
+        : "Sans repos après le groupe"
+      : exercice.reposSec
+        ? libelleRepos(exercice.reposSec)
+        : "Sans repos";
+
   return (
-    <View style={styles.bloc}>
-      <View style={styles.entete}>
+    <View className="gap-2 border-border border-b px-3 py-4">
+      <View className="flex-row items-center gap-3">
         {/* Sans GIF, la vignette n'est qu'une image : ni bouton, ni annonce. */}
-        <Appuyable
+        <Pressable
           onPress={() => setGrand((g) => !g)}
           disabled={!gif}
           accessible={Boolean(gif)}
@@ -199,90 +190,78 @@ export function CarteExercice({
           accessibilityLabel={grand ? "Réduire l'animation" : "Agrandir l'animation"}
         >
           {gif ? (
-            <Image
-              source={{ uri: gif }}
-              style={styles.vignette}
-              contentFit="cover"
-              cachePolicy="disk"
-              // En vignette, l'animation distrait : elle ne joue qu'agrandie.
-              autoplay={false}
-            />
+            // Fond blanc : les GIF du catalogue sont dessinés sur blanc. En
+            // vignette, l'animation distrait : elle ne joue qu'agrandie.
+            <View className="size-10 overflow-hidden rounded-full bg-white">
+              <Image
+                source={{ uri: gif }}
+                style={{ width: 40, height: 40 }}
+                contentFit="cover"
+                cachePolicy="disk"
+                autoplay={false}
+              />
+            </View>
           ) : (
-            <View style={[styles.vignette, styles.sansImage]}>
-              <Dumbbell size={18} color={couleurs.encreAttenuee} />
+            <View className="size-10 items-center justify-center rounded-full bg-secondary">
+              <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
             </View>
           )}
-        </Appuyable>
-        <Text style={styles.nom} numberOfLines={2}>
+        </Pressable>
+        <Text className="flex-1 font-semibold text-lg" numberOfLines={2}>
           {exercice.nom}
         </Text>
-        <Appuyable
+        <Button
+          variant="ghost"
+          size="icon"
           onPress={() => setFeuille({ quoi: "menu" })}
-          hitSlop={8}
-          style={styles.menu}
-          accessibilityRole="button"
           accessibilityLabel={`Actions pour ${exercice.nom}`}
         >
-          <Ellipsis size={20} color={couleurs.encreSecondaire} />
-        </Appuyable>
+          <Icon as={Ellipsis} className="size-5 text-muted-foreground" />
+        </Button>
       </View>
 
       {grand && gif ? (
-        <Appuyable
+        <Pressable
           onPress={() => setGrand(false)}
-          style={styles.media}
+          className="gap-1"
           accessibilityRole="button"
           accessibilityLabel="Réduire l'animation"
         >
-          <Image source={{ uri: gif }} style={styles.gif} contentFit="contain" cachePolicy="disk" />
-          <Text style={styles.attribution}>{ATTRIBUTION_MEDIAS}</Text>
-        </Appuyable>
+          <View className="overflow-hidden rounded-md bg-white">
+            <Image
+              source={{ uri: gif }}
+              style={{ width: "100%", aspectRatio: 1 }}
+              contentFit="contain"
+              cachePolicy="disk"
+            />
+          </View>
+          <Text className="text-center text-muted-foreground text-xs">{ATTRIBUTION_MEDIAS}</Text>
+        </Pressable>
       ) : null}
 
-      {/* Le repos et la note en deux puces (D108) : 44 dp gagnés par exercice.
-          La note saisie remplace le mot « Note ». */}
-      <View style={styles.puces}>
+      {/* Le repos et la note en deux puces (D108) ; la note saisie remplace le mot « Note ». */}
+      <View className="flex-row flex-wrap gap-2">
         {repos === "masque" ? null : (
-          <Appuyable
+          <Puce
+            icone={Timer}
+            texte={texteRepos}
+            eteinte={!exercice.reposSec}
             onPress={() => setFeuille({ quoi: "repos" })}
-            hitSlop={HITSLOP_PUCE}
-            style={styles.puce}
-            accessibilityRole="button"
-            accessibilityLabel={`${repos === "groupe" ? "Repos après le groupe" : "Repos"} : ${libelleRepos(exercice.reposSec)}`}
-          >
-            <Timer
-              size={14}
-              color={exercice.reposSec ? couleurs.encreSecondaire : couleurs.encreAttenuee}
-            />
-            <Text style={[styles.puceTexte, !exercice.reposSec && styles.puceEteinte]}>
-              {repos === "groupe"
-                ? exercice.reposSec
-                  ? `Après le groupe · ${libelleRepos(exercice.reposSec)}`
-                  : "Sans repos après le groupe"
-                : exercice.reposSec
-                  ? libelleRepos(exercice.reposSec)
-                  : "Sans repos"}
-            </Text>
-          </Appuyable>
+            libelle={`${repos === "groupe" ? "Repos après le groupe" : "Repos"} : ${libelleRepos(exercice.reposSec)}`}
+          />
         )}
-        <Appuyable
+        <Puce
+          icone={Pencil}
+          texte={note || "Note"}
+          eteinte={!note}
           onPress={() => setEditionNote(true)}
-          hitSlop={HITSLOP_PUCE}
-          style={[styles.puce, styles.puceNote]}
-          accessibilityRole="button"
-          accessibilityLabel={note ? `Note : ${note}` : "Ajouter une note"}
-        >
-          <Pencil size={14} color={couleurs.encreSecondaire} />
-          <Text style={[styles.puceTexte, !note && styles.puceEteinte]} numberOfLines={1}>
-            {note || "Note"}
-          </Text>
-        </Appuyable>
+          libelle={note ? `Note : ${note}` : "Ajouter une note"}
+        />
       </View>
 
-      {/* D90 : la note s'écrit à chaque frappe. Pas à la sortie du champ : un
-          appui sur ✓ garde le clavier ouvert, et la note ne sortirait jamais. */}
+      {/* D90 : la note s'écrit à chaque frappe, pas à la sortie du champ. */}
       {editionNote ? (
-        <TextInput
+        <Input
           value={note}
           onChangeText={(t) => {
             setNote(t);
@@ -291,49 +270,20 @@ export function CarteExercice({
           onBlur={() => setEditionNote(false)}
           autoFocus
           placeholder="Siège cran 4, prise serrée…"
-          placeholderTextColor={couleurs.encreAttenuee}
           multiline
           maxLength={500}
-          style={styles.note}
+          className="h-auto min-h-12 py-2"
           accessibilityLabel={`Note pour ${exercice.nom}`}
         />
       ) : null}
 
-      <View style={styles.colonnes}>
-        <Text
-          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={[styles.colonne, { width: COLONNES.serie }]}
-        >
-          Série
-        </Text>
-        <Text
-          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={[styles.colonne, styles.gauche, { flex: 1.25 }]}
-        >
-          Précédent
-        </Text>
-        <Text
-          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={[styles.colonne, { flex: 1 }]}
-        >
-          {UNITE}
-        </Text>
-        <Text
-          maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={[styles.colonne, { flex: 1 }]}
-        >
-          Reps
-        </Text>
-        <View style={{ width: COLONNES.valider, alignItems: "center" }}>
-          <Check size={14} color={couleurs.encreAttenuee} strokeWidth={3} />
+      <View className="mt-1 flex-row items-center gap-2 px-1">
+        <Colonne className="w-10">Série</Colonne>
+        <Colonne className="flex-[1.25] text-left">Précédent</Colonne>
+        <Colonne className="flex-1">{UNITE}</Colonne>
+        <Colonne className="flex-1">Reps</Colonne>
+        <View className="w-10 items-center">
+          <Icon as={Check} className="size-3.5 text-muted-foreground" strokeWidth={3} />
         </View>
       </View>
 
@@ -345,29 +295,26 @@ export function CarteExercice({
           <LigneSerie
             numero={i + 1}
             etiquette={libelles[i] ?? String(i + 1)}
-            couleurEtiquette={s.type === "NORMALE" ? couleurs.encre : couleurs.encreTertiaire}
+            secondaire={s.type !== "NORMALE"}
             serie={s}
             etat={etatDe(s.faite, i === prochaine)}
             precedent={exercice.precedent?.[i]}
             onChange={(patch) => onModifierSerie(i, patch)}
             onValider={() => onValiderSerie(i)}
             onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
-            edition={edition?.iS === i ? edition : null}
-            onEditer={(champ) => onEditer(i, champ)}
           />
         </View>
       ))}
 
-      <Appuyable
+      <Button
+        variant="ghost"
+        className="self-start"
         onPress={onAjouterSerie}
-        style={styles.ajouter}
-        hitSlop={4}
-        accessibilityRole="button"
         accessibilityLabel="Ajouter une série"
       >
-        <Plus size={16} color={couleurs.encreSecondaire} strokeWidth={2.4} />
-        <Text style={styles.ajouterTexte}>Série</Text>
-      </Appuyable>
+        <Icon as={Plus} className="size-4 text-foreground" />
+        <Text>Série</Text>
+      </Button>
 
       <Feuille
         visible={feuille !== null}
@@ -379,82 +326,48 @@ export function CarteExercice({
   );
 }
 
-const useStyles = creerStyles((couleurs) => ({
-  bloc: {
-    paddingHorizontal: espace.m,
-    paddingVertical: espace.l,
-    gap: espace.s,
-    borderBottomWidth: 1,
-    borderBottomColor: couleurs.ligne,
-  },
-  entete: { flexDirection: "row", alignItems: "center", gap: espace.m },
-  // Fond blanc : les GIF du dataset sont dessinés sur blanc.
-  vignette: { width: 40, height: 40, borderRadius: 20, backgroundColor: couleurs.fondImage },
-  sansImage: { backgroundColor: couleurs.surface3, alignItems: "center", justifyContent: "center" },
-  nom: { ...affiche, flex: 1, color: couleurs.encre, fontSize: taille.grand },
-  menu: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  media: { gap: espace.xs },
-  // Agrandi, le GIF prend toute la largeur du bloc : en salle, on le regarde de
-  // loin. Carré, comme les GIF du catalogue — sans marge blanche ni déformation.
-  gif: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: rayon.carte,
-    backgroundColor: couleurs.fondImage,
-  },
-  attribution: { color: couleurs.encreAttenuee, fontSize: 11, textAlign: "center" },
-  puces: { flexDirection: "row", gap: espace.s, flexWrap: "wrap" },
-  puce: {
-    minHeight: 32,
-    paddingHorizontal: espace.m,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderRadius: 999,
-    backgroundColor: couleurs.surface2,
-  },
-  puceNote: { flexShrink: 1, maxWidth: "70%" },
-  puceTexte: { color: couleurs.encreSecondaire, fontSize: 14, fontWeight: "600" },
-  puceEteinte: { color: couleurs.encreAttenuee, fontWeight: "500" },
-  note: {
-    color: couleurs.encre,
-    fontSize: 15,
-    minHeight: CIBLE,
-    paddingHorizontal: espace.m,
-    paddingVertical: espace.s,
-    borderRadius: rayon.cellule,
-    backgroundColor: couleurs.surface2,
-  },
-  colonnes: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.s,
-    paddingHorizontal: espace.xs,
-    marginTop: espace.xs,
-  },
-  colonne: {
-    color: couleurs.encreAttenuee,
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-    textAlign: "center",
-  },
-  gauche: { textAlign: "left" },
-  // Bouton tertiaire : du texte, une cible pleine.
-  ajouter: {
-    minHeight: 40,
-    alignSelf: "flex-start",
-    paddingHorizontal: espace.s,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  ajouterTexte: { color: couleurs.encreSecondaire, fontSize: 15, fontWeight: "600" },
-}));
+function Colonne({ className, children }: { className: string; children: string }) {
+  return (
+    <Text
+      maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      className={cn("text-center font-semibold text-muted-foreground text-xs uppercase", className)}
+    >
+      {children}
+    </Text>
+  );
+}
+
+function Puce({
+  icone,
+  texte,
+  eteinte,
+  libelle,
+  onPress,
+}: {
+  icone: typeof Timer;
+  texte: string;
+  eteinte: boolean;
+  libelle: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      // Puce de 32 : 8 au-dessus et dessous pour une cible de 48.
+      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+      className="h-8 max-w-[70%] flex-row items-center gap-1.5 rounded-full bg-secondary px-3 active:bg-accent"
+      accessibilityRole="button"
+      accessibilityLabel={libelle}
+    >
+      <Icon as={icone} className="size-3.5 text-muted-foreground" />
+      <Text
+        numberOfLines={1}
+        className={cn("font-medium text-sm", eteinte && "text-muted-foreground")}
+      >
+        {texte}
+      </Text>
+    </Pressable>
+  );
+}
