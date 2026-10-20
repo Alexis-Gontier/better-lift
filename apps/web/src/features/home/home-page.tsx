@@ -10,8 +10,9 @@ import {
   type TableauDeBord,
   tendance,
 } from "@better-lift/shared";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Dumbbell } from "lucide-react";
+import { useState } from "react";
 import { Page } from "@/components/page";
 import { etatAffiche } from "@/components/states/etat";
 import { StateError } from "@/components/states/state-error";
@@ -31,7 +32,7 @@ import { FIXTURE } from "./fixture";
 import { HomeSkeleton } from "./home-skeleton";
 import { KpiCards } from "./kpi-cards";
 import { MusclesCard } from "./muscles-card";
-import { retenirPeriode } from "./periode";
+import { periodeRetenue, retenirPeriode } from "./periode";
 import { RecentRecords, RecentSessions } from "./recent-lists";
 import { ThisWeek } from "./this-week";
 import { TrendChart } from "./trend-chart";
@@ -41,10 +42,11 @@ const rangDuJour = (maintenant: Date) => (new Date(jourCivil(maintenant)).getUTC
 
 /**
  * L'Accueil (D330) : un tableau de bord, bilan d'abord — chiffres clés de la période, semaine en
- * cours, tendance, muscles, puis records et séances récents. La période vit dans l'URL.
+ * cours, tendance, muscles, puis records et séances récents. La période est le dernier choix
+ * de ce navigateur.
  */
-export function HomePage({ periode }: { periode: Periode }) {
-  const navigate = useNavigate();
+export function HomePage() {
+  const [periode, setPeriode] = useState(periodeRetenue);
   const force = useEtat();
   // Dessin (tâche 2 du plan) : des données factices, branchées sur l'API ensuite.
   const donnees: TableauDeBord = FIXTURE;
@@ -60,8 +62,8 @@ export function HomePage({ periode }: { periode: Periode }) {
       value={periode}
       onValueChange={(v) => {
         if (!v) return;
+        setPeriode(v as Periode);
         retenirPeriode(v as Periode);
-        navigate({ to: ".", search: (p) => ({ ...p, periode: v as Periode }), replace: true });
       }}
       aria-label="Période"
     >

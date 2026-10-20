@@ -4,7 +4,6 @@ import {
   chiffresCles,
   depuisPour,
   type FaitSeance,
-  rechercheAccueil,
   recordsRecents,
   repartitionMuscles,
   requeteTableauDeBord,
@@ -177,13 +176,5 @@ describe("recordsRecents", () => {
     expect(r).toEqual([
       { ...r1, date: "2026-10-14T17:00:00.000Z", seanceId: "2026-10-14T17:00:00.000Z" },
     ]);
-  });
-});
-
-describe("rechercheAccueil", () => {
-  it("garde une période connue, ignore l'absente et l'inconnue", () => {
-    expect(rechercheAccueil.parse({ periode: "1a" })).toEqual({ periode: "1a" });
-    expect(rechercheAccueil.parse({})).toEqual({});
-    expect(rechercheAccueil.parse({ periode: "2a" })).toEqual({ periode: undefined });
   });
 });

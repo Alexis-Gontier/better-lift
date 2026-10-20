@@ -18,10 +18,9 @@ couleur ne porte jamais seule un sens).
 ## Page, de haut en bas
 
 1. **En-tête** — `Page` « Accueil », à droite un `ToggleGroup` **4 sem. · 3 mois · 1 an**.
-   La période vit dans l'URL (`?periode=4s|3m|1a`, `rechercheAccueil` de `shared`, Zod
-   `.catch`) ; sans elle, on reprend le dernier choix de ce navigateur (`localStorage`), puis
-   3 mois. Pas de gestionnaire d'état : l'URL est l'état (doctrine TanStack Router), le
-   stockage ne sert que de défaut.
+   La période est le dernier choix de ce navigateur (`localStorage`, `features/home/periode.ts`),
+   3 mois par défaut. Ni URL ni gestionnaire d'état : pour deux ou trois comptes, le lien
+   partagé n'a pas d'usage, et une seule source vaut mieux que deux.
 2. **Chiffres clés** — quatre cartes en ligne (deux par ligne sous `md`, une sous `sm`) :
    **Séances**, **Volume**, **Séries**, **Records battus** (séries ayant battu au moins un
    record, comme `nbRecords`), sur la période. Chacune montre la

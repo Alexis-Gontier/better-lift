@@ -915,15 +915,15 @@ export const tableauDeBordQuery = (depuis: string) =>
   passe par la **clé littérale** `["tableau-de-bord"]` dans `apres` de `useSupprimerSeance`
   (`apres: [["routines"], exercicesKeys.all, ["tableau-de-bord"]]`).
 
-- [ ] **Step 2: la route précharge** — dans `_app.index.tsx`, `loaderDeps: ({ search }) =>
-  ({ periode: search.periode })`, `loader: ({ context, deps }) => void
-  context.queryClient.prefetchQuery(tableauDeBordQuery(depuisPour(bornesPeriode(deps.periode,
-  new Date(), FUSEAU))))`. Le fuseau : exporter `FUSEAU` de `lib/locale.ts` (aujourd'hui
-  privé), seul endroit qui le fixe.
+- [ ] **Step 2: la route précharge** — dans `_app.index.tsx`, `loader: ({ context }) => void
+  context.queryClient.prefetchQuery(tableauDeBordQuery(depuisPour(bornesPeriode(periodeRetenue(),
+  new Date(), FUSEAU))))` (`periodeRetenue` de `features/home/periode.ts`, `FUSEAU` exporté de
+  `lib/locale.ts`). La période n'est pas dans l'URL (révision de la revue du dessin).
 
 - [ ] **Step 3: la page lit l'API** — `HomePage` calcule `bornes` (mémo sur la période et le
   jour), `useQuery(tableauDeBordQuery(depuisPour(bornes)))`, `placeholderData:
-  keepPreviousData` pour que changer de période n'affiche pas le squelette ; supprimer
+  keepPreviousData` pour que changer de période n'affiche pas le squelette ; la période vient
+  de l'état local de `HomePage` ; supprimer
   `fixture.ts` et son import.
 
 - [ ] **Step 4: e2e**
