@@ -65,8 +65,9 @@ export function TrendChart({
           </ToggleGroup>
         </CardAction>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
+      {/* Le graphique prend toute la hauteur de la carte, alignée sur celle des muscles. */}
+      <CardContent className="flex flex-1 flex-col">
+        <ChartContainer config={chartConfig} className="aspect-auto min-h-64 w-full flex-1">
           <AreaChart data={points} margin={{ left: 0, right: 8, top: 8 }}>
             <defs>
               {/* Le dégradé suit la couleur de la série, donc le thème. */}

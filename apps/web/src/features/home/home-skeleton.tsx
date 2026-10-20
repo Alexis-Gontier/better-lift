@@ -12,12 +12,12 @@ export function HomeSkeleton() {
         ))}
       </div>
       <div className="grid @4xl:grid-cols-3 gap-4">
-        <Skeleton className="h-80 rounded-xl @4xl:col-span-2" />
-        <Skeleton className="h-80 rounded-xl" />
+        <Skeleton className="h-96 rounded-xl @4xl:col-span-2" />
+        <Skeleton className="h-96 rounded-xl" />
       </div>
-      <div className="grid @4xl:grid-cols-3 gap-4">
-        <Skeleton className="h-80 rounded-xl @4xl:col-span-2" />
-        <Skeleton className="h-80 rounded-xl" />
+      <div className="grid @4xl:grid-cols-2 gap-4">
+        <Skeleton className="h-72 rounded-xl" />
+        <Skeleton className="h-72 rounded-xl" />
       </div>
     </div>
   );

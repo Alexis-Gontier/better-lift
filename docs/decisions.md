@@ -373,8 +373,9 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   bandeau (jours entraînés, objectif hebdomadaire) ; une période **4 sem. · 3 mois · 1 an**,
   dernier choix gardé dans le navigateur (`localStorage`, 3 mois par défaut ; ni URL ni
   gestionnaire d'état) ; quatre chiffres clés comparés à la période précédente (flèche et signe,
-  sans couleur) ; tendance en aire (semaines, ou mois sur un an) à côté des dernières séances ;
-  séries par muscle et silhouette à côté des records récents. Pas de routine à suivre.
+  sans couleur) ; tendance en aire (semaines, ou mois sur un an) et, à sa droite, la silhouette
+  des muscles travaillés (sans compte de séries) ; dernières séances et records récents côte à
+  côte. Pas de routine à suivre.
   `GET /tableau-de-bord?depuis=` rend les faits par séance (records rejoués sur tout
   l'historique, seuls les exercices faits colorent la silhouette) ; le web les agrège dans son
   fuseau par `shared/tableau-de-bord.ts`.

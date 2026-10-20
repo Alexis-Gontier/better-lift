@@ -1,5 +1,5 @@
 import { prisma } from "@better-lift/db";
-import { type FaitSeance, type TableauDeBord, type Zone, zoneDuMuscle } from "@better-lift/shared";
+import type { FaitSeance, TableauDeBord } from "@better-lift/shared";
 import { depotPreferences } from "./preferences.js";
 import { anterieurA, historique, LECTURE_SEANCE, versDetail } from "./seances.js";
 
@@ -36,19 +36,16 @@ export const depotTableauDeBord: DepotTableauDeBord = {
 
     const seances = lignes.map((l): FaitSeance => {
       const detail = versDetail(l, anterieurA(histo, l.debut));
-      const seriesParZone: Partial<Record<Zone, number>> = {};
       const principaux = new Set<string>();
       const secondaires = new Set<string>();
       for (const e of l.exercices) {
         const m = parExercice.get(e.exerciseId);
-        // Une série compte pour la zone du muscle principal ; l'échauffement ne compte pas (D5).
-        // Un exercice resté sans série n'a rien travaillé : il ne colore pas la silhouette.
-        const n = e.series.filter((s) => s.faite && s.type !== "ECHAUFFEMENT").length;
-        if (!m || n === 0) continue;
+        // Un exercice sans série faite hors échauffement (D5) n'a rien travaillé : il ne colore
+        // pas la silhouette.
+        const fait = e.series.some((s) => s.faite && s.type !== "ECHAUFFEMENT");
+        if (!m || !fait) continue;
         principaux.add(m.target);
         for (const s of m.secondary) secondaires.add(s);
-        const zone = zoneDuMuscle(m.target);
-        if (zone) seriesParZone[zone] = (seriesParZone[zone] ?? 0) + n;
       }
       return {
         id: detail.id,
@@ -57,7 +54,6 @@ export const depotTableauDeBord: DepotTableauDeBord = {
         fin: detail.fin,
         seriesFaites: detail.seriesFaites,
         volumeKg: detail.volumeKg,
-        seriesParZone,
         muscles: {
           principaux: [...principaux],
           secondaires: [...secondaires].filter((m) => !principaux.has(m)),

@@ -22,7 +22,6 @@ const seance = (debut: string, p: Partial<FaitSeance> = {}): FaitSeance => ({
   fin: debut,
   seriesFaites: 10,
   volumeKg: 1000,
-  seriesParZone: { chest: 6, triceps: 4 },
   muscles: { principaux: ["Pectoraux", "Triceps"], secondaires: ["Épaules"] },
   records: [],
   ...p,
@@ -134,25 +133,21 @@ describe("tendance", () => {
 });
 
 describe("repartitionMuscles", () => {
-  it("additionne les séries par zone sur la période, triées, et réunit les muscles", () => {
+  it("réunit les muscles de la période", () => {
     const b = bornesPeriode("4s", MAINTENANT, PARIS);
     const m = repartitionMuscles(
       [
         seance("2026-10-14T17:00:00.000Z"),
         seance("2026-10-13T17:00:00.000Z", {
-          seriesParZone: { quadriceps: 8 },
           muscles: { principaux: ["Quadriceps"], secondaires: ["Fessiers", "Pectoraux"] },
         }),
-        seance("2026-09-01T17:00:00.000Z", { seriesParZone: { biceps: 30 } }), // hors période
+        seance("2026-09-01T17:00:00.000Z", {
+          muscles: { principaux: ["Biceps"], secondaires: [] },
+        }), // hors période
       ],
       b,
       PARIS,
     );
-    expect(m.zones).toEqual([
-      { zone: "quadriceps", series: 8 },
-      { zone: "chest", series: 6 },
-      { zone: "triceps", series: 4 },
-    ]);
     expect(m.principaux).toEqual(["Pectoraux", "Triceps", "Quadriceps"]);
     // Un muscle principal ailleurs n'est pas aussi secondaire.
     expect(m.secondaires).toEqual(["Épaules", "Fessiers"]);

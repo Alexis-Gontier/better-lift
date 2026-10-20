@@ -38,7 +38,7 @@ export {
   parDossier,
   resumeSeries,
 } from "./liste-routines.js";
-export { LIBELLE_ZONE, type Zone, zoneDuMuscle, zonesTravaillees } from "./muscles.js";
+export { LIBELLE_ZONE, zonesTravaillees } from "./muscles.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {

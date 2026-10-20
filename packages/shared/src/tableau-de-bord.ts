@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { cleJour } from "./calendar.js";
-import type { Zone } from "./muscles.js";
 import type { TypeRecord } from "./records.js";
 
 /**
@@ -35,8 +34,6 @@ export type FaitSeance = {
   fin: string;
   seriesFaites: number;
   volumeKg: number;
-  /** Séries faites hors échauffement, comptées pour la zone du muscle principal. */
-  seriesParZone: Partial<Record<Zone, number>>;
   /** Les muscles du catalogue, pour la carte du corps du web. */
   muscles: { principaux: string[]; secondaires: string[] };
   records: RecordSeance[];
@@ -164,22 +161,15 @@ export function tendance(seances: readonly FaitSeance[], b: Bornes, fuseau: stri
   return points;
 }
 
-/** Les séries par zone sur la période, triées ; les muscles réunis pour le dessin. */
+/** Les muscles travaillés sur la période, réunis pour la silhouette. */
 export function repartitionMuscles(seances: readonly FaitSeance[], b: Bornes, fuseau: string) {
-  const parZone = new Map<Zone, number>();
   const principaux = new Set<string>();
   const secondaires = new Set<string>();
   for (const s of seances.filter((x) => dans(x, b, fuseau))) {
-    for (const [zone, n] of Object.entries(s.seriesParZone) as [Zone, number][]) {
-      parZone.set(zone, (parZone.get(zone) ?? 0) + n);
-    }
     for (const m of s.muscles.principaux) principaux.add(m);
     for (const m of s.muscles.secondaires) secondaires.add(m);
   }
   return {
-    zones: [...parZone]
-      .map(([zone, series]) => ({ zone, series }))
-      .sort((a, b2) => b2.series - a.series),
     principaux: [...principaux],
     secondaires: [...secondaires].filter((m) => !principaux.has(m)),
   };

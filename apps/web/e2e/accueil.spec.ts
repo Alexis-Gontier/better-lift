@@ -19,7 +19,8 @@ test.describe("l'accueil", () => {
     await expect(page.getByRole("heading", { name: "Accueil" })).toBeVisible();
     await expect(page.getByText("Cette semaine")).toBeVisible();
     await expect(page.getByRole("link", { name: new RegExp(`${PREFIXE}Accueil`) })).toBeVisible();
-    await expect(page.getByText("Pectoraux").first()).toBeVisible();
+    // La silhouette nomme les muscles travaillés dans son libellé accessible.
+    await expect(page.getByRole("img", { name: /Pectoraux/ })).toBeVisible();
 
     // La période choisie se retient d'une visite à l'autre.
     await page.getByRole("radio", { name: "1 an" }).click();

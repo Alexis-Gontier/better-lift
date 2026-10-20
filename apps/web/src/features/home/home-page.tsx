@@ -122,17 +122,17 @@ function Tableau({ donnees, bornes }: { donnees: TableauDeBord; bornes: Bornes }
         objectif={donnees.objectifHebdo}
       />
       <KpiCards chiffres={chiffresCles(seances, bornes, FUSEAU)} />
-      {/* Chaque liste à côté d'un bloc de sa hauteur : 2/3 – 1/3, empilés en colonne étroite. */}
+      {/* Les deux lectures de la période côte à côte (2/3 – 1/3), puis les deux listes. */}
       <div className="grid @4xl:grid-cols-3 gap-4">
         <TrendChart
           className="@4xl:col-span-2"
           points={tendance(seances, bornes, FUSEAU)}
           unite={bornes.unite}
         />
-        <RecentSessions seances={seances.slice(0, 5)} />
+        <MusclesCard {...muscles} />
       </div>
-      <div className="grid @4xl:grid-cols-3 gap-4">
-        <MusclesCard className="@4xl:col-span-2" {...muscles} />
+      <div className="grid @4xl:grid-cols-2 gap-4">
+        <RecentSessions seances={seances.slice(0, 5)} />
         <RecentRecords records={recordsRecents(seances, bornes, FUSEAU, 5)} />
       </div>
     </div>
