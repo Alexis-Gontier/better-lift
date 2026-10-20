@@ -1,5 +1,5 @@
 import { BodyMap } from "@/components/body-map";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /** Les muscles travaillés sur la période (D330) : la silhouette seule, comme sur le mobile. */
 export function MusclesCard({
@@ -13,7 +13,6 @@ export function MusclesCard({
     <Card>
       <CardHeader>
         <CardTitle>Muscles</CardTitle>
-        <CardDescription>Travaillés sur la période</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 items-center justify-center">
         {principaux.length === 0 ? (
