@@ -5,8 +5,8 @@ paths:
 
 # Mobile
 
-Écrans (D316–D318) : l'accueil (routines à lancer, séance vide), la séance (avec choix et
-réorganisation des exercices), la fin, le Profil, la connexion. Style wireframe en gris, la
+Écrans (D316–D319) : trois onglets (Routines, Historique, Profil), la séance (avec choix et
+réorganisation des exercices), la fin, la connexion. Style wireframe en gris, la
 direction artistique viendra après l'épreuve. Décisions : `docs/decisions.md`.
 
 ## Lancer (Expo Go)
@@ -63,13 +63,18 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   (`components/ui/ecran-erreur.tsx`) ; il ne lit aucun contexte de l'app.
 - `PortalHost` est posé à la racine : les menus et fenêtres de Reusables s'y rendent.
 
-## Navigation (D316)
+## Navigation (D319)
 
-- **Un seul accueil, sans onglets** : `app/(connecte)/index.tsx`. « Séance vide » en tête, la
-  liste des routines (l'appui lance la séance par `lib/demarrer.ts`), le Profil par l'icône de
-  l'en-tête (`/profil`), le bandeau « Reprendre » (`components/bandeau-seance.tsx`) en bas.
+- **Trois onglets** : `app/(connecte)/` — `index` (Routines), `historique`, `profil`. `Tabs`
+  d'Expo Router, barre à nous (`components/barre-onglets.tsx`) : le bandeau « Reprendre »
+  (`components/bandeau-seance.tsx`) puis les onglets. Un onglet s'ouvre sur `TitreOnglet`.
+- Routines : « Séance vide » en tête, la liste des routines (l'appui lance la séance par
+  `lib/demarrer.ts`). Historique : état vide pour l'instant.
+- La pilule de l'onglet actif est toujours montée et se montre par l'opacité : sous Android, un
+  fond ajouté à une vue déjà affichée perdait son arrondi.
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,
-  `fin`, `choisir-exercices`, `reorganiser` sont hors de la garde.
+  `fin`, `choisir-exercices`, `reorganiser` sont hors de la garde, sur la pile racine : la
+  barre n'y paraît pas.
 - Une pile qui déclare ses écrans prend le premier pour route initiale : `(connecte)` est
   déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 
