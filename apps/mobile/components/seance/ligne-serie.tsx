@@ -1,28 +1,19 @@
-import { type ChampPave, chargeEnTexte, type SerieEnCours } from "@better-lift/shared";
+import { chargeEnTexte, lireCharge, lireReps, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
-import { Text, View } from "react-native";
-import {
-  creerStyles,
-  espace,
-  PLAFOND_TEXTE_DENSE,
-  rayon,
-  taille,
-  useCouleurs,
-} from "../../lib/theme";
-import { SYSTEME_UNITES } from "../../lib/unites";
-import { vibrer } from "../../lib/vibrations";
-import { Appuyable } from "../ui/appuyable";
-
-/** Les largeurs des colonnes, partagées avec l'en-tête du tableau. */
-// 40 : « SÉRIE » ne tient pas sur 34.
-export const COLONNES = { serie: 40, valider: 40 } as const;
+import { useRef, useState } from "react";
+import { Keyboard, Pressable, type TextInput, View } from "react-native";
+import { Icon } from "@/components/ui/icon";
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { PLAFOND_TEXTE_DENSE } from "@/lib/theme";
+import { SYSTEME_UNITES } from "@/lib/unites";
+import { cn } from "@/lib/utils";
+import { vibrer } from "@/lib/vibrations";
 
 /**
  * Les états d'une ligne (D116), comme une case à cocher : à faire, la case est
- * VIDE ; faite, elle porte la ✓ pleine à l'encre et la ligne se teinte. La
- * prochaine se repère par un liseré et un contour épais — pas d'orange : une ✓
- * colorée se lit « fait », et l'ancienne ✓ lime de la prochaine série se lisait
- * cochée avant de l'être. Les cibles à venir restent en valeurs fantômes.
+ * VIDE ; faite, elle porte la ✓ pleine et la ligne se teinte. La prochaine se
+ * repère par un liseré.
  */
 export type EtatSerie = "faite" | "prochaine" | "a-venir";
 
@@ -33,20 +24,21 @@ function textePrecedent(p?: { reps: number | null; chargeKg: number | null; fait
   return `${chargeEnTexte(p.chargeKg, SYSTEME_UNITES)} × ${p.reps ?? "—"}`;
 }
 
+const texteCharge = (v: number | null) => (v === null ? "" : chargeEnTexte(v, SYSTEME_UNITES));
+const texteReps = (v: number | null) => (v === null ? "" : String(v));
+
 /**
  * Une série sur UNE ligne (D87) : étiquette · précédent · charge · reps · ✓.
- * Les cases ne sont pas des champs : un appui ouvre le pavé de la séance (D109),
- * qui écrit dans la case cerclée d'encre. L'écran tient le texte en cours.
+ * Saisie au clavier du système (D317) : une case vide montre la cible en
+ * indication, taper la remplace ; la valeur s'écrit à la sortie du champ.
  */
 export function LigneSerie({
   numero,
   etiquette,
-  couleurEtiquette,
+  secondaire,
   serie,
   etat,
   precedent,
-  edition,
-  onEditer,
   onChange,
   onValider,
   onEtiquette,
@@ -54,21 +46,19 @@ export function LigneSerie({
   numero: number;
   /** « 1 », « É », « D »… */
   etiquette: string;
-  couleurEtiquette: string;
+  /** Une série hors des normales (échauffement, dégressive…) : étiquette en retrait. */
+  secondaire: boolean;
   serie: SerieEnCours;
   etat: EtatSerie;
   /** Ce qui a été fait la dernière fois à cette position (D67). */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
-  /** La case en cours de saisie au pavé, et son texte. */
-  edition: { champ: ChampPave; texte: string; invalide: boolean } | null;
-  onEditer: (champ: ChampPave) => void;
   onChange: (patch: { reps?: number | null; chargeKg?: number | null }) => void;
   onValider: () => void;
   /** L'appui sur l'étiquette : type de série, suppression (D92). */
   onEtiquette: () => void;
 }) {
-  const styles = useStyles();
-  const couleurs = useCouleurs();
+  const reps = useRef<TextInput>(null);
+  const faite = etat === "faite";
 
   // Recopier la dernière fois dans la séance, d'un seul appui.
   const recopier = () => {
@@ -78,203 +68,150 @@ export function LigneSerie({
   };
 
   const valider = () => {
-    // Décocher se sent aussi, plus légèrement : un second appui par erreur ne
-    // doit pas passer inaperçu.
+    // La saisie en cours s'écrit à la sortie du champ : fermer le clavier d'abord.
+    Keyboard.dismiss();
     if (serie.faite) vibrer.selection();
     else vibrer.valider();
     onValider();
   };
 
-  const faite = etat === "faite";
-  const prochaine = etat === "prochaine";
-  // Une série à venir montre ses CIBLES en fantôme ; une valeur saisie, elle,
-  // s'écrit à l'encre, case par case (`saisi`).
-  const aVenir = etat === "a-venir";
   return (
-    <View style={[styles.ligne, faite && styles.faite]}>
+    <View className={cn("min-h-13 flex-row items-center gap-2 px-1", faite && "bg-muted")}>
       {/* La ligne à faire : un liseré, là où l'œil revient entre deux séries. */}
-      {prochaine ? <View style={styles.repere} /> : null}
-      <Appuyable
+      {etat === "prochaine" ? (
+        <View className="absolute top-2.5 bottom-2.5 left-0 w-0.75 rounded-full bg-foreground" />
+      ) : null}
+      <Pressable
         onPress={onEtiquette}
         hitSlop={6}
-        style={styles.etiquette}
+        className="h-10 w-10 items-center justify-center"
         accessibilityRole="button"
         accessibilityLabel={`Série ${numero} : type ou suppression`}
       >
         <Text
           maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-          style={[styles.etiquetteTexte, { color: couleurEtiquette }]}
+          className={cn("font-bold tabular-nums", secondaire && "text-muted-foreground")}
         >
           {etiquette}
         </Text>
-      </Appuyable>
-      {/* Une INDICATION, pas une valeur (D59) : les cases gardent la cible. Un
-          appui la recopie. */}
-      <Appuyable
+      </Pressable>
+      {/* Une INDICATION, pas une valeur (D59) : un appui la recopie. */}
+      <Pressable
         onPress={recopier}
         disabled={!precedent?.faite}
-        style={styles.precedent}
+        className="h-10 flex-[1.25] justify-center"
         accessibilityRole="button"
         accessibilityLabel={`Recopier la dernière fois pour la série ${numero}`}
       >
         <Text
           maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-          style={styles.precedentTexte}
+          className="text-muted-foreground text-sm tabular-nums"
           numberOfLines={1}
         >
           {textePrecedent(precedent)}
         </Text>
-      </Appuyable>
-      <Case
+      </Pressable>
+      <Champ
         libelle={`Série ${numero}, charge`}
-        texte={
-          edition?.champ === "charge"
-            ? edition.texte
-            : serie.chargeKg === null
-              ? ""
-              : chargeEnTexte(serie.chargeKg, SYSTEME_UNITES)
-        }
-        editee={edition?.champ === "charge"}
-        invalide={edition?.champ === "charge" && edition.invalide}
-        fantome={aVenir && !serie.saisi?.chargeKg}
+        valeur={texteCharge(serie.chargeKg)}
+        affichee={faite || Boolean(serie.saisi?.chargeKg)}
         faite={faite}
-        onPress={() => onEditer("charge")}
+        lire={(t) => lireCharge(t, SYSTEME_UNITES)}
+        clavier="decimal-pad"
+        retour="next"
+        onSoumettre={() => reps.current?.focus()}
+        onEcrire={(v) => onChange({ chargeKg: v })}
       />
-      <Case
+      <Champ
+        ref={reps}
         libelle={`Série ${numero}, répétitions`}
-        texte={
-          edition?.champ === "reps" ? edition.texte : serie.reps === null ? "" : String(serie.reps)
-        }
-        editee={edition?.champ === "reps"}
-        invalide={edition?.champ === "reps" && edition.invalide}
-        fantome={aVenir && !serie.saisi?.reps}
+        valeur={texteReps(serie.reps)}
+        affichee={faite || Boolean(serie.saisi?.reps)}
         faite={faite}
-        onPress={() => onEditer("reps")}
+        lire={lireReps}
+        clavier="number-pad"
+        retour="done"
+        onEcrire={(v) => onChange({ reps: v })}
       />
-      <Appuyable
+      <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: faite }}
         accessibilityLabel={`Série ${numero} faite`}
         onPress={valider}
         hitSlop={4}
-        style={[styles.valider, prochaine && styles.validerProchaine, faite && styles.validerFait]}
+        className={cn(
+          "h-10 w-10 items-center justify-center rounded-md border-2 border-input",
+          etat === "prochaine" && "border-foreground",
+          faite && "border-primary bg-primary",
+        )}
       >
-        {faite ? <Check size={20} strokeWidth={3} color={couleurs.canevas} /> : null}
-      </Appuyable>
+        {faite ? (
+          <Icon as={Check} className="size-5 text-primary-foreground" strokeWidth={3} />
+        ) : null}
+      </Pressable>
     </View>
   );
 }
 
-/** Une case kg ou reps : un appui ouvre le pavé ; en saisie, elle est cerclée d'encre. */
-function Case({
+/**
+ * Une case kg ou reps. `texte` ne vit que pendant la frappe (`null` sinon) : une
+ * case non saisie reste vide et montre la cible en indication. Une saisie
+ * invalide n'est jamais écrite : elle reste affichée, bordée de rouge.
+ */
+function Champ({
+  ref,
   libelle,
-  texte,
-  editee,
-  invalide,
-  fantome,
+  valeur,
+  affichee,
   faite,
-  onPress,
+  lire,
+  clavier,
+  retour,
+  onSoumettre,
+  onEcrire,
 }: {
+  ref?: React.Ref<TextInput>;
   libelle: string;
-  texte: string;
-  editee: boolean;
-  invalide: boolean;
-  fantome: boolean;
+  /** La valeur de la séance, en texte : la saisie, ou la cible. */
+  valeur: string;
+  /** Saisie ou série faite : la valeur s'écrit à l'encre ; sinon c'est une indication. */
+  affichee: boolean;
+  /** Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ. */
   faite: boolean;
-  onPress: () => void;
+  lire: (texte: string) => number | null;
+  clavier: "decimal-pad" | "number-pad";
+  retour: "next" | "done";
+  onSoumettre?: () => void;
+  onEcrire: (v: number | null) => void;
 }) {
-  const styles = useStyles();
+  const [texte, setTexte] = useState<string | null>(null);
+  const invalide = texte !== null && Number.isNaN(lire(texte));
+
+  const ecrire = () => {
+    if (texte === null || invalide) return;
+    onEcrire(lire(texte));
+    setTexte(null);
+  };
+
   return (
-    <Appuyable
-      onPress={onPress}
-      hitSlop={4}
-      style={[
-        styles.case,
-        faite && styles.caseFaite,
-        editee && styles.caseEditee,
-        invalide && styles.caseKo,
-      ]}
-      accessibilityRole="button"
-      accessibilityLabel={`${libelle} : ${texte || "vide"}`}
-    >
-      <Text
-        maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-        style={[styles.caseTexte, fantome && !editee && styles.caseFantome]}
-        numberOfLines={1}
-      >
-        {texte || "—"}
-      </Text>
-    </Appuyable>
+    <Input
+      ref={ref}
+      value={texte ?? (affichee ? valeur : "")}
+      placeholder={affichee ? undefined : valeur || "—"}
+      onChangeText={setTexte}
+      onEndEditing={ecrire}
+      onSubmitEditing={onSoumettre}
+      keyboardType={clavier}
+      returnKeyType={retour}
+      submitBehavior={retour === "next" ? "submit" : "blurAndSubmit"}
+      selectTextOnFocus
+      maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+      accessibilityLabel={libelle}
+      className={cn(
+        "h-10 flex-1 border-0 bg-secondary px-1 py-0 text-center font-semibold text-lg leading-6 tabular-nums shadow-none",
+        faite && "bg-transparent dark:bg-transparent",
+        invalide && "border-2 border-destructive",
+      )}
+    />
   );
 }
-
-// Ligne de 52 : cases visibles de 40, `hitSlop` de 4 pour une cible de 48 (D104).
-const useStyles = creerStyles((couleurs) => ({
-  ligne: {
-    minHeight: 52,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espace.s,
-    paddingHorizontal: espace.xs,
-    borderRadius: rayon.cellule,
-  },
-  // Faite : la ligne se teinte nettement, sans orange — l'orange reste à l'action.
-  faite: { backgroundColor: couleurs.ligneFaite },
-  etiquette: {
-    width: COLONNES.serie,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  etiquetteTexte: { fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
-  precedent: { flex: 1.25, height: 40, justifyContent: "center" },
-  precedentTexte: {
-    color: couleurs.encreTertiaire,
-    fontSize: 14,
-    fontVariant: ["tabular-nums"],
-  },
-  case: {
-    flex: 1,
-    height: 40,
-    borderRadius: rayon.cellule,
-    backgroundColor: couleurs.surface2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  caseTexte: {
-    color: couleurs.encre,
-    fontSize: taille.valeur,
-    fontWeight: "600",
-    fontVariant: ["tabular-nums"],
-  },
-  // En saisie au pavé : cerclée d'encre (D108).
-  caseEditee: { borderWidth: 2, borderColor: couleurs.encre },
-  // À venir : les cibles se lisent, en retrait, jusqu'à ce qu'on y arrive.
-  caseFantome: { color: couleurs.encreTertiaire },
-  // Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ.
-  caseFaite: { backgroundColor: "transparent" },
-  caseKo: { borderWidth: 2, borderColor: couleurs.dangerEncre },
-  // À faire : une case vide, au contour lisible (3:1 au moins, une commande).
-  valider: {
-    width: COLONNES.valider,
-    height: 40,
-    borderRadius: rayon.cellule,
-    borderWidth: 1.5,
-    borderColor: couleurs.encreAttenuee,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  // La prochaine : même case vide, contour épais à l'encre.
-  validerProchaine: { borderWidth: 2.5, borderColor: couleurs.encre },
-  // Faite : ✓ pleine, à l'encre.
-  validerFait: { backgroundColor: couleurs.encre, borderColor: couleurs.encre },
-  repere: {
-    position: "absolute",
-    left: 0,
-    top: 10,
-    bottom: 10,
-    width: 3,
-    borderRadius: 2,
-    backgroundColor: couleurs.encre,
-  },
-}));

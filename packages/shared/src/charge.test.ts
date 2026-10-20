@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
+import { chargeEnTexte, formaterCharge, lireCharge, lireReps } from "./charge.js";
 
 describe("formaterCharge", () => {
   it("écrit la charge avec la virgule française et l'unité", () => {
@@ -57,5 +57,14 @@ describe("chargeEnTexte", () => {
 
   it("se relit par lireCharge", () => {
     expect(lireCharge(chargeEnTexte(1000, "metric"), "metric")).toBe(1000);
+  });
+});
+
+describe("lireReps", () => {
+  it("lit un entier de 0 à 999, vide comme absent, le reste comme invalide", () => {
+    expect(lireReps("8")).toBe(8);
+    expect(lireReps(" ")).toBeNull();
+    expect(lireReps("1000")).toBeNaN();
+    expect(lireReps("8,5")).toBeNaN();
   });
 });

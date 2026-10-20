@@ -86,18 +86,19 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   de la modale qui vient d'ajouter des exercices.
 - Un rappel de modale qui attend applique son choix à la séance **du moment** (`useRef`), pas à
   celle capturée à l'ouverture.
-- Ligne de série en trois états (`EtatSerie`) : faite (fond `ligneFaite`, ✓ pleine à l'encre) ·
-  prochaine (case vide au contour épais, liseré) · à venir (cibles en valeurs fantômes). **Aucune
-  ✓ sur une série à faire, pas d'orange sur les lignes.** Après une coche, l'écran défile vers
-  la prochaine si elle est cachée.
-- **Cible ou saisie** : `saisi` (par champ) marque ce qui a été tapé ; ouvrir puis fermer le pavé
-  sans toucher ne saisit rien (`Edition.neuf`). Local : `versEnvoi` ne l'envoie pas.
-- **Pavé intégré** (`components/seance/pave-numerique.tsx`) : les cases ne sont pas des
-  `TextInput`. Le retour Android ferme le pavé en gardant la saisie (`BackHandler`). Une saisie
-  invalide n'est jamais écrite.
-- **Horloge de salle** (`components/seance/horloge-repos.tsx`) : le brouillon ne garde que la fin
-  du repos ; la durée totale vit dans l'état de l'écran (`horloge.total`). Réduite, elle devient
-  `BandeauRepos`.
+- Ligne de série en trois états (`EtatSerie`) : faite (fond `bg-muted`, ✓ pleine) · prochaine
+  (case au contour à l'encre, liseré) · à venir. Après une coche, l'écran défile vers la
+  prochaine si elle est cachée.
+- **Saisie au clavier du système (D317)** : les cases sont des `Input` (`decimal-pad` /
+  `number-pad`). Non saisie, une case est vide et montre la cible en `placeholder` ; `saisi`
+  (par champ) marque ce qui a été tapé. La valeur s'écrit à `onEndEditing` (`lireCharge` /
+  `lireReps`) ; invalide, elle reste affichée en rouge et n'est pas écrite. Cocher ferme le
+  clavier d'abord (`Keyboard.dismiss`).
+- **Toute écriture de l'écran passe par `changer(f)`** (`app/seance.tsx`), qui part de
+  `courante.current`, pas de la séance du rendu : la fin de saisie et la coche arrivent dans la
+  même frame, la seconde écraserait la première.
+- **Repos** : `BandeauRepos` en bas, tant qu'un repos court ou vient de finir ; le brouillon ne
+  garde que sa fin.
 - **Fin du repos app fermée** : notification locale (`lib/notification-repos.ts`), dérivée de
   `repos.fin`. **Absente d'Expo Go sous Android** (l'import d'`expo-notifications` y lève) : le
   module n'est chargé qu'à la demande, hors Expo Go. Ne s'éprouve que sur un build EAS.

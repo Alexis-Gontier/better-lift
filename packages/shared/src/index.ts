@@ -12,7 +12,7 @@ export {
   versSaisie,
 } from "./brouillon-routine.js";
 export { cleJour, formatJour } from "./calendar.js";
-export { chargeEnTexte, formaterCharge, lireCharge } from "./charge.js";
+export { chargeEnTexte, formaterCharge, lireCharge, lireReps } from "./charge.js";
 export {
   ATTRIBUTION_MEDIAS,
   type ExerciceDetail,
@@ -30,14 +30,6 @@ export {
   mettreEnFile,
 } from "./file-envoi.js";
 export { recordsBattus } from "./fin-seance.js";
-export {
-  ajusterSurPave,
-  type ChampPave,
-  effacerSurPave,
-  lireReps,
-  type TouchePave,
-  toucherPave,
-} from "./pave.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {
