@@ -68,12 +68,17 @@ type FaitSeance = {
   seriesFaites: number; volumeKg: number;
   /** Séries comptées par zone (muscle principal), hors échauffement. */
   seriesParZone: Partial<Record<Zone, number>>;
-  /** Zones principales et secondaires des exercices faits, pour le dessin. */
-  zones: { principales: Zone[]; secondaires: Zone[] };
-  /** Les records battus dans cette séance, à ce moment-là (D64). */
-  records: { slug: string; nom: string; type: TypeRecord; reps: number; chargeKg: number | null }[];
+  /** Muscles du catalogue (`target`, `secondary`) : `BodyMap` du web lit ces noms. */
+  muscles: { principaux: string[]; secondaires: string[] };
+  /** Une entrée par série ayant battu au moins un record, à ce moment-là (D64). */
+  records: { slug: string; nom: string; types: TypeRecord[]; reps: number | null; chargeKg: number | null }[];
 };
-type TableauDeBord = { seances: FaitSeance[]; total: number /* séances de toujours */ };
+type TableauDeBord = {
+  seances: FaitSeance[];
+  total: number; // séances de toujours
+  objectifHebdo: number | null;
+  routineASuivre: { id: string; nom: string } | null;
+};
 ```
 
 - Les séances depuis `depuis`, la plus récente d'abord ; `total` distingue « jamais de séance »
@@ -81,7 +86,8 @@ type TableauDeBord = { seances: FaitSeance[]; total: number /* séances de toujo
 - Les records se rejouent sur **tout** l'historique des exercices concernés (`historique` et
   `marquerRecords` existants), puis se filtrent à la période : un record se juge contre tout le
   passé, pas contre la seule période.
-- Zones par `zoneDuMuscle` (`shared/muscles.ts`) sur `target` et `secondary`.
+- Zones des barres par `zoneDuMuscle` (`shared/muscles.ts`) sur `target` ; l'objectif hebdomadaire
+  et la routine à suivre sont rendus avec, pour que la page ne lise qu'une requête.
 - `depuis` invalide : 400 `{ erreur }`. Zod du contrat dans `shared`.
 
 ### `shared` : `tableau-de-bord.ts` (pur, testé)
