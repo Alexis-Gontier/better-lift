@@ -1,5 +1,7 @@
 import { cleJour } from "./calendar.js";
-import type { RoutineResume } from "./routines.js";
+import { chargeEnTexte, formaterCharge } from "./charge.js";
+import { ABREGE_TYPE_SERIE, type RoutineResume, type TypeSerie } from "./routines.js";
+import type { UnitSystem } from "./units.js";
 
 /**
  * La liste des routines, la même sur le web et le mobile (D320) : rangement par
@@ -50,4 +52,43 @@ export function ilYa(jours: number | null): string {
   if (jours === 0) return "Aujourd'hui";
   if (jours === 1) return "Hier";
   return `Il y a ${jours} j`;
+}
+
+/** Une série réduite à ses chiffres : la cible d'une routine, ou une saisie déjà lue. */
+export type SerieChiffree = { type: TypeSerie; reps: number | null; kg: number | null };
+
+const plage = (valeurs: readonly number[], format: (min: number, max: number) => string) =>
+  format(Math.min(...valeurs), Math.max(...valeurs));
+
+/**
+ * Le résumé d'un exercice replié (D253, D321) : « 3 × 12 · 10 kg », des plages quand les séries
+ * varient (« 3 × 10–12 · 8–10,5 kg »), les échauffements devant (« 1 É + 3 × 12 »). Le web
+ * passe « W », son abréviation de l'échauffement.
+ */
+export function resumeSeries(
+  series: readonly SerieChiffree[],
+  systeme: UnitSystem,
+  echauffement: string = ABREGE_TYPE_SERIE.ECHAUFFEMENT,
+): string {
+  const echauffements = series.filter((s) => s.type === "ECHAUFFEMENT").length;
+  const travail = series.filter((s) => s.type !== "ECHAUFFEMENT");
+  if (travail.length === 0) {
+    return echauffements > 0 ? `${echauffements} ${echauffement}` : "Aucune série";
+  }
+  // Une cible peut manquer : on résume ce qui est noté, sans « — » inutile.
+  const reps = travail.flatMap((s) => (s.reps === null ? [] : [s.reps]));
+  const kgs = travail.flatMap((s) => (s.kg === null ? [] : [s.kg]));
+  const nombre =
+    reps.length === 0
+      ? `${travail.length} série${travail.length > 1 ? "s" : ""}`
+      : `${travail.length} × ${plage(reps, (a, b) => (a === b ? `${b}` : `${a}–${b}`))}`;
+  const charge =
+    kgs.length === 0
+      ? ""
+      : ` · ${plage(kgs, (a, b) =>
+          a === b
+            ? formaterCharge(b, systeme)
+            : `${chargeEnTexte(a, systeme)}–${formaterCharge(b, systeme)}`,
+        )}`;
+  return `${echauffements > 0 ? `${echauffements} ${echauffement} + ` : ""}${nombre}${charge}`;
 }

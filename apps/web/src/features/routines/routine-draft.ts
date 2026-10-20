@@ -5,9 +5,9 @@ import {
   empreinte,
   groupeDe,
   lireCharge,
+  resumeSeries,
   type SerieBrouillon,
 } from "@better-lift/shared";
-import { plural } from "@/lib/format";
 import { SYSTEME } from "@/lib/locale";
 
 /**
@@ -70,33 +70,23 @@ export function fromLastTime(
   });
 }
 
-/** « 10–12 », ou une seule valeur ; `format` met en forme chaque borne. */
-function range(values: readonly number[], format: (n: number) => string): string {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  return min === max ? format(max) : `${format(min)}–${format(max)}`;
-}
-
 /**
- * Le résumé d'un exercice replié (D253) : « 3 × 12 · 10 kg », des plages quand les séries
- * varient (« 3 × 10–12 · 8–10 kg »), les échauffements devant (« 1 W + 3 × 12 »).
+ * Le résumé d'un exercice replié (D253) : le calcul vit dans `shared` (D321), le web y garde
+ * « W » pour l'échauffement. Une cible illisible compte comme absente.
  */
 export function setsSummary(series: readonly SerieBrouillon[]): string {
-  const warmups = series.filter((s) => s.type === "ECHAUFFEMENT").length;
-  const working = series.filter((s) => s.type !== "ECHAUFFEMENT");
-  if (working.length === 0) return warmups > 0 ? `${warmups} W` : "Aucune série";
-  // Une cible peut manquer : on résume ce qui est noté, sans « — » inutile.
-  const reps = working.flatMap((s) => (/^\d+$/.test(s.reps.trim()) ? [Number(s.reps)] : []));
-  const kgs = working.flatMap((s) => {
-    const kg = lireCharge(s.charge, SYSTEME);
-    return kg === null || Number.isNaN(kg) ? [] : [kg];
-  });
-  const count =
-    reps.length === 0
-      ? plural(working.length, "série")
-      : `${working.length} × ${range(reps, String)}`;
-  const load = kgs.length === 0 ? "" : ` · ${range(kgs, (n) => String(n).replace(".", ","))} kg`;
-  return `${warmups > 0 ? `${warmups} W + ` : ""}${count}${load}`;
+  return resumeSeries(
+    series.map((s) => {
+      const kg = lireCharge(s.charge, SYSTEME);
+      return {
+        type: s.type,
+        reps: /^\d+$/.test(s.reps.trim()) ? Number(s.reps) : null,
+        kg: kg === null || Number.isNaN(kg) ? null : kg,
+      };
+    }),
+    SYSTEME,
+    "W",
+  );
 }
 
 /** Ce que le brouillon change à la version enregistrée (D261) : de quoi marquer et compter. */

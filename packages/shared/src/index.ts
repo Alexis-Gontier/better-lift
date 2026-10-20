@@ -30,7 +30,15 @@ export {
   mettreEnFile,
 } from "./file-envoi.js";
 export { recordsBattus } from "./fin-seance.js";
-export { dureeRoutine, ilYa, joursEcoules, musclesRoutine, parDossier } from "./liste-routines.js";
+export {
+  dureeRoutine,
+  ilYa,
+  joursEcoules,
+  musclesRoutine,
+  parDossier,
+  resumeSeries,
+  type SerieChiffree,
+} from "./liste-routines.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {

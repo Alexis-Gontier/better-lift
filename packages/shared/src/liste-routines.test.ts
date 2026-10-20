@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { dureeRoutine, ilYa, joursEcoules, musclesRoutine, parDossier } from "./liste-routines.js";
+import {
+  dureeRoutine,
+  ilYa,
+  joursEcoules,
+  musclesRoutine,
+  parDossier,
+  resumeSeries,
+  type SerieChiffree,
+} from "./liste-routines.js";
 import type { RoutineResume } from "./routines.js";
 
 const routine = (id: string, dossierId: string | null, muscles: string[] = []): RoutineResume => ({
@@ -78,5 +86,38 @@ describe("ilYa", () => {
     expect(ilYa(0)).toBe("Aujourd'hui");
     expect(ilYa(1)).toBe("Hier");
     expect(ilYa(17)).toBe("Il y a 17 j");
+  });
+});
+
+const n = (reps: number | null, kg: number | null): SerieChiffree => ({
+  type: "NORMALE",
+  reps,
+  kg,
+});
+const e = (reps: number | null, kg: number | null): SerieChiffree => ({
+  type: "ECHAUFFEMENT",
+  reps,
+  kg,
+});
+
+describe("resumeSeries", () => {
+  it("résume des séries identiques", () => {
+    expect(resumeSeries([n(12, 10), n(12, 10)], "metric")).toBe("2 × 12 · 10 kg");
+  });
+
+  it("donne des plages quand les séries varient", () => {
+    expect(resumeSeries([n(10, 8), n(12, 10.5)], "metric")).toBe("2 × 10–12 · 8–10,5 kg");
+  });
+
+  it("met les échauffements devant, avec l'abréviation demandée", () => {
+    const series = [e(10, 40), n(8, 80), n(8, 80), n(8, 80)];
+    expect(resumeSeries(series, "metric")).toBe("1 É + 3 × 8 · 80 kg");
+    expect(resumeSeries(series, "metric", "W")).toBe("1 W + 3 × 8 · 80 kg");
+  });
+
+  it("résume ce qui est noté, sans cible inventée", () => {
+    expect(resumeSeries([n(null, null), n(null, null), n(null, null)], "metric")).toBe("3 séries");
+    expect(resumeSeries([e(10, 20), e(10, 30)], "metric")).toBe("2 É");
+    expect(resumeSeries([], "metric")).toBe("Aucune série");
   });
 });
