@@ -51,6 +51,5 @@ export const FIXTURE: TableauDeBord = (() => {
     seances,
     total: seances.length,
     objectifHebdo: 3,
-    routineASuivre: { id: "r-pull", nom: "Pull A" },
   };
 })();

@@ -1,7 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -16,16 +13,12 @@ const JOURS = [
   ["D", "dimanche"],
 ] as const;
 
-/**
- * La semaine en cours (D330) : les jours entraînés, l'objectif hebdomadaire (D129) et la routine
- * à suivre, seul raccourci de la page vers ce qui vient.
- */
+/** La semaine en cours (D330) : les jours entraînés et l'objectif hebdomadaire (D129). */
 export function ThisWeek({
   jours,
   seances,
   aujourdhui,
   objectif,
-  routine,
   className,
 }: {
   jours: boolean[];
@@ -33,7 +26,6 @@ export function ThisWeek({
   /** Rang du jour, 0 = lundi. */
   aujourdhui: number;
   objectif: number | null;
-  routine: { id: string; nom: string } | null;
   className?: string;
 }) {
   return (
@@ -41,7 +33,7 @@ export function ThisWeek({
       <CardHeader>
         <CardTitle>Cette semaine</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+      <CardContent className="flex flex-1 flex-col justify-center gap-6">
         <ol className="flex justify-between gap-1">
           {JOURS.map(([lettre, nom], i) => (
             <li
@@ -74,17 +66,6 @@ export function ThisWeek({
           ) : null}
         </div>
       </CardContent>
-      {routine ? (
-        <CardFooter className="mt-auto flex-col items-stretch gap-2 border-t pt-4">
-          <p className="text-muted-foreground text-xs">À suivre</p>
-          <Button asChild variant="outline" className="justify-between">
-            <Link to="/routines/$id" params={{ id: routine.id }}>
-              <span className="truncate">{routine.nom}</span>
-              <ArrowRight />
-            </Link>
-          </Button>
-        </CardFooter>
-      ) : null}
     </Card>
   );
 }

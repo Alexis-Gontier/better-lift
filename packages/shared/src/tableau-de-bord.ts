@@ -48,7 +48,6 @@ export type TableauDeBord = {
   /** Les séances de toujours : 0 = jamais de séance, état vide. */
   total: number;
   objectifHebdo: number | null;
-  routineASuivre: { id: string; nom: string } | null;
 };
 
 export type Bornes = {

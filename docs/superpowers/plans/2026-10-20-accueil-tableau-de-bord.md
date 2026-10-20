@@ -7,8 +7,8 @@ chiffres clés sur une période, semaine en cours, tendance, muscles, records r�
 séances.
 
 **Architecture:** l'API rend, depuis une date, les **faits** de chaque séance (volume, séries,
-séries par zone, muscles, records battus) avec le total de toujours, l'objectif hebdomadaire et
-la routine à suivre (`GET /tableau-de-bord?depuis=`). Le web agrège ces faits **dans son
+séries par zone, muscles, records battus) avec le total de toujours et l'objectif hebdomadaire
+(`GET /tableau-de-bord?depuis=`). Le web agrège ces faits **dans son
 fuseau** avec des fonctions pures de `shared` (`tableau-de-bord.ts`). La page se dessine d'abord
 sur une fixture, se valide à l'écran, puis se branche.
 
@@ -50,7 +50,7 @@ sur une fixture, se valide à l'écran, puis se branche.
 | `apps/web/src/features/home/fixture.ts` (créé, retiré en tâche 4) | Données factices typées |
 | `apps/web/src/features/home/home-page.tsx` (créé) | La page : en-tête, états, grille |
 | `apps/web/src/features/home/kpi-cards.tsx` (créé) | Les quatre chiffres clés |
-| `apps/web/src/features/home/this-week.tsx` (créé) | Semaine en cours, objectif, routine à suivre |
+| `apps/web/src/features/home/this-week.tsx` (créé) | Semaine en cours, objectif |
 | `apps/web/src/features/home/trend-chart.tsx` (créé) | Histogramme séances / volume |
 | `apps/web/src/features/home/muscles-card.tsx` (créé) | Barres par zone + `BodyMap` |
 | `apps/web/src/features/home/recent-lists.tsx` (créé) | Records récents, dernières séances |
@@ -317,7 +317,6 @@ export type TableauDeBord = {
   /** Les séances de toujours : 0 = jamais de séance, état vide. */
   total: number;
   objectifHebdo: number | null;
-  routineASuivre: { id: string; nom: string } | null;
 };
 
 export type Bornes = {
@@ -525,7 +524,7 @@ git commit -m "feat(shared): agrégats du tableau de bord de l'accueil"
   réparties sur les 26 dernières semaines (Push / Pull / Jambes en alternance, 3 par semaine
   sauf deux semaines creuses), volumes 6 000 à 11 000 kg, `seriesParZone` cohérentes avec le
   nom, quatre séances avec 1 à 2 records, `total: 30`, `objectifHebdo: 3`,
-  `routineASuivre: { id: "r-pull", nom: "Pull A" }`. Les dates sont **calculées depuis
+  Les dates sont **calculées depuis
   `new Date()`** (pour rester dans la période quel que soit le jour) :
 
 ```ts
@@ -570,7 +569,7 @@ export const FIXTURE: TableauDeBord = (() => {
           : [],
     });
   }
-  return { seances, total: seances.length, objectifHebdo: 3, routineASuivre: { id: "r-pull", nom: "Pull A" } };
+  return { seances, total: seances.length, objectifHebdo: 3 };
 })();
 ```
 
@@ -631,9 +630,7 @@ continuer de marcher.
   - **`ThisWeek`** — `Card` « Cette semaine » : sept pastilles `size-8 rounded-full` étiquetées
     L M M J V S D ; entraîné = `bg-primary text-primary-foreground`, sinon `border` ;
     aujourd'hui = `ring-2 ring-ring ring-offset-2`. Sous les pastilles : « 2 / 3 séances »
-    (`objectifHebdo`), une `Progress` dessous ; sans objectif : « 2 séances ». En pied, si
-    `routineASuivre` : « À suivre » + `Link to="/routines/$id"` sur son nom (bouton `outline`
-    avec `ArrowRight`). Les pastilles portent `aria-label` « lundi, entraîné » etc.
+    (`objectifHebdo`), une `Progress` dessous ; sans objectif : « 2 séances ». Les pastilles portent `aria-label` « lundi, entraîné » etc.
   - **`TrendChart`** — `Card` « Tendance », à droite un `ToggleGroup` « Séances · Volume »
     (état local) ; `ChartContainer` (hauteur `h-56`, `config` d'une seule série
     `color: "var(--chart-1)"`) + `BarChart` : `XAxis dataKey="debut"` formaté par
@@ -684,8 +681,7 @@ git commit -m "feat(web): dessin du tableau de bord de l'accueil, sur données f
   `versDetail` l'est déjà), `apps/api/src/app.ts`, `apps/api/src/app.test.ts`
 
 **Interfaces:**
-- Consumes: `requeteTableauDeBord`, `TableauDeBord`, `FaitSeance`, `zoneDuMuscle`,
-  `routineASuivre` de `shared` ; `versDetail`, `anterieurA`, `historique`, `LECTURE_SEANCE`,
+- Consumes: `requeteTableauDeBord`, `TableauDeBord`, `FaitSeance`, `zoneDuMuscle` de `shared` ; `versDetail`, `anterieurA`, `historique`, `LECTURE_SEANCE`,
   `depotPreferences`.
 - Produces: `type DepotTableauDeBord = { lire(userId: string, depuis: Date): Promise<TableauDeBord> }`,
   `depotTableauDeBord`, `routesTableauDeBord(depot, lireSession)`, monté sur `/tableau-de-bord`.
@@ -706,7 +702,7 @@ const lireSession: LireSession = async (h) => {
   return id ? { user: { id } } : null;
 };
 
-const VIDE: TableauDeBord = { seances: [], total: 0, objectifHebdo: null, routineASuivre: null };
+const VIDE: TableauDeBord = { seances: [], total: 0, objectifHebdo: null };
 
 function monter() {
   const appels: { userId: string; depuis: string }[] = [];
@@ -779,7 +775,6 @@ export function routesTableauDeBord(depot: DepotTableauDeBord, lireSession: Lire
 import { prisma } from "@better-lift/db";
 import {
   type FaitSeance,
-  routineASuivre,
   type TableauDeBord,
   type Zone,
   zoneDuMuscle,
@@ -798,7 +793,7 @@ export type DepotTableauDeBord = {
  */
 export const depotTableauDeBord: DepotTableauDeBord = {
   async lire(userId, depuis) {
-    const [lignes, total, preferences, routines, derniere] = await Promise.all([
+    const [lignes, total, preferences] = await Promise.all([
       prisma.seance.findMany({
         where: { userId, debut: { gte: depuis } },
         orderBy: { debut: "desc" },
@@ -815,14 +810,6 @@ export const depotTableauDeBord: DepotTableauDeBord = {
       }),
       prisma.seance.count({ where: { userId } }),
       depotPreferences.lire(userId),
-      // Même ordre que la liste des routines du web et du mobile.
-      prisma.routine.findMany({ where: { userId }, orderBy: [{ position: "asc" }], select: { id: true, nom: true } }),
-      prisma.seance.findMany({
-        where: { userId, routineId: { not: null } },
-        orderBy: { debut: "desc" },
-        take: 1,
-        select: { routineId: true, debut: true },
-      }),
     ]);
     const exerciseIds = [...new Set(lignes.flatMap((l) => l.exercices.map((e) => e.exerciseId)))];
     const histo = await historique(userId, exerciseIds);
@@ -854,26 +841,20 @@ export const depotTableauDeBord: DepotTableauDeBord = {
         ),
       };
     });
-    const suivante = routineASuivre(
-      routines,
-      derniere.map((d) => ({ routineId: d.routineId, debut: d.debut.toISOString() })),
-    );
     return {
       seances,
       total,
       objectifHebdo: preferences.objectifHebdo,
-      routineASuivre: suivante ? { id: suivante.id, nom: suivante.nom } : null,
     };
   },
 };
 ```
 
-Avant d'écrire : vérifier dans `prisma/schema.prisma` le champ d'ordre des routines (`position`
-et dossiers : reprendre exactement l'`orderBy` de `depotPrisma.lister` dans
-`services/routines.ts`), et dans `services/seances.ts` la signature de `anterieurA` et ce que
+Avant d'écrire : vérifier dans `services/seances.ts` la signature de `anterieurA` et ce que
 `versDetail` attend (`LigneSeance` : si le `select` élargi le rend incompatible, construire
-l'objet attendu plutôt que de transtyper). `zoneDuMuscle` et `routineASuivre` doivent être
-exportés par `shared/index.ts` (les ajouter sinon).
+l'objet attendu plutôt que de transtyper). Rajouter à `shared/index.ts` les exports retirés à la
+tâche 2 faute d'usage : `zoneDuMuscle`, `requeteTableauDeBord` (et `depuisPour`, `Bornes` à la
+tâche 4).
 
 - [ ] **Step 5: monter la route** — `app.ts` : importer `routesTableauDeBord` et
   `depotTableauDeBord`, `.route("/tableau-de-bord", routesTableauDeBord(depotTableauDeBord, lireSession))`
@@ -969,7 +950,7 @@ test("l'accueil montre le tableau de bord et change de période", async ({ page 
 
 - [ ] **Step 5: vérifier sur les vraies données** — plugin Playwright, compte de contrôle :
   les chiffres de « 4 sem. » recoupés à la main avec l'Historique (nombre de séances, volume
-  d'une séance), un record récent présent dans Records, la routine à suivre identique à celle
+  d'une séance), un record récent présent dans Records.
   du mobile. Supprimer une séance n'est **pas** à faire sur la démo.
 
 - [ ] **Step 6: `/verif`, e2e, commit**
@@ -990,8 +971,7 @@ git commit -m "feat(web): tableau de bord de l'accueil branché sur l'API (D330)
   « Interface web » :
   « **D330** — L'Accueil du web est un tableau de bord, bilan d'abord : période 4 sem. ·
   3 mois · 1 an dans l'URL (3 mois par défaut) ; quatre chiffres clés comparés à la période
-  précédente (écart en texte et flèche, sans couleur) ; semaine en cours face à l'objectif et
-  routine à suivre ; tendance en barres (semaines, ou mois sur un an) ; séries par zone et
+  précédente (écart en texte et flèche, sans couleur) ; semaine en cours face à l'objectif ; tendance en barres (semaines, ou mois sur un an) ; séries par zone et
   carte du corps ; records récents et dernières séances. `GET /tableau-de-bord?depuis=` rend
   les faits par séance (records rejoués sur tout l'historique) ; le web les agrège dans son
   fuseau par `shared/tableau-de-bord.ts`. »

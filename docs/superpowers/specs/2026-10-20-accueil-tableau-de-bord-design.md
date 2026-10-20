@@ -7,7 +7,7 @@ reportées dans `docs/decisions.md` (révise D283, « l'Accueil est vide »).
 
 L'Accueil (`/app/`) devient un tableau de bord classique, **bilan d'abord** : où en est la
 semaine, comment évolue l'entraînement sur une période, quels muscles il travaille, ce qui a été
-battu et fait récemment ; la routine à suivre en raccourci. Le web sert à relire et préparer
+battu et fait récemment. Pas de routine à suivre (retirée à la revue du dessin). Le web sert à relire et préparer
 (D224) : rien ne s'y lance.
 
 Inspirations relevées : les statistiques de Hevy (graphe des jours entraînés, séries par groupe
@@ -27,8 +27,7 @@ couleur ne porte jamais seule un sens).
    précédente (compte récent), pas d'écart.
 3. **Cette semaine** — carte : les 7 jours du lundi au dimanche (pastille pleine = jour
    entraîné, contour = aujourd'hui), « 2 / 3 séances » face à l'objectif hebdomadaire
-   (`preferences.objectifHebdo`, D129 ; sans objectif, le compte seul), et la **routine à
-   suivre** (`routineASuivre` de `shared`) en lien vers sa page.
+   (`preferences.objectifHebdo`, D129 ; sans objectif, le compte seul).
 4. **Tendance** — carte : histogramme (Recharts via `components/ui/chart`), une barre par
    **semaine** (4 sem., 3 mois) ou par **mois** (1 an), avec une bascule **Séances · Volume**.
    Barres et non ligne : chaque intervalle est un compte discret. Infobulle au survol, axe des
@@ -77,7 +76,6 @@ type TableauDeBord = {
   seances: FaitSeance[];
   total: number; // séances de toujours
   objectifHebdo: number | null;
-  routineASuivre: { id: string; nom: string } | null;
 };
 ```
 
@@ -87,7 +85,7 @@ type TableauDeBord = {
   `marquerRecords` existants), puis se filtrent à la période : un record se juge contre tout le
   passé, pas contre la seule période.
 - Zones des barres par `zoneDuMuscle` (`shared/muscles.ts`) sur `target` ; l'objectif hebdomadaire
-  et la routine à suivre sont rendus avec, pour que la page ne lise qu'une requête.
+  est rendu avec, pour que la page ne lise qu'une requête.
 - `depuis` invalide : 400 `{ erreur }`. Zod du contrat dans `shared`.
 
 ### `shared` : `tableau-de-bord.ts` (pur, testé)
@@ -112,7 +110,6 @@ retiré par D328, n'est pas ressuscité tel quel : `tendance` le remplace.
   `["tableau-de-bord", depuis]`), `home-page.tsx` et un composant par bloc ; la route
   `_app.index.tsx` ne fait que valider `?periode`, précharger et rendre la page.
 - Une séance supprimée dans Historique invalide `["tableau-de-bord"]` (piège des clés TanStack).
-- Préférences et routines : requêtes existantes, réutilisées.
 
 ## Méthode
 

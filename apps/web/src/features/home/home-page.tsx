@@ -104,7 +104,6 @@ function Tableau({ donnees, periode }: { donnees: TableauDeBord; periode: Period
           seances={semaine.seances}
           aujourdhui={rangDuJour(maintenant)}
           objectif={donnees.objectifHebdo}
-          routine={donnees.routineASuivre}
         />
         <TrendChart
           className="@4xl:col-span-2"
