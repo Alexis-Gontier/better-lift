@@ -26,7 +26,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D178** — *Révisée par D316.* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
   Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
   redirige vers `/routines`.
-- **D316** — Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
+- **D316** — *Révisée par D319 (barre d'onglets).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
   direction artistique viendra une fois l'app construite. Lot 1 : un seul accueil, sans onglets
   (« Séance vide », routines qui se lancent d'un appui, Profil en en-tête, bandeau
   « Reprendre ») ; retirés : l'édition des routines (le web prépare), la page d'une routine et sa
@@ -47,6 +47,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   l'export restent au web (`expo-file-system`, `expo-sharing` retirés). L'ancien thème
   (`lib/theme.ts`, `lib/palette.ts` et son test) est supprimé : tout le mobile passe par
   Reusables et les tokens de `global.css`.
+- **D319** — Révise D316 : le mobile retrouve une barre d'onglets, **Routines · Historique ·
+  Profil**, libellés toujours visibles (icônes Lucide `Dumbbell`, `History`, `User`). L'onglet
+  actif se marque par la forme : pilule `bg-secondary` derrière l'icône, libellé en gras.
+  `Tabs` d'Expo Router avec une barre à nous (`components/barre-onglets.tsx`), pas `NativeTabs`
+  (ni Lucide, ni accessoire au-dessus de la barre sous Android). Le bandeau « Reprendre » se
+  pose au-dessus de la barre, sur les trois onglets ; « Séance vide » reste en tête de Routines.
+  L'onglet Historique n'a qu'un état vide pour l'instant ; son contenu viendra.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
@@ -163,7 +170,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   ligne. Jamais de `fetchQuery` nu dans un chemin de salle.
 - **D99** — L'envoi se relance au retour du réseau et du premier plan.
 - **D105** — Un seul aplat par écran ; « Terminer » est secondaire.
-- **D107** — *Révisée par D316.* Bandeau « séance en cours », neutre, au-dessus de la barre ; tout le bandeau ramène
+- **D107** — *Révisée par D316, puis D319.* Bandeau « séance en cours », neutre, au-dessus de la barre ; tout le bandeau ramène
   à la séance.
 - **D108** — Direction « Carnet » : puces repos et note sous le nom, ligne de série en états,
   valeurs fantômes.

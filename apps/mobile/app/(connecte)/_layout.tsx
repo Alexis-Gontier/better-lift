@@ -1,12 +1,14 @@
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { BarreOnglets } from "@/components/barre-onglets";
 import { PreparerHorsLigne } from "@/components/preparer-hors-ligne";
 import { authClient } from "@/lib/auth-client";
 
 /**
- * La garde de session (D316) : l'accueil et le Profil exigent un compte, et un
- * seul endroit le vérifie. Plus de barre d'onglets : une pile.
+ * La garde de session (D316) : les onglets exigent un compte, et un seul
+ * endroit le vérifie. Trois onglets, Routines · Historique · Profil (D319) ; la
+ * séance et ses modales vivent sur la pile racine, par-dessus la barre.
  */
 export default function Connecte() {
   const { data: session, isPending, error } = authClient.useSession();
@@ -31,7 +33,12 @@ export default function Connecte() {
     <>
       {/* Hors ligne (D96) : remplir le cache tant qu'il y a du réseau. */}
       <PreparerHorsLigne />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <BarreOnglets {...props} />}>
+        {/* L'ordre des onglets est celui de la barre. */}
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="historique" />
+        <Tabs.Screen name="profil" />
+      </Tabs>
     </>
   );
 }
