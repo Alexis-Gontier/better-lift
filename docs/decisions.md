@@ -69,6 +69,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   carrée), et la **carte des muscles** face et dos comme opengym (`react-native-body-highlighter`,
   `shared/muscles.ts` : principaux à l'encre, secondaires en gris, légende). Ni modification ni lien vers
   le web. Le résumé des séries (`resumeSeries`) vit dans `shared`, lu par le web et le mobile.
+- **D322** — Icône de l'app mobile : « La charge » (trois disques qui grandissent sur une barre
+  courte, vue de profil), **en diagonale montante à 45°**, blanc sur `#171717` (le `primary` clair
+  du MVP, sans couleur de marque tant que la DA attend). Sources dans `apps/mobile/assets`
+  (`icon`, `adaptive`, `monochrome`, `splash`, `logo.svg`). Les écrans restent sans logo (D229, D316).
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
