@@ -1,4 +1,11 @@
-import { type RoutineResume, versBrouillon, versSaisie } from "@better-lift/shared";
+import {
+  dureeRoutine,
+  ilYa,
+  musclesRoutine,
+  type RoutineResume,
+  versBrouillon,
+  versSaisie,
+} from "@better-lift/shared";
 import { useDraggable } from "@dnd-kit/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
@@ -7,16 +14,11 @@ import { toast } from "sonner";
 import { listCardClass, listLinkProps } from "@/components/list-detail";
 import { type RowAction, RowMenu } from "@/components/row-menu";
 import { Card } from "@/components/ui/card";
-import { formatDaysAgo, formatMinutes, plural } from "@/lib/format";
+import { plural } from "@/lib/format";
 import { joursDepuis, SYSTEME } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { nomBrouillon } from "./ecran";
 import { routineQuery, useCreerRoutine, useSupprimerRoutine } from "./queries";
-
-/** Les muscles d'une routine, sans doublon, dans l'ordre des exercices. */
-const muscles = (r: RoutineResume) => [
-  ...new Set(r.exercices.map((e) => e.musclePrincipal).filter(Boolean)),
-];
 
 const rowClass = "flex items-center gap-3 px-4 py-3";
 
@@ -67,15 +69,13 @@ function RowBody({ routine }: { routine: RoutineResume }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-medium">{routine.nom}</span>
         <span className="truncate text-muted-foreground text-xs">
-          {[plural(routine.nbExercices, "exercice"), ...muscles(routine)].join(" · ")}
+          {[plural(routine.nbExercices, "exercice"), ...musclesRoutine(routine)].join(" · ")}
         </span>
       </div>
       <div className="flex shrink-0 flex-col items-end">
-        <span className="text-sm tabular-nums">
-          ~{formatMinutes(Math.ceil(routine.dureeEstimeeSec / 60 / 5) * 5)}
-        </span>
+        <span className="text-sm tabular-nums">{dureeRoutine(routine.dureeEstimeeSec)}</span>
         <span className="text-muted-foreground text-xs">
-          {formatDaysAgo(routine.derniereSeance ? joursDepuis(routine.derniereSeance) : null)}
+          {ilYa(routine.derniereSeance ? joursDepuis(routine.derniereSeance) : null)}
         </span>
       </div>
     </>

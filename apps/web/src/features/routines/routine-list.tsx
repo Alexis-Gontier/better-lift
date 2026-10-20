@@ -1,4 +1,4 @@
-import { normaliserRecherche, type RoutineResume } from "@better-lift/shared";
+import { normaliserRecherche, parDossier, type RoutineResume } from "@better-lift/shared";
 import {
   DndContext,
   type DragEndEvent,
@@ -38,7 +38,6 @@ import {
   useSupprimerDossier,
 } from "./queries";
 import { DraftRoutineRow, RoutineRow, RoutineRowPreview } from "./routine-card";
-import { parDossier } from "./stats";
 
 type Dossier = { id: string; nom: string };
 

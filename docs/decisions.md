@@ -54,6 +54,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   (ni Lucide, ni accessoire au-dessus de la barre sous Android). Le bandeau « Reprendre » se
   pose au-dessus de la barre, sur les trois onglets ; « Séance vide » reste en tête de Routines.
   L'onglet Historique n'a qu'un état vide pour l'instant ; son contenu viendra.
+- **D320** — Révise D298 : l'onglet Routines du mobile range les routines **par dossier**, comme
+  le web (D257) — têtes repliables (chevron, nom, nombre ; tout déplié à l'ouverture, l'état
+  replié n'est pas gardé), « Sans dossier » en dernier, aucune tête quand le compte n'a pas de
+  dossier. Une carte par routine : nom, « 5 exercices · muscles », « ~30 min », « Il y a 17 j ».
+  L'appui lance toujours la séance, sans chevron (D316). Les dossiers se gèrent sur le web.
+  `parDossier`, `musclesRoutine`, `dureeRoutine`, `joursEcoules`, `ilYa` vivent dans
+  `shared/liste-routines.ts`, lus par les deux surfaces.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.
@@ -98,7 +105,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   `Routine.dossierId` nullable en `SetNull`, `Routine.note` (1000 caractères).
 - **D297** — `GET /routines` rend `{ routines, dossiers }` ; `POST`, `PATCH`, `DELETE
   /dossiers/:id`, `PUT /dossiers/ordre`, `PATCH /routines/:id` (`dossierId`). Nom pris : 409.
-- **D298** — Le mobile renvoie tels quels `note` et `dossierId`, qu'il n'affiche pas : un `PUT`
+- **D298** — *Révisée par D320 (le mobile affiche les dossiers).* Le mobile renvoie tels quels `note` et `dossierId`, qu'il n'affiche pas : un `PUT`
   ne doit rien effacer.
 - **D310** — `RoutineResume` porte `derniereSeance`, `dossierId`, `exercices` (nom, muscle) et
   `dureeEstimeeSec`.

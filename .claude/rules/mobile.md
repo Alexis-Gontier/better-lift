@@ -68,8 +68,10 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **Trois onglets** : `app/(connecte)/` — `index` (Routines), `historique`, `profil`. `Tabs`
   d'Expo Router, barre à nous (`components/barre-onglets.tsx`) : le bandeau « Reprendre »
   (`components/bandeau-seance.tsx`) puis les onglets. Un onglet s'ouvre sur `TitreOnglet`.
-- Routines : « Séance vide » en tête, la liste des routines (l'appui lance la séance par
-  `lib/demarrer.ts`). Historique : état vide pour l'instant.
+- Routines (D320) : « Séance vide » en tête, puis les routines par dossier, comme le web
+  (`DossierRoutines` repliable, `LigneRoutine` en carte ; calculs de `shared/liste-routines.ts`).
+  L'appui lance la séance par `lib/demarrer.ts`. `optionsRoutines()` rend `{ routines, dossiers }`.
+  Historique : état vide pour l'instant.
 - La pilule de l'onglet actif est toujours montée et se montre par l'opacité : sous Android, un
   fond ajouté à une vue déjà affichée perdait son arrondi.
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,

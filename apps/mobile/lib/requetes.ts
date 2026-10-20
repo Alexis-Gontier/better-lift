@@ -15,13 +15,14 @@ import { avantDelai, UNE_SEMAINE } from "./hors-ligne";
  * l'URL et la façon de joindre la session changent (voir `api.ts`).
  */
 
+/** Les routines et leurs dossiers (D297, D320). */
 export function optionsRoutines() {
   return queryOptions({
     queryKey: ["routines", "liste"],
     queryFn: async () => {
       const res = await api.routines.$get();
       if (!res.ok) throw new Error("Les routines n'ont pas pu être chargées.");
-      return (await res.json()).routines;
+      return res.json();
     },
   });
 }

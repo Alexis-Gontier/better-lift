@@ -1,4 +1,4 @@
-import type { Brouillon, SeanceResume } from "@better-lift/shared";
+import { type Brouillon, ilYa, type SeanceResume } from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
 import { BodyMap } from "@/components/body-map";
 import { SummaryCard, type SummaryRow } from "@/components/summary-card";
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDaysAgo, formatDelta, formatKg, formatMinutes, plural } from "@/lib/format";
+import { formatDelta, formatKg, formatMinutes, plural } from "@/lib/format";
 import { joursDepuis } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import type { InfoExercice } from "./infos";
@@ -80,10 +80,10 @@ function Summary({
       label: "Dernière fois",
       value: derniere ? (
         <Link to="/history/$id" params={{ id: derniere.id }} className="hover:underline">
-          {formatDaysAgo(joursDepuis(derniere.debut))}
+          {ilYa(joursDepuis(derniere.debut))}
         </Link>
       ) : (
-        formatDaysAgo(null)
+        ilYa(null)
       ),
     },
   ];
