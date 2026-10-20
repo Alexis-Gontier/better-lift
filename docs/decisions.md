@@ -73,6 +73,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   courte, vue de profil), **en diagonale montante à 45°**, blanc sur `#171717` (le `primary` clair
   du MVP, sans couleur de marque tant que la DA attend). Sources dans `apps/mobile/assets`
   (`icon`, `adaptive`, `monochrome`, `splash`, `logo.svg`). Les écrans restent sans logo (D229, D316).
+- **D324** — Complète D318 : la fin de séance s'intitule « Fin de séance » (rien n'est encore
+  enregistré) et liste, sous les records, chaque exercice avec sa meilleure série
+  (`meilleureSerieComptee`) et ses séries faites ; un exercice sans série s'écrit en retrait,
+  « Aucune série », pour se voir avant d'enregistrer.
 - **D224** — Le web sert à analyser et préparer ; pas de séance en direct sur le web.
 - **D292** — Le web vit sous `/app` (Vite `base`, routeur `basepath`) ; la racine est laissée à
   une future landing et redirige (307) vers `/app` en attendant. `/api` ne bouge pas.

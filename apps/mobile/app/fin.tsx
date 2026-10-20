@@ -4,6 +4,7 @@ import {
   formaterCharge,
   formatJour,
   LIBELLE_RECORD,
+  meilleureSerieComptee,
   recordsBattus,
   secondesEcoulees,
 } from "@better-lift/shared";
@@ -22,6 +23,7 @@ import { optionsRecords } from "@/lib/requetes";
 import { useSeance } from "@/lib/seance";
 import { formaterDuree } from "@/lib/temps";
 import { SYSTEME_UNITES } from "@/lib/unites";
+import { cn } from "@/lib/utils";
 import { vibrer } from "@/lib/vibrations";
 
 /** « 85 kg × 5 », ou « 12 reps » au poids du corps. La charge passe par les unités. */
@@ -31,9 +33,9 @@ function formaterSerie(chargeKg: number | null, reps: number | null): string {
 }
 
 /**
- * La fin de séance (D130, D318) : les records battus d'abord, le bilan, une
- * note, puis l'enregistrement. Une séance sans série validée ne s'enregistre
- * pas — elle se reprend.
+ * La fin de séance (D130, D318, D324) : le bilan, les records battus, ce qui a
+ * été fait de chaque exercice, une note, puis l'enregistrement. Une séance sans
+ * série validée ne s'enregistre pas — elle se reprend.
  */
 export default function Fin() {
   const router = useRouter();
@@ -93,8 +95,9 @@ export default function Fin() {
     <Ecran className="flex-1 bg-background">
       <ScrollView contentContainerClassName="gap-4 p-4">
         <View className="gap-1">
+          {/* Rien n'est encore enregistré : l'écran relit avant d'enregistrer (D324). */}
           <Text className="font-semibold text-2xl" accessibilityRole="header">
-            Séance terminée
+            Fin de séance
           </Text>
           <Text className="text-muted-foreground">
             {seance.nom} · {formatJour(seance.debut, FUSEAU)}
@@ -144,6 +147,25 @@ export default function Fin() {
           </Text>
         ) : null}
 
+        {/* Ce qui a été fait de chaque exercice (D324) : un exercice laissé vide se voit
+            avant d'enregistrer. */}
+        <View className="gap-2">
+          <Text className="font-semibold text-muted-foreground text-sm" accessibilityRole="header">
+            Exercices
+          </Text>
+          <View className="rounded-lg border border-border">
+            {seance.exercices.map((e, i) => (
+              <LigneExercice
+                key={`${e.slug}-${i}`}
+                nom={e.nom}
+                faites={e.series.filter((x) => x.faite).length}
+                meilleure={meilleureSerieComptee(e.series)}
+                premiere={i === 0}
+              />
+            ))}
+          </View>
+        </View>
+
         <Input
           value={seance.note ?? ""}
           onChangeText={(note) => modifier({ ...seance, note })}
@@ -185,6 +207,45 @@ function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
     <View className="flex-1 items-center gap-0.5 py-3">
       <Text className="text-muted-foreground text-xs">{libelle}</Text>
       <Text className="font-semibold text-lg tabular-nums">{valeur}</Text>
+    </View>
+  );
+}
+
+/** Un exercice de la séance : son nom, puis sa meilleure série et le nombre de séries faites. */
+function LigneExercice({
+  nom,
+  faites,
+  meilleure,
+  premiere,
+}: {
+  nom: string;
+  faites: number;
+  meilleure: { chargeKg: number | null; reps: number } | null;
+  premiere: boolean;
+}) {
+  return (
+    <View
+      className={cn(
+        "min-h-14 flex-row items-center gap-3 px-3 py-2",
+        !premiere && "border-border border-t",
+      )}
+    >
+      <Text
+        className={cn("flex-1 font-medium", faites === 0 && "text-muted-foreground")}
+        numberOfLines={2}
+      >
+        {nom}
+      </Text>
+      <View className="items-end">
+        {meilleure ? (
+          <Text className="font-semibold tabular-nums">
+            {formaterSerie(meilleure.chargeKg, meilleure.reps)}
+          </Text>
+        ) : null}
+        <Text className="text-muted-foreground text-sm tabular-nums">
+          {faites === 0 ? "Aucune série" : faites === 1 ? "1 série" : `${faites} séries`}
+        </Text>
+      </View>
     </View>
   );
 }
