@@ -252,6 +252,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D103** — *Révisée par D163* (Barlow remplace Archivo).
 - **D104** — *Révisée par D318.* Espacements en base 4, cible tactile de 48, ligne de série de 52 ; rayons révisés
   par D164.
+- **D327** — Complète D176 sur le mobile : le squelette prend la forme de l'écran attendu —
+  `Chargement forme="routines"` (cartes et segment « Lancer »), `"routine"` (résumé,
+  « Lancer », carte des muscles, exercices repliés), `"lignes"` par défaut (lignes du
+  catalogue) —, au lieu de trois barres communes.
 - **D118** — *Révisée par D316.* Langage commun des pages : `Section`, `Vignette` (fond blanc), `Tuile`,
   `BoutonContour`, `FeuilleBasse` ; un chiffre se distingue par sa taille, pas sa couleur.
 - **D121** — *Révisée par D171* : le catalogue n'a plus de vue dans Routines.

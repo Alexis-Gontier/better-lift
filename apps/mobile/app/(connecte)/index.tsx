@@ -52,7 +52,7 @@ function ListeRoutines({
   if (requete.isPending && requete.fetchStatus === "paused") {
     return <Vide titre="Hors ligne" message="Les routines apparaîtront au retour du réseau." />;
   }
-  if (requete.isPending) return <Chargement />;
+  if (requete.isPending) return <Chargement forme="routines" />;
   if (requete.isError && !requete.data) {
     return (
       <Erreur
