@@ -6,8 +6,8 @@ paths:
 # Mobile
 
 Écrans (D316–D319) : trois onglets (Routines, Historique, Profil), la séance (avec choix et
-réorganisation des exercices), la fin, la connexion. Style wireframe en gris, la
-direction artistique viendra après l'épreuve. Décisions : `docs/decisions.md`.
+réorganisation des exercices), la fin, la connexion (seul écran à porter le logo, `Logo`, D326).
+Style wireframe en gris, la direction artistique viendra après l'épreuve. Décisions : `docs/decisions.md`.
 
 ## Lancer (Expo Go)
 
