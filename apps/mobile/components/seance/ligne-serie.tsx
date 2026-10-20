@@ -76,7 +76,9 @@ export function LigneSerie({
   };
 
   return (
-    <View className={cn("min-h-13 flex-row items-center gap-2 px-1", faite && "bg-muted")}>
+    <View
+      className={cn("min-h-13 flex-row items-center gap-2 rounded-md px-1", faite && "bg-muted")}
+    >
       {/* La ligne à faire : un liseré, là où l'œil revient entre deux séries. */}
       {etat === "prochaine" ? (
         <View className="absolute top-2.5 bottom-2.5 left-0 w-0.75 rounded-full bg-foreground" />

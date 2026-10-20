@@ -94,6 +94,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   de la modale qui vient d'ajouter des exercices.
 - Un rappel de modale qui attend applique son choix à la séance **du moment** (`useRef`), pas à
   celle capturée à l'ouverture.
+- Un exercice par carte (D325, `CarteExercice`) ; l'écart est un `pb-3` autour de la carte :
+  une marge posée sur une vue bordée mange sa bordure du bas sous Android.
 - Ligne de série en trois états (`EtatSerie`) : faite (fond `bg-muted`, ✓ pleine) · prochaine
   (case au contour à l'encre, liseré) · à venir. Après une coche, l'écran défile vers la
   prochaine si elle est cachée.

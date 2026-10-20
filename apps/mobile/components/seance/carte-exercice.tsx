@@ -179,149 +179,154 @@ export function CarteExercice({
         : "Sans repos";
 
   return (
-    <View className="gap-2 border-border border-b px-3 py-4">
-      <View className="flex-row items-center gap-3">
-        {/* Sans GIF, la vignette n'est qu'une image : ni bouton, ni annonce. */}
-        <Pressable
-          onPress={() => setGrand((g) => !g)}
-          disabled={!gif}
-          accessible={Boolean(gif)}
-          accessibilityRole="button"
-          accessibilityLabel={grand ? "Réduire l'animation" : "Agrandir l'animation"}
-        >
-          {gif ? (
-            // Fond blanc : les GIF du catalogue sont dessinés sur blanc. En
-            // vignette, l'animation distrait : elle ne joue qu'agrandie.
-            <View className="size-10 overflow-hidden rounded-full bg-white">
+    // Une carte par exercice (D325), comme les routines. L'écart vient de cette vue,
+    // DANS le repère de superset, pour que son filet relie les membres ; une marge
+    // posée sur la carte elle-même mangeait sa bordure du bas sous Android.
+    <View className="pb-3">
+      <View className="gap-2 rounded-lg border border-border bg-background px-3 py-3">
+        <View className="flex-row items-center gap-3">
+          {/* Sans GIF, la vignette n'est qu'une image : ni bouton, ni annonce. */}
+          <Pressable
+            onPress={() => setGrand((g) => !g)}
+            disabled={!gif}
+            accessible={Boolean(gif)}
+            accessibilityRole="button"
+            accessibilityLabel={grand ? "Réduire l'animation" : "Agrandir l'animation"}
+          >
+            {gif ? (
+              // Fond blanc : les GIF du catalogue sont dessinés sur blanc. En
+              // vignette, l'animation distrait : elle ne joue qu'agrandie.
+              <View className="size-10 overflow-hidden rounded-full bg-white">
+                <Image
+                  source={{ uri: gif }}
+                  style={{ width: 40, height: 40 }}
+                  contentFit="cover"
+                  cachePolicy="disk"
+                  autoplay={false}
+                />
+              </View>
+            ) : (
+              <View className="size-10 items-center justify-center rounded-full bg-secondary">
+                <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
+              </View>
+            )}
+          </Pressable>
+          <Text className="flex-1 font-semibold text-base" numberOfLines={2}>
+            {exercice.nom}
+          </Text>
+          <Button
+            variant="ghost"
+            size="icon"
+            onPress={() => setFeuille({ quoi: "menu" })}
+            accessibilityLabel={`Actions pour ${exercice.nom}`}
+          >
+            <Icon as={Ellipsis} className="size-5 text-muted-foreground" />
+          </Button>
+        </View>
+
+        {grand && gif ? (
+          <Pressable
+            onPress={() => setGrand(false)}
+            className="gap-1"
+            accessibilityRole="button"
+            accessibilityLabel="Réduire l'animation"
+          >
+            <View className="overflow-hidden rounded-md bg-white">
               <Image
                 source={{ uri: gif }}
-                style={{ width: 40, height: 40 }}
-                contentFit="cover"
+                style={{ width: "100%", aspectRatio: 1 }}
+                contentFit="contain"
                 cachePolicy="disk"
-                autoplay={false}
               />
             </View>
-          ) : (
-            <View className="size-10 items-center justify-center rounded-full bg-secondary">
-              <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
-            </View>
-          )}
-        </Pressable>
-        <Text className="flex-1 font-semibold text-lg" numberOfLines={2}>
-          {exercice.nom}
-        </Text>
-        <Button
-          variant="ghost"
-          size="icon"
-          onPress={() => setFeuille({ quoi: "menu" })}
-          accessibilityLabel={`Actions pour ${exercice.nom}`}
-        >
-          <Icon as={Ellipsis} className="size-5 text-muted-foreground" />
-        </Button>
-      </View>
+            <Text className="text-center text-muted-foreground text-xs">{ATTRIBUTION_MEDIAS}</Text>
+          </Pressable>
+        ) : null}
 
-      {grand && gif ? (
-        <Pressable
-          onPress={() => setGrand(false)}
-          className="gap-1"
-          accessibilityRole="button"
-          accessibilityLabel="Réduire l'animation"
-        >
-          <View className="overflow-hidden rounded-md bg-white">
-            <Image
-              source={{ uri: gif }}
-              style={{ width: "100%", aspectRatio: 1 }}
-              contentFit="contain"
-              cachePolicy="disk"
+        {/* Le repos et la note en deux puces (D108) ; la note saisie remplace le mot « Note ». */}
+        <View className="flex-row flex-wrap gap-2">
+          {repos === "masque" ? null : (
+            <Puce
+              icone={Timer}
+              texte={texteRepos}
+              eteinte={!exercice.reposSec}
+              onPress={() => setFeuille({ quoi: "repos" })}
+              libelle={`${repos === "groupe" ? "Repos après le groupe" : "Repos"} : ${libelleRepos(exercice.reposSec)}`}
+            />
+          )}
+          <Puce
+            icone={Pencil}
+            texte={note || "Note"}
+            eteinte={!note}
+            onPress={() => setEditionNote(true)}
+            libelle={note ? `Note : ${note}` : "Ajouter une note"}
+          />
+        </View>
+
+        {/* D90 : la note s'écrit à chaque frappe, pas à la sortie du champ. */}
+        {editionNote ? (
+          <Input
+            value={note}
+            onChangeText={(t) => {
+              setNote(t);
+              onNote(t);
+            }}
+            onBlur={() => setEditionNote(false)}
+            autoFocus
+            placeholder="Siège cran 4, prise serrée…"
+            multiline
+            maxLength={500}
+            className="h-auto min-h-12 py-2"
+            accessibilityLabel={`Note pour ${exercice.nom}`}
+          />
+        ) : null}
+
+        <View className="mt-1 flex-row items-center gap-2 px-1">
+          <Colonne className="w-10">Série</Colonne>
+          <Colonne className="flex-[1.25] text-left">Précédent</Colonne>
+          <Colonne className="flex-1">{UNITE}</Colonne>
+          <Colonne className="flex-1">Reps</Colonne>
+          <View className="w-10 items-center">
+            <Icon as={Check} className="size-3.5 text-muted-foreground" strokeWidth={3} />
+          </View>
+        </View>
+
+        {exercice.series.map((s, i) => (
+          <View
+            key={`${i}-${exercice.series.length}`}
+            onLayout={(e) => onPositionLigne(i, e.nativeEvent.layout.y)}
+          >
+            <LigneSerie
+              numero={i + 1}
+              etiquette={libelles[i] ?? String(i + 1)}
+              secondaire={s.type !== "NORMALE"}
+              serie={s}
+              etat={etatDe(s.faite, i === prochaine)}
+              precedent={exercice.precedent?.[i]}
+              onChange={(patch) => onModifierSerie(i, patch)}
+              onValider={() => onValiderSerie(i)}
+              onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
             />
           </View>
-          <Text className="text-center text-muted-foreground text-xs">{ATTRIBUTION_MEDIAS}</Text>
-        </Pressable>
-      ) : null}
+        ))}
 
-      {/* Le repos et la note en deux puces (D108) ; la note saisie remplace le mot « Note ». */}
-      <View className="flex-row flex-wrap gap-2">
-        {repos === "masque" ? null : (
-          <Puce
-            icone={Timer}
-            texte={texteRepos}
-            eteinte={!exercice.reposSec}
-            onPress={() => setFeuille({ quoi: "repos" })}
-            libelle={`${repos === "groupe" ? "Repos après le groupe" : "Repos"} : ${libelleRepos(exercice.reposSec)}`}
-          />
-        )}
-        <Puce
-          icone={Pencil}
-          texte={note || "Note"}
-          eteinte={!note}
-          onPress={() => setEditionNote(true)}
-          libelle={note ? `Note : ${note}` : "Ajouter une note"}
-        />
-      </View>
-
-      {/* D90 : la note s'écrit à chaque frappe, pas à la sortie du champ. */}
-      {editionNote ? (
-        <Input
-          value={note}
-          onChangeText={(t) => {
-            setNote(t);
-            onNote(t);
-          }}
-          onBlur={() => setEditionNote(false)}
-          autoFocus
-          placeholder="Siège cran 4, prise serrée…"
-          multiline
-          maxLength={500}
-          className="h-auto min-h-12 py-2"
-          accessibilityLabel={`Note pour ${exercice.nom}`}
-        />
-      ) : null}
-
-      <View className="mt-1 flex-row items-center gap-2 px-1">
-        <Colonne className="w-10">Série</Colonne>
-        <Colonne className="flex-[1.25] text-left">Précédent</Colonne>
-        <Colonne className="flex-1">{UNITE}</Colonne>
-        <Colonne className="flex-1">Reps</Colonne>
-        <View className="w-10 items-center">
-          <Icon as={Check} className="size-3.5 text-muted-foreground" strokeWidth={3} />
-        </View>
-      </View>
-
-      {exercice.series.map((s, i) => (
-        <View
-          key={`${i}-${exercice.series.length}`}
-          onLayout={(e) => onPositionLigne(i, e.nativeEvent.layout.y)}
+        <Button
+          variant="ghost"
+          className="self-start"
+          onPress={onAjouterSerie}
+          accessibilityLabel="Ajouter une série"
         >
-          <LigneSerie
-            numero={i + 1}
-            etiquette={libelles[i] ?? String(i + 1)}
-            secondaire={s.type !== "NORMALE"}
-            serie={s}
-            etat={etatDe(s.faite, i === prochaine)}
-            precedent={exercice.precedent?.[i]}
-            onChange={(patch) => onModifierSerie(i, patch)}
-            onValider={() => onValiderSerie(i)}
-            onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
-          />
-        </View>
-      ))}
+          <Icon as={Plus} className="size-4 text-foreground" />
+          <Text>Série</Text>
+        </Button>
 
-      <Button
-        variant="ghost"
-        className="self-start"
-        onPress={onAjouterSerie}
-        accessibilityLabel="Ajouter une série"
-      >
-        <Icon as={Plus} className="size-4 text-foreground" />
-        <Text>Série</Text>
-      </Button>
-
-      <Feuille
-        visible={feuille !== null}
-        titre={titreFeuille}
-        options={options}
-        onFermer={() => setFeuille(null)}
-      />
+        <Feuille
+          visible={feuille !== null}
+          titre={titreFeuille}
+          options={options}
+          onFermer={() => setFeuille(null)}
+        />
+      </View>
     </View>
   );
 }
