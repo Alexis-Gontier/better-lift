@@ -316,6 +316,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   sur la prochaine série au lieu du premier exercice. Le bandeau « Reprendre » dit le temps
   puis l'exercice en cours, et porte une corbeille (abandon confirmé). Le segment « Lancer »
   des cartes de routine passe du noir plein au gris (révise D321 sur ce point).
+- **D337** — Carte d'exercice en séance : le menu passe à « ⋮ » vertical, et « Ajouter une
+  série » devient un bouton gris plein, pleine largeur, libellé complet (au lieu de « + Série »
+  discret). Le bandeau de la séance en cours, sur l'accueil, perd « Reprendre » au profit d'un
+  chevron vers le haut à gauche (le pendant du chevron qui replie la séance). La page d'un
+  exercice viendra dans un lot à part.
 
 ## Interface web
 

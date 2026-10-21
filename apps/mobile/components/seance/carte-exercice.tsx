@@ -14,7 +14,7 @@ import {
   ArrowUpDown,
   Check,
   Dumbbell,
-  Ellipsis,
+  EllipsisVertical,
   Link2,
   Pencil,
   Plus,
@@ -54,7 +54,7 @@ type Feuilles = { quoi: "menu" } | { quoi: "repos" } | { quoi: "serie"; iS: numb
 
 /**
  * Un exercice de la séance (D108, D317) : en-tête, deux puces (repos, note),
- * tableau des séries ; les actions rares dans le menu ⋯.
+ * tableau des séries ; les actions rares dans le menu ⋮.
  */
 export function CarteExercice({
   exercice,
@@ -220,7 +220,7 @@ export function CarteExercice({
             onPress={() => setFeuille({ quoi: "menu" })}
             accessibilityLabel={`Actions pour ${exercice.nom}`}
           >
-            <Icon as={Ellipsis} className="size-5 text-muted-foreground" />
+            <Icon as={EllipsisVertical} className="size-5 text-muted-foreground" />
           </Button>
         </View>
 
@@ -310,14 +310,11 @@ export function CarteExercice({
           </View>
         ))}
 
-        <Button
-          variant="ghost"
-          className="self-start"
-          onPress={onAjouterSerie}
-          accessibilityLabel="Ajouter une série"
-        >
+        {/* Pleine largeur, en gris plein (D337) : on le trouve sans le chercher, et
+            il reste moins fort que la coche. */}
+        <Button variant="secondary" className="mt-1 h-12" onPress={onAjouterSerie}>
           <Icon as={Plus} className="size-4 text-foreground" />
-          <Text>Série</Text>
+          <Text>Ajouter une série</Text>
         </Button>
 
         <Feuille
