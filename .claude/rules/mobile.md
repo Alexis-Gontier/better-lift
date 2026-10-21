@@ -113,7 +113,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   frappe** : sous Android, ça relance la sélection de tout. La valeur s'écrit à `onEndEditing`
   (`lireCharge` / `lireReps`, séparateur final ôté) ; invalide, elle reste affichée en rouge et
   n'est pas écrite. « ✓ » du pavé écrit et ferme ; clavier fermé par « retour », la case lâche
-  le focus. Cocher ferme le clavier d'abord (`Keyboard.dismiss`).
+  le focus. **Quitter l'écran clavier ouvert ne passe pas par `onEndEditing`** : la saisie en
+  attente s'écrit au démontage de la case. Cocher ferme le clavier d'abord (`Keyboard.dismiss`).
 - **Éprouver la saisie** : l'AVD `better-lift` garde `hw.keyboard=yes` (le clavier du PC tape
   dans l'émulateur ; `no` le coupe) et l'émulateur porte
   `settings put secure show_ime_with_hard_keyboard 1`, sans quoi Android cache le pavé virtuel.

@@ -207,6 +207,14 @@ function Champ({
     setTexte(null);
   };
 
+  // Quitter l'écran clavier ouvert (la séance repliée) démonte la case sans
+  // `onEndEditing` : la saisie en cours se perdait. Elle s'écrit au démontage.
+  // Une case quittée normalement n'a plus rien en attente (`texte` à `null`).
+  const enAttente = useRef<(() => void) | null>(null);
+  enAttente.current =
+    actif && texte !== null && !(lu !== null && Number.isNaN(lu)) ? () => onEcrire(lu) : null;
+  useEffect(() => () => enAttente.current?.(), []);
+
   return (
     <Input
       ref={champ}
