@@ -300,6 +300,12 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   (`rounded-lg`), comme les cartes de routine (D320), au lieu d'un trait entre deux exercices ;
   nom en `text-base`. L'écart entre deux cartes vit dans le repère de superset, dont le filet
   relie toujours les membres.
+- **D334** — Révise D317 pour la saisie d'une série, comme Hevy : toucher une case la remplit de
+  sa valeur (cible ou saisie) **toute sélectionnée**, le premier chiffre la remplace. La saisie
+  n'est jugée qu'à la sortie (un style changé en cours de frappe relançait la sélection sous
+  Android) ; « 15, » laissé tel quel vaut 15. Le pavé porte « ✓ » sur les deux cases : il écrit
+  et ferme, sans cocher. Le clavier fermé par « retour » libère la case. Les cases d'une série à
+  faire sont un contour, la case active a la bordure à l'encre ; une série faite reste teintée.
 
 ## Interface web
 
