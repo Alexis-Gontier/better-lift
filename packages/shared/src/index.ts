@@ -87,6 +87,7 @@ export {
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  partReposRestante,
   prochaineSerie,
   remplacerExercice,
   reposRestant,

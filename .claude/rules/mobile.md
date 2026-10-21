@@ -116,8 +116,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **Toute écriture de l'écran passe par `changer(f)`** (`app/seance.tsx`), qui part de
   `courante.current`, pas de la séance du rendu : la fin de saisie et la coche arrivent dans la
   même frame, la seconde écraserait la première.
-- **Repos** : `BandeauRepos` en bas, tant qu'un repos court ou vient de finir ; le brouillon ne
-  garde que sa fin.
+- **Repos (D335)** : `BandeauRepos` collé en bas, tant qu'un repos court ou vient de finir ; le
+  brouillon garde sa fin et sa durée (`partReposRestante` dessine la barre qui se vide).
 - **Fin du repos app fermée** : notification locale (`lib/notification-repos.ts`), dérivée de
   `repos.fin`. **Absente d'Expo Go sous Android** (l'import d'`expo-notifications` y lève) : le
   module n'est chargé qu'à la demande, hors Expo Go. Ne s'éprouve que sur un build EAS.

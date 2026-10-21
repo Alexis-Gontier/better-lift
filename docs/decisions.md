@@ -306,6 +306,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   Android) ; « 15, » laissé tel quel vaut 15. Le pavé porte « ✓ » sur les deux cases : il écrit
   et ferme, sans cocher. Le clavier fermé par « retour » libère la case. Les cases d'une série à
   faire sont un contour, la case active a la bordure à l'encre ; une série faite reste teintée.
+- **D335** — Révise D317 pour le repos : le bandeau est **collé en bas**, pleine largeur, au-dessus
+  de la barre de gestes, et porte une **barre qui se vide** pendant le repos. Le brouillon garde
+  la durée du repos (`repos.duree`, absente d'un ancien brouillon : pas de barre) ; ±15 s la
+  fait varier. « −15 » / « +15 » sans largeur fixe, sur une ligne. « Abandonner la séance »
+  passe en contour à la couleur du danger, la confirmation derrière.
 
 ## Interface web
 

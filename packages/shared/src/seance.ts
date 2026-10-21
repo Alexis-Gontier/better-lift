@@ -60,8 +60,11 @@ export type SeanceEnCours = {
   /** ISO 8601 : une chaîne, pour traverser le disque sans perte. */
   debut: string;
   exercices: ExerciceEnCours[];
-  /** `signale` : la fin a déjà vibré — une seule fois par repos. */
-  repos: { fin: string; signale: boolean } | null;
+  /**
+   * `signale` : la fin a déjà vibré — une seule fois par repos. `duree` (en
+   * secondes) dessine la barre qui se vide (D335) ; absente d'un brouillon antérieur.
+   */
+  repos: { fin: string; signale: boolean; duree?: number } | null;
   /** La note de la séance, écrite à la fin (D130). Absente d'un brouillon antérieur. */
   note?: string;
 };
@@ -154,7 +157,11 @@ export function validerSerie(
   if (!reposSec) return apres;
   return {
     ...apres,
-    repos: { fin: new Date(maintenant.getTime() + reposSec * 1000).toISOString(), signale: false },
+    repos: {
+      fin: new Date(maintenant.getTime() + reposSec * 1000).toISOString(),
+      signale: false,
+      duree: reposSec,
+    },
   };
 }
 
@@ -278,6 +285,8 @@ export function ajusterRepos(s: SeanceEnCours, deltaSec: number, maintenant: Dat
     repos: {
       fin: new Date(fin).toISOString(),
       signale: fin > maintenant.getTime() ? false : s.repos.signale,
+      // La durée suit : +15 s allonge la barre au lieu de la faire sauter en arrière.
+      ...(s.repos.duree === undefined ? {} : { duree: Math.max(1, s.repos.duree + deltaSec) }),
     },
   };
 }
@@ -289,6 +298,16 @@ export function marquerReposSignale(s: SeanceEnCours): SeanceEnCours {
 /** Le chrono de la séance, en secondes. */
 export function secondesEcoulees(debutIso: string, maintenant: Date): number {
   return Math.max(0, Math.floor((maintenant.getTime() - Date.parse(debutIso)) / 1000));
+}
+
+/**
+ * La part du repos qui reste, de 1 (il commence) à 0 (il est fini) : la barre du
+ * bandeau (D335). `null` sans repos, ou pour un brouillon qui n'a pas sa durée.
+ */
+export function partReposRestante(s: SeanceEnCours, maintenant: Date): number | null {
+  if (!s.repos?.duree) return null;
+  const restantMs = Date.parse(s.repos.fin) - maintenant.getTime();
+  return Math.min(1, Math.max(0, restantMs / (s.repos.duree * 1000)));
 }
 
 /**
