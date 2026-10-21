@@ -18,6 +18,7 @@ import {
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  partReposRestante,
   prochaineSerie,
   remplacerExercice,
   reposRestant,
@@ -98,7 +99,7 @@ describe("valider une série", () => {
   it("la coche et lance le repos de l'exercice", () => {
     const apres = validerSerie(s, 0, 0, plus(30));
     expect(apres.exercices[0]?.series[0]?.faite).toBe(true);
-    expect(apres.repos).toEqual({ fin: plus(150).toISOString(), signale: false });
+    expect(apres.repos).toEqual({ fin: plus(150).toISOString(), signale: false, duree: 120 });
   });
 
   it("ne lance aucun repos quand l'exercice n'en a pas, ni le compte", () => {
@@ -110,6 +111,7 @@ describe("valider une série", () => {
     expect(validerSerie(s, 1, 0, plus(30), 90).repos).toEqual({
       fin: plus(120).toISOString(),
       signale: false,
+      duree: 90,
     });
     // Le repos propre de l'exercice l'emporte.
     expect(validerSerie(s, 0, 0, plus(30), 90).repos?.fin).toBe(plus(150).toISOString());
@@ -142,6 +144,20 @@ describe("le temps, toujours depuis une heure stockée", () => {
     expect(reposRestant(s, plus(120))).toBe(0);
     expect(reposRestant(s, plus(125))).toBeNull();
     expect(reposRestant(arreterRepos(s), plus(20))).toBeNull();
+  });
+
+  it("la barre du repos part pleine et se vide (D335)", () => {
+    const s = validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 0, T0);
+    expect(s.repos?.duree).toBe(120);
+    expect(partReposRestante(s, T0)).toBe(1);
+    expect(partReposRestante(s, plus(30))).toBe(0.75);
+    expect(partReposRestante(s, plus(130))).toBe(0);
+    expect(partReposRestante(arreterRepos(s), plus(30))).toBeNull();
+  });
+
+  it("un brouillon d'avant la durée n'a pas de barre", () => {
+    const s = { ...demarrerVide("s", T0), repos: { fin: plus(60).toISOString(), signale: false } };
+    expect(partReposRestante(s, T0)).toBeNull();
   });
 
   it("mémorise que la fin du repos a été signalée", () => {
@@ -345,6 +361,20 @@ describe("ajusterRepos", () => {
   it("rallonger un repos déjà annoncé le fera vibrer de nouveau", () => {
     const s = ajusterRepos(enRepos(0, true), 15, maintenant);
     expect(s.repos?.signale).toBe(false);
+  });
+
+  it("±15 s change aussi la durée : la barre reste juste", () => {
+    const s = {
+      ...demarrerVide("s", T0),
+      repos: {
+        fin: new Date(maintenant.getTime() + 60_000).toISOString(),
+        signale: false,
+        duree: 120,
+      },
+    };
+    expect(ajusterRepos(s, 15, maintenant).repos?.duree).toBe(135);
+    expect(partReposRestante(ajusterRepos(s, 15, maintenant), maintenant)).toBe(75 / 135);
+    expect(ajusterRepos(s, -15, maintenant).repos?.duree).toBe(105);
   });
 
   it("sans repos en cours, ne fait rien", () => {

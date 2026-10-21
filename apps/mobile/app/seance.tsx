@@ -14,6 +14,7 @@ import {
   modifierNote,
   modifierReposExercice,
   modifierSerie,
+  partReposRestante,
   peutLierAuSuivant,
   prochaineSerie,
   remplacerExercice,
@@ -307,7 +308,10 @@ export default function Seance() {
             />
             <Text>Ajouter un exercice</Text>
           </Button>
-          <Button variant="ghost" className="h-12" onPress={abandonner}>
+          {/* Visible sans crier (D335) : un contour à la couleur du danger, la
+              confirmation derrière. */}
+          <Button variant="outline" className="h-12 border-destructive" onPress={abandonner}>
+            <Icon as={Trash2} className="size-4 text-destructive" />
             <Text className="text-destructive">Abandonner la séance</Text>
           </Button>
         </View>
@@ -316,6 +320,7 @@ export default function Seance() {
       {repos !== null ? (
         <BandeauRepos
           restant={repos}
+          part={partReposRestante(seance, maintenant)}
           onPasser={() => changer(arreterRepos)}
           onAjuster={(delta) => {
             vibrer.selection();
