@@ -1,6 +1,6 @@
 import { prochaineSerie, reposRestant, secondesEcoulees } from "@better-lift/shared";
 import { useRouter } from "expo-router";
-import { Trash2 } from "lucide-react-native";
+import { ChevronUp, Trash2 } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -10,10 +10,11 @@ import { useSeance } from "@/lib/seance";
 import { formaterDuree, useMaintenant } from "@/lib/temps";
 
 /**
- * La séance en cours, en bas de l'accueil (D107, D316, D336). Le bandeau
- * reprend la séance ; la corbeille l'abandonne, après confirmation. Il dit
- * l'exercice en cours et le repos qui tourne s'il y en a un, le chrono sinon —
- * les deux se déduisent d'heures stockées, jamais d'un compteur (§ 8).
+ * La séance en cours, en bas de l'accueil (D107, D316, D336, D337). Le
+ * bandeau, chevron vers le haut, reprend la séance ; la corbeille l'abandonne,
+ * après confirmation. Il dit l'exercice en cours et le repos qui tourne s'il y
+ * en a un, le chrono sinon — les deux se déduisent d'heures stockées, jamais
+ * d'un compteur (§ 8).
  */
 export function BandeauSeance() {
   const { seance } = useSeance();
@@ -54,8 +55,10 @@ function Contenu() {
         onPress={() => router.push("/seance")}
         accessibilityRole="button"
         accessibilityLabel={`Reprendre la séance ${seance.nom}, ${detail}`}
-        className="min-h-14 flex-1 flex-row items-center gap-3 rounded-l-lg py-2 pl-4 active:bg-accent"
+        className="min-h-14 flex-1 flex-row items-center gap-3 rounded-l-lg py-2 pl-3 active:bg-accent"
       >
+        {/* Le pendant du chevron qui replie la séance (D337) : on déplie ce qu'on a replié. */}
+        <Icon as={ChevronUp} className="size-5 text-muted-foreground" />
         <View className="flex-1 gap-0.5">
           <Text className="font-semibold" numberOfLines={1}>
             {seance.nom}
@@ -64,7 +67,6 @@ function Contenu() {
             {detail}
           </Text>
         </View>
-        <Text className="font-medium">Reprendre</Text>
       </Pressable>
       <Button
         variant="ghost"
