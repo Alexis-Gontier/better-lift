@@ -109,8 +109,10 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   (`lireCharge` / `lireReps`, séparateur final ôté) ; invalide, elle reste affichée en rouge et
   n'est pas écrite. « ✓ » du pavé écrit et ferme ; clavier fermé par « retour », la case lâche
   le focus. Cocher ferme le clavier d'abord (`Keyboard.dismiss`).
-- **Éprouver la saisie** : l'AVD `better-lift` est en `hw.keyboard=no`, sinon Android cache le
-  clavier virtuel. Taper au pavé par `input tap` (`input text` ne reproduit pas tout).
+- **Éprouver la saisie** : l'AVD `better-lift` garde `hw.keyboard=yes` (le clavier du PC tape
+  dans l'émulateur ; `no` le coupe) et l'émulateur porte
+  `settings put secure show_ime_with_hard_keyboard 1`, sans quoi Android cache le pavé virtuel.
+  Après une frappe au clavier du PC, Gboard peut se replier en barre flottante.
 - **Toute écriture de l'écran passe par `changer(f)`** (`app/seance.tsx`), qui part de
   `courante.current`, pas de la séance du rendu : la fin de saisie et la coche arrivent dans la
   même frame, la seconde écraserait la première.
