@@ -1,9 +1,29 @@
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, Tabs, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { BarreOnglets } from "@/components/barre-onglets";
 import { PreparerHorsLigne } from "@/components/preparer-hors-ligne";
 import { authClient } from "@/lib/auth-client";
+import { useSeance } from "@/lib/seance";
+
+// Une fois par démarrage de l'application, pas à chaque retour sur les onglets :
+// replier la séance pour aller à l'accueil doit y rester.
+let repriseFaite = false;
+
+/**
+ * L'application rouverte pendant une séance revient sur la séance (D336), pas
+ * sur l'accueil : en salle, c'est l'écran qu'on cherche. Le retour mène aux onglets.
+ */
+function RepriseAuDemarrage() {
+  const router = useRouter();
+  const { pret, seance } = useSeance();
+  useEffect(() => {
+    if (!pret || repriseFaite) return;
+    repriseFaite = true;
+    if (seance) router.push("/seance");
+  }, [pret, seance, router]);
+  return null;
+}
 
 /**
  * La garde de session (D316) : les onglets exigent un compte, et un seul
@@ -33,6 +53,7 @@ export default function Connecte() {
     <>
       {/* Hors ligne (D96) : remplir le cache tant qu'il y a du réseau. */}
       <PreparerHorsLigne />
+      <RepriseAuDemarrage />
       <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <BarreOnglets {...props} />}>
         {/* L'ordre des onglets est celui de la barre. */}
         <Tabs.Screen name="index" />

@@ -311,6 +311,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   la durée du repos (`repos.duree`, absente d'un ancien brouillon : pas de barre) ; ±15 s la
   fait varier. « −15 » / « +15 » sans largeur fixe, sur une ligne. « Abandonner la séance »
   passe en contour à la couleur du danger, la confirmation derrière.
+- **D336** — Reprendre une séance : l'application rouverte pendant une séance s'ouvre sur la
+  séance (une fois par démarrage ; replier ramène aux onglets), et l'écran de séance s'ouvre
+  sur la prochaine série au lieu du premier exercice. Le bandeau « Reprendre » dit le temps
+  puis l'exercice en cours, et porte une corbeille (abandon confirmé). Le segment « Lancer »
+  des cartes de routine passe du noir plein au gris (révise D321 sur ce point).
 
 ## Interface web
 

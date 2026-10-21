@@ -60,14 +60,15 @@ export function LigneRoutine({
         disabled={enOuverture}
         accessibilityRole="button"
         accessibilityLabel={`Lancer ${routine.nom}`}
-        className="w-20 items-center justify-center gap-1 bg-primary active:opacity-80"
+        // Gris, pas un aplat noir (D336) : huit cartes, huit blocs noirs pesaient sur l'accueil.
+        className="w-20 items-center justify-center gap-1 border-border border-l bg-secondary active:bg-accent"
       >
         {enOuverture ? (
-          <ActivityIndicator colorClassName="accent-primary-foreground" />
+          <ActivityIndicator colorClassName="accent-foreground" />
         ) : (
-          <Icon as={Play} className="size-5 text-primary-foreground" />
+          <Icon as={Play} className="size-5 text-foreground" />
         )}
-        <Text className="font-medium text-primary-foreground text-xs">Lancer</Text>
+        <Text className="font-medium text-xs">Lancer</Text>
       </Pressable>
     </View>
   );

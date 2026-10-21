@@ -71,6 +71,8 @@ export default function Seance() {
   // prochaine série est à l'écran après une coche.
   const defilementY = useRef(0);
   const hauteurVue = useRef(0);
+  // L'écran s'ouvre sur la prochaine série (D336), une fois, dès qu'elle est mesurée.
+  const arrive = useRef(false);
   const confirmer = useConfirmer();
   const feuille = useFeuille();
   // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
@@ -177,6 +179,26 @@ export default function Seance() {
     defilement.current?.scrollTo({ y: Math.max(0, y - hauteurVue.current * 0.3), animated: true });
   };
 
+  // À l'ouverture, l'écran se place sur la prochaine série (D336) : la séance
+  // reprise depuis l'accueil ou au démarrage ne repart pas du premier exercice.
+  // Appelé à chaque mesure, il attend la position du bloc ET de la ligne.
+  const arriver = () => {
+    if (arrive.current) return;
+    const p = prochaineSerie(seance);
+    if (!p) {
+      arrive.current = true;
+      return;
+    }
+    const bloc = positions.current.blocs[p.iE];
+    const ligne = positions.current.lignes[`${p.iE}-${p.iS}`];
+    if (bloc === undefined || ligne === undefined || !hauteurVue.current) return;
+    arrive.current = true;
+    defilement.current?.scrollTo({
+      y: Math.max(0, bloc + ligne - hauteurVue.current * 0.3),
+      animated: false,
+    });
+  };
+
   const bilan = bilanSeance(seance);
   const totalSeries = seance.exercices.reduce((n, e) => n + e.series.length, 0);
   const vide = seance.exercices.length === 0;
@@ -237,6 +259,7 @@ export default function Seance() {
         scrollEventThrottle={32}
         onLayout={(e) => {
           hauteurVue.current = e.nativeEvent.layout.height;
+          arriver();
         }}
       >
         {vide ? (
@@ -251,6 +274,7 @@ export default function Seance() {
               key={`${e.slug}-${iE}`}
               onLayout={(ev) => {
                 positions.current.blocs[iE] = ev.nativeEvent.layout.y;
+                arriver();
               }}
             >
               <RepereSuperset
@@ -279,6 +303,7 @@ export default function Seance() {
                   exercice={e}
                   onPositionLigne={(iS, y) => {
                     positions.current.lignes[`${iE}-${iS}`] = y;
+                    arriver();
                   }}
                   prochaine={prochaine?.iE === iE ? prochaine.iS : null}
                   onModifierSerie={(iS, patch) => changer((s) => modifierSerie(s, iE, iS, patch))}
