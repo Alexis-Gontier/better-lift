@@ -1,6 +1,6 @@
 import { chargeEnTexte, lireCharge, lireReps, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, type TextInput, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,9 @@ const texteReps = (v: number | null) => (v === null ? "" : String(v));
 
 /**
  * Une série sur UNE ligne (D87) : étiquette · précédent · charge · reps · ✓.
- * Saisie au clavier du système (D317) : une case vide montre la cible en
- * indication, taper la remplace ; la valeur s'écrit à la sortie du champ.
+ * Saisie au clavier du système (D317, D334) : une case non saisie montre la
+ * cible en indication ; la toucher la remplit, sélectionnée, et taper la
+ * remplace. La valeur s'écrit à la sortie du champ.
  */
 export function LigneSerie({
   numero,
@@ -57,7 +58,6 @@ export function LigneSerie({
   /** L'appui sur l'étiquette : type de série, suppression (D92). */
   onEtiquette: () => void;
 }) {
-  const reps = useRef<TextInput>(null);
   const faite = etat === "faite";
 
   // Recopier la dernière fois dans la séance, d'un seul appui.
@@ -120,19 +120,15 @@ export function LigneSerie({
         faite={faite}
         lire={(t) => lireCharge(t, SYSTEME_UNITES)}
         clavier="decimal-pad"
-        retour="next"
-        onSoumettre={() => reps.current?.focus()}
         onEcrire={(v) => onChange({ chargeKg: v })}
       />
       <Champ
-        ref={reps}
         libelle={`Série ${numero}, répétitions`}
         valeur={texteReps(serie.reps)}
         affichee={faite || Boolean(serie.saisi?.reps)}
         faite={faite}
         lire={lireReps}
         clavier="number-pad"
-        retour="done"
         onEcrire={(v) => onChange({ reps: v })}
       />
       <Pressable
@@ -156,23 +152,25 @@ export function LigneSerie({
 }
 
 /**
- * Une case kg ou reps. `texte` ne vit que pendant la frappe (`null` sinon) : une
- * case non saisie reste vide et montre la cible en indication. Une saisie
- * invalide n'est jamais écrite : elle reste affichée, bordée de rouge.
+ * Une case kg ou reps (D334). Au toucher, elle se remplit de sa valeur — la
+ * cible ou la saisie — toute sélectionnée : le premier chiffre la remplace,
+ * comme une calculatrice. `texte` ne vit que pendant l'édition (`null` sinon) ;
+ * hors édition, une case non saisie montre la cible en indication.
+ *
+ * La saisie n'est jugée qu'à la sortie : un style changé en cours de frappe
+ * (« 15, » pas encore lisible) relançait la sélection de tout sous Android, et
+ * le chiffre suivant remplaçait le 15. Invalide à la sortie, elle n'est pas
+ * écrite et reste affichée, bordée de rouge.
  */
 function Champ({
-  ref,
   libelle,
   valeur,
   affichee,
   faite,
   lire,
   clavier,
-  retour,
-  onSoumettre,
   onEcrire,
 }: {
-  ref?: React.Ref<TextInput>;
   libelle: string;
   /** La valeur de la séance, en texte : la saisie, ou la cible. */
   valeur: string;
@@ -182,37 +180,65 @@ function Champ({
   faite: boolean;
   lire: (texte: string) => number | null;
   clavier: "decimal-pad" | "number-pad";
-  retour: "next" | "done";
-  onSoumettre?: () => void;
   onEcrire: (v: number | null) => void;
 }) {
+  const champ = useRef<TextInput>(null);
   const [texte, setTexte] = useState<string | null>(null);
-  const invalide = texte !== null && Number.isNaN(lire(texte));
+  const [actif, setActif] = useState(false);
+  // Posée au toucher pour tout sélectionner, relâchée à la première frappe.
+  const [selection, setSelection] = useState<{ start: number; end: number }>();
+  // « 15, » laissé tel quel vaut 15 : la virgule attendait le chiffre suivant.
+  const lu = texte === null ? null : lire(texte.trim().replace(/[.,]$/, ""));
+  const invalide = !actif && lu !== null && Number.isNaN(lu);
+
+  // Le retour d'Android ferme le clavier sans quitter la case : le curseur y
+  // restait à clignoter. Clavier fermé, la case lâche le focus (et écrit).
+  useEffect(() => {
+    if (!actif) return;
+    const abonnement = Keyboard.addListener("keyboardDidHide", () => champ.current?.blur());
+    return () => abonnement.remove();
+  }, [actif]);
 
   const ecrire = () => {
-    if (texte === null || invalide) return;
-    onEcrire(lire(texte));
+    setActif(false);
+    setSelection(undefined);
+    if (texte === null || (lu !== null && Number.isNaN(lu))) return;
+    onEcrire(lu);
     setTexte(null);
   };
 
   return (
     <Input
-      ref={ref}
+      ref={champ}
       value={texte ?? (affichee ? valeur : "")}
       placeholder={affichee ? undefined : valeur || "—"}
-      onChangeText={setTexte}
+      onFocus={() => {
+        // Une saisie invalide restée en rouge se reprend telle quelle.
+        const t = texte ?? valeur;
+        setActif(true);
+        setTexte(t);
+        setSelection({ start: 0, end: t.length });
+      }}
+      selection={selection}
+      onChangeText={(t) => {
+        setSelection(undefined);
+        setTexte(t);
+      }}
       onEndEditing={ecrire}
-      onSubmitEditing={onSoumettre}
       keyboardType={clavier}
-      returnKeyType={retour}
-      submitBehavior={retour === "next" ? "submit" : "blurAndSubmit"}
-      selectTextOnFocus
+      // « ✓ » sur le pavé, comme Hevy : il écrit et ferme, sans cocher la série.
+      returnKeyType="done"
+      submitBehavior="blurAndSubmit"
       maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
       accessibilityLabel={libelle}
+      // Bordure de 2 dans tous les états : seule sa couleur change, la case ne
+      // bouge pas d'un pixel. À faire, un contour ; active, l'encre ; faite,
+      // elle se fond dans la ligne teintée.
       className={cn(
-        "h-10 flex-1 border-0 bg-secondary px-1 py-0 text-center font-semibold text-lg leading-6 tabular-nums shadow-none",
-        faite && "bg-transparent dark:bg-transparent",
-        invalide && "border-2 border-destructive",
+        "h-10 flex-1 border-2 border-input bg-transparent px-1 py-0 text-center font-semibold text-lg leading-6 tabular-nums shadow-none dark:bg-transparent",
+        faite && "border-transparent",
+        actif && "border-foreground",
+        invalide && "border-destructive",
       )}
     />
   );

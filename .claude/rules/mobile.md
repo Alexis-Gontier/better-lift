@@ -101,11 +101,16 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - Ligne de série en trois états (`EtatSerie`) : faite (fond `bg-muted`, ✓ pleine) · prochaine
   (case au contour à l'encre, liseré) · à venir. Après une coche, l'écran défile vers la
   prochaine si elle est cachée.
-- **Saisie au clavier du système (D317)** : les cases sont des `Input` (`decimal-pad` /
-  `number-pad`). Non saisie, une case est vide et montre la cible en `placeholder` ; `saisi`
-  (par champ) marque ce qui a été tapé. La valeur s'écrit à `onEndEditing` (`lireCharge` /
-  `lireReps`) ; invalide, elle reste affichée en rouge et n'est pas écrite. Cocher ferme le
-  clavier d'abord (`Keyboard.dismiss`).
+- **Saisie au clavier du système (D317, D334)** : les cases sont des `Input` (`decimal-pad` /
+  `number-pad`). Non saisie, une case montre la cible en `placeholder` ; au toucher, elle se
+  remplit de sa valeur toute sélectionnée (`selection` contrôlée, pas `selectTextOnFocus`).
+  `saisi` (par champ) marque ce qui a été tapé. **Rien ne change le style d'une case pendant la
+  frappe** : sous Android, ça relance la sélection de tout. La valeur s'écrit à `onEndEditing`
+  (`lireCharge` / `lireReps`, séparateur final ôté) ; invalide, elle reste affichée en rouge et
+  n'est pas écrite. « ✓ » du pavé écrit et ferme ; clavier fermé par « retour », la case lâche
+  le focus. Cocher ferme le clavier d'abord (`Keyboard.dismiss`).
+- **Éprouver la saisie** : l'AVD `better-lift` est en `hw.keyboard=no`, sinon Android cache le
+  clavier virtuel. Taper au pavé par `input tap` (`input text` ne reproduit pas tout).
 - **Toute écriture de l'écran passe par `changer(f)`** (`app/seance.tsx`), qui part de
   `courante.current`, pas de la séance du rendu : la fin de saisie et la coche arrivent dans la
   même frame, la seconde écraserait la première.
