@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formaterCharge } from "./charge.js";
-import { appliquerActionRepos, contenuNotifRepos } from "./notif-repos.js";
-import type { ExerciceEnCours, SeanceEnCours } from "./seance.js";
+import { appliquerActionRepos, contenuNotifRepos, contenuNotifSuivante } from "./notif-repos.js";
+import { ajusterRepos, type ExerciceEnCours, type SeanceEnCours } from "./seance.js";
 
 const T0 = new Date("2026-10-23T18:00:00.000Z");
 const plus = (sec: number) => new Date(T0.getTime() + sec * 1000);
@@ -150,5 +150,45 @@ describe("appliquerActionRepos", () => {
 
   it("Passer arrête le repos", () => {
     expect(appliquerActionRepos(s, "passer", plus(30)).repos).toBeNull();
+  });
+});
+
+describe("série suivante (D340)", () => {
+  it("annonce la série qui attend, hors repos", () => {
+    const s = { ...seance([exercice("Développé couché")]), repos: null };
+    expect(contenuNotifSuivante(s, "metric")).toEqual({
+      titre: "Développé couché",
+      texte: `Série 2/2 · ${formaterCharge(80, "metric")} × 8`,
+    });
+  });
+
+  it("rien avant la première série faite, ni une fois tout fait", () => {
+    const vierge = exercice("Squat", {
+      series: [{ type: "NORMALE", reps: 5, chargeKg: 100, faite: false }],
+    });
+    expect(contenuNotifSuivante(seance([vierge]), "metric")).toBeNull();
+    const fini = exercice("Squat", {
+      series: [{ type: "NORMALE", reps: 5, chargeKg: 100, faite: true }],
+    });
+    expect(contenuNotifSuivante(seance([fini]), "metric")).toBeNull();
+  });
+
+  it("« Terminer la série » coche la suivante et relance le repos", () => {
+    const s = { ...seance([exercice("Développé couché")]), repos: null };
+    const apres = appliquerActionRepos(s, "terminer", plus(200));
+    expect(apres.exercices[0]?.series[1]?.faite).toBe(true);
+    expect(apres.repos).toEqual({ fin: plus(290).toISOString(), signale: false, duree: 90 });
+  });
+});
+
+describe("±15 s sur la barre", () => {
+  it("−15 s à 10 s de la fin ne retire que 10 s à la durée", () => {
+    const s = seance([exercice("Squat")]);
+    const apres = ajusterRepos(s, -15, plus(80));
+    expect(apres.repos).toEqual({
+      fin: plus(80).toISOString(),
+      signale: s.repos?.signale,
+      duree: 80,
+    });
   });
 });

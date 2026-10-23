@@ -338,6 +338,14 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   décoche. La notification de repos annonce les mêmes valeurs. « Précédent » porte l'unité
   (« 80 kg × 8 »). Hors édition, un appui couvre la case : défiler en partant d'elle défile.
   Balayer une série vers la gauche découvre « Supprimer ».
+- **D340** — Révise D338 pour la fin du repos : la notification laisse place à la **série
+  suivante** (exercice, série, valeurs de D339), avec « Terminer la série », qui la coche et
+  relance le repos, comme la ✓ de l'écran : on enchaîne sans ouvrir l'app. Elle sonne quand un
+  repos vient de finir, app hors du premier plan ; sinon elle se met à jour sans bruit. Elle
+  n'existe qu'après la première série faite, et disparaît une fois tout fait. La barre du repos
+  se compte en millisecondes et le service redessine juste après chaque seconde du chrono
+  d'Android (elle traînait d'une à deux secondes, pas vide à 0:00) ; ±15 s change la durée du
+  décalage réel. App tuée, le repos par défaut du compte (D128) n'est pas connu du bouton.
 
 ## Interface web
 
