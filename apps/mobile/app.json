@@ -3,7 +3,7 @@
     "name": "better-lift",
     "slug": "better-lift",
     "scheme": "better-lift",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -27,10 +27,21 @@
       ],
       "expo-font",
       [
-        "expo-notifications",
+        "react-native-notify-kit",
         {
-          "icon": "./assets/monochrome.png",
-          "color": "#171717"
+          "android": {
+            "foregroundService": {
+              "types": ["specialUse"],
+              "specialUseSubtype": "Minuteur de repos entre deux séries de musculation"
+            },
+            "icons": [
+              {
+                "name": "notification_icon",
+                "path": "./assets/notification-icon.png",
+                "type": "small"
+              }
+            ]
+          }
         }
       ]
     ],

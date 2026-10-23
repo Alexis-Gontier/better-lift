@@ -39,6 +39,12 @@ export {
   resumeSeries,
 } from "./liste-routines.js";
 export { LIBELLE_ZONE, zonesTravaillees } from "./muscles.js";
+export {
+  type ActionRepos,
+  appliquerActionRepos,
+  type ContenuNotifRepos,
+  contenuNotifRepos,
+} from "./notif-repos.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";
 export {

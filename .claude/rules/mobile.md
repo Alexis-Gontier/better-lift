@@ -11,7 +11,8 @@ Style wireframe en gris, la direction artistique viendra après l'épreuve. Déc
 
 ## Lancer (Expo Go)
 
-Aucune dépendance native hors SDK : le mobile tourne dans **Expo Go** (d'où AsyncStorage, D55).
+Une seule dépendance native hors SDK, notify-kit (D338), absente d'Expo Go : la notification de
+repos ne s'y montre pas, le reste tourne dans **Expo Go** (d'où AsyncStorage, D55).
 
 ```
 npx expo start                      # depuis apps/mobile
@@ -124,9 +125,13 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   même frame, la seconde écraserait la première.
 - **Repos (D335)** : `BandeauRepos` collé en bas, tant qu'un repos court ou vient de finir ; le
   brouillon garde sa fin et sa durée (`partReposRestante` dessine la barre qui se vide).
-- **Fin du repos app fermée** : notification locale (`lib/notification-repos.ts`), dérivée de
-  `repos.fin`. **Absente d'Expo Go sous Android** (l'import d'`expo-notifications` y lève) : le
-  module n'est chargé qu'à la demande, hors Expo Go. Ne s'éprouve que sur un build EAS.
+- **Notification de repos (D338)** : `lib/notification-repos.ts`, avec `react-native-notify-kit`
+  (module natif : chargé par `require` seulement sous Android hors Expo Go). Elle dérive de
+  l'état par `aligner(séance)` ; le contenu et l'effet des boutons sont dans
+  `shared/notif-repos.ts`. Le service et les boutons s'enregistrent dans `index.ts`, avant
+  l'app. Les boutons passent par `appliquer` du `SeanceProvider` quand l'app vit, sinon par
+  le disque. Ne s'éprouve que sur un build EAS ; le volet des notifications n'est pas lisible
+  par `describe` (le chrono) : taper d'après une capture.
 - **Vibrations** : toujours par `lib/vibrations.ts`, jamais `expo-haptics` en direct — le réglage
   du Profil les coupe toutes là.
 - Écran maintenu allumé (`useKeepAwake`) ; vignettes par `expo-image` (cache disque).

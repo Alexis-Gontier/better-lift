@@ -19,7 +19,7 @@ import {
 } from "react";
 import { AppState } from "react-native";
 import { api } from "./api";
-import { useNotificationRepos } from "./notification-repos";
+import { declarerAppliquer, useNotificationRepos } from "./notification-repos";
 import { brouillon, fileEnvoi } from "./stockage";
 
 /**
@@ -84,15 +84,22 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   // réaffichait l'ancienne séance — et la modification suivante l'aurait
   // réécrite sur le disque, ajout perdu.
   const ecritures = useRef(0);
+  // La séance du moment, pour `appliquer` : un bouton de notification arrive
+  // hors du rendu, la séance capturée par une fermeture aurait pu vieillir.
+  const courante = useRef<SeanceEnCours | null>(null);
   const poser = useCallback((s: SeanceEnCours | null) => {
     ecritures.current += 1;
+    courante.current = s;
     setSeance(s);
   }, []);
 
   const recharger = useCallback(async () => {
     const avant = ecritures.current;
     const lue = await brouillon.lire();
-    if (ecritures.current === avant) setSeance(lue);
+    if (ecritures.current === avant) {
+      courante.current = lue;
+      setSeance(lue);
+    }
   }, []);
 
   const synchroniser = useCallback(async () => {
@@ -149,7 +156,24 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   }, [synchroniser]);
 
   // La fin du repos s'annonce aussi app fermée ou téléphone verrouillé.
-  useNotificationRepos(seance?.repos?.fin ?? null);
+  useNotificationRepos(seance);
+
+  // Les boutons de la notification passent par ici tant que l'app vit : même
+  // chemin que le bandeau, un seul écrivain du brouillon.
+  const appliquer = useCallback(
+    (f: (s: SeanceEnCours) => SeanceEnCours) => {
+      const s = courante.current;
+      if (!s) return;
+      const n = f(s);
+      poser(n);
+      void brouillon.ecrire(n);
+    },
+    [poser],
+  );
+  useEffect(() => {
+    declarerAppliquer(appliquer);
+    return () => declarerAppliquer(null);
+  }, [appliquer]);
 
   const modifier = useCallback((s: SeanceEnCours) => {
     poser(s);
