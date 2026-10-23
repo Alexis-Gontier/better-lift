@@ -204,8 +204,8 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D108** — Direction « Carnet » : puces repos et note sous le nom, ligne de série en états,
   valeurs fantômes.
 - **D109** — *Révisée par D317.* Pavé numérique intégré ; le clavier système ne s'ouvre pas.
-- **D111** — Fin de séance : records battus calculés sur le téléphone contre le cache ; sans série
-  validée, rien ne s'enregistre.
+- **D111** — *Révisée par D342.* Fin de séance : records battus calculés sur le téléphone contre
+  le cache ; sans série validée, rien ne s'enregistre.
 - **D113** — On vibre pour confirmer ce qui se fait sans regarder, jamais pour décorer ;
   réglage « Vibrations » sur le téléphone. `useReducedMotion` remplace les glissements par des
   fondus.
@@ -350,6 +350,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   s'ouvre sans animation (`/seance?reprise=1`), et un fond uni couvre les onglets du premier
   rendu jusqu'au retour sur eux : le disque se lit après ce rendu, et l'accueil se voyait le
   temps que la séance se dessine.
+- **D342** — Révise D111 et D324 : la fin de séance se simplifie. Trois chiffres (durée, séries,
+  volume), la note, puis « Enregistrer la séance », « Reprendre » et « Abandonner » (contour au
+  danger, confirmé) ; plus de records battus ni de liste des exercices. **La durée se corrige**
+  d'un appui, en minutes (de 1 à 600) : la séance part avec `fin = début + durée`. Les records ne
+  sont plus préchargés hors ligne (`recordsBattus` retiré de `shared`). L'icône de notification
+  est un peu plus petite (dessin à 82 % de l'image, marge comme le veut Android) : elle ne se
+  voit qu'après un nouveau build.
 
 ## Interface web
 
