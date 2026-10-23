@@ -346,6 +346,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   se compte en millisecondes et le service redessine juste après chaque seconde du chrono
   d'Android (elle traînait d'une à deux secondes, pas vide à 0:00) ; ±15 s change la durée du
   décalage réel. App tuée, le repos par défaut du compte (D128) n'est pas connu du bouton.
+- **D341** — Complète D336 : la séance reprise au démarrage ne laisse plus voir l'accueil. Elle
+  s'ouvre sans animation (`/seance?reprise=1`), et un fond uni couvre les onglets du premier
+  rendu jusqu'au retour sur eux : le disque se lit après ce rendu, et l'accueil se voyait le
+  temps que la séance se dessine.
 
 ## Interface web
 
