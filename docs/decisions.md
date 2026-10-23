@@ -321,6 +321,14 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   discret). Le bandeau de la séance en cours, sur l'accueil, perd « Reprendre » au profit d'un
   chevron vers le haut à gauche (le pendant du chevron qui replie la séance). La page d'un
   exercice viendra dans un lot à part.
+- **D338** — Révise D335 pour le repos hors de l'écran : pendant un repos, une notification
+  Android tenue au premier plan (`react-native-notify-kit`, qui remplace `expo-notifications`)
+  montre le chrono, une barre qui se vide, l'exercice et la série qui suit (saisie ou cible,
+  sinon le précédent fait) et trois boutons, −15 s, +15 s, Passer. Les boutons changent la
+  séance même app fermée : par le `SeanceProvider` quand l'app vit, sinon par le brouillon
+  sur disque. Affichée app ouverte aussi, comme Hevy ; « Repos terminé » sonne à la fin, sauf
+  app au premier plan. Absente d'Expo Go et d'iOS. Icône de notification dédiée (logo
+  recadré). Nouveau runtime : 0.3.0, l'APK se réinstalle.
 
 ## Interface web
 
