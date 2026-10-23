@@ -7,6 +7,7 @@ import {
   type SerieEnCours,
   TYPES_SERIE,
   type TypeSerie,
+  valeurAffichee,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
@@ -25,6 +26,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Button } from "@/components/ui/button";
 import { Feuille, type OptionFeuille } from "@/components/ui/feuille";
 import { Icon } from "@/components/ui/icon";
@@ -296,17 +298,37 @@ export function CarteExercice({
             key={`${i}-${exercice.series.length}`}
             onLayout={(e) => onPositionLigne(i, e.nativeEvent.layout.y)}
           >
-            <LigneSerie
-              numero={i + 1}
-              etiquette={libelles[i] ?? String(i + 1)}
-              secondaire={s.type !== "NORMALE"}
-              serie={s}
-              etat={etatDe(s.faite, i === prochaine)}
-              precedent={exercice.precedent?.[i]}
-              onChange={(patch) => onModifierSerie(i, patch)}
-              onValider={() => onValiderSerie(i)}
-              onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
-            />
+            {/* Balayer vers la gauche découvre « Supprimer », comme Hevy : l'appui
+                sur l'étiquette le proposait aussi, mais personne ne l'y cherchait. */}
+            <Swipeable
+              friction={2}
+              rightThreshold={40}
+              overshootRight={false}
+              renderRightActions={() => (
+                <Pressable
+                  onPress={() => onRetirerSerie(i)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Supprimer la série ${i + 1}`}
+                  className="ml-2 w-24 items-center justify-center rounded-md bg-destructive active:opacity-80"
+                >
+                  <Icon as={Trash2} className="size-5 text-white" />
+                </Pressable>
+              )}
+            >
+              <LigneSerie
+                numero={i + 1}
+                etiquette={libelles[i] ?? String(i + 1)}
+                secondaire={s.type !== "NORMALE"}
+                serie={s}
+                charge={valeurAffichee(exercice, i, "chargeKg")}
+                reps={valeurAffichee(exercice, i, "reps")}
+                etat={etatDe(s.faite, i === prochaine)}
+                precedent={exercice.precedent?.[i]}
+                onChange={(patch) => onModifierSerie(i, patch)}
+                onValider={() => onValiderSerie(i)}
+                onEtiquette={() => setFeuille({ quoi: "serie", iS: i })}
+              />
+            </Swipeable>
           </View>
         ))}
 

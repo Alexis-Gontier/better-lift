@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RoutineDetail } from "./routines.js";
+import type { RoutineDetail, TypeSerie } from "./routines.js";
 import {
   ajouterExercice,
   ajouterSerie,
@@ -27,6 +27,7 @@ import {
   type SeanceEnCours,
   seanceSaisie,
   secondesEcoulees,
+  valeurAffichee,
   validerSerie,
   versEnvoi,
 } from "./seance.js";
@@ -635,5 +636,74 @@ describe("prochaine série dans un superset (D150)", () => {
       "a2",
       "a3",
     ]);
+  });
+});
+
+describe("valeur affichée d'une case (D339)", () => {
+  const serie = (chargeKg: number | null, reps: number | null, type: TypeSerie = "NORMALE") => ({
+    type,
+    chargeKg,
+    reps,
+    faite: false,
+  });
+  const exo = (e: Partial<ExerciceEnCours>): ExerciceEnCours => ({
+    slug: "squat",
+    nom: "Squat",
+    reposSec: null,
+    series: [],
+    ...e,
+  });
+
+  it("préfère la dernière fois à la cible, en gris", () => {
+    const e = exo({
+      series: [serie(80, 8)],
+      precedent: [{ chargeKg: 85, reps: 6, faite: true }],
+    });
+    expect(valeurAffichee(e, 0, "chargeKg")).toEqual({ valeur: 85, saisie: false });
+    expect(valeurAffichee(e, 0, "reps")).toEqual({ valeur: 6, saisie: false });
+  });
+
+  it("montre la saisie à l'encre, même avec une dernière fois", () => {
+    const e = exo({
+      series: [{ ...serie(90, null), saisi: { chargeKg: true } }],
+      precedent: [{ chargeKg: 85, reps: 6, faite: true }],
+    });
+    expect(valeurAffichee(e, 0, "chargeKg")).toEqual({ valeur: 90, saisie: true });
+    expect(valeurAffichee(e, 0, "reps")).toEqual({ valeur: 6, saisie: false });
+  });
+
+  it("indique sur les séries suivantes le poids tapé sur un exercice neuf", () => {
+    const e = exo({
+      series: [
+        { ...serie(25, 15), saisi: { chargeKg: true, reps: true } },
+        serie(null, null),
+        serie(null, null),
+      ],
+    });
+    expect(valeurAffichee(e, 2, "chargeKg")).toEqual({ valeur: 25, saisie: false });
+    expect(valeurAffichee(e, 2, "reps")).toEqual({ valeur: 15, saisie: false });
+  });
+
+  it("ne prend pas l'échauffement du dessus pour une série normale", () => {
+    const e = exo({
+      series: [{ ...serie(20, 10, "ECHAUFFEMENT"), saisi: { chargeKg: true } }, serie(null, null)],
+    });
+    expect(valeurAffichee(e, 1, "chargeKg")).toEqual({ valeur: null, saisie: false });
+  });
+
+  it("cocher sans rien taper valide le gris, et décocher garde les chiffres", () => {
+    const s: SeanceEnCours = {
+      ...demarrerVide("s1", T0),
+      exercices: [
+        exo({ series: [serie(80, 8)], precedent: [{ chargeKg: 85, reps: 6, faite: true }] }),
+      ],
+    };
+    const faite = validerSerie(s, 0, 0, plus(30));
+    expect(faite.exercices[0]?.series[0]).toMatchObject({ chargeKg: 85, reps: 6, faite: true });
+    const defaite = validerSerie(faite, 0, 0, plus(40));
+    expect(valeurAffichee(defaite.exercices[0] as ExerciceEnCours, 0, "chargeKg")).toEqual({
+      valeur: 85,
+      saisie: true,
+    });
   });
 });

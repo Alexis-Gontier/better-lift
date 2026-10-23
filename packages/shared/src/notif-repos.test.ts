@@ -68,7 +68,7 @@ describe("contenuNotifRepos", () => {
     );
   });
 
-  it("ignore un précédent pas fait : rien après le numéro de série", () => {
+  it("ignore un précédent pas fait : la série du dessus s'indique (D339)", () => {
     const e = exercice("Squat", {
       series: [
         { type: "NORMALE", reps: 5, chargeKg: 100, faite: true },
@@ -79,7 +79,9 @@ describe("contenuNotifRepos", () => {
         { reps: 6, chargeKg: 82.5, faite: false },
       ],
     });
-    expect(contenuNotifRepos(seance([e]), plus(30), "metric")?.texte).toBe("Ensuite : série 2/2");
+    expect(contenuNotifRepos(seance([e]), plus(30), "metric")?.texte).toBe(
+      `Ensuite : série 2/2 · ${formaterCharge(100, "metric")} × 5`,
+    );
   });
 
   it("écrit les reps seules quand il n'y a pas de charge", () => {

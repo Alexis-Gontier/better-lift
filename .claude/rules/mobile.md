@@ -107,15 +107,21 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - Ligne de série en trois états (`EtatSerie`) : faite (fond `bg-muted`, ✓ pleine) · prochaine
   (case au contour à l'encre, liseré) · à venir. Après une coche, l'écran défile vers la
   prochaine si elle est cachée.
-- **Saisie au clavier du système (D317, D334)** : les cases sont des `Input` (`decimal-pad` /
-  `number-pad`). Non saisie, une case montre la cible en `placeholder` ; au toucher, elle se
-  remplit de sa valeur toute sélectionnée (`selection` contrôlée, pas `selectTextOnFocus`).
-  `saisi` (par champ) marque ce qui a été tapé. **Rien ne change le style d'une case pendant la
-  frappe** : sous Android, ça relance la sélection de tout. La valeur s'écrit à `onEndEditing`
-  (`lireCharge` / `lireReps`, séparateur final ôté) ; invalide, elle reste affichée en rouge et
-  n'est pas écrite. « ✓ » du pavé écrit et ferme ; clavier fermé par « retour », la case lâche
-  le focus. **Quitter l'écran clavier ouvert ne passe pas par `onEndEditing`** : la saisie en
-  attente s'écrit au démontage de la case. Cocher ferme le clavier d'abord (`Keyboard.dismiss`).
+- **Saisie au clavier du système (D317, D334, D339)** : les cases sont des `Input`
+  (`decimal-pad` / `number-pad`). Ce qu'elles montrent vient de `valeurAffichee` (`shared`) :
+  la saisie à l'encre, sinon le gris en `placeholder` (dernière fois > cible > série du dessus).
+  Au toucher, une case non saisie s'ouvre **vide**, une case saisie se sélectionne toute
+  (`selectTextOnFocus` : la `selection` contrôlée arrivait trop tard au premier toucher, curseur
+  au milieu). `saisi` (par champ) marque ce qui a été tapé ; cocher (`validerSerie`) écrit le
+  gris et marque les deux champs. **Rien ne change le style d'une case pendant la frappe** :
+  sous Android, ça relance la sélection de tout. La valeur s'écrit à `onEndEditing`, **lue dans
+  l'événement** (`nativeEvent.text`, l'état peut manquer le dernier chiffre), seulement si le
+  texte a changé ; invalide, elle reste affichée en rouge et n'est pas écrite. « ✓ » du pavé
+  écrit et ferme ; clavier fermé par « retour », la case lâche le focus. **Quitter l'écran
+  clavier ouvert ne passe pas par `onEndEditing`** : la saisie en attente s'écrit au démontage
+  de la case. Cocher ferme le clavier d'abord (`Keyboard.dismiss`). Hors édition, un
+  `Pressable` couvre la case (le défilement qui part d'elle défile). Une série se supprime en
+  la balayant à gauche (`ReanimatedSwipeable`) ou par son étiquette.
 - **Éprouver la saisie** : l'AVD `better-lift` garde `hw.keyboard=yes` (le clavier du PC tape
   dans l'émulateur ; `no` le coupe) et l'émulateur porte
   `settings put secure show_ime_with_hard_keyboard 1`, sans quoi Android cache le pavé virtuel.

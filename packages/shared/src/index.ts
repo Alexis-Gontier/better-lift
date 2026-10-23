@@ -104,6 +104,7 @@ export {
   type SerieEnCours,
   seanceSaisie,
   secondesEcoulees,
+  valeurAffichee,
   validerSerie,
   versEnvoi,
 } from "./seance.js";

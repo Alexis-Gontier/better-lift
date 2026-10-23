@@ -1,4 +1,10 @@
-import { chargeEnTexte, lireCharge, lireReps, type SerieEnCours } from "@better-lift/shared";
+import {
+  chargeEnTexte,
+  formaterCharge,
+  lireCharge,
+  lireReps,
+  type SerieEnCours,
+} from "@better-lift/shared";
 import { Check } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, type TextInput, View } from "react-native";
@@ -17,11 +23,13 @@ import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
  */
 export type EtatSerie = "faite" | "prochaine" | "a-venir";
 
-/** La ligne « dernière fois » : « 82,5 × 6 », « 10 reps », ou un tiret. */
+type Affichee = { valeur: number | null; saisie: boolean };
+
+/** La ligne « dernière fois » : « 82,5 kg × 6 », « 10 reps », ou un tiret. */
 function textePrecedent(p?: { reps: number | null; chargeKg: number | null; faite: boolean }) {
   if (!p?.faite) return "—";
   if (p.chargeKg === null) return p.reps === null ? "—" : `${p.reps} reps`;
-  return `${chargeEnTexte(p.chargeKg, SYSTEME_UNITES)} × ${p.reps ?? "—"}`;
+  return `${formaterCharge(p.chargeKg, SYSTEME_UNITES)} × ${p.reps ?? "—"}`;
 }
 
 const texteCharge = (v: number | null) => (v === null ? "" : chargeEnTexte(v, SYSTEME_UNITES));
@@ -29,15 +37,18 @@ const texteReps = (v: number | null) => (v === null ? "" : String(v));
 
 /**
  * Une série sur UNE ligne (D87) : étiquette · précédent · charge · reps · ✓.
- * Saisie au clavier du système (D317, D334) : une case non saisie montre la
- * cible en indication ; la toucher la remplit, sélectionnée, et taper la
- * remplace. La valeur s'écrit à la sortie du champ.
+ * Saisie au clavier du système (D317, D334, D339) : une case non saisie montre
+ * en gris ce qu'on ferait (`valeurAffichee`) ; la toucher la vide, le gris
+ * reste en indication, et cocher sans rien taper le valide. La valeur s'écrit
+ * à la sortie du champ.
  */
 export function LigneSerie({
   numero,
   etiquette,
   secondaire,
   serie,
+  charge,
+  reps,
   etat,
   precedent,
   onChange,
@@ -50,6 +61,9 @@ export function LigneSerie({
   /** Une série hors des normales (échauffement, dégressive…) : étiquette en retrait. */
   secondaire: boolean;
   serie: SerieEnCours;
+  /** Ce que montrent les cases : la saisie, ou le gris (D339). */
+  charge: Affichee;
+  reps: Affichee;
   etat: EtatSerie;
   /** Ce qui a été fait la dernière fois à cette position (D67). */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
@@ -115,8 +129,8 @@ export function LigneSerie({
       </Pressable>
       <Champ
         libelle={`Série ${numero}, charge`}
-        valeur={texteCharge(serie.chargeKg)}
-        affichee={faite || Boolean(serie.saisi?.chargeKg)}
+        valeur={texteCharge(charge.valeur)}
+        saisie={charge.saisie}
         faite={faite}
         lire={(t) => lireCharge(t, SYSTEME_UNITES)}
         clavier="decimal-pad"
@@ -124,8 +138,8 @@ export function LigneSerie({
       />
       <Champ
         libelle={`Série ${numero}, répétitions`}
-        valeur={texteReps(serie.reps)}
-        affichee={faite || Boolean(serie.saisi?.reps)}
+        valeur={texteReps(reps.valeur)}
+        saisie={reps.saisie}
         faite={faite}
         lire={lireReps}
         clavier="number-pad"
@@ -152,30 +166,34 @@ export function LigneSerie({
 }
 
 /**
- * Une case kg ou reps (D334). Au toucher, elle se remplit de sa valeur — la
- * cible ou la saisie — toute sélectionnée : le premier chiffre la remplace,
- * comme une calculatrice. `texte` ne vit que pendant l'édition (`null` sinon) ;
- * hors édition, une case non saisie montre la cible en indication.
+ * Une case kg ou reps (D334, D339). Saisie, elle montre sa valeur à l'encre ;
+ * la toucher la sélectionne toute, le premier chiffre la remplace. Sinon elle
+ * montre le gris en indication, et la toucher ouvre une case VIDE, le gris
+ * restant visible : rien n'est écrit tant qu'on ne tape rien. `texte` ne vit
+ * que pendant l'édition (`null` sinon).
  *
  * La saisie n'est jugée qu'à la sortie : un style changé en cours de frappe
  * (« 15, » pas encore lisible) relançait la sélection de tout sous Android, et
  * le chiffre suivant remplaçait le 15. Invalide à la sortie, elle n'est pas
  * écrite et reste affichée, bordée de rouge.
+ *
+ * Hors édition, un `Pressable` couvre la case : un doigt qui part d'elle pour
+ * faire défiler la page la fait défiler, au lieu d'ouvrir le clavier.
  */
 function Champ({
   libelle,
   valeur,
-  affichee,
+  saisie,
   faite,
   lire,
   clavier,
   onEcrire,
 }: {
   libelle: string;
-  /** La valeur de la séance, en texte : la saisie, ou la cible. */
+  /** La valeur affichée, en texte : la saisie, ou le gris. */
   valeur: string;
-  /** Saisie ou série faite : la valeur s'écrit à l'encre ; sinon c'est une indication. */
-  affichee: boolean;
+  /** Saisie (ou série faite) : la valeur s'écrit à l'encre ; sinon c'est une indication. */
+  saisie: boolean;
   /** Faite, la case se fond dans la ligne teintée : on lit le chiffre, pas le champ. */
   faite: boolean;
   lire: (texte: string) => number | null;
@@ -185,11 +203,13 @@ function Champ({
   const champ = useRef<TextInput>(null);
   const [texte, setTexte] = useState<string | null>(null);
   const [actif, setActif] = useState(false);
-  // Posée au toucher pour tout sélectionner, relâchée à la première frappe.
-  const [selection, setSelection] = useState<{ start: number; end: number }>();
+  // Le texte à l'ouverture : sorti sans l'avoir changé, rien ne s'écrit.
+  const initial = useRef("");
   // « 15, » laissé tel quel vaut 15 : la virgule attendait le chiffre suivant.
-  const lu = texte === null ? null : lire(texte.trim().replace(/[.,]$/, ""));
+  const lireTexte = (t: string) => lire(t.trim().replace(/[.,]$/, ""));
+  const lu = texte === null ? null : lireTexte(texte);
   const invalide = !actif && lu !== null && Number.isNaN(lu);
+  const aEcrire = texte !== null && texte !== initial.current && !(lu !== null && Number.isNaN(lu));
 
   // Le retour d'Android ferme le clavier sans quitter la case : le curseur y
   // restait à clignoter. Clavier fermé, la case lâche le focus (et écrit).
@@ -199,11 +219,14 @@ function Champ({
     return () => abonnement.remove();
   }, [actif]);
 
-  const ecrire = () => {
+  // Le texte vient de l'événement, pas de l'état : une frappe suivie aussitôt
+  // de « ✓ » sortait avant que l'état n'ait reçu le dernier chiffre (85 → 8).
+  const ecrire = (final: string) => {
     setActif(false);
-    setSelection(undefined);
-    if (texte === null || (lu !== null && Number.isNaN(lu))) return;
-    onEcrire(lu);
+    const v = lireTexte(final);
+    setTexte(final);
+    if (v !== null && Number.isNaN(v)) return;
+    if (final !== initial.current) onEcrire(v);
     setTexte(null);
   };
 
@@ -211,43 +234,50 @@ function Champ({
   // `onEndEditing` : la saisie en cours se perdait. Elle s'écrit au démontage.
   // Une case quittée normalement n'a plus rien en attente (`texte` à `null`).
   const enAttente = useRef<(() => void) | null>(null);
-  enAttente.current =
-    actif && texte !== null && !(lu !== null && Number.isNaN(lu)) ? () => onEcrire(lu) : null;
+  enAttente.current = actif && aEcrire ? () => onEcrire(lu) : null;
   useEffect(() => () => enAttente.current?.(), []);
 
   return (
-    <Input
-      ref={champ}
-      value={texte ?? (affichee ? valeur : "")}
-      placeholder={affichee ? undefined : valeur || "—"}
-      onFocus={() => {
-        // Une saisie invalide restée en rouge se reprend telle quelle.
-        const t = texte ?? valeur;
-        setActif(true);
-        setTexte(t);
-        setSelection({ start: 0, end: t.length });
-      }}
-      selection={selection}
-      onChangeText={(t) => {
-        setSelection(undefined);
-        setTexte(t);
-      }}
-      onEndEditing={ecrire}
-      keyboardType={clavier}
-      // « ✓ » sur le pavé, comme Hevy : il écrit et ferme, sans cocher la série.
-      returnKeyType="done"
-      submitBehavior="blurAndSubmit"
-      maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
-      accessibilityLabel={libelle}
-      // Bordure de 2 dans tous les états : seule sa couleur change, la case ne
-      // bouge pas d'un pixel. À faire, un contour ; active, l'encre ; faite,
-      // elle se fond dans la ligne teintée.
-      className={cn(
-        "h-10 flex-1 border-2 border-input bg-transparent px-1 py-0 text-center font-semibold text-lg leading-6 tabular-nums shadow-none dark:bg-transparent",
-        faite && "border-transparent",
-        actif && "border-foreground",
-        invalide && "border-destructive",
+    <View className="h-10 flex-1">
+      <Input
+        ref={champ}
+        value={texte ?? (saisie ? valeur : "")}
+        placeholder={valeur || "—"}
+        onFocus={() => {
+          // Une saisie invalide restée en rouge se reprend telle quelle.
+          const t = texte ?? (saisie ? valeur : "");
+          initial.current = t;
+          setActif(true);
+          setTexte(t);
+        }}
+        // Natif, au focus : la sélection pilotée par l'état arrivait trop tard
+        // au premier toucher, et le curseur tombait au milieu du nombre.
+        selectTextOnFocus
+        onChangeText={setTexte}
+        onEndEditing={(e) => ecrire(e.nativeEvent.text)}
+        keyboardType={clavier}
+        // « ✓ » sur le pavé, comme Hevy : il écrit et ferme, sans cocher la série.
+        returnKeyType="done"
+        submitBehavior="blurAndSubmit"
+        maxFontSizeMultiplier={PLAFOND_TEXTE_DENSE}
+        accessibilityLabel={libelle}
+        // Bordure de 2 dans tous les états : seule sa couleur change, la case ne
+        // bouge pas d'un pixel. À faire, un contour ; active, l'encre ; faite,
+        // elle se fond dans la ligne teintée.
+        className={cn(
+          "h-10 border-2 border-input bg-transparent px-1 py-0 text-center font-semibold text-lg leading-6 tabular-nums shadow-none dark:bg-transparent",
+          faite && "border-transparent",
+          actif && "border-foreground",
+          invalide && "border-destructive",
+        )}
+      />
+      {actif ? null : (
+        <Pressable
+          onPress={() => champ.current?.focus()}
+          className="absolute inset-0"
+          accessible={false}
+        />
       )}
-    />
+    </View>
   );
 }

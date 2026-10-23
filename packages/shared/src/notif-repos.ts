@@ -5,7 +5,7 @@ import {
   type ExerciceEnCours,
   prochaineSerie,
   type SeanceEnCours,
-  type SerieEnCours,
+  valeurAffichee,
 } from "./seance.js";
 import type { UnitSystem } from "./units.js";
 
@@ -46,28 +46,17 @@ export function contenuNotifRepos(
   const serie = p ? e?.series[p.iS] : undefined;
   if (!p || !e || !serie)
     return { ...base, titre: "Repos", texte: "Toutes les séries sont faites" };
-  const suite = [
-    `Ensuite : série ${p.iS + 1}/${e.series.length}`,
-    valeurs(serie, e.precedent?.[p.iS], systeme),
-  ];
+  const suite = [`Ensuite : série ${p.iS + 1}/${e.series.length}`, valeurs(e, p.iS, systeme)];
   return { ...base, titre: `Repos · ${e.nom}`, texte: suite.filter(Boolean).join(" · ") };
 }
 
-/**
- * Les valeurs de la série : sa saisie ou sa cible, sinon ce qui a été fait la
- * dernière fois (D67), sinon rien.
- */
-function valeurs(
-  serie: SerieEnCours,
-  precedent: NonNullable<ExerciceEnCours["precedent"]>[number] | undefined,
-  systeme: UnitSystem,
-): string | null {
-  const propre = serie.chargeKg !== null || serie.reps !== null;
-  const source = propre ? serie : precedent?.faite ? precedent : null;
-  if (!source) return null;
-  const charge = source.chargeKg === null ? null : formaterCharge(source.chargeKg, systeme);
-  if (charge && source.reps !== null) return `${charge} × ${source.reps}`;
-  return charge ?? (source.reps === null ? null : `${source.reps} reps`);
+/** Les valeurs que montrent les cases de la série (D339), gris compris. */
+function valeurs(e: ExerciceEnCours, iS: number, systeme: UnitSystem): string | null {
+  const kg = valeurAffichee(e, iS, "chargeKg").valeur;
+  const reps = valeurAffichee(e, iS, "reps").valeur;
+  const charge = kg === null ? null : formaterCharge(kg, systeme);
+  if (charge && reps !== null) return `${charge} × ${reps}`;
+  return charge ?? (reps === null ? null : `${reps} reps`);
 }
 
 /** Les mêmes effets que le bandeau de repos (D79) : ±15 s, ou l'arrêt. */
