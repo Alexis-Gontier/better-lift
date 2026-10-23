@@ -17,11 +17,15 @@ import { cn } from "@/lib/utils";
  * sa façon finirait par en oublier un.
  *
  * Le chargement d'une page (D176, D327) : un squelette à la forme de l'écran
- * attendu — les cartes de Routines, la page d'une routine, les lignes du
- * catalogue —, pas un indicateur au milieu du contenu. Il pulse doucement,
+ * attendu — les cartes de Routines, la page d'une routine, l'historique, une
+ * séance passée, les lignes du catalogue —, pas un indicateur au milieu du contenu. Il pulse doucement,
  * immobile si le téléphone demande moins d'animations.
  */
-export function Chargement({ forme = "lignes" }: { forme?: "lignes" | "routines" | "routine" }) {
+export function Chargement({
+  forme = "lignes",
+}: {
+  forme?: "lignes" | "routines" | "routine" | "historique" | "seance";
+}) {
   const reduit = useReducedMotion();
   const opacite = useSharedValue(1);
   useEffect(() => {
@@ -40,6 +44,10 @@ export function Chargement({ forme = "lignes" }: { forme?: "lignes" | "routines"
         <SqueletteRoutines />
       ) : forme === "routine" ? (
         <SqueletteRoutine />
+      ) : forme === "historique" ? (
+        <SqueletteHistorique />
+      ) : forme === "seance" ? (
+        <SqueletteSeance />
       ) : (
         <SqueletteLignes />
       )}
@@ -89,6 +97,55 @@ function SqueletteRoutine() {
               <Barre className="h-4 w-1/2" />
               <Barre className="h-3 w-1/3" />
             </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/** L'historique (D345) : la tête d'un mois, puis des cartes — nom, date, trois exercices. */
+function SqueletteHistorique() {
+  return (
+    <View className="gap-2 px-4">
+      <View className="flex-row justify-between pt-2 pb-2">
+        <Barre className="h-4 w-1/4" />
+        <Barre className="h-3 w-16" />
+      </View>
+      {CINQ.slice(0, 3).map((i) => (
+        <View key={i} className="gap-3 rounded-lg border border-border px-4 py-3">
+          <View className="gap-2">
+            <Barre className="h-4 w-1/3" />
+            <Barre className="h-3 w-2/3" />
+          </View>
+          <View className="gap-2">
+            <Barre className="h-3 w-3/4" />
+            <Barre className="h-3 w-2/3" />
+            <Barre className="h-3 w-3/4" />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Une séance passée : la date, les chiffres, la carte des muscles, les exercices. */
+function SqueletteSeance() {
+  return (
+    <View className="gap-4 px-4">
+      <Barre className="h-4 w-1/2" />
+      <View className="h-18 rounded-lg border border-border" />
+      <View className="h-56 rounded-lg bg-muted" />
+      <View className="gap-3">
+        {CINQ.slice(0, 2).map((i) => (
+          <View key={i} className="gap-3 rounded-lg border border-border px-3 py-3">
+            <View className="flex-row items-center gap-3">
+              <View className="size-12 rounded-md bg-muted" />
+              <Barre className="h-4 w-1/2" />
+            </View>
+            <Barre className="h-3 w-2/3" />
+            <Barre className="h-3 w-2/3" />
+            <Barre className="h-3 w-2/3" />
           </View>
         ))}
       </View>

@@ -1,4 +1,4 @@
-import { normaliserRecherche, type SeanceFil } from "@better-lift/shared";
+import { normaliserRecherche, parMois, type SeanceFil } from "@better-lift/shared";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, History, ListChecks, Search, Trash2, Trophy } from "lucide-react";
@@ -23,8 +23,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatKg, formatMinutes, formatMonth, formatWeekdayDay, plural } from "@/lib/format";
-import { jourCivil } from "@/lib/locale";
-import { parMois } from "./mois";
+import { FUSEAU, jourCivil } from "@/lib/locale";
 import { seancesQuery } from "./queries";
 import { DeleteSessionDialog, type SeanceASupprimer } from "./session-pane";
 
@@ -88,6 +87,7 @@ export function SessionList() {
   const noms = [...new Set(seances.map((s) => s.nom))].sort((a, b) => a.localeCompare(b, "fr"));
   const groupes = parMois(
     seances.filter((s) => (routine === TOUTES || s.nom === routine) && correspond(s, query)),
+    FUSEAU,
   );
 
   return (

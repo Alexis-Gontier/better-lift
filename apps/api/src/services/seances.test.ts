@@ -14,7 +14,13 @@ const ligne: LigneSeance = {
   exercices: [
     {
       exerciseId: "bench",
-      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre", gifUrl: null },
+      exercise: {
+        slug: "barbell-bench-press",
+        nomFr: "Développé couché à la barre",
+        gifUrl: null,
+        target: "pectoraux",
+        secondary: ["triceps"],
+      },
       note: "siège cran 4",
       supersetGroupe: null,
       series: [
@@ -24,7 +30,13 @@ const ligne: LigneSeance = {
     },
     {
       exerciseId: "traction",
-      exercise: { slug: "pull-up", nomFr: "Traction", gifUrl: null },
+      exercise: {
+        slug: "pull-up",
+        nomFr: "Traction",
+        gifUrl: null,
+        target: "dorsaux",
+        secondary: [],
+      },
       note: null,
       supersetGroupe: null,
       series: [{ type: "NORMALE", reps: 10, chargeKg: null, faite: true }],
@@ -32,7 +44,13 @@ const ligne: LigneSeance = {
     // Le même exercice une seconde fois : il se mesure à la première occurrence.
     {
       exerciseId: "bench",
-      exercise: { slug: "barbell-bench-press", nomFr: "Développé couché à la barre", gifUrl: null },
+      exercise: {
+        slug: "barbell-bench-press",
+        nomFr: "Développé couché à la barre",
+        gifUrl: null,
+        target: "pectoraux",
+        secondary: ["triceps"],
+      },
       note: null,
       supersetGroupe: null,
       series: [{ type: "NORMALE", reps: 6, chargeKg: d(100), faite: true }],
@@ -95,12 +113,15 @@ describe("versDetail", () => {
     expect(detail.nbRecords).toBe(1);
   });
 
-  it("rend des charges en nombres, et le nom français", () => {
+  it("rend des charges en nombres, le nom français et les muscles", () => {
     const detail = versDetail(ligne, new Map());
     expect(detail.exercices[0]).toMatchObject({
       slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
       note: "siège cran 4",
+      // Les muscles de la fiche : la carte des muscles du mobile (D345).
+      musclePrincipal: "pectoraux",
+      musclesSecondaires: ["triceps"],
     });
     expect(detail.exercices[1]?.note).toBeNull();
     expect(detail.exercices[0]?.series[1]?.chargeKg).toBe(100);

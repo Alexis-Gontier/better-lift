@@ -177,7 +177,13 @@ export type LigneSeance = {
   note: string | null;
   exercices: {
     exerciseId: string;
-    exercise: { slug: string; nomFr: string; gifUrl: string | null };
+    exercise: {
+      slug: string;
+      nomFr: string;
+      gifUrl: string | null;
+      target: string;
+      secondary: string[];
+    };
     note: string | null;
     supersetGroupe: number | null;
     series: LigneSerie[];
@@ -238,6 +244,8 @@ export function versDetail(
       slug: e.exercise.slug,
       nom: e.exercise.nomFr,
       image: imageDe(e.exercise.gifUrl),
+      musclePrincipal: e.exercise.target,
+      musclesSecondaires: e.exercise.secondary,
       note: e.note,
       supersetGroupe: e.supersetGroupe,
       precedentes: derniereOccurrence(anterieur.get(e.exerciseId)),
@@ -333,7 +341,9 @@ export const LECTURE_SEANCE = {
     orderBy: { position: "asc" },
     select: {
       exerciseId: true,
-      exercise: { select: { slug: true, nomFr: true, gifUrl: true } },
+      exercise: {
+        select: { slug: true, nomFr: true, gifUrl: true, target: true, secondary: true },
+      },
       note: true,
       supersetGroupe: true,
       series: {

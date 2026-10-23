@@ -67,3 +67,42 @@ export function formatHeure(iso: string, fuseau: string): string {
     timeZone: fuseau,
   }).format(new Date(iso));
 }
+
+/** « jeudi 23 octobre » ; avec `annee`, « jeudi 23 octobre 2026 ». */
+export function formatJourSemaine(iso: string, fuseau: string, annee = false): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    ...(annee ? { year: "numeric" } : {}),
+    timeZone: fuseau,
+  }).format(new Date(iso));
+}
+
+/** « octobre 2026 » : le libellé d'une clé de mois `AAAA-MM`, telle que `parMois` la rend. */
+export function formatMois(mois: string): string {
+  // Le 15 à midi UTC : le même mois dans tous les fuseaux, la clé est déjà civile.
+  return new Intl.DateTimeFormat("fr-FR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${mois}-15T12:00:00.000Z`));
+}
+
+/**
+ * Les séances groupées par mois civil `AAAA-MM`, dans le fuseau donné — jamais en UTC : le 31 à
+ * 23 h 30 à Paris est déjà le 1er en UTC. L'ordre des séances est gardé (la plus récente d'abord).
+ */
+export function parMois<T extends { debut: string }>(
+  seances: readonly T[],
+  fuseau: string,
+): { mois: string; seances: T[] }[] {
+  const groupes: { mois: string; seances: T[] }[] = [];
+  for (const s of seances) {
+    const mois = cleJour(s.debut, fuseau).slice(0, 7);
+    const dernier = groupes.at(-1);
+    if (dernier?.mois === mois) dernier.seances.push(s);
+    else groupes.push({ mois, seances: [s] });
+  }
+  return groupes;
+}

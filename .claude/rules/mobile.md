@@ -45,7 +45,10 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   d'Uniwind (le `placeholderClassName` de `input.tsx` a dû être corrigé) : `typecheck` le dit.
 - **Metro ne relit `global.css`, les alias `@/` du `tsconfig` ni une dépendance ajoutée qu'au
   démarrage** : relancer avec `--clear`. Expo Go garde alors l'ancien bundle : `force-stop` puis
-  le lien `exp://127.0.0.1:8081` deux fois.
+  le lien `exp://127.0.0.1:8081` deux fois. **Une classe jamais écrite ailleurs** (`w-8`,
+  `ml-auto`…) n'est pas générée non plus avant ce redémarrage : sans effet, en silence. Pour ne
+  pas couper `pnpm dev`, un second Metro : `npx expo start --port 8082 --clear`, `adb reverse
+  tcp:8082 tcp:8082`, lien `exp://127.0.0.1:8082`.
 - **Thème** : Système · Sombre · Clair, gardé sur le téléphone (`lib/theme-choix.ts`), appliqué
   par `Uniwind.setTheme` et `Appearance.setColorScheme` (composants natifs, barre d'état).
 - Cible de 48 au minimum ; un titre porte `accessibilityRole="header"`.
@@ -83,12 +86,17 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   ouvre `app/routine/[id].tsx` (lecture seule, pile racine, exercices repliés par
   `CarteExerciceRoutine`, carte des muscles `CarteMuscles` — couleurs du dessin lues par
   `useCSSVariable`). `optionsRoutines()` rend `{ routines, dossiers }`.
-  Historique : état vide pour l'instant.
+- **Historique (D345)** : `SectionList` par mois (`parMois`), `CarteSeance`
+  (`components/historique/`), pages de `optionsSeances()` chargées en défilant. Les séances de
+  la file d'envoi (`useSeance().file`, sans refus) viennent en tête par `filEnAttente`, sauf
+  celles que la liste a déjà reçues. Détail `app/historique/[id].tsx` (pile racine) :
+  `optionsSeance(id)` rend `null` sur un 404 ; `useSupprimerSeance` retire la séance des pages
+  et du cache (sans relire le détail), relit précédents et routines.
 - La pilule de l'onglet actif est toujours montée et se montre par l'opacité : sous Android, un
   fond ajouté à une vue déjà affichée perdait son arrondi.
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,
-  `fin`, `choisir-exercices`, `reorganiser` sont hors de la garde, sur la pile racine : la
-  barre n'y paraît pas.
+  `fin`, `choisir-exercices`, `reorganiser`, `routine/[id]`, `historique/[id]` sont hors de
+  la garde, sur la pile racine : la barre n'y paraît pas.
 - Une pile qui déclare ses écrans prend le premier pour route initiale : `(connecte)` est
   déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 

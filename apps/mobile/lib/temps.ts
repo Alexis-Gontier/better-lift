@@ -38,3 +38,10 @@ export function libelleRepos(sec: number | null): string {
 export function nouvelId(): string {
   return `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+/** La durée d'une séance passée, à la minute : « 52 min », « 1 h 05 ». */
+export function libelleMinutes(debut: string, fin: string): string {
+  const min = Math.max(0, Math.round((Date.parse(fin) - Date.parse(debut)) / 60_000));
+  if (min < 60) return `${min} min`;
+  return `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")}`;
+}

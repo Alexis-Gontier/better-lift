@@ -23,7 +23,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D22** — Inscription fermée par une liste blanche d'adresses (`SIGNUP_ALLOWLIST`).
 - **D25** — L'interface passe avant la logique : on dessine et valide un écran, avec ses quatre
   états (vide, chargement, erreur, nominal), avant de le brancher.
-- **D178** — *Révisée par D316.* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
+- **D178** — *Révisée par D316 et D345 (historique et détail d'une séance).* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
   Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
   redirige vers `/routines`.
 - **D316** — *Révisée par D319 (barre d'onglets) et D321 (page d'une routine).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
@@ -53,7 +53,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   `Tabs` d'Expo Router avec une barre à nous (`components/barre-onglets.tsx`), pas `NativeTabs`
   (ni Lucide, ni accessoire au-dessus de la barre sous Android). Le bandeau « Reprendre » se
   pose au-dessus de la barre, sur les trois onglets ; « Séance vide » reste en tête de Routines.
-  L'onglet Historique n'a qu'un état vide pour l'instant ; son contenu viendra.
+  L'onglet Historique n'avait qu'un état vide ; son contenu est venu avec D345.
 - **D326** — Révise D316 et D322 (« les écrans restent sans logo ») pour la seule connexion du
   mobile : le logo « La charge » (tuile de l'icône, 72) et le nom, centrés dans le haut que le
   formulaire laisse libre. `components/logo.tsx` le dessine en `react-native-svg` aux couleurs
@@ -270,7 +270,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   `BoutonContour`, `FeuilleBasse` ; un chiffre se distingue par sa taille, pas sa couleur.
 - **D121** — *Révisée par D171* : le catalogue n'a plus de vue dans Routines.
 - **D122** — *Révisée par D316.* Page d'une routine : on la lit avant de la modifier ; « Lancer » en contour.
-- **D123** — *Détail d'une séance retiré du mobile (D178)* ; `ecartSerie` de `shared` reste.
+- **D123** — *Détail d'une séance retiré du mobile (D178), revenu par D345* ; `ecartSerie` de `shared` reste.
 - **D124** — *Révisée par D316.* Fiche d'un exercice : une page qui défile (1RM estimé et sa courbe, records,
   historique, consignes). Son historique n'ouvre plus rien (D178).
 - **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*, son calendrier et son token avec.
@@ -370,6 +370,20 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   fiche de chaque exercice, désormais gardée hors ligne. « Précédent » lie charge et unité par
   une espace fine insécable (« 25 kg × 15 ») : la typographie française garde l'espace, la fine
   tient dans la colonne et ne se coupe pas.
+- **D345** — L'onglet Historique du mobile (complète D319, révise D178 et D123 : le détail d'une
+  séance revient), comme Hevy. La liste : les séances, la plus récente en haut, par mois civil
+  (`parMois`, `formatMois`, `formatJourSemaine` dans `shared/calendar.ts`, lus aussi par le web),
+  lues page par page en défilant ; une carte dit le nom, les records battus (contour, D28), la
+  date, la durée, le volume, puis les trois premiers exercices — « 2 × Développé couché » et sa
+  meilleure série à droite, un exercice sauté en retrait, « et 2 autres exercices ». Une séance
+  encore dans la file d'envoi vient en tête, « En attente d'envoi », en pointillés ; elle ne
+  s'ouvre pas. La liste n'est pas gardée hors ligne (D96) : « Hors ligne », sous les séances en
+  attente. Le détail (`app/historique/[id].tsx`, pile racine) : date et heure, durée, volume,
+  séries faites/prévues, records ; la carte des muscles des exercices faits (`GET /seances/:id`
+  rend désormais `musclePrincipal` et `musclesSecondaires` de chaque exercice) ; chaque exercice
+  et ses séries, étiquetées comme en séance, records en contour, séries non faites en retrait ;
+  la note ; « Supprimer la séance » en contour au danger, confirmé (D335), refusé hors ligne. En
+  lecture seule (D293) : ni correction, ni calendrier, ni filtre par routine, ni « Refaire ».
 
 ## Interface web
 
