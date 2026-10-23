@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatHeure, formatJour, memeJour } from "./calendar.js";
+import { decalerDeJours, formatHeure, formatJour, memeJour } from "./calendar.js";
 
 describe("arithmétique civile", () => {
   it("rend le jour du fuseau demandé, pas celui d'UTC", () => {
@@ -36,5 +36,21 @@ describe("formatHeure", () => {
     expect(formatHeure("2026-10-03T16:12:00.000Z", "Europe/Paris")).toBe("18:12");
     // 7 h 05 UTC en hiver : 8 h 05 à Paris, avec le zéro.
     expect(formatHeure("2026-12-01T07:05:00.000Z", "Europe/Paris")).toBe("08:05");
+  });
+});
+
+describe("decalerDeJours", () => {
+  it("recule d'un jour à la même heure", () => {
+    expect(decalerDeJours("2026-10-23T16:00:00.000Z", -1, "Europe/Paris")).toBe(
+      "2026-10-22T16:00:00.000Z",
+    );
+  });
+
+  it("garde l'heure murale de l'autre côté du changement d'heure", () => {
+    // Lundi 26 octobre 18 h à Paris (UTC+1) ; le samedi 24, 18 h c'est encore UTC+2.
+    const lundi = "2026-10-26T17:00:00.000Z";
+    const samedi = decalerDeJours(lundi, -2, "Europe/Paris");
+    expect(samedi).toBe("2026-10-24T16:00:00.000Z");
+    expect(formatHeure(samedi, "Europe/Paris")).toBe("18:00");
   });
 });

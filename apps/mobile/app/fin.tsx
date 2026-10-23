@@ -1,8 +1,9 @@
 import {
   bilanSeance,
+  decalerDeJours,
   formaterCharge,
   formatJour,
-  lireReps,
+  joursEcoules,
   secondesEcoulees,
 } from "@better-lift/shared";
 import { onlineManager } from "@tanstack/react-query";
@@ -12,23 +13,44 @@ import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
+import { FeuilleBasse } from "@/components/ui/feuille-basse";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { Roue } from "@/components/ui/roue";
 import { Text } from "@/components/ui/text";
 import { useConfirmer } from "@/lib/confirmation";
 import { FUSEAU } from "@/lib/fuseau";
 import { useSeance } from "@/lib/seance";
 import { formaterDuree } from "@/lib/temps";
 import { SYSTEME_UNITES } from "@/lib/unites";
+import { cn } from "@/lib/utils";
 import { vibrer } from "@/lib/vibrations";
 
-// Une durée corrigée reste plausible : de 1 min à 10 h.
-const DUREE_MAX_MIN = 600;
+// Une durée corrigée reste plausible : jusqu'à 10 h.
+const HEURES_MAX = 10;
+// La date se choisit dans les deux derniers mois.
+const JOURS_MAX = 60;
+
+const HEURES = Array.from({ length: HEURES_MAX + 1 }, (_, h) => `${h} h`);
+const MINUTES = Array.from({ length: 60 }, (_, m) => `${String(m).padStart(2, "0")} min`);
+const JOUR_COURT = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: FUSEAU,
+});
+/** « Aujourd'hui », « Hier », puis « lun. 20 oct. » : le jour, compté depuis aujourd'hui. */
+function libelleJour(ilYa: number, maintenant: Date): string {
+  if (ilYa === 0) return "Aujourd'hui";
+  if (ilYa === 1) return "Hier";
+  return JOUR_COURT.format(new Date(decalerDeJours(maintenant.toISOString(), -ilYa, FUSEAU)));
+}
 
 /**
- * La fin de séance (D130, D318, D342) : trois chiffres, une note, puis
- * enregistrer, reprendre ou abandonner. La durée se corrige d'un appui : une
- * séance terminée bien après la dernière série ne compte pas l'attente. Une
+ * La fin de séance (D130, D318, D342, D343) : trois chiffres, une note, puis
+ * enregistrer, reprendre ou abandonner. La date et la durée se corrigent d'un
+ * appui, sur des roues : une séance saisie le lendemain, ou terminée bien après
+ * la dernière série, garde son vrai jour et ne compte pas l'attente. Une
  * séance sans série validée ne s'enregistre pas, elle se reprend.
  */
 export default function Fin() {
@@ -37,18 +59,20 @@ export default function Fin() {
   const confirmer = useConfirmer();
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
   const [finReelle] = useState(() => new Date());
-  // La durée corrigée, en minutes ; `null` : la vraie.
-  const [dureeMin, setDureeMin] = useState<number | null>(null);
-  const [edition, setEdition] = useState(false);
+  // Les corrections : la durée en secondes (`null` : la vraie), et le décalage
+  // du jour, en jours civils (0 : le jour du début).
+  const [dureeCorrigee, setDureeCorrigee] = useState<number | null>(null);
+  const [decalage, setDecalage] = useState(0);
+  const [feuille, setFeuille] = useState<"duree" | "date" | null>(null);
   // Un second appui pendant l'enregistrement mettrait la séance deux fois en file.
   const [enregistrement, setEnregistrement] = useState(false);
   if (!seance) return null;
 
   const { seriesFaites, volumeKg } = bilanSeance(seance);
   const reprendre = () => router.back();
-  const fin =
-    dureeMin === null ? finReelle : new Date(Date.parse(seance.debut) + dureeMin * 60_000);
-  const duree = secondesEcoulees(seance.debut, fin);
+  const debut = decalerDeJours(seance.debut, decalage, FUSEAU);
+  const duree = dureeCorrigee ?? secondesEcoulees(seance.debut, finReelle);
+  const fin = new Date(Date.parse(debut) + duree * 1000);
 
   const abandon = () =>
     confirmer({
@@ -96,48 +120,41 @@ export default function Fin() {
     vibrer.valider();
     // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
     // ensuite, et se retentera tant qu'il n'aura pas abouti.
-    await terminer(fin);
+    await terminer({ debut, fin });
     router.replace("/");
   };
 
   return (
     <Ecran className="flex-1 bg-background">
-      <ScrollView contentContainerClassName="gap-4 p-4" keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerClassName="gap-4 p-4">
         <View className="gap-1">
           {/* Rien n'est encore enregistré : l'écran relit avant d'enregistrer (D324). */}
           <Text className="font-semibold text-2xl" accessibilityRole="header">
             Fin de séance
           </Text>
-          <Text className="text-muted-foreground">
-            {seance.nom} · {formatJour(seance.debut, FUSEAU)}
-          </Text>
+          <Text className="text-muted-foreground">{seance.nom}</Text>
         </View>
 
-        <View className="flex-row rounded-lg border border-border">
-          <Pressable
-            onPress={() => setEdition(true)}
-            accessibilityRole="button"
-            accessibilityLabel={`Durée ${formaterDuree(duree)}, modifier`}
-            className="flex-1 items-center gap-0.5 rounded-l-lg py-3 active:bg-accent"
-          >
-            <View className="flex-row items-center gap-1">
-              <Text className="text-muted-foreground text-xs">Durée</Text>
-              <Icon as={Pencil} className="size-3 text-muted-foreground" />
-            </View>
-            <Text className="font-semibold text-lg tabular-nums">{formaterDuree(duree)}</Text>
-          </Pressable>
-          <Chiffre libelle="Séries" valeur={String(seriesFaites)} />
-          <Chiffre libelle="Volume" valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} />
+        <View className="rounded-lg border border-border">
+          <View className="flex-row border-border border-b">
+            <Corrigeable
+              libelle="Date"
+              valeur={formatJour(debut, FUSEAU)}
+              onPress={() => setFeuille("date")}
+              className="flex-[1.6] rounded-tl-lg"
+            />
+            <Corrigeable
+              libelle="Durée"
+              valeur={formaterDuree(duree)}
+              onPress={() => setFeuille("duree")}
+              className="flex-1 rounded-tr-lg border-border border-l"
+            />
+          </View>
+          <View className="flex-row">
+            <Chiffre libelle="Séries" valeur={String(seriesFaites)} />
+            <Chiffre libelle="Volume" valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} />
+          </View>
         </View>
-        {edition ? (
-          <DureeEnMinutes
-            initiale={Math.max(1, Math.round(duree / 60))}
-            onFini={(min) => {
-              setEdition(false);
-              if (min !== null) setDureeMin(min);
-            }}
-          />
-        ) : null}
         {echauffementFait ? (
           <Text className="text-muted-foreground text-sm">
             L'échauffement ne compte pas dans le volume.
@@ -179,7 +196,139 @@ export default function Fin() {
           <Abandonner onPress={abandon} />
         </View>
       </View>
+
+      {/* Montées à l'ouverture : leurs roues partent de la valeur du moment. */}
+      {feuille === "duree" ? (
+        <FeuilleDuree
+          duree={duree}
+          onFermer={() => setFeuille(null)}
+          onValider={(sec) => {
+            setDureeCorrigee(sec);
+            setFeuille(null);
+          }}
+        />
+      ) : null}
+      {feuille === "date" ? (
+        <FeuilleDate
+          ilYa={joursEcoules(debut, FUSEAU, finReelle)}
+          maintenant={finReelle}
+          onFermer={() => setFeuille(null)}
+          onValider={(ilYa) => {
+            // Le décalage part du jour où la séance a commencé.
+            setDecalage(joursEcoules(seance.debut, FUSEAU, finReelle) - ilYa);
+            setFeuille(null);
+          }}
+        />
+      ) : null}
     </Ecran>
+  );
+}
+
+/** Une case qui se corrige d'un appui : son libellé porte un crayon. */
+function Corrigeable({
+  libelle,
+  valeur,
+  onPress,
+  className,
+}: {
+  libelle: string;
+  valeur: string;
+  onPress: () => void;
+  className: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${libelle} ${valeur}, modifier`}
+      className={cn("items-center gap-0.5 py-3 active:bg-accent", className)}
+    >
+      <View className="flex-row items-center gap-1">
+        <Text className="text-muted-foreground text-xs">{libelle}</Text>
+        <Icon as={Pencil} className="size-3 text-muted-foreground" />
+      </View>
+      <Text className="font-semibold text-lg tabular-nums" numberOfLines={1}>
+        {valeur}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** Heures et minutes sur deux roues ; 0 h 00 ne se valide pas. */
+function FeuilleDuree({
+  duree,
+  onFermer,
+  onValider,
+}: {
+  duree: number;
+  onFermer: () => void;
+  onValider: (sec: number) => void;
+}) {
+  const minutes = Math.min(HEURES_MAX * 60 + 59, Math.round(duree / 60));
+  const [h, setH] = useState(Math.floor(minutes / 60));
+  const [m, setM] = useState(minutes % 60);
+  return (
+    <FeuilleBasse visible onFermer={onFermer} glisser={false}>
+      <View className="gap-3 px-2 pb-2">
+        <Text className="font-semibold text-lg" accessibilityRole="header">
+          Durée
+        </Text>
+        <View className="flex-row gap-2">
+          <Roue
+            libelles={HEURES}
+            index={h}
+            onChange={setH}
+            accessibilite="Heures"
+            className="flex-1"
+          />
+          <Roue
+            libelles={MINUTES}
+            index={m}
+            onChange={setM}
+            accessibilite="Minutes"
+            className="flex-1"
+          />
+        </View>
+        <Button
+          className="h-12"
+          disabled={h === 0 && m === 0}
+          onPress={() => onValider((h * 60 + m) * 60)}
+        >
+          <Text>Valider</Text>
+        </Button>
+      </View>
+    </FeuilleBasse>
+  );
+}
+
+/** Le jour, sur une roue : aujourd'hui en tête, puis en remontant le temps. */
+function FeuilleDate({
+  ilYa,
+  maintenant,
+  onFermer,
+  onValider,
+}: {
+  ilYa: number;
+  maintenant: Date;
+  onFermer: () => void;
+  onValider: (ilYa: number) => void;
+}) {
+  const [jours] = useState(() =>
+    Array.from({ length: JOURS_MAX }, (_, i) => libelleJour(i, maintenant)),
+  );
+  const [choix, setChoix] = useState(Math.min(JOURS_MAX - 1, Math.max(0, ilYa)));
+  return (
+    <FeuilleBasse visible onFermer={onFermer} glisser={false}>
+      <View className="gap-3 px-2 pb-2">
+        <Text className="font-semibold text-lg" accessibilityRole="header">
+          Date
+        </Text>
+        <Roue libelles={jours} index={choix} onChange={setChoix} accessibilite="Jour" />
+        <Button className="h-12" onPress={() => onValider(choix)}>
+          <Text>Valider</Text>
+        </Button>
+      </View>
+    </FeuilleBasse>
   );
 }
 
@@ -189,36 +338,6 @@ function Abandonner({ onPress }: { onPress: () => void }) {
     <Button variant="outline" className="h-12 flex-1 border-destructive" onPress={onPress}>
       <Text className="text-destructive">Abandonner</Text>
     </Button>
-  );
-}
-
-/** La durée corrigée, en minutes entières ; `null` si la saisie n'est pas lisible. */
-function DureeEnMinutes({
-  initiale,
-  onFini,
-}: {
-  initiale: number;
-  onFini: (min: number | null) => void;
-}) {
-  return (
-    <View className="flex-row items-center gap-3">
-      <Text className="flex-1 text-muted-foreground">Durée en minutes</Text>
-      <Input
-        defaultValue={String(initiale)}
-        autoFocus
-        selectTextOnFocus
-        keyboardType="number-pad"
-        returnKeyType="done"
-        submitBehavior="blurAndSubmit"
-        accessibilityLabel="Durée en minutes"
-        className="h-12 w-24 text-center font-semibold text-lg tabular-nums"
-        onEndEditing={(e) => {
-          const min = lireReps(e.nativeEvent.text);
-          const lisible = min !== null && !Number.isNaN(min) && min >= 1 && min <= DUREE_MAX_MIN;
-          onFini(lisible ? min : null);
-        }}
-      />
-    </View>
   );
 }
 
