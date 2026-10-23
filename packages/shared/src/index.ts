@@ -11,7 +11,7 @@ export {
   versBrouillon,
   versSaisie,
 } from "./brouillon-routine.js";
-export { cleJour, formatJour } from "./calendar.js";
+export { cleJour, decalerDeJours, formatJour } from "./calendar.js";
 export { chargeEnTexte, formaterCharge, lireCharge, lireReps } from "./charge.js";
 export {
   ATTRIBUTION_MEDIAS,

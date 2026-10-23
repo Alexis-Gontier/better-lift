@@ -43,10 +43,11 @@ type Contexte = {
   demarrer: (s: SeanceEnCours) => Promise<boolean>;
   abandonner: () => Promise<void>;
   /**
-   * Brouillon → file → envoi. La séance quitte l'écran aussitôt (D10). `fin` :
-   * l'heure de fin, maintenant par défaut, avancée si la durée a été corrigée.
+   * Brouillon → file → envoi. La séance quitte l'écran aussitôt (D10). `moment` :
+   * le début et la fin corrigés à la fin de séance (D343) ; sinon le début du
+   * brouillon, et maintenant.
    */
-  terminer: (fin?: Date) => Promise<void>;
+  terminer: (moment?: { debut: string; fin: Date }) => Promise<void>;
   synchroniser: () => Promise<void>;
   /** Une séance refusée revient en brouillon, si aucun n'est en cours. */
   reprendreRefusee: (id: string) => Promise<boolean>;
@@ -200,9 +201,11 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const terminer = useCallback(
-    async (fin: Date = new Date()) => {
-      const s = await brouillon.lire();
-      if (!s) return;
+    async (moment?: { debut: string; fin: Date }) => {
+      const lu = await brouillon.lire();
+      if (!lu) return;
+      const s = moment ? { ...lu, debut: moment.debut } : lu;
+      const fin = moment?.fin ?? new Date();
       // L'ordre compte : la séance entre dans la file AVANT que le brouillon ne
       // soit effacé. Un arrêt entre les deux laisse un doublon, jamais un trou —
       // et le doublon est sans danger, l'envoi étant idempotent.

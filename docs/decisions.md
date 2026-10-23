@@ -357,6 +357,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   sont plus préchargés hors ligne (`recordsBattus` retiré de `shared`). L'icône de notification
   est un peu plus petite (dessin à 82 % de l'image, marge comme le veut Android) : elle ne se
   voit qu'après un nouveau build.
+- **D343** — Révise D342 : la date et la durée se corrigent sur des **roues**, dans une feuille
+  en bas (heures 0–10 et minutes pour la durée ; les 60 derniers jours, « Aujourd'hui » en tête,
+  pour la date). Plus de champ en minutes. La date change le jour du début en gardant son heure
+  murale (`decalerDeJours`, dans `shared`, sûr au changement d'heure) ; la séance part avec ce
+  début et `fin = début + durée` (`terminer({ debut, fin })`). Les roues sont en JS (`Roue`,
+  `ScrollView` aimanté) : un sélecteur natif n'est pas dans l'APK installé. Une feuille à roues
+  ne se ferme pas en glissant (`glisser={false}`) : le geste volerait le défilement.
 
 ## Interface web
 

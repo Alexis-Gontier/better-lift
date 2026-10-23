@@ -15,10 +15,13 @@ const VITESSE_FERMETURE = 800;
 export function FeuilleBasse({
   visible,
   onFermer,
+  glisser: glissable = true,
   children,
 }: {
   visible: boolean;
   onFermer: () => void;
+  /** Faux quand le contenu défile à la verticale (des roues) : le geste le lui volerait. */
+  glisser?: boolean;
   children: ReactNode;
 }) {
   const { bottom } = useSafeAreaInsets();
@@ -30,6 +33,7 @@ export function FeuilleBasse({
     if (visible) decalage.value = 0;
   }, [visible, decalage]);
   const glisser = Gesture.Pan()
+    .enabled(glissable)
     .runOnJS(true)
     // 10 px avant de s'activer : un appui sur une option reste un appui.
     .activeOffsetY(10)
