@@ -142,9 +142,19 @@ export function validerSerie(
   /** Le repos par défaut du compte (D128), pour l'exercice qui n'a pas le sien. */
   reposDefautSec: number | null = null,
 ): SeanceEnCours {
-  const etaitFaite = s.exercices[iE]?.series[iS]?.faite ?? false;
-  const apres = avecSerie(s, iE, iS, (x) => ({ ...x, faite: !x.faite }));
-  if (etaitFaite) return apres;
+  const e = s.exercices[iE];
+  const etaitFaite = e?.series[iS]?.faite ?? false;
+  if (etaitFaite) return avecSerie(s, iE, iS, (x) => ({ ...x, faite: false }));
+  // D339 : cocher sans rien taper valide ce que montrent les cases, gris compris.
+  // Les deux champs deviennent saisis : décochée, la série garde ses chiffres.
+  const valeur = (c: Champ) => (e ? valeurAffichee(e, iS, c).valeur : null);
+  const apres = avecSerie(s, iE, iS, (x) => ({
+    ...x,
+    chargeKg: valeur("chargeKg"),
+    reps: valeur("reps"),
+    faite: true,
+    saisi: { chargeKg: true, reps: true },
+  }));
 
   // D149 : dans un superset, le repos attend la fin du tour — toutes les séries
   // de ce rang cochées, dans n'importe quel ordre — et prend celui du dernier.
@@ -179,6 +189,31 @@ export function modifierSerie(
     };
     return { ...x, ...patch, ...(Object.keys(saisi).length > 0 ? { saisi } : {}) };
   });
+}
+
+type Champ = "chargeKg" | "reps";
+
+/**
+ * Ce que montre une case d'une série (D339), comme Hevy : sa saisie, ou la série
+ * faite, à l'encre ; sinon, en gris, ce qui a été fait la dernière fois à cette
+ * position, puis la cible de la routine, puis la série du dessus de même type —
+ * un poids tapé sur la série 1 d'un exercice neuf s'indique sur les suivantes.
+ */
+export function valeurAffichee(
+  e: ExerciceEnCours,
+  iS: number,
+  champ: Champ,
+): { valeur: number | null; saisie: boolean } {
+  const x = e.series[iS];
+  if (!x) return { valeur: null, saisie: false };
+  if (x.faite || x.saisi?.[champ]) return { valeur: x[champ], saisie: true };
+  const p = e.precedent?.[iS];
+  if (p?.faite && p[champ] !== null) return { valeur: p[champ], saisie: false };
+  if (x[champ] !== null) return { valeur: x[champ], saisie: false };
+  for (let i = iS - 1; i >= 0; i--)
+    if (e.series[i]?.type === x.type)
+      return { valeur: valeurAffichee(e, i, champ).valeur, saisie: false };
+  return { valeur: null, saisie: false };
 }
 
 /** Une série de plus, qui recopie la dernière — non faite, ses valeurs en cibles. */

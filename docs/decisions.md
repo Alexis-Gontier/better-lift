@@ -329,6 +329,15 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   sur disque. Affichée app ouverte aussi, comme Hevy ; « Repos terminé » sonne à la fin, sauf
   app au premier plan. Absente d'Expo Go et d'iOS. Icône de notification dédiée (logo
   recadré). Nouveau runtime : 0.3.0, l'APK se réinstalle.
+- **D339** — Révise D334 et D59 pour la saisie d'une série, comme Hevy : une case non saisie
+  montre **en gris** ce qu'on ferait — la dernière fois à cette position, sinon la cible de la
+  routine, sinon la série du dessus de même type (un poids tapé sur la série 1 d'un exercice
+  neuf s'indique sur les suivantes) ; `valeurAffichee` dans `shared`. La toucher ouvre une case
+  **vide**, le gris restant visible ; une case saisie se sélectionne toute (`selectTextOnFocus`).
+  **Cocher sans rien taper valide le gris** ; la série cochée garde ses chiffres si on la
+  décoche. La notification de repos annonce les mêmes valeurs. « Précédent » porte l'unité
+  (« 80 kg × 8 »). Hors édition, un appui couvre la case : défiler en partant d'elle défile.
+  Balayer une série vers la gauche découvre « Supprimer ».
 
 ## Interface web
 
