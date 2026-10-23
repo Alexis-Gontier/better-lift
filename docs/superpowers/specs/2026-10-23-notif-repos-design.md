@@ -61,15 +61,18 @@ premier plan. `react-native-notify-kit` remplace `expo-notifications`, retiré d
 
 - Retirer `expo-notifications` : dépendance, plugin de `app.json`, ancien code.
 - Ajouter le plugin `react-native-notify-kit` (service `specialUse`, sous-type « Minuteur de
-  repos entre deux séries de musculation ») et l'icône dédiée.
+  repos entre deux séries de musculation ») ; son option `android.icons` génère l'icône
+  `notification_icon` depuis `assets/notification-icon.png` (c'était `expo-notifications` dans
+  l'épreuve).
 - `app.json` → 0.3.0 : nouveau runtime, l'APK doit être réinstallé (pas d'`eas update`).
 
 ## Tests
 
 - Vitest : `contenuNotifRepos` (sans repos, repos en cours, série avec saisie / cible /
   précédent / rien, dernière série faite, superset, livres, sans `duree`).
-- Vitest : `surEvenement` avec notify-kit et le stockage simulés — −15 s, +15 s, Passer, app
-  vivante (passe par `appliquer`) et app tuée (passe par le disque), événement sans repos.
+- Vitest : `appliquerActionRepos(s, action, maintenant)` (dans `shared/notif-repos.ts`) —
+  −15 s, +15 s, Passer. Le mobile n'a pas de tests unitaires : le traitement des boutons y reste
+  une couche mince (choisir `appliquer` ou le disque), vérifiée sur l'émulateur.
 - Émulateur, APK `preview` : chrono, barre, texte, boutons app ouverte et tuée, fin écran
   verrouillé, réglage Vibrations, icône.
 
