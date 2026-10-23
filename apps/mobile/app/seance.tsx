@@ -4,10 +4,8 @@ import {
   ajusterRepos,
   arreterRepos,
   avecPrecedents,
-  bilanSeance,
   defaireSuperset,
   delierExercice,
-  formaterCharge,
   groupes,
   lierExercices,
   marquerReposSignale,
@@ -23,17 +21,17 @@ import {
   retirerSerie,
   roleRepos,
   type SeanceEnCours,
-  secondesEcoulees,
   validerSerie,
 } from "@better-lift/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useKeepAwake } from "expo-keep-awake";
 import { useFocusEffect, useRouter } from "expo-router";
-import { ChevronDown, Plus, Trash2, Unlink2 } from "lucide-react-native";
+import { Plus, Trash2, Unlink2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { BandeauRepos } from "@/components/seance/bandeau-repos";
 import { CarteExercice } from "@/components/seance/carte-exercice";
+import { EnTeteSeance } from "@/components/seance/en-tete-seance";
 import { RepereSuperset } from "@/components/seance/repere-superset";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
@@ -43,8 +41,7 @@ import { attendreChoix } from "@/lib/choix-exercices";
 import { useConfirmer, useFeuille } from "@/lib/confirmation";
 import { chargerPrecedents, optionsPreferences } from "@/lib/requetes";
 import { useSeance } from "@/lib/seance";
-import { formaterDuree, useMaintenant } from "@/lib/temps";
-import { SYSTEME_UNITES } from "@/lib/unites";
+import { useMaintenant } from "@/lib/temps";
 import { vibrer } from "@/lib/vibrations";
 
 // Le brouillon est sur le disque : un plantage de l'écran ne perd rien.
@@ -199,8 +196,6 @@ export default function Seance() {
     });
   };
 
-  const bilan = bilanSeance(seance);
-  const totalSeries = seance.exercices.reduce((n, e) => n + e.series.length, 0);
   const vide = seance.exercices.length === 0;
   const prochaine = prochaineSerie(seance);
   const blocs = groupes(seance.exercices);
@@ -210,43 +205,12 @@ export default function Seance() {
 
   return (
     <Ecran className="flex-1 bg-background">
-      <View className="gap-2 border-border border-b px-4 pt-2 pb-3">
-        <View className="flex-row items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="-ml-2"
-            onPress={replier}
-            accessibilityLabel="Replier la séance"
-          >
-            <Icon as={ChevronDown} className="size-6 text-muted-foreground" />
-          </Button>
-          <View className="flex-1">
-            <Text className="font-semibold text-xl" numberOfLines={1} accessibilityRole="header">
-              {seance.nom}
-            </Text>
-            {/* Une ligne au lieu de trois chiffres (D169) : l'en-tête laisse la place aux séries. */}
-            <Text className="text-muted-foreground text-sm tabular-nums" numberOfLines={1}>
-              {bilan.seriesFaites} / {totalSeries} séries ·{" "}
-              {formaterDuree(secondesEcoulees(seance.debut, maintenant))} ·{" "}
-              {formaterCharge(bilan.volumeKg, SYSTEME_UNITES)}
-            </Text>
-          </View>
-          {/* Secondaire (D105) : terminer n'est pas l'action courante d'une séance. */}
-          <Button variant="outline" onPress={() => router.push("/fin")}>
-            <Text>Terminer</Text>
-          </Button>
-        </View>
-        <View
-          className="h-1 overflow-hidden rounded-full bg-secondary"
-          accessibilityLabel={`${bilan.seriesFaites} séries faites sur ${totalSeries}`}
-        >
-          <View
-            className="h-1 bg-foreground"
-            style={{ width: `${totalSeries ? (bilan.seriesFaites / totalSeries) * 100 : 0}%` }}
-          />
-        </View>
-      </View>
+      <EnTeteSeance
+        seance={seance}
+        maintenant={maintenant}
+        onReplier={replier}
+        onTerminer={() => router.push("/fin")}
+      />
 
       <ScrollView
         ref={defilement}

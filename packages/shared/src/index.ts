@@ -37,7 +37,7 @@ export {
   parDossier,
   resumeSeries,
 } from "./liste-routines.js";
-export { LIBELLE_ZONE, zonesTravaillees } from "./muscles.js";
+export { LIBELLE_ZONE, type ZoneTravaillee, zonesTravaillees } from "./muscles.js";
 export {
   type ActionRepos,
   appliquerActionRepos,
