@@ -74,7 +74,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   Le bandeau (D336, D337) : chevron vers le haut à gauche, le temps puis l'exercice en cours,
   une corbeille (abandon confirmé) ; tout le reste du bandeau reprend la séance.
 - **Reprise (D336)** : au démarrage de l'app, une séance en cours ouvre `/seance`
-  (`RepriseAuDemarrage` dans la garde, une fois par démarrage) ; l'écran de séance s'ouvre
+  (`RepriseAuDemarrage` dans la garde, une fois par démarrage ; sans animation, un voile
+  couvre les onglets jusqu'au retour sur eux, D341) ; l'écran de séance s'ouvre
   défilé sur la prochaine série (`arriver`, dès que bloc et ligne sont mesurés).
 - Routines (D320) : « Séance vide » en tête, puis les routines par dossier, comme le web
   (`DossierRoutines` repliable, `LigneRoutine` en carte ; calculs de `shared/liste-routines.ts`).
