@@ -149,7 +149,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
   }, [synchroniser]);
 
   // La fin du repos s'annonce aussi app fermée ou téléphone verrouillé.
-  useNotificationRepos(seance?.repos?.fin ?? null);
+  useNotificationRepos(seance);
 
   const modifier = useCallback((s: SeanceEnCours) => {
     poser(s);
