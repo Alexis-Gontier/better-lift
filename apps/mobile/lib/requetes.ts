@@ -74,17 +74,6 @@ export function optionsExercice(slug: string) {
   });
 }
 
-export function optionsRecords(slug: string) {
-  return queryOptions({
-    queryKey: ["records", slug],
-    queryFn: async () => {
-      const res = await api.exercices[":slug"].records.$get({ param: { slug } });
-      if (!res.ok) throw new Error("Les records n'ont pas pu être chargés.");
-      return (await res.json()).records;
-    },
-  });
-}
-
 /** L'historique, antéchronologique, par pages (mêmes clés que le web). */
 export function optionsSeances() {
   return infiniteQueryOptions({

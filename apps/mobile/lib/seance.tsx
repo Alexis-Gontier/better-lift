@@ -42,8 +42,11 @@ type Contexte = {
   /** `false` si un brouillon existe déjà sur disque : on ne l'écrase JAMAIS. */
   demarrer: (s: SeanceEnCours) => Promise<boolean>;
   abandonner: () => Promise<void>;
-  /** Brouillon → file → envoi. La séance quitte l'écran aussitôt (D10). */
-  terminer: () => Promise<void>;
+  /**
+   * Brouillon → file → envoi. La séance quitte l'écran aussitôt (D10). `fin` :
+   * l'heure de fin, maintenant par défaut, avancée si la durée a été corrigée.
+   */
+  terminer: (fin?: Date) => Promise<void>;
   synchroniser: () => Promise<void>;
   /** Une séance refusée revient en brouillon, si aucun n'est en cours. */
   reprendreRefusee: (id: string) => Promise<boolean>;
@@ -120,11 +123,9 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     } finally {
       verrou.current = false;
       setEnvoiEnCours(false);
-      // Une séance arrivée au serveur change l'historique et peut-être des
-      // records : leurs clés sont invalidées, sinon l'onglet Historique
-      // resterait sur sa dernière lecture.
+      // Une séance arrivée au serveur change l'historique : sa clé est
+      // invalidée, sinon l'onglet Historique resterait sur sa dernière lecture.
       void client.invalidateQueries({ queryKey: ["seances"] });
-      void client.invalidateQueries({ queryKey: ["records"] });
     }
   }, [client]);
 
@@ -198,19 +199,22 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     poser(null);
   }, []);
 
-  const terminer = useCallback(async () => {
-    const s = await brouillon.lire();
-    if (!s) return;
-    // L'ordre compte : la séance entre dans la file AVANT que le brouillon ne
-    // soit effacé. Un arrêt entre les deux laisse un doublon, jamais un trou —
-    // et le doublon est sans danger, l'envoi étant idempotent.
-    const f = mettreEnFile(await fileEnvoi.lire(), s, new Date().toISOString());
-    await fileEnvoi.ecrire(f);
-    await brouillon.effacer();
-    setFile(f);
-    poser(null);
-    void synchroniser();
-  }, [synchroniser]);
+  const terminer = useCallback(
+    async (fin: Date = new Date()) => {
+      const s = await brouillon.lire();
+      if (!s) return;
+      // L'ordre compte : la séance entre dans la file AVANT que le brouillon ne
+      // soit effacé. Un arrêt entre les deux laisse un doublon, jamais un trou —
+      // et le doublon est sans danger, l'envoi étant idempotent.
+      const f = mettreEnFile(await fileEnvoi.lire(), s, fin.toISOString());
+      await fileEnvoi.ecrire(f);
+      await brouillon.effacer();
+      setFile(f);
+      poser(null);
+      void synchroniser();
+    },
+    [synchroniser],
+  );
 
   const reprendreRefusee = useCallback(async (id: string) => {
     if (await brouillon.lire()) return false;

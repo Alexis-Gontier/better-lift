@@ -1,6 +1,6 @@
 export { routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
-export { apercuExercices, meilleureSerieComptee } from "./apercu.js";
+export { apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
   brouillonValide,
@@ -29,7 +29,6 @@ export {
   type ElementFile,
   mettreEnFile,
 } from "./file-envoi.js";
-export { recordsBattus } from "./fin-seance.js";
 export {
   dureeRoutine,
   ilYa,

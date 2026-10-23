@@ -1,56 +1,66 @@
 import {
   bilanSeance,
-  chargeEnTexte,
   formaterCharge,
   formatJour,
-  LIBELLE_RECORD,
-  meilleureSerieComptee,
-  recordsBattus,
+  lireReps,
   secondesEcoulees,
 } from "@better-lift/shared";
-import { onlineManager, useQueries } from "@tanstack/react-query";
+import { onlineManager } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { ArrowUp, CircleDashed, CloudOff } from "lucide-react-native";
+import { CircleDashed, CloudOff, Pencil, Trash2 } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+import { useConfirmer } from "@/lib/confirmation";
 import { FUSEAU } from "@/lib/fuseau";
-import { optionsRecords } from "@/lib/requetes";
 import { useSeance } from "@/lib/seance";
 import { formaterDuree } from "@/lib/temps";
 import { SYSTEME_UNITES } from "@/lib/unites";
-import { cn } from "@/lib/utils";
 import { vibrer } from "@/lib/vibrations";
 
-/** « 85 kg × 5 », ou « 12 reps » au poids du corps. La charge passe par les unités. */
-function formaterSerie(chargeKg: number | null, reps: number | null): string {
-  if (chargeKg === null) return `${reps ?? "—"} reps`;
-  return `${chargeEnTexte(chargeKg, SYSTEME_UNITES)} kg × ${reps ?? "—"}`;
-}
+// Une durée corrigée reste plausible : de 1 min à 10 h.
+const DUREE_MAX_MIN = 600;
 
 /**
- * La fin de séance (D130, D318, D324) : le bilan, les records battus, ce qui a
- * été fait de chaque exercice, une note, puis l'enregistrement. Une séance sans
- * série validée ne s'enregistre pas — elle se reprend.
+ * La fin de séance (D130, D318, D342) : trois chiffres, une note, puis
+ * enregistrer, reprendre ou abandonner. La durée se corrige d'un appui : une
+ * séance terminée bien après la dernière série ne compte pas l'attente. Une
+ * séance sans série validée ne s'enregistre pas, elle se reprend.
  */
 export default function Fin() {
   const router = useRouter();
-  const { seance, terminer, modifier } = useSeance();
+  const { seance, terminer, modifier, abandonner } = useSeance();
+  const confirmer = useConfirmer();
   // La durée est figée à l'ouverture de cet écran : c'est l'heure de fin.
-  const [fin] = useState(() => new Date());
+  const [finReelle] = useState(() => new Date());
+  // La durée corrigée, en minutes ; `null` : la vraie.
+  const [dureeMin, setDureeMin] = useState<number | null>(null);
+  const [edition, setEdition] = useState(false);
   // Un second appui pendant l'enregistrement mettrait la séance deux fois en file.
   const [enregistrement, setEnregistrement] = useState(false);
-  const slugs = seance ? [...new Set(seance.exercices.map((e) => e.slug))] : [];
-  // Les records d'avant : en cache hors ligne pour les exercices des routines (D96).
-  const records = useQueries({ queries: slugs.map((slug) => optionsRecords(slug)) });
   if (!seance) return null;
 
   const { seriesFaites, volumeKg } = bilanSeance(seance);
   const reprendre = () => router.back();
+  const fin =
+    dureeMin === null ? finReelle : new Date(Date.parse(seance.debut) + dureeMin * 60_000);
+  const duree = secondesEcoulees(seance.debut, fin);
+
+  const abandon = () =>
+    confirmer({
+      titre: "Abandonner la séance ?",
+      message: "Rien ne sera enregistré.",
+      action: "Abandonner la séance",
+      icone: Trash2,
+      annuler: "Garder la séance",
+      onConfirmer: () => {
+        void abandonner().then(() => router.replace("/"));
+      },
+    });
 
   if (seriesFaites === 0) {
     return (
@@ -61,9 +71,12 @@ export default function Fin() {
           </Text>
           <Text className="text-muted-foreground">Valide au moins une série pour enregistrer.</Text>
         </View>
-        <Button variant="outline" className="h-12" onPress={reprendre}>
-          <Text>Reprendre la séance</Text>
-        </Button>
+        <View className="flex-row gap-2">
+          <Button variant="outline" className="h-12 flex-1" onPress={reprendre}>
+            <Text>Reprendre</Text>
+          </Button>
+          <Abandonner onPress={abandon} />
+        </View>
       </Ecran>
     );
   }
@@ -72,13 +85,9 @@ export default function Fin() {
   // d'une séance, comme Hevy qui le signale avant d'enregistrer.
   const toutes = seance.exercices.flatMap((e) => e.series);
   const nonValidees = toutes.filter((x) => !x.faite).length;
-  // D5 : l'échauffement ne compte pas dans le volume — l'écran le dit, sans quoi
+  // D5 : l'échauffement ne compte pas dans le volume. L'écran le dit, sans quoi
   // « 1 série · 0 kg » ressemble à une erreur.
   const echauffementFait = toutes.some((x) => x.faite && x.type === "ECHAUFFEMENT");
-
-  const avant = Object.fromEntries(slugs.map((slug, i) => [slug, records[i]?.data]));
-  const { battus, incomplet } = recordsBattus(seance, avant);
-  const chargement = records.some((r) => r.isPending && r.fetchStatus === "fetching");
   const horsLigne = !onlineManager.isOnline();
 
   const enregistrer = async () => {
@@ -87,13 +96,13 @@ export default function Fin() {
     vibrer.valider();
     // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
     // ensuite, et se retentera tant qu'il n'aura pas abouti.
-    await terminer();
+    await terminer(fin);
     router.replace("/");
   };
 
   return (
     <Ecran className="flex-1 bg-background">
-      <ScrollView contentContainerClassName="gap-4 p-4">
+      <ScrollView contentContainerClassName="gap-4 p-4" keyboardShouldPersistTaps="handled">
         <View className="gap-1">
           {/* Rien n'est encore enregistré : l'écran relit avant d'enregistrer (D324). */}
           <Text className="font-semibold text-2xl" accessibilityRole="header">
@@ -105,66 +114,35 @@ export default function Fin() {
         </View>
 
         <View className="flex-row rounded-lg border border-border">
-          <Chiffre libelle="Durée" valeur={formaterDuree(secondesEcoulees(seance.debut, fin))} />
+          <Pressable
+            onPress={() => setEdition(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Durée ${formaterDuree(duree)}, modifier`}
+            className="flex-1 items-center gap-0.5 rounded-l-lg py-3 active:bg-accent"
+          >
+            <View className="flex-row items-center gap-1">
+              <Text className="text-muted-foreground text-xs">Durée</Text>
+              <Icon as={Pencil} className="size-3 text-muted-foreground" />
+            </View>
+            <Text className="font-semibold text-lg tabular-nums">{formaterDuree(duree)}</Text>
+          </Pressable>
           <Chiffre libelle="Séries" valeur={String(seriesFaites)} />
           <Chiffre libelle="Volume" valeur={formaterCharge(volumeKg, SYSTEME_UNITES)} />
         </View>
+        {edition ? (
+          <DureeEnMinutes
+            initiale={Math.max(1, Math.round(duree / 60))}
+            onFini={(min) => {
+              setEdition(false);
+              if (min !== null) setDureeMin(min);
+            }}
+          />
+        ) : null}
         {echauffementFait ? (
           <Text className="text-muted-foreground text-sm">
             L'échauffement ne compte pas dans le volume.
           </Text>
         ) : null}
-
-        {/* Le record est un contour (D28) : la récompense, sans couleur. */}
-        {!chargement && battus.length > 0 ? (
-          <View className="gap-2 rounded-lg border-2 border-foreground p-3">
-            <View className="flex-row items-center gap-2">
-              <Icon as={ArrowUp} className="size-5 text-foreground" strokeWidth={2.6} />
-              <Text className="font-semibold text-lg" accessibilityRole="header">
-                {battus.length === 1 ? "1 record battu" : `${battus.length} records battus`}
-              </Text>
-            </View>
-            {battus.map((b, i) => (
-              <View key={`${b.slug}-${i}`} className="flex-row items-center gap-3">
-                <View className="flex-1">
-                  <Text className="font-medium" numberOfLines={2}>
-                    {b.nom}
-                  </Text>
-                  <Text className="text-muted-foreground text-sm">
-                    {b.types.map((t) => LIBELLE_RECORD[t]).join(" · ")}
-                  </Text>
-                </View>
-                <Text className="font-semibold tabular-nums">
-                  {formaterSerie(b.chargeKg, b.reps)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-        {incomplet && !chargement ? (
-          <Text className="text-muted-foreground text-sm">
-            Les records des autres exercices se calculeront à l'envoi, dans l'historique.
-          </Text>
-        ) : null}
-
-        {/* Ce qui a été fait de chaque exercice (D324) : un exercice laissé vide se voit
-            avant d'enregistrer. */}
-        <View className="gap-2">
-          <Text className="font-semibold text-muted-foreground text-sm" accessibilityRole="header">
-            Exercices
-          </Text>
-          <View className="rounded-lg border border-border">
-            {seance.exercices.map((e, i) => (
-              <LigneExercice
-                key={`${e.slug}-${i}`}
-                nom={e.nom}
-                faites={e.series.filter((x) => x.faite).length}
-                meilleure={meilleureSerieComptee(e.series)}
-                premiere={i === 0}
-              />
-            ))}
-          </View>
-        </View>
 
         <Input
           value={seance.note ?? ""}
@@ -194,11 +172,53 @@ export default function Fin() {
         <Button className="h-12" disabled={enregistrement} onPress={() => void enregistrer()}>
           <Text>{enregistrement ? "Enregistrement…" : "Enregistrer la séance"}</Text>
         </Button>
-        <Button variant="ghost" className="h-12" onPress={reprendre}>
-          <Text>Reprendre la séance</Text>
-        </Button>
+        <View className="flex-row gap-2">
+          <Button variant="ghost" className="h-12 flex-1" onPress={reprendre}>
+            <Text>Reprendre</Text>
+          </Button>
+          <Abandonner onPress={abandon} />
+        </View>
       </View>
     </Ecran>
+  );
+}
+
+/** Le danger en contour (D335), la confirmation derrière. */
+function Abandonner({ onPress }: { onPress: () => void }) {
+  return (
+    <Button variant="outline" className="h-12 flex-1 border-destructive" onPress={onPress}>
+      <Text className="text-destructive">Abandonner</Text>
+    </Button>
+  );
+}
+
+/** La durée corrigée, en minutes entières ; `null` si la saisie n'est pas lisible. */
+function DureeEnMinutes({
+  initiale,
+  onFini,
+}: {
+  initiale: number;
+  onFini: (min: number | null) => void;
+}) {
+  return (
+    <View className="flex-row items-center gap-3">
+      <Text className="flex-1 text-muted-foreground">Durée en minutes</Text>
+      <Input
+        defaultValue={String(initiale)}
+        autoFocus
+        selectTextOnFocus
+        keyboardType="number-pad"
+        returnKeyType="done"
+        submitBehavior="blurAndSubmit"
+        accessibilityLabel="Durée en minutes"
+        className="h-12 w-24 text-center font-semibold text-lg tabular-nums"
+        onEndEditing={(e) => {
+          const min = lireReps(e.nativeEvent.text);
+          const lisible = min !== null && !Number.isNaN(min) && min >= 1 && min <= DUREE_MAX_MIN;
+          onFini(lisible ? min : null);
+        }}
+      />
+    </View>
   );
 }
 
@@ -207,45 +227,6 @@ function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
     <View className="flex-1 items-center gap-0.5 py-3">
       <Text className="text-muted-foreground text-xs">{libelle}</Text>
       <Text className="font-semibold text-lg tabular-nums">{valeur}</Text>
-    </View>
-  );
-}
-
-/** Un exercice de la séance : son nom, puis sa meilleure série et le nombre de séries faites. */
-function LigneExercice({
-  nom,
-  faites,
-  meilleure,
-  premiere,
-}: {
-  nom: string;
-  faites: number;
-  meilleure: { chargeKg: number | null; reps: number } | null;
-  premiere: boolean;
-}) {
-  return (
-    <View
-      className={cn(
-        "min-h-14 flex-row items-center gap-3 px-3 py-2",
-        !premiere && "border-border border-t",
-      )}
-    >
-      <Text
-        className={cn("flex-1 font-medium", faites === 0 && "text-muted-foreground")}
-        numberOfLines={2}
-      >
-        {nom}
-      </Text>
-      <View className="items-end">
-        {meilleure ? (
-          <Text className="font-semibold tabular-nums">
-            {formaterSerie(meilleure.chargeKg, meilleure.reps)}
-          </Text>
-        ) : null}
-        <Text className="text-muted-foreground text-sm tabular-nums">
-          {faites === 0 ? "Aucune série" : faites === 1 ? "1 série" : `${faites} séries`}
-        </Text>
-      </View>
     </View>
   );
 }
