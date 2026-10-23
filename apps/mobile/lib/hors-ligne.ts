@@ -41,6 +41,8 @@ export function gardeHorsLigne(query: Query): boolean {
     // Le repos par défaut sert en salle, hors ligne compris (D129).
     domaine === "preferences" ||
     (domaine === "exercices" && sorte === "complet") ||
+    // La fiche d'un exercice : ses muscles peignent l'en-tête de la séance (D344).
+    (domaine === "exercices" && sorte === "detail") ||
     (domaine === "seances" && sorte === "precedents")
   );
 }

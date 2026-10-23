@@ -130,6 +130,9 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - **Toute écriture de l'écran passe par `changer(f)`** (`app/seance.tsx`), qui part de
   `courante.current`, pas de la séance du rendu : la fin de saisie et la coche arrivent dans la
   même frame, la seconde écraserait la première.
+- **En-tête (D344)** : `EnTeteSeance` — replier, nom, Terminer ; durée, volume, séries, et la
+  mini-silhouette (`Silhouettes` de `carte-muscles.tsx`) des exercices qui ont une série faite,
+  muscles lus dans `optionsExercice` (persisté) ; un appui ouvre `CarteMuscles nu` en feuille.
 - **Repos (D335)** : `BandeauRepos` collé en bas, tant qu'un repos court ou vient de finir ; le
   brouillon garde sa fin et sa durée (`partReposRestante` dessine la barre qui se vide).
 - **Notification de repos (D338, D340)** : pendant le repos, le chrono et ses boutons ; après,

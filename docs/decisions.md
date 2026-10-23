@@ -364,6 +364,12 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   début et `fin = début + durée` (`terminer({ debut, fin })`). Les roues sont en JS (`Roue`,
   `ScrollView` aimanté) : un sélecteur natif n'est pas dans l'APK installé. Une feuille à roues
   ne se ferme pas en glissant (`glisser={false}`) : le geste volerait le défilement.
+- **D344** — En-tête de la séance, comme Hevy (révise D169) : replier, le nom, Terminer ; dessous
+  trois chiffres (durée, volume, séries faites/prévues) et les muscles déjà travaillés en
+  mini-silhouette face et dos, qui s'ouvre en grand dans une feuille. Les muscles viennent de la
+  fiche de chaque exercice, désormais gardée hors ligne. « Précédent » lie charge et unité par
+  une espace fine insécable (« 25 kg × 15 ») : la typographie française garde l'espace, la fine
+  tient dans la colonne et ne se coupe pas.
 
 ## Interface web
 

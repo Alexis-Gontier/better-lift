@@ -1,17 +1,11 @@
-import {
-  chargeEnTexte,
-  formaterCharge,
-  lireCharge,
-  lireReps,
-  type SerieEnCours,
-} from "@better-lift/shared";
+import { chargeEnTexte, lireCharge, lireReps, type SerieEnCours } from "@better-lift/shared";
 import { Check } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, type TextInput, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { SYSTEME_UNITES } from "@/lib/unites";
+import { SYSTEME_UNITES, UNITE } from "@/lib/unites";
 import { cn } from "@/lib/utils";
 import { vibrer } from "@/lib/vibrations";
 import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
@@ -29,7 +23,8 @@ type Affichee = { valeur: number | null; saisie: boolean };
 function textePrecedent(p?: { reps: number | null; chargeKg: number | null; faite: boolean }) {
   if (!p?.faite) return "—";
   if (p.chargeKg === null) return p.reps === null ? "—" : `${p.reps} reps`;
-  return `${formaterCharge(p.chargeKg, SYSTEME_UNITES)} × ${p.reps ?? "—"}`;
+  // Une espace fine insécable (D344) : « 25 kg » ne se coupe pas, et tient dans la colonne.
+  return `${chargeEnTexte(p.chargeKg, SYSTEME_UNITES)} ${UNITE} × ${p.reps ?? "—"}`;
 }
 
 const texteCharge = (v: number | null) => (v === null ? "" : chargeEnTexte(v, SYSTEME_UNITES));
