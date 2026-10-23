@@ -131,7 +131,9 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   même frame, la seconde écraserait la première.
 - **Repos (D335)** : `BandeauRepos` collé en bas, tant qu'un repos court ou vient de finir ; le
   brouillon garde sa fin et sa durée (`partReposRestante` dessine la barre qui se vide).
-- **Notification de repos (D338)** : `lib/notification-repos.ts`, avec `react-native-notify-kit`
+- **Notification de repos (D338, D340)** : pendant le repos, le chrono et ses boutons ; après,
+  la série suivante et « Terminer la série » (`contenuNotifSuivante`, même identifiant que
+  l'ancienne « Repos terminé »). `lib/notification-repos.ts`, avec `react-native-notify-kit`
   (module natif : chargé par `require` seulement sous Android hors Expo Go). Elle dérive de
   l'état par `aligner(séance)` ; le contenu et l'effet des boutons sont dans
   `shared/notif-repos.ts`. Le service et les boutons s'enregistrent dans `index.ts`, avant

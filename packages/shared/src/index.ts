@@ -44,6 +44,7 @@ export {
   appliquerActionRepos,
   type ContenuNotifRepos,
   contenuNotifRepos,
+  contenuNotifSuivante,
 } from "./notif-repos.js";
 export { PREFERENCES_DEFAUT, type Preferences, preferences } from "./preferences.js";
 export { filtrerCatalogue, normaliserRecherche, slugifier, texteRecherche } from "./recherche.js";

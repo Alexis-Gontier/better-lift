@@ -320,8 +320,11 @@ export function ajusterRepos(s: SeanceEnCours, deltaSec: number, maintenant: Dat
     repos: {
       fin: new Date(fin).toISOString(),
       signale: fin > maintenant.getTime() ? false : s.repos.signale,
-      // La durée suit : +15 s allonge la barre au lieu de la faire sauter en arrière.
-      ...(s.repos.duree === undefined ? {} : { duree: Math.max(1, s.repos.duree + deltaSec) }),
+      // La durée suit : +15 s allonge la barre au lieu de la faire sauter en
+      // arrière. Du décalage RÉEL : −15 s à 10 s de la fin n'en retire que 10.
+      ...(s.repos.duree === undefined
+        ? {}
+        : { duree: Math.max(1, s.repos.duree + (fin - Date.parse(s.repos.fin)) / 1000) }),
     },
   };
 }
