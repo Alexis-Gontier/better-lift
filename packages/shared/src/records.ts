@@ -147,6 +147,9 @@ export type SeanceDetail = SeanceResume & {
     slug: string;
     nom: string;
     image: string | null;
+    /** Les muscles de la fiche (D345) : la carte des muscles du détail, sur le mobile. */
+    musclePrincipal: string;
+    musclesSecondaires: string[];
     note: string | null;
     /** Le groupe de superset (D153), `null` hors groupe ; absent d'un cache antérieur. */
     supersetGroupe?: number | null;

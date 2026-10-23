@@ -23,7 +23,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D22** — Inscription fermée par une liste blanche d'adresses (`SIGNUP_ALLOWLIST`).
 - **D25** — L'interface passe avant la logique : on dessine et valide un écran, avec ses quatre
   états (vide, chargement, erreur, nominal), avant de le brancher.
-- **D178** — *Révisée par D316.* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
+- **D178** — *Révisée par D316 et D345 (historique et détail d'une séance).* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
   Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
   redirige vers `/routines`.
 - **D316** — *Révisée par D319 (barre d'onglets) et D321 (page d'une routine).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
@@ -53,7 +53,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   `Tabs` d'Expo Router avec une barre à nous (`components/barre-onglets.tsx`), pas `NativeTabs`
   (ni Lucide, ni accessoire au-dessus de la barre sous Android). Le bandeau « Reprendre » se
   pose au-dessus de la barre, sur les trois onglets ; « Séance vide » reste en tête de Routines.
-  L'onglet Historique n'a qu'un état vide pour l'instant ; son contenu viendra.
+  L'onglet Historique n'avait qu'un état vide ; son contenu est venu avec D345.
 - **D326** — Révise D316 et D322 (« les écrans restent sans logo ») pour la seule connexion du
   mobile : le logo « La charge » (tuile de l'icône, 72) et le nom, centrés dans le haut que le
   formulaire laisse libre. `components/logo.tsx` le dessine en `react-native-svg` aux couleurs
@@ -270,7 +270,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   `BoutonContour`, `FeuilleBasse` ; un chiffre se distingue par sa taille, pas sa couleur.
 - **D121** — *Révisée par D171* : le catalogue n'a plus de vue dans Routines.
 - **D122** — *Révisée par D316.* Page d'une routine : on la lit avant de la modifier ; « Lancer » en contour.
-- **D123** — *Détail d'une séance retiré du mobile (D178)* ; `ecartSerie` de `shared` reste.
+- **D123** — *Détail d'une séance retiré du mobile (D178), revenu par D345* ; `ecartSerie` de `shared` reste.
 - **D124** — *Révisée par D316.* Fiche d'un exercice : une page qui défile (1RM estimé et sa courbe, records,
   historique, consignes). Son historique n'ouvre plus rien (D178).
 - **D125**, **D126**, **D127** — *Écran Progrès retiré (D178)*, son calendrier et son token avec.
@@ -370,9 +370,21 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   fiche de chaque exercice, désormais gardée hors ligne. « Précédent » lie charge et unité par
   une espace fine insécable (« 25 kg × 15 ») : la typographie française garde l'espace, la fine
   tient dans la colonne et ne se coupe pas.
-
-## Interface web
-
+- **D345** — L'onglet Historique du mobile (complète D319, révise D178 et D123 : le détail d'une
+  séance revient), **comme celui du web** (D263, D265), comme les routines l'ont fait (D320). La
+  liste : les séances, la plus récente en haut, par mois civil (« Octobre 2026 · 8 séances ·
+  4 680 kg » ; `parMois`, `formatMois`, `formatJourSemaine` dans `shared/calendar.ts`, lus aussi
+  par le web), lues page par page en défilant ; une carte par séance comme la ligne du web : le
+  nom et ses records (contour, D28), « Mardi 13 octobre · 6 min », le volume à droite, un
+  chevron. Une séance encore dans la file d'envoi vient en tête, « En attente d'envoi », et ne
+  s'ouvre pas. La liste n'est pas gardée hors ligne (D96) : « Hors ligne », sous les séances en
+  attente. Le détail (`app/historique/[id].tsx`, pile racine) suit le web : date et heure ;
+  Durée · Volume · Séries faites · Records ; la carte des muscles des exercices faits (en plus
+  du web ; `GET /seances/:id` rend désormais `musclePrincipal` et `musclesSecondaires`) ; chaque
+  exercice avec son superset, sa note et ses records, puis Série · Précédent · Charge ·
+  Répétitions · 🏆 (séries non faites en retrait) ; la note. Le menu ⋮ : « Voir la routine »,
+  « Supprimer » (danger, confirmé, refusé hors ligne). En lecture seule (D293) : ni correction,
+  ni calendrier, ni recherche ni filtre par routine.
 - **D228** — Hors shadcn, tout composant externe se fait valider avant installation.
 - **D229** — Pas de logo : le nom « better-lift » en texte (`Brand`).
 - **D323** — Complète D229 : l'onglet porte l'icône de l'app mobile (D322) en favicon

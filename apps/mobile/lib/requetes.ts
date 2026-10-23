@@ -1,5 +1,6 @@
-import type { ExerciceResume, Preferences } from "@better-lift/shared";
+import type { ExerciceResume, Preferences, SeanceFil } from "@better-lift/shared";
 import {
+  type InfiniteData,
   infiniteQueryOptions,
   onlineManager,
   type QueryClient,
@@ -85,6 +86,56 @@ export function optionsSeances() {
     },
     initialPageParam: 1,
     getNextPageParam: (d) => (d.page * d.taille < d.total ? d.page + 1 : undefined),
+  });
+}
+
+/**
+ * Une séance passée (D345), en lecture. `null` : elle n'existe pas, ou plus — la donnée
+ * d'autrui répond 404 aussi (D53). Pas gardée hors ligne, comme la liste.
+ */
+export function optionsSeance(id: string) {
+  return queryOptions({
+    queryKey: ["seances", "detail", id],
+    queryFn: async () => {
+      const res = await api.seances[":id"].$get({ param: { id } });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error("La séance n'a pas pu être chargée.");
+      return res.json();
+    },
+  });
+}
+
+type PageSeances = { seances: SeanceFil[]; total: number; page: number; taille: number };
+
+/**
+ * Supprimer une séance (D345). Elle sort aussitôt des pages chargées ; son détail est retiré
+ * du cache, pas invalidé (il referait un GET, soit un 404). Les précédents et les routines
+ * (« Il y a 3 j ») dérivent des séances : ils se relisent.
+ */
+export function useSupprimerSeance() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await joindre(() => api.seances[":id"].$delete({ param: { id } }));
+      if (!res.ok && res.status !== 404) return echec(res, "La séance n'a pas pu être supprimée.");
+    },
+    onSuccess: (_, id) => {
+      client.setQueryData<InfiniteData<PageSeances>>(optionsSeances().queryKey, (d) =>
+        d
+          ? {
+              ...d,
+              pages: d.pages.map((p) => ({
+                ...p,
+                seances: p.seances.filter((s) => s.id !== id),
+                total: p.seances.some((s) => s.id === id) ? p.total - 1 : p.total,
+              })),
+            }
+          : d,
+      );
+      client.removeQueries({ queryKey: ["seances", "detail", id] });
+      void client.invalidateQueries({ queryKey: ["seances", "precedents"] });
+      void client.invalidateQueries({ queryKey: ["routines"] });
+    },
   });
 }
 

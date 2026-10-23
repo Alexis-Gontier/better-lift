@@ -4,7 +4,6 @@ import {
   type ExerciceEnCours,
   LIBELLE_TYPE_SERIE,
   type RoleRepos,
-  type SerieEnCours,
   TYPES_SERIE,
   type TypeSerie,
   valeurAffichee,
@@ -44,7 +43,7 @@ import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
  * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
  * autres portent leur lettre — l'échauffement ne décale pas « série 1 ».
  */
-function etiquettes(series: SerieEnCours[]): string[] {
+export function etiquettes(series: readonly { type: TypeSerie }[]): string[] {
   let n = 0;
   return series.map((s) => (s.type === "NORMALE" ? String(++n) : ABREGE_TYPE_SERIE[s.type]));
 }
