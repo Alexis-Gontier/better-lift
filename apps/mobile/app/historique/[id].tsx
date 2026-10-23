@@ -9,17 +9,23 @@ import {
 import { onlineManager, useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Dumbbell, Trash2, Trophy } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Dumbbell,
+  EllipsisVertical,
+  ListChecks,
+  Trash2,
+  Trophy,
+} from "lucide-react-native";
 import { ScrollView, View } from "react-native";
 import { CarteMuscles } from "@/components/routine/carte-muscles";
 import { etiquettes } from "@/components/seance/carte-exercice";
-import { RepereSuperset } from "@/components/seance/repere-superset";
 import { Button } from "@/components/ui/button";
 import { Ecran } from "@/components/ui/ecran";
 import { Chargement, Erreur, Vide } from "@/components/ui/etats";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useConfirmer, useInformer } from "@/lib/confirmation";
+import { useConfirmer, useFeuille, useInformer } from "@/lib/confirmation";
 import { FUSEAU } from "@/lib/fuseau";
 import { optionsSeance, useSupprimerSeance } from "@/lib/requetes";
 import { libelleMinutes } from "@/lib/temps";
@@ -27,17 +33,19 @@ import { SYSTEME_UNITES } from "@/lib/unites";
 import { cn } from "@/lib/utils";
 
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const charge = (kg: number | null) => (kg === null ? "—" : formaterCharge(kg, SYSTEME_UNITES));
 
 /**
- * Une séance passée (D345), en lecture, comme Hevy : la date, ses chiffres, les muscles
- * travaillés, chaque exercice avec ses séries et les records battus, la note. Elle ne se
- * corrige pas (D293) ; elle se supprime, après confirmation.
+ * Une séance passée (D345), en lecture, comme le détail du web (D263, D265) : ses chiffres,
+ * les muscles travaillés, chaque exercice et ses séries face à la dernière fois, la note. Le
+ * menu ⋮ mène à la routine d'origine ou supprime la séance ; elle ne se corrige pas (D293).
  */
 export default function PageSeancePassee() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const requete = useQuery(optionsSeance(id));
   const supprimer = useSupprimerSeance();
+  const ouvrirFeuille = useFeuille();
   const confirmer = useConfirmer();
   const informer = useInformer();
   const seance = requete.data;
@@ -62,6 +70,28 @@ export default function PageSeancePassee() {
     });
   };
 
+  const menu = (s: SeanceDetail) =>
+    ouvrirFeuille({
+      titre: s.nom,
+      options: [
+        ...(s.routineId
+          ? [
+              {
+                libelle: "Voir la routine",
+                icone: ListChecks,
+                onPress: () => router.push(`/routine/${s.routineId}`),
+              },
+            ]
+          : []),
+        {
+          libelle: "Supprimer",
+          icone: Trash2,
+          danger: true,
+          onPress: () => demanderSuppression(s),
+        },
+      ],
+    });
+
   const entete = (
     <View className="h-14 flex-row items-center gap-1 px-2">
       <Button
@@ -76,6 +106,18 @@ export default function PageSeancePassee() {
       <Text className="flex-1 font-semibold text-xl" accessibilityRole="header" numberOfLines={1}>
         {seance?.nom ?? "Séance"}
       </Text>
+      {seance ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-12"
+          onPress={() => menu(seance)}
+          disabled={supprimer.isPending}
+          accessibilityLabel="Actions de la séance"
+        >
+          <Icon as={EllipsisVertical} className="size-5 text-muted-foreground" />
+        </Button>
+      ) : null}
     </View>
   );
 
@@ -94,7 +136,6 @@ export default function PageSeancePassee() {
     }
 
     const exercices = seance.exercices;
-    const totalSeries = exercices.reduce((n, e) => n + e.series.length, 0);
     return (
       <ScrollView contentContainerClassName="gap-4 px-4 pb-8">
         <Text className="text-muted-foreground">
@@ -108,35 +149,23 @@ export default function PageSeancePassee() {
             libelle="Volume"
             valeur={formaterCharge(Math.round(seance.volumeKg), SYSTEME_UNITES)}
           />
-          <Chiffre
-            libelle="Séries"
-            valeur={
-              seance.seriesFaites === totalSeries
-                ? String(totalSeries)
-                : `${seance.seriesFaites}/${totalSeries}`
-            }
-          />
-          {seance.nbRecords > 0 ? (
-            <Chiffre libelle="Records" valeur={String(seance.nbRecords)} />
-          ) : null}
+          <Chiffre libelle="Séries faites" valeur={String(seance.seriesFaites)} />
+          <Chiffre libelle="Records" valeur={String(seance.nbRecords)} />
         </View>
 
         {/* Les muscles des exercices faits, comme l'en-tête de la séance (D344). */}
         <CarteMuscles exercices={exercices.filter((e) => e.series.some((s) => s.faite))} />
 
-        <View className="gap-2">
-          <Text className="font-medium" accessibilityRole="header">
-            Exercices
-          </Text>
-          {exercices.length === 0 ? (
-            <Text className="text-muted-foreground">Aucun exercice.</Text>
-          ) : null}
-          {exercices.map((e, i) => (
-            <RepereSuperset key={`${e.slug}-${i}`} groupe={groupeDe(exercices, i)} index={i}>
-              <ExerciceFait exercice={e} />
-            </RepereSuperset>
-          ))}
-        </View>
+        {exercices.length === 0 ? (
+          <Text className="text-muted-foreground">Aucun exercice.</Text>
+        ) : null}
+        {exercices.map((e, i) => (
+          <ExerciceFait
+            key={`${e.slug}-${i}`}
+            exercice={e}
+            lettre={groupeDe(exercices, i)?.lettre ?? null}
+          />
+        ))}
 
         {seance.note ? (
           <View className="gap-1 rounded-lg border border-border p-4">
@@ -146,19 +175,6 @@ export default function PageSeancePassee() {
             <Text className="text-muted-foreground">{seance.note}</Text>
           </View>
         ) : null}
-
-        {/* Le danger en contour, confirmé (D335, D342). */}
-        <Button
-          variant="outline"
-          className="h-12 border-destructive"
-          onPress={() => demanderSuppression(seance)}
-          disabled={supprimer.isPending}
-        >
-          <Icon as={Trash2} className="size-4 text-destructive" />
-          <Text className="text-destructive">
-            {supprimer.isPending ? "Suppression…" : "Supprimer la séance"}
-          </Text>
-        </Button>
       </ScrollView>
     );
   };
@@ -174,7 +190,9 @@ export default function PageSeancePassee() {
 function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   return (
     <View className="flex-1 items-center gap-0.5 py-3">
-      <Text className="text-muted-foreground text-xs">{libelle}</Text>
+      <Text className="text-muted-foreground text-xs" numberOfLines={1}>
+        {libelle}
+      </Text>
       <Text className="font-semibold text-lg tabular-nums" numberOfLines={1}>
         {valeur}
       </Text>
@@ -182,79 +200,108 @@ function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   );
 }
 
+// Les colonnes du web (D246) : étiquette, Précédent, Charge, Répétitions, puis le record ou
+// « Non faite » dans une largeur fixe — chaque ligne est sa propre rangée, une colonne
+// élargie par un trophée décalerait les autres.
+const COL_SERIE = "w-10";
+const COL_FIN = "w-16 items-end";
+
 /**
- * Un exercice de la séance passée : sa vignette, son nom et sa note, puis chaque série —
- * l'étiquette de la séance (É, 1, 2…), la charge et les répétitions, et ses records battus
- * en contour (D28). Une série non faite reste, en retrait.
+ * Un exercice fait, en lecture, comme le web (D263, D294) : sa vignette, son nom, son
+ * superset et sa note, ses records ; puis ses séries face à sa dernière occurrence
+ * antérieure, position par position (D123). Une série non faite reste, en retrait.
  */
-function ExerciceFait({ exercice }: { exercice: SeanceDetail["exercices"][number] }) {
+function ExerciceFait({
+  exercice,
+  lettre,
+}: {
+  exercice: SeanceDetail["exercices"][number];
+  lettre: string | null;
+}) {
   const libelles = etiquettes(exercice.series);
+  const records = exercice.series.filter((s) => s.records.length > 0).length;
+  const sousTitre = [lettre && `Superset ${lettre}`, exercice.note].filter(Boolean).join(" · ");
   return (
-    <View className="pb-3">
-      <View className="overflow-hidden rounded-lg border border-border bg-background">
-        <View className="min-h-16 flex-row items-center gap-3 px-3 py-3">
-          {exercice.image ? (
-            // Fond blanc : les images du catalogue sont détourées sur blanc.
-            <View className="size-12 overflow-hidden rounded-md bg-white">
-              <Image
-                source={{ uri: exercice.image }}
-                style={{ width: 48, height: 48 }}
-                contentFit="cover"
-                cachePolicy="disk"
-                autoplay={false}
-              />
-            </View>
-          ) : (
-            <View className="size-12 items-center justify-center rounded-md bg-secondary">
-              <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
-            </View>
-          )}
-          <View className="flex-1 gap-0.5">
-            <Text className="font-medium text-base" numberOfLines={2}>
-              {exercice.nom}
-            </Text>
-            {exercice.note ? (
-              <Text className="text-muted-foreground text-sm">{exercice.note}</Text>
-            ) : null}
+    <View className="overflow-hidden rounded-lg border border-border bg-background">
+      <View className="min-h-16 flex-row items-center gap-3 px-3 py-3">
+        {exercice.image ? (
+          // Fond blanc : les images du catalogue sont détourées sur blanc.
+          <View className="size-12 overflow-hidden rounded-md bg-white">
+            <Image
+              source={{ uri: exercice.image }}
+              style={{ width: 48, height: 48 }}
+              contentFit="cover"
+              cachePolicy="disk"
+              autoplay={false}
+            />
           </View>
+        ) : (
+          <View className="size-12 items-center justify-center rounded-md bg-secondary">
+            <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
+          </View>
+        )}
+        <View className="flex-1 gap-0.5">
+          <Text className="font-medium text-base" numberOfLines={2}>
+            {exercice.nom}
+          </Text>
+          {sousTitre ? (
+            <Text className="text-muted-foreground text-sm" numberOfLines={2}>
+              {sousTitre}
+            </Text>
+          ) : null}
         </View>
-        <View className="flex-row gap-3 border-border border-t px-3 pt-2 pb-1">
-          <Text className="w-8 text-muted-foreground text-xs">Série</Text>
-          <Text className="flex-1 text-muted-foreground text-xs">Charge × reps</Text>
+        {records > 0 ? (
+          <View className="flex-row items-center gap-1 rounded-full border border-foreground px-2 py-0.5">
+            <Icon as={Trophy} className="size-3 text-foreground" />
+            <Text className="font-medium text-xs">
+              {records > 1 ? `${records} records` : "Record"}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
+      <View className="gap-1 border-border border-t px-3 py-2">
+        <View className="flex-row items-center gap-2">
+          <Text className={cn(COL_SERIE, "text-muted-foreground text-xs")}>Série</Text>
+          <Text className="flex-1 text-muted-foreground text-xs">Précédent</Text>
+          <Text className="flex-1 text-muted-foreground text-xs">Charge</Text>
+          <Text className="flex-1 text-muted-foreground text-xs">Répétitions</Text>
+          <View className={COL_FIN} />
         </View>
-        <View className="pb-2">
-          {exercice.series.map((s, i) => (
+        {exercice.series.map((s, i) => {
+          const avant = exercice.precedentes[i];
+          return (
             // Clé par position : l'ordre des séries est celui de la séance.
             <View
               key={i}
-              className={cn("min-h-10 flex-row items-center gap-3 px-3", !s.faite && "opacity-50")}
-              accessibilityLabel={
-                s.records.length > 0
-                  ? `Record : ${s.records.map((r) => LIBELLE_RECORD[r]).join(", ")}`
-                  : undefined
-              }
+              className={cn("min-h-10 flex-row items-center gap-2", !s.faite && "opacity-50")}
             >
-              <Text className="w-8 font-medium tabular-nums">{libelles[i]}</Text>
-              <Text className="flex-1 tabular-nums">
-                {s.chargeKg === null
-                  ? s.reps === null
-                    ? "—"
-                    : `${s.reps} rép.`
-                  : `${formaterCharge(s.chargeKg, SYSTEME_UNITES)} × ${s.reps ?? "—"}`}
+              <Text className={cn(COL_SERIE, "font-medium tabular-nums")}>{libelles[i]}</Text>
+              <Text className="flex-1 text-muted-foreground text-sm tabular-nums" numberOfLines={1}>
+                {avant ? `${charge(avant.chargeKg)} × ${avant.reps ?? "—"}` : "—"}
               </Text>
-              {s.records.length > 0 ? (
-                <View className="flex-row items-center gap-1 rounded-full border border-foreground px-2 py-0.5">
-                  <Icon as={Trophy} className="size-3 text-foreground" />
-                  <Text className="font-medium text-xs">
-                    {s.records.map((r) => LIBELLE_RECORD[r]).join(" · ")}
-                  </Text>
-                </View>
-              ) : !s.faite ? (
-                <Text className="text-muted-foreground text-xs">Non faite</Text>
-              ) : null}
+              <Text className="flex-1 text-sm tabular-nums" numberOfLines={1}>
+                {charge(s.chargeKg)}
+              </Text>
+              <Text className="flex-1 text-sm tabular-nums" numberOfLines={1}>
+                {s.reps === null ? "—" : `${s.reps} rép.`}
+              </Text>
+              <View className={COL_FIN}>
+                {s.records.length > 0 ? (
+                  <View
+                    accessible
+                    accessibilityLabel={`Record : ${s.records.map((r) => LIBELLE_RECORD[r]).join(", ")}`}
+                    className="rounded-full border border-foreground p-1"
+                  >
+                    <Icon as={Trophy} className="size-3.5 text-foreground" />
+                  </View>
+                ) : !s.faite ? (
+                  <Text className="text-muted-foreground text-xs">Non faite</Text>
+                ) : null}
+              </View>
             </View>
-          ))}
-        </View>
+          );
+        })}
       </View>
     </View>
   );

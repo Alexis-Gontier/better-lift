@@ -1,6 +1,6 @@
 export { routineASuivre } from "./accueil.js";
 export { estAutorisee, normaliserListe } from "./allowlist.js";
-export { type ApercuExercice, apercuExercices } from "./apercu.js";
+export { apercuExercices } from "./apercu.js";
 export {
   type Brouillon,
   brouillonValide,

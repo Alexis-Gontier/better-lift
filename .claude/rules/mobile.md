@@ -86,12 +86,13 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   ouvre `app/routine/[id].tsx` (lecture seule, pile racine, exercices repliés par
   `CarteExerciceRoutine`, carte des muscles `CarteMuscles` — couleurs du dessin lues par
   `useCSSVariable`). `optionsRoutines()` rend `{ routines, dossiers }`.
-- **Historique (D345)** : `SectionList` par mois (`parMois`), `CarteSeance`
-  (`components/historique/`), pages de `optionsSeances()` chargées en défilant. Les séances de
+- **Historique (D345)**, calqué sur le web : `SectionList` par mois (`parMois`), `CarteSeance`
+  (`components/historique/`, la ligne du web), pages de `optionsSeances()` chargées en défilant. Les séances de
   la file d'envoi (`useSeance().file`, sans refus) viennent en tête par `filEnAttente`, sauf
   celles que la liste a déjà reçues. Détail `app/historique/[id].tsx` (pile racine) :
-  `optionsSeance(id)` rend `null` sur un 404 ; `useSupprimerSeance` retire la séance des pages
-  et du cache (sans relire le détail), relit précédents et routines.
+  colonnes du web, menu ⋮ (`useFeuille`) ; `optionsSeance(id)` rend `null` sur un 404 ;
+  `useSupprimerSeance` retire la séance des pages et du cache (sans relire le détail), relit
+  précédents et routines.
 - La pilule de l'onglet actif est toujours montée et se montre par l'opacité : sous Android, un
   fond ajouté à une vue déjà affichée perdait son arrondi.
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,

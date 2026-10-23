@@ -371,22 +371,20 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   une espace fine insécable (« 25 kg × 15 ») : la typographie française garde l'espace, la fine
   tient dans la colonne et ne se coupe pas.
 - **D345** — L'onglet Historique du mobile (complète D319, révise D178 et D123 : le détail d'une
-  séance revient), comme Hevy. La liste : les séances, la plus récente en haut, par mois civil
-  (`parMois`, `formatMois`, `formatJourSemaine` dans `shared/calendar.ts`, lus aussi par le web),
-  lues page par page en défilant ; une carte dit le nom, les records battus (contour, D28), la
-  date, la durée, le volume, puis les trois premiers exercices — « 2 × Développé couché » et sa
-  meilleure série à droite, un exercice sauté en retrait, « et 2 autres exercices ». Une séance
-  encore dans la file d'envoi vient en tête, « En attente d'envoi », en pointillés ; elle ne
+  séance revient), **comme celui du web** (D263, D265), comme les routines l'ont fait (D320). La
+  liste : les séances, la plus récente en haut, par mois civil (« Octobre 2026 · 8 séances ·
+  4 680 kg » ; `parMois`, `formatMois`, `formatJourSemaine` dans `shared/calendar.ts`, lus aussi
+  par le web), lues page par page en défilant ; une carte par séance comme la ligne du web : le
+  nom et ses records (contour, D28), « Mardi 13 octobre · 6 min », le volume à droite, un
+  chevron. Une séance encore dans la file d'envoi vient en tête, « En attente d'envoi », et ne
   s'ouvre pas. La liste n'est pas gardée hors ligne (D96) : « Hors ligne », sous les séances en
-  attente. Le détail (`app/historique/[id].tsx`, pile racine) : date et heure, durée, volume,
-  séries faites/prévues, records ; la carte des muscles des exercices faits (`GET /seances/:id`
-  rend désormais `musclePrincipal` et `musclesSecondaires` de chaque exercice) ; chaque exercice
-  et ses séries, étiquetées comme en séance, records en contour, séries non faites en retrait ;
-  la note ; « Supprimer la séance » en contour au danger, confirmé (D335), refusé hors ligne. En
-  lecture seule (D293) : ni correction, ni calendrier, ni filtre par routine, ni « Refaire ».
-
-## Interface web
-
+  attente. Le détail (`app/historique/[id].tsx`, pile racine) suit le web : date et heure ;
+  Durée · Volume · Séries faites · Records ; la carte des muscles des exercices faits (en plus
+  du web ; `GET /seances/:id` rend désormais `musclePrincipal` et `musclesSecondaires`) ; chaque
+  exercice avec son superset, sa note et ses records, puis Série · Précédent · Charge ·
+  Répétitions · 🏆 (séries non faites en retrait) ; la note. Le menu ⋮ : « Voir la routine »,
+  « Supprimer » (danger, confirmé, refusé hors ligne). En lecture seule (D293) : ni correction,
+  ni calendrier, ni recherche ni filtre par routine.
 - **D228** — Hors shadcn, tout composant externe se fait valider avant installation.
 - **D229** — Pas de logo : le nom « better-lift » en texte (`Brand`).
 - **D323** — Complète D229 : l'onglet porte l'icône de l'app mobile (D322) en favicon

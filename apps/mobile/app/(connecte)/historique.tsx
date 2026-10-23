@@ -1,4 +1,4 @@
-import { formatMois, parMois, type SeanceFil } from "@better-lift/shared";
+import { formaterCharge, formatMois, parMois, type SeanceFil } from "@better-lift/shared";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
@@ -11,11 +11,12 @@ import { TitreOnglet } from "@/components/ui/titre-onglet";
 import { FUSEAU } from "@/lib/fuseau";
 import { optionsSeances } from "@/lib/requetes";
 import { useSeance } from "@/lib/seance";
+import { SYSTEME_UNITES } from "@/lib/unites";
 
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * L'onglet Historique (D319, D345), comme Hevy : les séances, la plus récente en haut,
+ * L'onglet Historique (D319, D345), comme celui du web : les séances, la plus récente en haut,
  * groupées par mois, lues page par page en défilant. Une séance terminée qui attend le
  * réseau vient en tête, « En attente d'envoi ». La liste n'est pas gardée hors ligne
  * (D96 : elle grossit sans fin).
@@ -83,8 +84,12 @@ export default function Historique() {
             <Text className="font-medium" accessibilityRole="header">
               {majuscule(formatMois(section.mois))}
             </Text>
-            <Text className="text-muted-foreground text-sm">
-              {section.data.length > 1 ? `${section.data.length} séances` : "1 séance"}
+            <Text className="text-muted-foreground text-sm tabular-nums">
+              {section.data.length > 1 ? `${section.data.length} séances` : "1 séance"} ·{" "}
+              {formaterCharge(
+                Math.round(section.data.reduce((n, s) => n + s.volumeKg, 0)),
+                SYSTEME_UNITES,
+              )}
             </Text>
           </View>
         )}

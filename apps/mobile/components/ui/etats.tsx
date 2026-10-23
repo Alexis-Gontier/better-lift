@@ -104,25 +104,24 @@ function SqueletteRoutine() {
   );
 }
 
-/** L'historique (D345) : la tête d'un mois, puis des cartes — nom, date, trois exercices. */
+/** L'historique (D345) : la tête d'un mois, puis des cartes — nom, date, volume. */
 function SqueletteHistorique() {
   return (
     <View className="gap-2 px-4">
       <View className="flex-row justify-between pt-2 pb-2">
         <Barre className="h-4 w-1/4" />
-        <Barre className="h-3 w-16" />
+        <Barre className="h-3 w-1/4" />
       </View>
-      {CINQ.slice(0, 3).map((i) => (
-        <View key={i} className="gap-3 rounded-lg border border-border px-4 py-3">
-          <View className="gap-2">
+      {CINQ.map((i) => (
+        <View
+          key={i}
+          className="min-h-16 flex-row items-center gap-3 rounded-lg border border-border px-4 py-3"
+        >
+          <View className="flex-1 gap-2">
             <Barre className="h-4 w-1/3" />
-            <Barre className="h-3 w-2/3" />
+            <Barre className="h-3 w-1/2" />
           </View>
-          <View className="gap-2">
-            <Barre className="h-3 w-3/4" />
-            <Barre className="h-3 w-2/3" />
-            <Barre className="h-3 w-3/4" />
-          </View>
+          <Barre className="h-3 w-16" />
         </View>
       ))}
     </View>

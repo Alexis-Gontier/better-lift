@@ -21,7 +21,7 @@ Préparer ses séances, les remplir sans friction pendant l'effort, voir sa prog
 
 | Surface | Rôle | Écrans |
 |---|---|---|
-| **Mobile** | L'outil de salle : une main, entre deux séries, parfois sans réseau | Routines (à lancer, séance vide, page d'une routine), Historique (séances passées en lecture, D345), séance, fin de séance, Profil, connexion |
+| **Mobile** | L'outil de salle : une main, entre deux séries, parfois sans réseau | Routines (à lancer, séance vide, page d'une routine), Historique (séances passées en lecture, comme le web, D345), séance, fin de séance, Profil, connexion |
 | **Web** | L'atelier : préparer et relire, grand écran et clavier. Pas de séance en direct | Accueil (tableau de bord, D330), Routines (dossiers, éditeur), Historique, Exercices, Paramètres |
 
 ### Vocabulaire
