@@ -123,7 +123,8 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   Au toucher, une case non saisie s'ouvre **vide**, une case saisie se sélectionne toute
   (`selectTextOnFocus` : la `selection` contrôlée arrivait trop tard au premier toucher, curseur
   au milieu). `saisi` (par champ) marque ce qui a été tapé ; cocher (`validerSerie`) écrit le
-  gris et marque les deux champs. **Rien ne change le style d'une case pendant la frappe** :
+  gris et marque les deux champs. Une charge tapée descend, saisie, sur les séries suivantes
+  de même type non faites (D346, `modifierSerie`). **Rien ne change le style d'une case pendant la frappe** :
   sous Android, ça relance la sélection de tout. La valeur s'écrit à `onEndEditing`, **lue dans
   l'événement** (`nativeEvent.text`, l'état peut manquer le dernier chiffre), seulement si le
   texte a changé ; invalide, elle reste affichée en rouge et n'est pas écrite. « ✓ » du pavé
