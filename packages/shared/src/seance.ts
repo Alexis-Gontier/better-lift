@@ -181,7 +181,8 @@ export function modifierSerie(
   iS: number,
   patch: Partial<Omit<SerieEnCours, "faite" | "saisi">>,
 ): SeanceEnCours {
-  return avecSerie(s, iE, iS, (x) => {
+  const avant = s.exercices[iE]?.series[iS];
+  const apres = avecSerie(s, iE, iS, (x) => {
     const saisi = {
       ...x.saisi,
       ...("chargeKg" in patch ? { chargeKg: true } : {}),
@@ -189,6 +190,22 @@ export function modifierSerie(
     };
     return { ...x, ...patch, ...(Object.keys(saisi).length > 0 ? { saisi } : {}) };
   });
+  const charge = patch.chargeKg;
+  if (charge == null || !avant) return apres;
+  // D346 : comme Hevy et Strong, la charge tapée descend sur les séries
+  // suivantes de même type, non faites, que rien n'a fixées — ou qui portaient
+  // la charge d'avant, recopiée d'ici.
+  return avecExercice(apres, iE, (e) => ({
+    ...e,
+    series: e.series.map((x, i) =>
+      i > iS &&
+      x.type === avant.type &&
+      !x.faite &&
+      (!x.saisi?.chargeKg || (avant.saisi?.chargeKg && x.chargeKg === avant.chargeKg))
+        ? { ...x, chargeKg: charge, saisi: { ...x.saisi, chargeKg: true } }
+        : x,
+    ),
+  }));
 }
 
 type Champ = "chargeKg" | "reps";
