@@ -98,6 +98,10 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,
   `fin`, `choisir-exercices`, `reorganiser`, `routine/[id]`, `historique/[id]` sont hors de
   la garde, sur la pile racine : la barre n'y paraît pas.
+- **Revenir à l'accueil : `router.dismissTo("/")`**, jamais `replace("/")`, qui empile un
+  second accueil sur la séance (le retour y menait). Une liste se rafraîchit par
+  `useTirerPourRafraichir` (`lib/rafraichir.ts`), jamais `refreshing={isRefetching}` : sous
+  Android, le rond d'une relecture de fond restait figé sur la première carte.
 - Une pile qui déclare ses écrans prend le premier pour route initiale : `(connecte)` est
   déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 
