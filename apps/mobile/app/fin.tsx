@@ -82,7 +82,7 @@ export default function Fin() {
       icone: Trash2,
       annuler: "Garder la séance",
       onConfirmer: () => {
-        void abandonner().then(() => router.replace("/"));
+        void abandonner().then(() => router.dismissTo("/"));
       },
     });
 
@@ -121,7 +121,7 @@ export default function Fin() {
     // Sur disque dans la file AVANT de quitter l'écran : l'envoi se fait
     // ensuite, et se retentera tant qu'il n'aura pas abouti.
     await terminer({ debut, fin });
-    router.replace("/");
+    router.dismissTo("/");
   };
 
   return (
