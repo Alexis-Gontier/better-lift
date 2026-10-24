@@ -9,6 +9,7 @@ import { Chargement, Erreur, Vide } from "@/components/ui/etats";
 import { Text } from "@/components/ui/text";
 import { TitreOnglet } from "@/components/ui/titre-onglet";
 import { FUSEAU } from "@/lib/fuseau";
+import { useTirerPourRafraichir } from "@/lib/rafraichir";
 import { optionsSeances } from "@/lib/requetes";
 import { useSeance } from "@/lib/seance";
 import { SYSTEME_UNITES } from "@/lib/unites";
@@ -24,6 +25,7 @@ const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export default function Historique() {
   const router = useRouter();
   const requete = useInfiniteQuery(optionsSeances());
+  const tirer = useTirerPourRafraichir(() => requete.refetch());
   const { file } = useSeance();
   const seances = requete.data?.pages.flatMap((p) => p.seances) ?? [];
   // Une séance envoyée sort de la file APRÈS la réponse : le temps de la relecture, elle
@@ -107,8 +109,8 @@ export default function Historique() {
             <ActivityIndicator className="py-4" colorClassName="accent-muted-foreground" />
           ) : null
         }
-        refreshing={requete.isRefetching && !requete.isFetchingNextPage}
-        onRefresh={() => requete.refetch()}
+        refreshing={tirer.refreshing}
+        onRefresh={tirer.onRefresh}
       />
     );
   };

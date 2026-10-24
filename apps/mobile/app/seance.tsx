@@ -116,7 +116,7 @@ export default function Seance() {
     return (
       <Ecran className="flex-1 items-center justify-center gap-4 bg-background">
         <Text className="text-muted-foreground">Aucune séance en cours.</Text>
-        <Button variant="outline" onPress={() => router.replace("/")}>
+        <Button variant="outline" onPress={() => router.dismissTo("/")}>
           <Text>Retour</Text>
         </Button>
       </Ecran>
@@ -132,7 +132,7 @@ export default function Seance() {
       annuler: "Continuer la séance",
       onConfirmer: async () => {
         await effacerSeance();
-        router.replace("/");
+        router.dismissTo("/");
       },
     });
 

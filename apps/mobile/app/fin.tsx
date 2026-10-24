@@ -98,7 +98,7 @@ export default function Fin() {
       icone: Trash2,
       annuler: "Garder la séance",
       onConfirmer: () => {
-        void abandonner().then(() => router.replace("/"));
+        void abandonner().then(() => router.dismissTo("/"));
       },
     });
 
@@ -147,7 +147,7 @@ export default function Fin() {
         informer("Routine inchangée", e instanceof Error ? e.message : "La mise à jour a échoué.");
       }
     }
-    router.replace("/");
+    router.dismissTo("/");
   };
 
   return (
