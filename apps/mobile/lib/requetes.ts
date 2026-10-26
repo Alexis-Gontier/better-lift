@@ -1,4 +1,4 @@
-import type { ExerciceResume, Preferences, SeanceFil } from "@better-lift/shared";
+import type { ExerciceResume, Preferences, RoutineSaisie, SeanceFil } from "@better-lift/shared";
 import {
   type InfiniteData,
   infiniteQueryOptions,
@@ -237,6 +237,21 @@ async function joindre<T>(appel: () => Promise<T>): Promise<T> {
   } catch {
     throw new Error("Le serveur est injoignable. Vérifie ta connexion, puis réessaie.");
   }
+}
+
+/**
+ * La routine reprend la séance du jour (D347), depuis la fin. Invalide `["routines"]`
+ * en entier : la liste (nombre de séries, durée) comme le détail.
+ */
+export function useMettreAJourRoutine() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, saisie }: { id: string; saisie: RoutineSaisie }) => {
+      const res = await joindre(() => api.routines[":id"].$put({ param: { id }, json: saisie }));
+      if (!res.ok) return echec(res, "La routine n'a pas pu être mise à jour.");
+    },
+    onSettled: () => client.invalidateQueries({ queryKey: ["routines"] }),
+  });
 }
 
 /** Les préférences du compte (D129), gardées hors ligne : la séance lit le repos par défaut. */

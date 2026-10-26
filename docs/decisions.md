@@ -385,6 +385,14 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   Répétitions · 🏆 (séries non faites en retrait) ; la note. Le menu ⋮ : « Voir la routine »,
   « Supprimer » (danger, confirmé, refusé hors ligne). En lecture seule (D293) : ni correction,
   ni calendrier, ni recherche ni filtre par routine.
+- **D347** — La fin de séance propose de **mettre à jour la routine** d'origine, comme Hevy
+  (complète D342) : un interrupteur « Mettre à jour « Push A » », éteint par défaut, et
+  « N changements » qui se déplie (« + Dips », « Curl : 3 → 4 séries, 60 kg → 62,5 kg »).
+  Seulement si la séance diffère de la routine. La routine reprend la **structure** de la séance
+  (exercices, ordre, séries, types, repos, supersets) et les **valeurs des séries faites** ; une
+  série non cochée garde sa cible. Le nom reste ; note et dossier ne partent pas (D298). Calcul
+  dans `shared/maj-routine.ts` ; écriture par `PUT /routines/:id` après la mise en file de la
+  séance, un échec ne coûte que la routine. Hors ligne, rien n'est proposé : pas de seconde file.
 - **D228** — Hors shadcn, tout composant externe se fait valider avant installation.
 - **D229** — Pas de logo : le nom « better-lift » en texte (`Brand`).
 - **D323** — Complète D229 : l'onglet porte l'icône de l'app mobile (D322) en favicon
