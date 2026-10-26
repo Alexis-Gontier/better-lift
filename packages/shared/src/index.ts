@@ -52,6 +52,7 @@ export {
   parDossier,
   resumeSeries,
 } from "./liste-routines.js";
+export { majRoutine } from "./maj-routine.js";
 export { LIBELLE_ZONE, type ZoneTravaillee, zonesTravaillees } from "./muscles.js";
 export {
   type ActionRepos,
