@@ -116,6 +116,9 @@ export default function PageRoutine() {
                 exercice={e}
                 ouvert={ouverts.has(i)}
                 onBasculer={() => basculer(i)}
+                onOuvrir={() =>
+                  router.push({ pathname: "/exercice/[slug]", params: { slug: e.slug } })
+                }
                 repos={roleRepos(exercices, i)}
               />
             </RepereSuperset>

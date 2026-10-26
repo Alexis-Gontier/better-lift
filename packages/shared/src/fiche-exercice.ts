@@ -1,7 +1,8 @@
-import { type HistoriqueExercice, type RecordExercice, recordsDe } from "@better-lift/shared";
+import { type HistoriqueExercice, type RecordExercice, recordsDe } from "./records.js";
 
 /**
- * Les calculs de la fiche d'un exercice, sur l'historique que rend l'API. Les records viennent
+ * Les calculs de la fiche d'un exercice, sur l'historique que rend l'API — web et mobile
+ * (D348). Les records viennent
  * de `shared` (`recordsDe`) : mêmes règles que partout — séries faites, hors échauffement, une
  * répétition au moins, 1RM au-delà de 12 répétitions ignoré (D307).
  */

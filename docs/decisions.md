@@ -393,6 +393,18 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   série non cochée garde sa cible. Le nom reste ; note et dossier ne partent pas (D298). Calcul
   dans `shared/maj-routine.ts` ; écriture par `PUT /routines/:id` après la mise en file de la
   séance, un échec ne coûte que la routine. Hors ligne, rien n'est proposé : pas de seconde file.
+- **D348** — La page d'un exercice revient au mobile (`app/exercice/[slug].tsx`, pile racine),
+  **transposée de la fiche du web** (D264, D265), d'un seul défilement : l'exécution
+  (animation aux deux tiers de la largeur, matériel), les muscles (`CarteMuscles`), les records
+  datés, l'historique (une ligne par séance : jour, séries faites, volume, 1RM ; elle ouvre le
+  détail D345), les pourcentages du 1RM, la meilleure charge par nombre de répétitions. **Sans
+  la courbe de progression** : en salle on lit des chiffres, la courbe reste sur le web. On y
+  arrive comme dans Hevy en touchant l'exercice : sa vignette ou son nom dans la carte de
+  séance (la vignette n'agrandit plus l'animation, la page la montre), sa tête dans
+  le détail d'une séance, et sur la page d'une routine tout sauf le chevron, qui seul déplie
+  les séries. Les calculs de la fiche passent du web à `shared/fiche-exercice.ts`. Les séances
+  de l'exercice se lisent sous `["seances", "exercice", slug]` : l'envoi d'une séance les
+  relit ; pas gardées hors ligne.
 - **D228** — Hors shadcn, tout composant externe se fait valider avant installation.
 - **D229** — Pas de logo : le nom « better-lift » en texte (`Brand`).
 - **D323** — Complète D229 : l'onglet porte l'icône de l'app mobile (D322) en favicon
