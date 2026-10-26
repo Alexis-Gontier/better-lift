@@ -72,6 +72,8 @@ export default function RootLayout() {
               <Stack.Screen name="routine/[id]" />
               {/* Une séance passée (D345), par-dessus l'onglet Historique. */}
               <Stack.Screen name="historique/[id]" />
+              {/* La page d'un exercice (D348), depuis la séance, une routine ou l'historique. */}
+              <Stack.Screen name="exercice/[slug]" />
               {/* Le catalogue s'ouvre par-dessus la séance, et y revient. */}
               <Stack.Screen name="choisir-exercices" options={{ presentation: "modal" }} />
               {/* L'ordre des exercices de la séance en cours (D89). */}

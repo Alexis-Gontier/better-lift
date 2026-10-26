@@ -1,4 +1,3 @@
-import type { HistoriqueExercice } from "@better-lift/shared";
 import { describe, expect, it } from "vitest";
 import {
   chiffresSeance,
@@ -6,7 +5,8 @@ import {
   meilleureChargeParReps,
   pourcentagesUnRm,
   recordsExercice,
-} from "./stats";
+} from "./fiche-exercice.js";
+import type { HistoriqueExercice } from "./records.js";
 
 type Serie = HistoriqueExercice[number]["series"][number];
 const s = (chargeKg: number | null, reps: number, extra: Partial<Serie> = {}): Serie => ({

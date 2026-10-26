@@ -1,4 +1,13 @@
-import type { ExerciceDetail, HistoriqueExercice, TypeRecord } from "@better-lift/shared";
+import {
+  chiffresSeance,
+  chronologique,
+  type ExerciceDetail,
+  type HistoriqueExercice,
+  meilleureChargeParReps,
+  pourcentagesUnRm,
+  recordsExercice,
+  type TypeRecord,
+} from "@better-lift/shared";
 import { Link } from "@tanstack/react-router";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { BodyMap } from "@/components/body-map";
@@ -23,13 +32,6 @@ import {
 } from "@/components/ui/table";
 import { formatKg, formatNumber, formatShortDay } from "@/lib/format";
 import { jourCivil } from "@/lib/locale";
-import {
-  chiffresSeance,
-  chronologique,
-  meilleureChargeParReps,
-  pourcentagesUnRm,
-  recordsExercice,
-} from "./stats";
 
 const chartConfig = {
   oneRm: { label: "1RM estimé", color: "var(--chart-2)" },

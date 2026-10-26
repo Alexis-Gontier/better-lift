@@ -281,6 +281,9 @@ export default function Seance() {
                   onNote={(note) => changer((s) => modifierNote(s, iE, note))}
                   onRepos={(sec) => changer((s) => modifierReposExercice(s, iE, sec))}
                   onReorganiser={() => router.push("/reorganiser")}
+                  onOuvrir={() =>
+                    router.push({ pathname: "/exercice/[slug]", params: { slug: e.slug } })
+                  }
                   onRemplacer={() => remplacer(iE)}
                   onRetirer={() => changer((s) => retirerExercice(s, iE))}
                 />

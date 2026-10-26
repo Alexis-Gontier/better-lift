@@ -31,6 +31,13 @@ export {
 export { type ExerciceFait, resumerExercicesFaits } from "./exercices-faits.js";
 export { type LigneExport, versCsv } from "./export.js";
 export {
+  chiffresSeance,
+  chronologique,
+  meilleureChargeParReps,
+  pourcentagesUnRm,
+  recordsExercice,
+} from "./fiche-exercice.js";
+export {
   aEnvoyer,
   apresReponse,
   classerReponse,

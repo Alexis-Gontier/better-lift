@@ -95,9 +95,13 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   précédents et routines.
 - La pilule de l'onglet actif est toujours montée et se montre par l'opacité : sous Android, un
   fond ajouté à une vue déjà affichée perdait son arrondi.
+- **Page d'un exercice (D348)** : `app/exercice/[slug].tsx`, la fiche du web sans courbe
+  (calculs dans `shared/fiche-exercice.ts`). On l'ouvre en touchant l'exercice dans la séance
+  (`onOuvrir` de `CarteExercice`), le détail d'une séance et la page d'une routine (le chevron
+  seul y déplie).
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,
-  `fin`, `choisir-exercices`, `reorganiser`, `routine/[id]`, `historique/[id]` sont hors de
-  la garde, sur la pile racine : la barre n'y paraît pas.
+  `fin`, `choisir-exercices`, `reorganiser`, `routine/[id]`, `historique/[id]`,
+  `exercice/[slug]` sont hors de la garde, sur la pile racine : la barre n'y paraît pas.
 - Une pile qui déclare ses écrans prend le premier pour route initiale : `(connecte)` est
   déclaré en tête dans `app/_layout.tsx`, sinon l'app s'ouvre sur une modale.
 

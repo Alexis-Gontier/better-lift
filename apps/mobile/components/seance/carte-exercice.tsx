@@ -68,6 +68,7 @@ export function CarteExercice({
   onNote,
   onRepos,
   onReorganiser,
+  onOuvrir,
   onRemplacer,
   onRetirer,
   repos,
@@ -101,6 +102,8 @@ export function CarteExercice({
   onNote: (note: string) => void;
   onRepos: (reposSec: number | null) => void;
   onReorganiser: () => void;
+  /** La page de l'exercice (D348). */
+  onOuvrir: () => void;
   onRemplacer: () => void;
   onRetirer: () => void;
 }) {
@@ -212,9 +215,17 @@ export function CarteExercice({
               </View>
             )}
           </Pressable>
-          <Text className="flex-1 font-semibold text-base" numberOfLines={2}>
-            {exercice.nom}
-          </Text>
+          {/* Le nom ouvre la page de l'exercice (D348), comme Hevy. */}
+          <Pressable
+            onPress={onOuvrir}
+            accessibilityRole="button"
+            accessibilityHint="Ouvre la page de l'exercice"
+            className="min-h-12 flex-1 justify-center"
+          >
+            <Text className="font-semibold text-base" numberOfLines={2}>
+              {exercice.nom}
+            </Text>
+          </Pressable>
           <Button
             variant="ghost"
             size="icon"

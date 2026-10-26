@@ -105,12 +105,27 @@ export function optionsSeance(id: string) {
   });
 }
 
+/**
+ * Les séances d'un exercice (D348), la plus récente d'abord. Rangé sous `["seances", …]` :
+ * l'envoi d'une séance invalide `["seances"]`, donc aussi ceci. Pas gardé hors ligne.
+ */
+export function optionsHistoriqueExercice(slug: string) {
+  return queryOptions({
+    queryKey: ["seances", "exercice", slug],
+    queryFn: async () => {
+      const res = await api.exercices[":slug"].historique.$get({ param: { slug } });
+      if (!res.ok) throw new Error("L'historique de l'exercice n'a pas pu être chargé.");
+      return (await res.json()).seances;
+    },
+  });
+}
+
 type PageSeances = { seances: SeanceFil[]; total: number; page: number; taille: number };
 
 /**
  * Supprimer une séance (D345). Elle sort aussitôt des pages chargées ; son détail est retiré
- * du cache, pas invalidé (il referait un GET, soit un 404). Les précédents et les routines
- * (« Il y a 3 j ») dérivent des séances : ils se relisent.
+ * du cache, pas invalidé (il referait un GET, soit un 404). Les précédents, les séances
+ * d'un exercice et les routines (« Il y a 3 j ») dérivent des séances : ils se relisent.
  */
 export function useSupprimerSeance() {
   const client = useQueryClient();
@@ -134,6 +149,7 @@ export function useSupprimerSeance() {
       );
       client.removeQueries({ queryKey: ["seances", "detail", id] });
       void client.invalidateQueries({ queryKey: ["seances", "precedents"] });
+      void client.invalidateQueries({ queryKey: ["seances", "exercice"] });
       void client.invalidateQueries({ queryKey: ["routines"] });
     },
   });

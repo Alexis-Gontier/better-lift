@@ -17,7 +17,7 @@ import {
   Trash2,
   Trophy,
 } from "lucide-react-native";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { CarteMuscles } from "@/components/routine/carte-muscles";
 import { etiquettes } from "@/components/seance/carte-exercice";
 import { Button } from "@/components/ui/button";
@@ -218,12 +218,20 @@ function ExerciceFait({
   exercice: SeanceDetail["exercices"][number];
   lettre: string | null;
 }) {
+  const router = useRouter();
   const libelles = etiquettes(exercice.series);
   const records = exercice.series.filter((s) => s.records.length > 0).length;
   const sousTitre = [lettre && `Superset ${lettre}`, exercice.note].filter(Boolean).join(" · ");
   return (
     <View className="overflow-hidden rounded-lg border border-border bg-background">
-      <View className="min-h-16 flex-row items-center gap-3 px-3 py-3">
+      <Pressable
+        onPress={() =>
+          router.push({ pathname: "/exercice/[slug]", params: { slug: exercice.slug } })
+        }
+        accessibilityRole="button"
+        accessibilityHint="Ouvre la page de l'exercice"
+        className="min-h-16 flex-row items-center gap-3 px-3 py-3 active:bg-accent"
+      >
         {exercice.image ? (
           // Fond blanc : les images du catalogue sont détourées sur blanc.
           <View className="size-12 overflow-hidden rounded-md bg-white">
@@ -258,7 +266,7 @@ function ExerciceFait({
             </Text>
           </View>
         ) : null}
-      </View>
+      </Pressable>
 
       <View className="gap-1 border-border border-t px-3 py-2">
         <View className="flex-row items-center gap-2">

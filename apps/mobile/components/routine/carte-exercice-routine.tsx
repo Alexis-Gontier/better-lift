@@ -25,17 +25,20 @@ function numeros(series: Exercice["series"]): string[] {
 /**
  * Un exercice de la page d'une routine (D321), replié comme dans l'éditeur du web (D253) :
  * la tête dit ce qui attend (« Pectoraux · 1 É + 3 × 8 · 80 kg ») ; ouvert, le tableau des
- * séries et le repos. Lecture seule : la routine se modifie sur le web.
+ * séries et le repos. Lecture seule : la routine se modifie sur le web. Sa tête ouvre la
+ * page de l'exercice (D348), comme Hevy ; le chevron seul déplie.
  */
 export function CarteExerciceRoutine({
   exercice,
   ouvert,
   onBasculer,
+  onOuvrir,
   repos,
 }: {
   exercice: Exercice;
   ouvert: boolean;
   onBasculer: () => void;
+  onOuvrir: () => void;
   repos: RoleRepos;
 }) {
   const resume = resumeSeries(
@@ -45,41 +48,52 @@ export function CarteExerciceRoutine({
   const num = numeros(exercice.series);
   return (
     <View className="overflow-hidden rounded-lg border border-border bg-background">
-      <Pressable
-        onPress={onBasculer}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: ouvert }}
-        accessibilityLabel={`${exercice.nom}, ${resume}`}
-        className="min-h-16 flex-row items-center gap-3 px-3 py-3 active:bg-accent"
-      >
-        <Icon as={ouvert ? ChevronDown : ChevronRight} className="size-5 text-muted-foreground" />
-        {exercice.image ? (
-          // Fond blanc : les images du catalogue sont détourées sur blanc.
-          <View className="size-12 overflow-hidden rounded-md bg-white">
-            <Image
-              source={{ uri: exercice.image }}
-              style={{ width: 48, height: 48 }}
-              contentFit="cover"
-              cachePolicy="disk"
-              autoplay={false}
-            />
+      {/* Deux gestes (D348) : le chevron déplie les séries, le reste ouvre la page de l'exercice. */}
+      <View className="min-h-16 flex-row items-stretch">
+        <Pressable
+          onPress={onBasculer}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: ouvert }}
+          accessibilityLabel={ouvert ? "Replier les séries" : "Déplier les séries"}
+          className="w-12 items-center justify-center active:bg-accent"
+        >
+          <Icon as={ouvert ? ChevronDown : ChevronRight} className="size-5 text-muted-foreground" />
+        </Pressable>
+        <Pressable
+          onPress={onOuvrir}
+          accessibilityRole="button"
+          accessibilityLabel={`${exercice.nom}, ${resume}`}
+          accessibilityHint="Ouvre la page de l'exercice"
+          className="flex-1 flex-row items-center gap-3 py-3 pr-3 active:bg-accent"
+        >
+          {exercice.image ? (
+            // Fond blanc : les images du catalogue sont détourées sur blanc.
+            <View className="size-12 overflow-hidden rounded-md bg-white">
+              <Image
+                source={{ uri: exercice.image }}
+                style={{ width: 48, height: 48 }}
+                contentFit="cover"
+                cachePolicy="disk"
+                autoplay={false}
+              />
+            </View>
+          ) : (
+            <View className="size-12 items-center justify-center rounded-md bg-secondary">
+              <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
+            </View>
+          )}
+          <View className="flex-1 gap-0.5">
+            <Text className="font-medium" numberOfLines={1}>
+              {exercice.nom}
+            </Text>
+            <Text className="text-muted-foreground text-sm" numberOfLines={1}>
+              {ouvert
+                ? exercice.musclePrincipal
+                : [exercice.musclePrincipal, resume].filter(Boolean).join(" · ")}
+            </Text>
           </View>
-        ) : (
-          <View className="size-12 items-center justify-center rounded-md bg-secondary">
-            <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
-          </View>
-        )}
-        <View className="flex-1 gap-0.5">
-          <Text className="font-medium" numberOfLines={1}>
-            {exercice.nom}
-          </Text>
-          <Text className="text-muted-foreground text-sm" numberOfLines={1}>
-            {ouvert
-              ? exercice.musclePrincipal
-              : [exercice.musclePrincipal, resume].filter(Boolean).join(" · ")}
-          </Text>
-        </View>
-      </Pressable>
+        </Pressable>
+      </View>
 
       {ouvert ? (
         <>
