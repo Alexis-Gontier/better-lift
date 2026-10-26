@@ -97,7 +97,7 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   fond ajouté à une vue déjà affichée perdait son arrondi.
 - **Page d'un exercice (D348)** : `app/exercice/[slug].tsx`, la fiche du web sans courbe
   (calculs dans `shared/fiche-exercice.ts`). On l'ouvre en touchant l'exercice dans la séance
-  (`onOuvrir` de `CarteExercice`), le détail d'une séance et la page d'une routine (le chevron
+  (vignette ou nom, `onOuvrir` de `CarteExercice`), le détail d'une séance et la page d'une routine (le chevron
   seul y déplie).
 - Le `_layout` de `(connecte)` porte la garde de session et `PreparerHorsLigne`. `seance`,
   `fin`, `choisir-exercices`, `reorganiser`, `routine/[id]`, `historique/[id]`,

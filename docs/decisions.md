@@ -391,7 +391,8 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   datés, l'historique (une ligne par séance : jour, séries faites, volume, 1RM ; elle ouvre le
   détail D345), les pourcentages du 1RM, la meilleure charge par nombre de répétitions. **Sans
   la courbe de progression** : en salle on lit des chiffres, la courbe reste sur le web. On y
-  arrive comme dans Hevy en touchant l'exercice : son nom dans la carte de séance, sa tête dans
+  arrive comme dans Hevy en touchant l'exercice : sa vignette ou son nom dans la carte de
+  séance (la vignette n'agrandit plus l'animation, la page la montre), sa tête dans
   le détail d'une séance, et sur la page d'une routine tout sauf le chevron, qui seul déplie
   les séries. Les calculs de la fiche passent du web à `shared/fiche-exercice.ts`. Les séances
   de l'exercice se lisent sous `["seances", "exercice", slug]` : l'envoi d'une séance les

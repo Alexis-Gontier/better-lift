@@ -1,6 +1,5 @@
 import {
   ABREGE_TYPE_SERIE,
-  ATTRIBUTION_MEDIAS,
   type ExerciceEnCours,
   LIBELLE_TYPE_SERIE,
   type RoleRepos,
@@ -111,7 +110,6 @@ export function CarteExercice({
   // d'un exercice déjà vu s'affiche même hors ligne, depuis le cache disque.
   const fiche = useQuery(optionsExercice(exercice.slug));
   const gif = fiche.data?.gif ?? null;
-  const [grand, setGrand] = useState(false);
   const [note, setNote] = useState(exercice.note ?? "");
   const [editionNote, setEditionNote] = useState(false);
   const [feuille, setFeuille] = useState<Feuilles>(null);
@@ -189,17 +187,17 @@ export function CarteExercice({
     <View className="pb-3">
       <View className="gap-2 rounded-lg border border-border bg-background px-3 py-3">
         <View className="flex-row items-center gap-3">
-          {/* Sans GIF, la vignette n'est qu'une image : ni bouton, ni annonce. */}
+          {/* La vignette et le nom ouvrent la page de l'exercice (D348), comme Hevy :
+              l'animation s'y voit en grand. */}
           <Pressable
-            onPress={() => setGrand((g) => !g)}
-            disabled={!gif}
-            accessible={Boolean(gif)}
+            onPress={onOuvrir}
             accessibilityRole="button"
-            accessibilityLabel={grand ? "Réduire l'animation" : "Agrandir l'animation"}
+            accessibilityHint="Ouvre la page de l'exercice"
+            className="min-h-12 flex-1 flex-row items-center gap-3"
           >
             {gif ? (
               // Fond blanc : les GIF du catalogue sont dessinés sur blanc. En
-              // vignette, l'animation distrait : elle ne joue qu'agrandie.
+              // vignette, l'animation distrait : elle ne joue pas.
               <View className="size-10 overflow-hidden rounded-full bg-white">
                 <Image
                   source={{ uri: gif }}
@@ -214,15 +212,7 @@ export function CarteExercice({
                 <Icon as={Dumbbell} className="size-4.5 text-muted-foreground" />
               </View>
             )}
-          </Pressable>
-          {/* Le nom ouvre la page de l'exercice (D348), comme Hevy. */}
-          <Pressable
-            onPress={onOuvrir}
-            accessibilityRole="button"
-            accessibilityHint="Ouvre la page de l'exercice"
-            className="min-h-12 flex-1 justify-center"
-          >
-            <Text className="font-semibold text-base" numberOfLines={2}>
+            <Text className="flex-1 font-semibold text-base" numberOfLines={2}>
               {exercice.nom}
             </Text>
           </Pressable>
@@ -235,25 +225,6 @@ export function CarteExercice({
             <Icon as={EllipsisVertical} className="size-5 text-muted-foreground" />
           </Button>
         </View>
-
-        {grand && gif ? (
-          <Pressable
-            onPress={() => setGrand(false)}
-            className="gap-1"
-            accessibilityRole="button"
-            accessibilityLabel="Réduire l'animation"
-          >
-            <View className="overflow-hidden rounded-md bg-white">
-              <Image
-                source={{ uri: gif }}
-                style={{ width: "100%", aspectRatio: 1 }}
-                contentFit="contain"
-                cachePolicy="disk"
-              />
-            </View>
-            <Text className="text-center text-muted-foreground text-xs">{ATTRIBUTION_MEDIAS}</Text>
-          </Pressable>
-        ) : null}
 
         {/* Le repos et la note en deux puces (D108) ; la note saisie remplace le mot « Note ». */}
         <View className="flex-row flex-wrap gap-2">
