@@ -1,7 +1,12 @@
+<p align="center">
+  <img src="apps/mobile/assets/logo.svg" width="96" height="96" alt="Logo de better-lift">
+</p>
+
 # better-lift
 
 Tracker de musculation personnel, web et mobile, en français. Catalogue de 1 316 exercices,
-routines série par série, séance guidée sur mobile, historique et records.
+routines série par série, séance guidée sur mobile avec notification de repos, historique,
+records et page de chaque exercice.
 
 En ligne : https://better-lift.vercel.app
 
