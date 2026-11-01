@@ -27,6 +27,8 @@
       --color-ring: #2440f0;
       --color-record: #2440f0;
       --color-record-surface: #e8ecfe;
+      /* Silhouette des muscles : les secondaires, en gris sous l'encre des principaux. */
+      --color-muscle-secondaire: #a3a3a6;
     }
     @variant dark {
       --color-background: #0e0e10;
@@ -49,6 +51,7 @@
       --color-ring: #7088ff;
       --color-record: #7088ff;
       --color-record-surface: #1c2147;
+      --color-muscle-secondaire: #6e6e75;
     }
   }
 }

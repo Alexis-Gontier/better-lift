@@ -531,4 +531,6 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   `design/scripts/tokens.mjs`. Deux rôles neufs, `record` et `record-surface`, pour le
   recomposition des records. Police **Geist** sur le web (Geist Mono pour les chiffres d'une
   série, appliquée avec la recomposition) ; le mobile garde la police du système jusqu'à son propre lot (Uniwind veut un fichier
-  par graisse). Livré par valeurs seules : aucun écran ne change de structure.
+  par graisse). Livré par valeurs seules : aucun écran ne change de structure. La silhouette
+  mobile prend ses muscles secondaires dans `--color-muscle-secondaire` (gris), plus dans
+  `--color-ring`, devenu le bleu du focus.
