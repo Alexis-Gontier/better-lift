@@ -50,8 +50,8 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
   web, `?etat=` force chacun. On dessine et valide un écran avant de brancher ses données.
 - Une couleur pour l'action et le record, distinguées par la forme : l'action est un aplat, le
   record un contour. Le danger a la sienne. Un token par rôle, deux valeurs (sombre / clair),
-  jamais de couleur en dur. Mobile : wireframe Reusables en gris (`apps/mobile/global.css`,
-  D316) ; web : wireframe shadcn en gris.
+  jamais de couleur en dur. Direction A, « Instrument sobre » (D349) : mêmes valeurs dans
+  `apps/mobile/global.css` et `apps/web/src/styles/globals.css`, tirées de `design/tokens/`.
 
 ## Git et PR
 

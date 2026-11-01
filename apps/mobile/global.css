@@ -1,49 +1,57 @@
 @import "tailwindcss";
 @import "uniwind";
 
-/* Tokens du mobile (D316) : palette neutral de shadcn, comme le web. La direction
-   artistique viendra une fois l'app construite : on ne changera que ces valeurs. */
+/* Tokens du mobile : direction A, « Instrument sobre » (D349), mêmes valeurs que le web
+   (design/tokens/better-lift/). L'action est un aplat de primary, le record un contour de
+   record (même bleu, D28) ; le danger garde destructive (D36). */
 @layer theme {
   :root {
     @variant light {
-      --color-background: #ffffff;
-      --color-foreground: #0a0a0a;
+      --color-background: #f4f4f2;
+      --color-foreground: #0b0b0c;
       --color-card: #ffffff;
-      --color-card-foreground: #0a0a0a;
+      --color-card-foreground: #0b0b0c;
       --color-popover: #ffffff;
-      --color-popover-foreground: #0a0a0a;
-      --color-primary: #171717;
-      --color-primary-foreground: #fafafa;
-      --color-secondary: #f5f5f5;
-      --color-secondary-foreground: #171717;
-      --color-muted: #f5f5f5;
-      --color-muted-foreground: #737373;
-      --color-accent: #f5f5f5;
-      --color-accent-foreground: #171717;
-      --color-destructive: #dc2626;
-      --color-border: #e5e5e5;
-      --color-input: #e5e5e5;
-      --color-ring: #a1a1a1;
+      --color-popover-foreground: #0b0b0c;
+      --color-primary: #2440f0;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #ecece9;
+      --color-secondary-foreground: #0b0b0c;
+      --color-muted: #ecece9;
+      --color-muted-foreground: #636366;
+      --color-accent: #ecece9;
+      --color-accent-foreground: #0b0b0c;
+      --color-destructive: #c8281e;
+      --color-border: #e2e2df;
+      --color-input: #e2e2df;
+      --color-ring: #2440f0;
+      --color-record: #2440f0;
+      --color-record-surface: #e8ecfe;
+      /* Silhouette des muscles : les secondaires, en gris sous l'encre des principaux. */
+      --color-muscle-secondaire: #a3a3a6;
     }
     @variant dark {
-      --color-background: #0a0a0a;
-      --color-foreground: #fafafa;
-      --color-card: #171717;
-      --color-card-foreground: #fafafa;
-      --color-popover: #171717;
-      --color-popover-foreground: #fafafa;
-      --color-primary: #fafafa;
-      --color-primary-foreground: #171717;
-      --color-secondary: #262626;
-      --color-secondary-foreground: #fafafa;
-      --color-muted: #262626;
-      --color-muted-foreground: #a3a3a3;
-      --color-accent: #262626;
-      --color-accent-foreground: #fafafa;
-      --color-destructive: #f87171;
-      --color-border: #262626;
-      --color-input: #262626;
-      --color-ring: #737373;
+      --color-background: #0e0e10;
+      --color-foreground: #f2f2f0;
+      --color-card: #17171a;
+      --color-card-foreground: #f2f2f0;
+      --color-popover: #17171a;
+      --color-popover-foreground: #f2f2f0;
+      --color-primary: #7088ff;
+      --color-primary-foreground: #0b0b0c;
+      --color-secondary: #1f1f23;
+      --color-secondary-foreground: #f2f2f0;
+      --color-muted: #1f1f23;
+      --color-muted-foreground: #9a9aa0;
+      --color-accent: #1f1f23;
+      --color-accent-foreground: #f2f2f0;
+      --color-destructive: #f2554a;
+      --color-border: #2a2a2f;
+      --color-input: #2a2a2f;
+      --color-ring: #7088ff;
+      --color-record: #7088ff;
+      --color-record-surface: #1c2147;
+      --color-muscle-secondaire: #6e6e75;
     }
   }
 }

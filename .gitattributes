@@ -8,6 +8,7 @@
 *.jpg binary
 *.jpeg binary
 *.gif binary
+*.fig binary
 *.webp binary
 *.woff binary
 *.woff2 binary
