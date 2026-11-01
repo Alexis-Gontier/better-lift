@@ -534,3 +534,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   par graisse). Livré par valeurs seules : aucun écran ne change de structure. La silhouette
   mobile prend ses muscles secondaires dans `--color-muscle-secondaire` (gris), plus dans
   `--color-ring`, devenu le bleu du focus.
+- **D350** — Les records ne sont plus une liste plate (retour de l'utilisateur, « trop plat ») :
+  un **record héros** en tête, au contour du record (`border-record`, D28), son chiffre en grand.
+  Mobile, page d'un exercice (D348) : la meilleure charge « 100 kg × 6 » (les répétitions au
+  poids du corps), datée, puis 1RM estimé, meilleure série et séances en trois colonnes. Web,
+  page Records (D314) : le dernier record battu au-dessus du tableau, avec ce que la séance a
+  battu ce jour-là ; le tableau reste pour parcourir. La courbe reste hors du mobile (D348).
+  Date courte « 3 oct. » par `formatJourCourt` (`shared`).

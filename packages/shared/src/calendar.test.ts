@@ -3,6 +3,7 @@ import {
   decalerDeJours,
   formatHeure,
   formatJour,
+  formatJourCourt,
   formatJourSemaine,
   formatMois,
   memeJour,
@@ -72,6 +73,10 @@ describe("formatJourSemaine, formatMois", () => {
     expect(formatJourSemaine("2026-10-22T22:30:00.000Z", "Europe/Paris", true)).toBe(
       "vendredi 23 octobre 2026",
     );
+  });
+
+  it("écrit le jour court dans le fuseau", () => {
+    expect(formatJourCourt("2026-10-22T22:30:00.000Z", "Europe/Paris")).toBe("23 oct.");
   });
 
   it("écrit le mois d'une clé", () => {

@@ -4,17 +4,19 @@ import {
   chiffresSeance,
   type ExerciceDetail,
   formaterCharge,
+  formatJourCourt,
   formatJourSemaine,
   type HistoriqueExercice,
   meilleureChargeParReps,
   pourcentagesUnRm,
+  type RecordExercice,
   recordsExercice,
   type TypeRecord,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, ChevronRight, TrendingUp } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CarteMuscles } from "@/components/routine/carte-muscles";
@@ -26,7 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
 import { FUSEAU } from "@/lib/fuseau";
 import { optionsExercice, optionsHistoriqueExercice } from "@/lib/requetes";
-import { SYSTEME_UNITES } from "@/lib/unites";
+import { SYSTEME_UNITES, UNITE } from "@/lib/unites";
 import { cn } from "@/lib/utils";
 
 type Seance = HistoriqueExercice[number];
@@ -177,41 +179,92 @@ function Execution({ exercice }: { exercice: ExerciceDetail }) {
   );
 }
 
-/** Les records en lignes, chacun daté, comme « Records » du web. */
+/**
+ * Les records (D350) : le record héros en grand, au contour du record (D28) — la meilleure
+ * charge, ou les répétitions au poids du corps — puis les autres et le nombre de séances.
+ */
 function Records({ historique }: { historique: HistoriqueExercice }) {
   const records = recordsExercice(historique);
-  const ligne = (libelle: string, type: TypeRecord, valeur: (v: number) => string) => {
-    const r = records.find((x) => x.type === type);
-    return r
-      ? [{ libelle, valeur: valeur(r.valeur), indice: `le ${formatJourSemaine(r.date, FUSEAU)}` }]
-      : [];
-  };
+  const record = (type: TypeRecord) => records.find((x) => x.type === type);
+  const heros = record("CHARGE") ?? record("REPS");
   const derniere = historique[0];
-  const lignes = [
-    ...ligne("Meilleure charge", "CHARGE", kg),
-    ...ligne("1RM estimé", "UN_RM", (v) => kg(Math.round(v))),
-    ...ligne("Meilleure série", "VOLUME", kg),
-    ...ligne("Répétitions", "REPS", (v) => `${v} rép.`),
+  const autres = [
+    ...(record("UN_RM") && heros?.type === "CHARGE"
+      ? [{ libelle: "1RM estimé", r: record("UN_RM"), valeur: (v: number) => kg(Math.round(v)) }]
+      : []),
+    ...(record("VOLUME") ? [{ libelle: "Meilleure série", r: record("VOLUME"), valeur: kg }] : []),
+  ].map(({ libelle, r, valeur }) => ({
+    libelle,
+    valeur: r ? valeur(r.valeur) : "—",
+    indice: r ? dateCourte(r.date) : "",
+  }));
+  const colonnes = [
+    ...autres,
     {
       libelle: "Séances",
       valeur: String(historique.length),
-      indice: derniere ? `dernière le ${formatJourSemaine(derniere.debut, FUSEAU)}` : undefined,
+      indice: derniere ? `dern. ${dateCourte(derniere.debut)}` : "",
     },
   ];
   return (
-    <Carte titre="Records">
-      <View className="gap-2.5">
-        {lignes.map((l) => (
-          <View key={l.libelle} className="flex-row items-baseline gap-3">
-            <View className="flex-1">
-              <Text>{l.libelle}</Text>
-              {l.indice ? <Text className="text-muted-foreground text-xs">{l.indice}</Text> : null}
-            </View>
-            <Text className="font-semibold tabular-nums">{l.valeur}</Text>
+    <View className="gap-3">
+      <Text className="font-semibold text-lg" accessibilityRole="header">
+        Records
+      </Text>
+      {heros ? <RecordHeros record={heros} /> : null}
+      <View className="flex-row rounded-lg border border-border bg-card px-1 py-3.5">
+        {colonnes.map((c, i) => (
+          <View
+            key={c.libelle}
+            className={cn("flex-1 gap-0.5 px-3", i > 0 && "border-border border-l")}
+          >
+            <Text className="text-muted-foreground text-xs">{c.libelle}</Text>
+            <Text className="font-semibold text-lg tabular-nums">{c.valeur}</Text>
+            <Text className="text-muted-foreground text-xs">{c.indice}</Text>
           </View>
         ))}
       </View>
-    </Carte>
+    </View>
+  );
+}
+
+const dateCourte = (iso: string) => formatJourCourt(iso, FUSEAU);
+
+/** Le record mis en avant : son chiffre en grand, les répétitions à côté, sa date en haut. */
+function RecordHeros({ record }: { record: RecordExercice }) {
+  const charge = record.type === "CHARGE";
+  return (
+    <View
+      className="gap-2 rounded-lg border-2 border-record bg-card p-4"
+      accessibilityLabel={
+        charge
+          ? `Meilleure charge : ${kg(record.valeur)} × ${record.reps}, le ${formatJourSemaine(record.date, FUSEAU)}`
+          : `Meilleures répétitions : ${record.valeur}, le ${formatJourSemaine(record.date, FUSEAU)}`
+      }
+    >
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-1 rounded-full border border-record px-2 py-0.5">
+          <Icon as={TrendingUp} className="size-3 text-record" />
+          <Text className="font-semibold text-record text-xs">
+            {charge ? "Meilleure charge" : "Répétitions"}
+          </Text>
+        </View>
+        <Text className="text-muted-foreground text-xs">{dateCourte(record.date)}</Text>
+      </View>
+      <View className="flex-row items-end gap-2.5">
+        <Text className="font-semibold text-7xl tabular-nums tracking-tighter">
+          {charge ? chargeEnTexte(record.valeur, SYSTEME_UNITES) : record.valeur}
+        </Text>
+        <View className="pb-2.5">
+          <Text className="font-semibold text-muted-foreground text-xl">
+            {charge ? UNITE : "rép."}
+          </Text>
+          {charge ? (
+            <Text className="font-semibold text-xl tabular-nums">× {record.reps}</Text>
+          ) : null}
+        </View>
+      </View>
+    </View>
   );
 }
 
