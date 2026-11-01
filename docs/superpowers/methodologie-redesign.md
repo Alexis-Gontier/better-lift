@@ -59,6 +59,11 @@ l'homonyme de ZSeven-W) : fichiers `.fig`, MCP déjà branché (`mcp__open-penci
 - Son guide de génération de code (`get_codegen_prompt`) vise React DOM + Tailwind : utile au
   web, **inutile au mobile**. On ne génère pas le code depuis le dessin : on transpose à la main
   dans Reusables / shadcn, en reprenant les valeurs exactes.
+- **Constaté le 2026-11-01 (OpenPencil 0.16)** : `export_image` répond « No visible nodes to
+  export » sur tous les calques, même en appelant la CLI sur le fichier enregistré. On vérifie
+  donc à l'œil dans l'app. Les images ne passent pas par le contexte de l'agent :
+  `openpencil tool call set_image_fill --args-file …` depuis un script, l'app restant ouverte.
+  `find_nodes` cherche une sous-chaîne : filtrer sur le nom exact.
 - **Source de vérité** : pendant l'exploration, le `.fig` ; une fois une valeur validée, les
   fichiers CSS du dépôt. Le `.fig` les reflète (mêmes noms de rôles), il ne les commande pas.
   Proposition : `design/better-lift.fig` commité, une page par étape ci-dessous.
@@ -73,6 +78,12 @@ Captures de tous les écrans, dans leurs quatre états et les deux thèmes : web
 `CAPTURES=… pnpm --filter @better-lift/web e2e captures`, mobile par l'émulateur (argent).
 Importées dans la page « 0 · Existant » du `.fig`, rangées par parcours (préparer, séance, fin,
 relire). On y annote ce qui gêne, avec les retours de l'épreuve.
+
+**Fait le 2026-11-01** : `design/existant/` (web : 17 pages × 2 thèmes, dont états vide,
+chargement et erreur ; mobile : 10 écrans en clair, séance et fin comprises), posées dans
+`design/better-lift.fig`. Premiers retours : tout plaît sauf **les records** (page web Records,
+bloc Records de la page d'exercice mobile), et le **web** mérite d'être retravaillé. Épreuve
+non finie, quelques séances faites. Le mobile sombre reste à capturer si besoin (thème = tokens).
 
 ### 2. Le brief (`docs/superpowers/brief-design.md`)
 
