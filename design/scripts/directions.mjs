@@ -32,6 +32,7 @@ const DIRECTIONS = {
     sideInk: "#0B0B0C",
     sideMuted: "#68686B",
     restBg: "#0B0B0C",
+    onInk: "#FFFFFF",
   },
   B: {
     nom: "B · Affiche de salle",
@@ -58,6 +59,34 @@ const DIRECTIONS = {
     sideInk: "#FFFFFF",
     sideMuted: "#A39E95",
     restBg: "#141311",
+    onInk: "#FFFFFF",
+  },
+  D: {
+    nom: "A sombre · Instrument sobre",
+    ui: "Geist",
+    disp: "Geist",
+    dispW: 600,
+    num: "Geist",
+    numW: 600,
+    data: "Geist Mono",
+    upper: false,
+    bg: "#0E0E10",
+    card: "#17171A",
+    ink: "#F2F2F0",
+    muted: "#9A9AA0",
+    line: "#2A2A2F",
+    subtle: "#1F1F23",
+    accent: "#7088FF",
+    accentInk: "#0B0B0C",
+    accentSoft: "#1C2147",
+    danger: "#F2554A",
+    r: 10,
+    cards: true,
+    side: "#131316",
+    sideInk: "#F2F2F0",
+    sideMuted: "#9A9AA0",
+    restBg: "#232327",
+    onInk: "#0B0B0C",
   },
   C: {
     nom: "C · Carnet d'athlète",
@@ -84,6 +113,7 @@ const DIRECTIONS = {
     sideInk: "#1A1917",
     sideMuted: "#6E695F",
     restBg: "#1A1917",
+    onInk: "#FFFFFF",
   },
 };
 
@@ -141,7 +171,7 @@ function seance(T) {
     `<Frame w={64} h={40} justify="center" items="center">${t(T, v, { size: 17, weight: 600, font: T.data })}</Frame>`;
   const coche = (etat) =>
     etat
-      ? `<Frame w={36} h={36} rounded={${T.r}} bg="${T.accent}" justify="center" items="center">${icone("check", 20, T.accentInk === "#141311" ? "#141311" : "#FFFFFF")}</Frame>`
+      ? `<Frame w={36} h={36} rounded={${T.r}} bg="${T.accent}" justify="center" items="center">${icone("check", 20, T.accentInk)}</Frame>`
       : `<Frame w={36} h={36} rounded={${T.r}} stroke="${T.line}" strokeWidth={1.5} bg="${T.card}" />`;
   const ligne = ({ n, prec, kg, reps, etat, actif, record }) => {
     const fond = etat ? `bg="${T.subtle}"` : "";
@@ -246,10 +276,10 @@ function accueil(T) {
     <Frame h={44} flex="row" items="center" px={6}>${display(T, "better-lift", T.upper ? 24 : 19, { color: T.sideInk })}</Frame><Frame h={12} />
     ${nav("layout-dashboard", "Accueil", true)}${nav("list-checks", "Routines")}${nav("history", "Historique")}${nav("trophy", "Records")}${nav("dumbbell", "Exercices")}</Frame>`;
   const seg = (s, actif) =>
-    `<Frame px={12} h={32} justify="center" items="center" rounded={${T.r}} ${actif ? `bg="${T.ink}"` : ""}>${t(T, s, { size: 13, weight: 600, color: actif ? "#FFFFFF" : T.muted })}</Frame>`;
+    `<Frame px={12} h={32} justify="center" items="center" rounded={${T.r}} ${actif ? `bg="${T.ink}"` : ""}>${t(T, s, { size: 13, weight: 600, color: actif ? T.onInk : T.muted })}</Frame>`;
   const jour = (j, etat) => {
     if (etat === "fait")
-      return `<Frame w={30} h={30} rounded={999} bg="${T.ink}" justify="center" items="center">${t(T, j, { size: 12, weight: 600, color: "#FFFFFF" })}</Frame>`;
+      return `<Frame w={30} h={30} rounded={999} bg="${T.ink}" justify="center" items="center">${t(T, j, { size: 12, weight: 600, color: T.onInk })}</Frame>`;
     if (etat === "auj")
       return `<Frame w={30} h={30} rounded={999} stroke="${T.ink}" strokeWidth={1.5} justify="center" items="center">${t(T, j, { size: 12, weight: 600 })}</Frame>`;
     return `<Frame w={30} h={30} rounded={999} stroke="${T.line}" strokeWidth={1} justify="center" items="center">${t(T, j, { size: 12, color: T.muted })}</Frame>`;
@@ -351,7 +381,7 @@ for (const [k, T] of lignes) {
   const anciens = JSON.parse(op("find_nodes", { name: T.nom }));
   for (const n of anciens.nodes ?? anciens.results ?? anciens)
     if (n.name?.startsWith(T.nom)) op("delete_node", { id: n.id });
-  const y = { A: 0, B: 1200, C: 2400 }[k];
+  const y = { A: 0, B: 1200, C: 2400, D: 3600 }[k];
   const titre = `<Frame name="${T.nom} / Titre" flex="col" gap={6}>${t(T, T.nom, { size: 40, weight: 700, font: T.disp, upper: T.upper })}${t(T, `${T.disp} · ${T.ui} · accent ${T.accent} · rayon ${T.r}`, { size: 16, color: T.muted })}</Frame>`;
   const ecrans = [
     [titre, 0, y],
