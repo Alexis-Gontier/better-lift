@@ -68,6 +68,15 @@ export function formatHeure(iso: string, fuseau: string): string {
   }).format(new Date(iso));
 }
 
+/** « 3 oct. » : le jour court, pour une date qui accompagne un chiffre. */
+export function formatJourCourt(iso: string, fuseau: string): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "short",
+    timeZone: fuseau,
+  }).format(new Date(iso));
+}
+
 /** « jeudi 23 octobre » ; avec `annee`, « jeudi 23 octobre 2026 ». */
 export function formatJourSemaine(iso: string, fuseau: string, annee = false): string {
   return new Intl.DateTimeFormat("fr-FR", {
