@@ -16,6 +16,7 @@ export {
   decalerDeJours,
   formatHeure,
   formatJour,
+  formatJourCourt,
   formatJourSemaine,
   formatMois,
   parMois,

@@ -1,12 +1,13 @@
 import {
   type ExerciceFait,
+  LIBELLE_RECORD,
   normaliserRecherche,
   type RecordExercice,
   type TypeRecord,
 } from "@better-lift/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Search, Trophy } from "lucide-react";
+import { Search, TrendingUp, Trophy } from "lucide-react";
 import { useState } from "react";
 import { ExerciseThumb } from "@/components/exercise-media";
 import { etatAffiche } from "@/components/states/etat";
@@ -53,8 +54,8 @@ const dernierRecord = (e: ExerciceFait) =>
 
 /**
  * Les records (D314) : une ligne par exercice fait, ses records actuels, chacun daté de la séance
- * qui l'a établi. Le dernier battu d'abord ; une ligne mène à la fiche. Tout vient des exercices
- * faits (D312), dérivés à la lecture (D65).
+ * qui l'a établi. Le dernier battu d'abord, et en grand au-dessus du tableau (D350) ; une ligne
+ * mène à la fiche. Tout vient des exercices faits (D312), dérivés à la lecture (D65).
  */
 export function RecordsPage() {
   const force = useEtat();
@@ -84,6 +85,7 @@ export function RecordsPage() {
 
   return (
     <>
+      {exercices[0] ? <DernierRecord exercice={exercices[0]} /> : null}
       <InputGroup className="max-w-sm">
         <InputGroupInput
           placeholder="Rechercher un exercice…"
@@ -152,10 +154,55 @@ export function RecordsPage() {
   );
 }
 
+/** « charge, 1RM estimé et volume » : les records battus le même jour, en une phrase. */
+const enumerer = (mots: string[]) =>
+  mots.length < 2 ? (mots[0] ?? "") : `${mots.slice(0, -1).join(", ")} et ${mots.at(-1)}`;
+
+/**
+ * Le dernier record battu, en tête (D350) : son chiffre en grand, au contour du record (D28),
+ * et ce que la séance a battu ce jour-là. Il mène à la fiche, comme la ligne du tableau.
+ */
+function DernierRecord({ exercice }: { exercice: ExerciceFait }) {
+  const date = dernierRecord(exercice);
+  const battus = exercice.records.filter((r) => r.date === date);
+  const r = battus.find((x) => x.type === "CHARGE") ?? battus[0];
+  if (!r) return null;
+  const colonne = COLONNES.find((c) => c.type === r.type);
+  const [valeur, reps] =
+    r.type === "CHARGE" ? [formatLoad(r.chargeKg), `× ${r.reps}`] : [colonne?.valeur(r) ?? "", ""];
+  const libelles = battus.map((x) => LIBELLE_RECORD[x.type].toLowerCase().replace("1rm", "1RM"));
+  return (
+    <Link
+      to="/exercises/$slug"
+      params={{ slug: exercice.slug }}
+      aria-label={`Dernier record : ${exercice.nom}, ${valeur} ${reps}`}
+      className="flex max-w-xl flex-col gap-2 rounded-xl border-2 border-record bg-card p-5 transition-colors hover:bg-accent/50"
+    >
+      <span className="flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-1 rounded-full border border-record px-2 py-0.5 font-semibold text-record text-xs">
+          <TrendingUp className="size-3" />
+          Dernier record
+        </span>
+        <span className="text-muted-foreground text-sm">{formatShortDay(jourCivil(date))}</span>
+      </span>
+      <span className="font-medium">{exercice.nom}</span>
+      <span className="flex items-baseline gap-2 tabular-nums">
+        <span className="font-semibold text-6xl tracking-tighter">{valeur}</span>
+        {reps ? <span className="font-semibold text-2xl text-muted-foreground">{reps}</span> : null}
+      </span>
+      <span className="text-muted-foreground text-sm">
+        {enumerer(libelles).replace(/^./, (c) => c.toUpperCase())} battu
+        {libelles.length > 1 ? "s" : ""}
+      </span>
+    </Link>
+  );
+}
+
 /** Pendant le chargement : la recherche, puis le tableau à sa forme réelle. */
 function RecordsSkeleton() {
   return (
     <>
+      <Skeleton className="h-44 max-w-xl rounded-xl" />
       <Skeleton className="h-9 max-w-sm rounded-lg" />
       <Card size="sm" className="gap-0 py-0">
         <Skeleton className="m-3 h-5 w-2/3 rounded" />
