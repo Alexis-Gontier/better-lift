@@ -26,7 +26,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D178** — *Révisée par D316 et D345 (historique et détail d'une séance).* Le mobile se resserre sur la salle : barre **Routines · Démarrer · Profil**.
   Retirés : Accueil, Progrès, détail d'une séance. L'historique se consulte sur le web. `/`
   redirige vers `/routines`.
-- **D316** — *Révisée par D319 (barre d'onglets) et D321 (page d'une routine).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
+- **D316** — *Révisée par D319 (barre d'onglets), D321 (page d'une routine) et D349 (couleurs).* Le mobile repart de zéro en wireframe, en trois lots, comme le web avant lui ; la
   direction artistique viendra une fois l'app construite. Lot 1 : un seul accueil, sans onglets
   (« Séance vide », routines qui se lancent d'un appui, Profil en en-tête, bandeau
   « Reprendre ») ; retirés : l'édition des routines (le web prépare), la page d'une routine et sa
@@ -422,7 +422,7 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   licence), dessinés en SVG simple ; zones par `zonesTravaillees` de `shared`, comme sur le
   téléphone ; principaux en `foreground`, secondaires en `muted-foreground`, le reste du corps
   (tête, mains, pieds) en `--body-map`. `react-body-highlighter`, aux polygones anguleux, part.
-- **D231** — shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
+- **D231** — *Révisée par D349 (Geist remplace Inter).* shadcn sur Radix, style Nova, police Inter, curseur pointeur. Le code des registres
   (`components/ui/**`) reste tel que livré ; Biome n'y lève pas les règles d'accessibilité.
 - **D232** — Clavier : Ctrl K (palette) et Ctrl B (barre latérale) seulement.
 - **D233** — Gabarit de page `Page` : contenu centré, titre sobre, onglets et actions en tête.
@@ -522,3 +522,13 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
 - **D315** — En-tête : la recherche suit la largeur de l'en-tête et devient une loupe sous
   42 rem (Ctrl K affiché au-delà de 52 rem) ; le fil d'Ariane tient sur une ligne et tronque sa
   dernière miette.
+- **D349** — Direction artistique **A, « Instrument sobre »**, choisie entre trois pistes
+  dessinées dans OpenPencil (`design/better-lift.fig`, page « 1 · Directions ») ; révise D316
+  (wireframe gris) et D231 (Inter). Un outil de précision : fond gris chaud clair, cartes
+  blanches, **un seul bleu** pour l'action (aplat) et le record (contour), D28 tenu ; le danger
+  garde le sien (D36) ; rayon 10. Mêmes valeurs sur le web et le mobile, tirées de
+  `design/tokens/better-lift/` (DTCG clair et sombre), contrastes ≥ 4,5:1 vérifiés par
+  `design/scripts/tokens.mjs`. Deux rôles neufs, `record` et `record-surface`, pour le
+  recomposition des records. Police **Geist** sur le web (Geist Mono pour les chiffres d'une
+  série, appliquée avec la recomposition) ; le mobile garde la police du système jusqu'à son propre lot (Uniwind veut un fichier
+  par graisse). Livré par valeurs seules : aucun écran ne change de structure.

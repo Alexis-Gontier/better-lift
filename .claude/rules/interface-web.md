@@ -5,7 +5,7 @@ paths:
 
 # Interface web
 
-Wireframe shadcn en gris, branché sur l'API. Décisions : `docs/decisions.md`, section
+shadcn en direction A (D349, Geist), branché sur l'API. Décisions : `docs/decisions.md`, section
 « Interface web » (D221 et au-delà).
 
 ## Arborescence (D306)
