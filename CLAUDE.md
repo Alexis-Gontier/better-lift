@@ -21,7 +21,8 @@ pnpm db:migrate | db:generate | db:seed
 pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 ```
 
-- `/verif` enchaîne build, typecheck, test, lint, knip. Une tâche n'est finie qu'avec `/verif`
+- `/verif` enchaîne build, typecheck, test, lint, knip ; l'agent `verificateur` fait de même
+  hors du contexte principal et ne rend que le verdict. Une tâche n'est finie qu'avec `/verif`
   vert **et** l'écran vu tournant (capture web, émulateur pour le mobile).
 - `/migration <nom>` crée une migration sur la bonne branche Neon.
 - Un hook formate chaque fichier édité avec Biome ; Lefthook refait Biome et commitlint au commit.
@@ -71,7 +72,8 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 Les skills superpowers écrivent leurs specs et plans dans `docs/superpowers/` : ce sont des
 documents de chantier. **Une fois le chantier fusionné**, reporter ses décisions dans
 `docs/decisions.md` (et ce qui change dans `docs/conception.md` ou `.claude/rules/`), puis
-supprimer la spec et le plan. Les numéros de décision continuent après D344.
+supprimer la spec et le plan. Un numéro de décision suit le plus haut déjà pris, dans le
+registre **et** dans les PR ouvertes (`gh pr list`) : une branche non fusionnée a pu en réserver.
 
 ## Environnement
 
@@ -79,8 +81,9 @@ supprimer la spec et le plan. Les numéros de décision continuent après D344.
 - **L'agent ne lit pas le `.env`** (règle de permission) ; modèle : `.env.example`. Un worktree
   n'a donc pas de `.env` : prendre les valeurs factices de `.github/workflows/ci.yml` pour
   generate, build et test.
-- **Neon** (MCP du plugin, pas de `.mcp.json`) : projet `late-bar-51472267`, branches
-  `production` et `dev`. **Toute requête passe `database_name: "betterlift"`** : `neondb` porte
+- **Neon** (plugin `neon@claude-plugins-official`, déclaré dans `.claude/settings.json`, pas de
+  `.mcp.json` ; connexion par `/mcp` à la première session) : projet `late-bar-51472267`,
+  branches `production` et `dev`. **Toute requête passe `database_name: "betterlift"`** : `neondb` porte
   encore la V1 et donne un état trompeur. Écrire en production demande l'accord de l'utilisateur.
 - **Comptes de la branche `dev`** : `controle@better-lift.local` porte la démo, ne jamais le
   supprimer — réinitialiser son mot de passe par un hash `hashPassword` de `better-auth/crypto`

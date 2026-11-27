@@ -34,11 +34,33 @@
       "Read(./apps/**/.env)",
       "Read(./apps/**/.env.local)",
       "Read(./packages/**/.env)",
-      "Bash(rm -rf *)"
+      "Bash(rm -rf *)",
+      "Bash(* .env)",
+      "Bash(* .env *)",
+      "Bash(* ./.env)",
+      "Bash(* ./.env *)",
+      "Bash(* .env.local*)",
+      "Bash(* .env.production*)",
+      "Bash(* .env.development*)"
     ],
     "ask": [
-      "Bash(git push*)"
+      "Bash(git push*)",
+      "Bash(gh pr merge*)",
+      "Bash(git checkout -- *)",
+      "Bash(git checkout .*)",
+      "Bash(git restore*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)",
+      "Bash(git stash drop*)",
+      "Bash(gh api * -X *)",
+      "Bash(gh api * --method *)",
+      "Bash(gh api * -f *)",
+      "Bash(gh api * -F *)"
     ]
+  },
+  "enabledPlugins": {
+    "neon@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": false
   },
   "hooks": {
     "PostToolUse": [

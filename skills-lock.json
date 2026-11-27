@@ -37,18 +37,6 @@
       "skillPath": "plugins/expo/skills/expo-data-fetching/SKILL.md",
       "computedHash": "e9fee354dae5b0bfd1d7aa8d07ef52ac03b577867011f80c3e1f71c1752b8eab"
     },
-    "expo-dev-client": {
-      "source": "expo/skills",
-      "sourceType": "github",
-      "skillPath": "plugins/expo/skills/expo-dev-client/SKILL.md",
-      "computedHash": "7b8b0ec9a98e96674b13b72b798bc1b0b0d122244dc22c54d375613eb525bcae"
-    },
-    "expo-project-structure": {
-      "source": "expo/skills",
-      "sourceType": "github",
-      "skillPath": "plugins/expo/skills/expo-project-structure/SKILL.md",
-      "computedHash": "fad7cc86cf8815631d2bc5546c4926b126bdd8ff7263f0ab6577684431bf5041"
-    },
     "expo-router": {
       "source": "expo/skills",
       "sourceType": "github",
@@ -78,18 +66,6 @@
       "sourceType": "github",
       "skillPath": ".agents/skills/impeccable/SKILL.md",
       "computedHash": "dd39b18a094e4ab8c741e681ee76b02d337356f0442d822a7338fac5b12a03fb"
-    },
-    "industrial-brutalist-ui": {
-      "source": "leonxlnx/taste-skill",
-      "sourceType": "github",
-      "skillPath": "skills/brutalist-skill/SKILL.md",
-      "computedHash": "e66e5a2a8b73cef79ab6546459c665e8b983645689c5f3772f7eed8b9f1e8e0e"
-    },
-    "logo-design": {
-      "source": "kaankiziltug/logo-design-skill",
-      "sourceType": "github",
-      "skillPath": "skills/logo-design/SKILL.md",
-      "computedHash": "aca4a65f0f14694de625b5f2fe6469f3e58d5b26bbb99b8068dcc80c982b0a6b"
     },
     "prisma-cli": {
       "source": "prisma/skills",
