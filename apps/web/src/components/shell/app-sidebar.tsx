@@ -24,7 +24,7 @@ export function AppSidebar() {
   const { pathname } = useLocation();
   return (
     <Sidebar collapsible="icon">
-      {/* Le symbole et le nom (D329), sur la hauteur du header. Le symbole (20 px) est centré
+      {/* Le symbole et le nom, sur la hauteur du header. Le symbole (20 px) est centré
           sur la colonne des icônes du menu, le nom commence au même x que leurs libellés ;
           repliée, la barre ne laisse que le symbole. Le nom n'est pas masqué mais rogné, pour
           suivre la largeur pendant l'animation. */}

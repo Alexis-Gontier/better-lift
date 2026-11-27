@@ -32,7 +32,7 @@ const app = new Hono().route("/export", routesExport(lecture, lireSession));
 const lire = (user: string | null) =>
   app.request("/export/seances.csv", { headers: user ? { "x-test-user": user } : {} });
 
-describe("GET /export/seances.csv (D128)", () => {
+describe("GET /export/seances.csv", () => {
   it("exige une session", async () => {
     expect((await lire(null)).status).toBe(401);
   });

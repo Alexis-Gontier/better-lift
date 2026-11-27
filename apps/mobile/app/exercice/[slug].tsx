@@ -48,7 +48,7 @@ const seriesTexte = (s: Seance) =>
     .join(" · ");
 
 /**
- * La page d'un exercice (D348), transposée de la fiche du web (D264, D265) d'un seul
+ * La page d'un exercice, transposée de la fiche du web d'un seul
  * défilement : l'animation, les muscles, les records, chaque séance qui mène à son détail,
  * les pourcentages du 1RM et la meilleure charge par nombre de répétitions. Sans la courbe de
  * progression : en salle, on lit des chiffres ; la courbe reste sur le web.
@@ -180,7 +180,7 @@ function Execution({ exercice }: { exercice: ExerciceDetail }) {
 }
 
 /**
- * Les records (D350) : le record héros en grand, au contour du record (D28) — la meilleure
+ * Les records : le record héros en grand, au contour du record — la meilleure
  * charge, ou les répétitions au poids du corps — puis les autres et le nombre de séances.
  */
 function Records({ historique }: { historique: HistoriqueExercice }) {

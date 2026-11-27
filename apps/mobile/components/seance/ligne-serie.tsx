@@ -11,7 +11,7 @@ import { vibrer } from "@/lib/vibrations";
 import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 
 /**
- * Les états d'une ligne (D116), comme une case à cocher : à faire, la case est
+ * Les états d'une ligne, comme une case à cocher : à faire, la case est
  * VIDE ; faite, elle porte la ✓ pleine et la ligne se teinte. La prochaine se
  * repère par un liseré.
  */
@@ -23,7 +23,7 @@ type Affichee = { valeur: number | null; saisie: boolean };
 function textePrecedent(p?: { reps: number | null; chargeKg: number | null; faite: boolean }) {
   if (!p?.faite) return "—";
   if (p.chargeKg === null) return p.reps === null ? "—" : `${p.reps} reps`;
-  // Une espace fine insécable (D344) : « 25 kg » ne se coupe pas, et tient dans la colonne.
+  // Une espace fine insécable : « 25 kg » ne se coupe pas, et tient dans la colonne.
   return `${chargeEnTexte(p.chargeKg, SYSTEME_UNITES)} ${UNITE} × ${p.reps ?? "—"}`;
 }
 
@@ -31,8 +31,8 @@ const texteCharge = (v: number | null) => (v === null ? "" : chargeEnTexte(v, SY
 const texteReps = (v: number | null) => (v === null ? "" : String(v));
 
 /**
- * Une série sur UNE ligne (D87) : étiquette · précédent · charge · reps · ✓.
- * Saisie au clavier du système (D317, D334, D339) : une case non saisie montre
+ * Une série sur UNE ligne : étiquette · précédent · charge · reps · ✓.
+ * Saisie au clavier du système : une case non saisie montre
  * en gris ce qu'on ferait (`valeurAffichee`) ; la toucher la vide, le gris
  * reste en indication, et cocher sans rien taper le valide. La valeur s'écrit
  * à la sortie du champ.
@@ -56,15 +56,15 @@ export function LigneSerie({
   /** Une série hors des normales (échauffement, dégressive…) : étiquette en retrait. */
   secondaire: boolean;
   serie: SerieEnCours;
-  /** Ce que montrent les cases : la saisie, ou le gris (D339). */
+  /** Ce que montrent les cases : la saisie, ou le gris. */
   charge: Affichee;
   reps: Affichee;
   etat: EtatSerie;
-  /** Ce qui a été fait la dernière fois à cette position (D67). */
+  /** Ce qui a été fait la dernière fois à cette position. */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean };
   onChange: (patch: { reps?: number | null; chargeKg?: number | null }) => void;
   onValider: () => void;
-  /** L'appui sur l'étiquette : type de série, suppression (D92). */
+  /** L'appui sur l'étiquette : type de série, suppression. */
   onEtiquette: () => void;
 }) {
   const faite = etat === "faite";
@@ -106,7 +106,7 @@ export function LigneSerie({
           {etiquette}
         </Text>
       </Pressable>
-      {/* Une INDICATION, pas une valeur (D59) : un appui la recopie. */}
+      {/* Une INDICATION, pas une valeur : un appui la recopie. */}
       <Pressable
         onPress={recopier}
         disabled={!precedent?.faite}
@@ -161,7 +161,7 @@ export function LigneSerie({
 }
 
 /**
- * Une case kg ou reps (D334, D339). Saisie, elle montre sa valeur à l'encre ;
+ * Une case kg ou reps. Saisie, elle montre sa valeur à l'encre ;
  * la toucher la sélectionne toute, le premier chiffre la remplace. Sinon elle
  * montre le gris en indication, et la toucher ouvre une case VIDE, le gris
  * restant visible : rien n'est écrit tant qu'on ne tape rien. `texte` ne vit

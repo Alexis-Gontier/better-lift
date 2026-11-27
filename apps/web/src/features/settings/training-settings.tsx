@@ -24,9 +24,9 @@ const versChamp = (n: number | null) => (n === null ? NONE : String(n));
 const versValeur = (v: string) => (v === NONE ? null : Number(v));
 
 /**
- * Entraînement (D271, D273) : objectif et repos, ce que porte `Preferences` (D129) ; chaque choix
+ * Entraînement : objectif et repos, ce que porte `Preferences` ; chaque choix
  * s'enregistre aussitôt. Charges et disques, formule du 1RM et RPE n'ont pas de champ en base :
- * ils ont quitté l'écran (D294).
+ * ils ont quitté l'écran.
  */
 export function TrainingSettings() {
   const requete = useQuery(preferencesQuery());

@@ -15,7 +15,7 @@ import { normaliserRecherche } from "@better-lift/shared";
 /** Ce qu'on lit en base. Les champs sont ceux du modèle, donc en anglais. */
 export type LigneExercice = {
   slug: string;
-  /** Le nom anglais du dataset (D44). */
+  /** Le nom anglais du dataset. */
   name: string;
   nomFr: string;
   /** Les deux noms normalisés (`texteRecherche`), écrits par le semis. */
@@ -62,7 +62,7 @@ export function filtreCatalogue(requete: RequeteCatalogue): Record<string, unkno
 /**
  * L'image fixe d'un exercice. Le dataset publie, pour chaque animation
  * `videos/<id>.gif`, une image `images/<id>.jpg` au même commit : on la déduit
- * plutôt que de la stocker (D46 — rien n'est copié, et pas de migration).
+ * plutôt que de la stocker (rien n'est copié, et pas de migration).
  */
 export function imageDe(gifUrl: string | null): string | null {
   if (!gifUrl) return null;

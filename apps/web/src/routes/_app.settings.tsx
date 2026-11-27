@@ -18,7 +18,7 @@ const NAV = [
 ] as const;
 
 /**
- * Paramètres (D271) : la navigation à gauche, comme les réglages de GitHub ou de Linear — tout
+ * Paramètres : la navigation à gauche, comme les réglages de GitHub ou de Linear — tout
  * se voit d'un coup d'œil —, la page à droite. Des réglages existent toujours : l'état « vide »
  * montre la page normale.
  */

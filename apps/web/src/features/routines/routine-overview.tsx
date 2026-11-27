@@ -20,13 +20,13 @@ import { filled } from "./routine-editor";
 import { minutesEstimees, musclesRoutine, seriesPrevues, statsRoutine, volumePrevu } from "./stats";
 
 const NO_FOLDER = "__sans-dossier";
-/** La fenêtre des stats d'une routine (D280). */
+/** La fenêtre des stats d'une routine. */
 const JOURS_STATS = 91;
 
 const nbSeries = (b: Brouillon) => b.exercices.reduce((n, e) => n + e.series.length, 0);
 
 /**
- * La routine en bref (D265), une ligne par chiffre : ils suivent la saisie et montrent leur
+ * La routine en bref, une ligne par chiffre : ils suivent la saisie et montrent leur
  * écart avec la version enregistrée. Le volume prévu n'apparaît qu'avec des charges notées ;
  * « Dernière fois » ouvre la séance.
  */
@@ -91,7 +91,7 @@ function Summary({
 }
 
 /**
- * La routine dans le temps, en bref (D280, D311) : séances, volume moyen et sa tendance, durée,
+ * La routine dans le temps, en bref : séances, volume moyen et sa tendance, durée,
  * records et réalisation sur trois mois.
  */
 function RoutineStats({ saved, seances }: { saved: Brouillon; seances: SeanceResume[] }) {
@@ -115,7 +115,7 @@ function RoutineStats({ saved, seances }: { saved: Brouillon; seances: SeanceRes
   return <SummaryCard title="Stats" rows={rows} />;
 }
 
-/** Ce que la routine fait travailler : la silhouette seule, en petit (D255). */
+/** Ce que la routine fait travailler : la silhouette seule, en petit. */
 function Muscles({ draft, infos }: { draft: Brouillon; infos: ReadonlyMap<string, InfoExercice> }) {
   const { primary, secondary } = musclesRoutine(
     draft.exercices.flatMap((e) => {
@@ -138,7 +138,7 @@ function Muscles({ draft, infos }: { draft: Brouillon; infos: ReadonlyMap<string
 }
 
 /**
- * La colonne de droite de l'éditeur (D253, D254), une carte par sujet : les chiffres, les stats,
+ * La colonne de droite de l'éditeur, une carte par sujet : les chiffres, les stats,
  * les muscles travaillés, puis les réglages — dossier et note —, qui ne pèsent plus en tête.
  */
 export function RoutineOverview({
@@ -153,7 +153,7 @@ export function RoutineOverview({
   draft: Brouillon;
   /** La version enregistrée : chaque chiffre montre son écart avec elle ; absente à la création. */
   saved?: Brouillon;
-  /** Les séances de la routine, la plus récente d'abord (D311) ; absentes à la création. */
+  /** Les séances de la routine, la plus récente d'abord ; absentes à la création. */
   seances?: SeanceResume[];
   infos: ReadonlyMap<string, InfoExercice>;
   dossiers: readonly { id: string; nom: string }[];

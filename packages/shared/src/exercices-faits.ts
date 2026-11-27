@@ -1,7 +1,7 @@
 import type { ExerciceResume } from "./exercices.js";
 import { type RecordExercice, recordsDe, type SerieHisto } from "./records.js";
 
-/** Les chiffres d'un exercice fait, par slug (D312). */
+/** Les chiffres d'un exercice fait, par slug. */
 export type ChiffresExercice = {
   slug: string;
   /** ISO de la dernière séance où il figure. */
@@ -13,7 +13,7 @@ export type ChiffresExercice = {
 };
 
 /**
- * Un exercice que l'utilisateur a fait : sa ligne du catalogue et ses chiffres (D312). La
+ * Un exercice que l'utilisateur a fait : sa ligne du catalogue et ses chiffres. La
  * ligne vient avec : la page Exercices liste les faits sans charger tout le catalogue.
  */
 export type ExerciceFait = ExerciceResume & Omit<ChiffresExercice, "slug">;

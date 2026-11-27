@@ -15,7 +15,7 @@ import {
 import { routinesQuery } from "./queries";
 
 /**
- * `/routines` sans routine ouverte (D260) : un état vide franc, qui dit quoi faire et porte la
+ * `/routines` sans routine ouverte : un état vide franc, qui dit quoi faire et porte la
  * création. Sans aucune routine, la première création prend le relais.
  */
 export function RoutinesHome() {

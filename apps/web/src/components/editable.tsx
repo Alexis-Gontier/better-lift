@@ -8,7 +8,7 @@ import { useUnsavedGuard } from "@/components/unsaved-guard";
 import { useDraftHistory } from "@/lib/draft-history";
 import { plural } from "@/lib/format";
 
-/** Ctrl (⌘ sur Mac) Z annule, Ctrl Maj Z ou Ctrl Y rétablit, Ctrl S enregistre (D261). */
+/** Ctrl (⌘ sur Mac) Z annule, Ctrl Maj Z ou Ctrl Y rétablit, Ctrl S enregistre. */
 function useEditorKeys(keys: { undo: () => void; redo: () => void; save: () => void }) {
   const latest = useRef(keys);
   latest.current = keys;
@@ -80,9 +80,9 @@ type Options<T> = {
   /** Le brouillon de départ : l'élément tel qu'enregistré. */
   initial: () => T;
   isDirty: (draft: T) => boolean;
-  /** Combien de choses changent (D261) : un exercice, un champ… */
+  /** Combien de choses changent : un exercice, un champ… */
   count: (draft: T) => number;
-  /** Ce qui empêche d'enregistrer, dit à la place du compte (D252). */
+  /** Ce qui empêche d'enregistrer, dit à la place du compte. */
   blocker?: (draft: T) => string | null;
   /** L'écriture ; une promesse rejetée garde le brouillon et dit l'échec. */
   onSave: (draft: T) => void | Promise<void>;
@@ -93,7 +93,7 @@ type Options<T> = {
 };
 
 /**
- * Un élément toujours modifiable, à la façon de la routine (D243, D261) : le brouillon et son
+ * Un élément toujours modifiable, à la façon de la routine : le brouillon et son
  * historique, l'état sous le nom, les actions de la tête, Ctrl Z / Ctrl Y / Ctrl S et la fenêtre
  * de sortie. `actions(menu)` montre l'état, puis le menu de l'élément tant qu'il n'est pas modifié.
  */
@@ -127,7 +127,7 @@ export function useEditable<T>(o: Options<T>) {
   }
 
   const pending = `${plural(count, "modification")} non enregistrée${count > 1 ? "s" : ""}`;
-  // À gauche des flèches (D266) : la tête ne grandit pas à la première modification. Panneau
+  // À gauche des flèches : la tête ne grandit pas à la première modification. Panneau
   // étroit, seul le compte reste (« • 2 ») ; la phrase entière est dans l'infobulle.
   const status: ReactNode = dirty && (
     <span

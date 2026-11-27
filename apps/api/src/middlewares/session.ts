@@ -6,7 +6,7 @@ export type LireSession = (headers: Headers) => Promise<{ user: { id: string } }
 export type VariablesSession = { userId: string };
 
 /**
- * Exige une session, et pose `userId` dans le contexte (D53).
+ * Exige une session, et pose `userId` dans le contexte.
  *
  * Le lecteur est INJECTÉ : ce module n'importe pas Better Auth, dont la
  * construction exige `SIGNUP_ALLOWLIST`. Les tests passent un lecteur simulé ;

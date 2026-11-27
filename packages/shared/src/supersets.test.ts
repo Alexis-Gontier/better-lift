@@ -18,7 +18,7 @@ const l = (s: string): E[] =>
 /** Le même format en sortie, pour comparer d'un coup d'œil. */
 const vue = (xs: readonly E[]) => xs.map((x) => `${x.nom}${x.supersetGroupe ?? ""}`).join(" ");
 
-describe("normaliserGroupes (D146)", () => {
+describe("normaliserGroupes", () => {
   it("renumérote 1…n dans l'ordre d'apparition", () => {
     expect(vue(normaliserGroupes(l("a7 b7 c d3 e3")))).toBe("a1 b1 c d2 e2");
   });
@@ -55,7 +55,7 @@ describe("groupes", () => {
   });
 });
 
-describe("lierAuSuivant (D147)", () => {
+describe("lierAuSuivant", () => {
   it("lie deux exercices seuls", () => {
     expect(vue(lierAuSuivant(l("a b c"), 0))).toBe("a1 b1 c");
   });
@@ -73,7 +73,7 @@ describe("lierAuSuivant (D147)", () => {
   });
 });
 
-describe("retirerDuGroupe (D147)", () => {
+describe("retirerDuGroupe", () => {
   it("détache le dernier, qui reste en place", () => {
     expect(vue(retirerDuGroupe(l("a1 b1 c1 d"), 2))).toBe("a1 b1 c d");
   });
@@ -91,13 +91,13 @@ describe("retirerDuGroupe (D147)", () => {
   });
 });
 
-describe("defaireGroupe (D147)", () => {
+describe("defaireGroupe", () => {
   it("remet tout le groupe à null, et garde les autres", () => {
     expect(vue(defaireGroupe(l("a1 b1 c1 d2 e2"), 1))).toBe("a b c d1 e1");
   });
 });
 
-describe("deplacerAvecGroupes (D148)", () => {
+describe("deplacerAvecGroupes", () => {
   it("l'exercice déplacé quitte son groupe, qui se resserre", () => {
     expect(vue(deplacerAvecGroupes(l("a1 b1 c1 d"), 0, 3))).toBe("b1 c1 d a");
   });
@@ -116,7 +116,7 @@ describe("deplacerAvecGroupes (D148)", () => {
   });
 });
 
-describe("roleRepos (D149)", () => {
+describe("roleRepos", () => {
   it("hors groupe : son propre repos", () => {
     expect(roleRepos(l("a b1 c1"), 0)).toBe("propre");
   });
@@ -126,7 +126,7 @@ describe("roleRepos (D149)", () => {
   });
 });
 
-describe("peutLierAuSuivant (D152)", () => {
+describe("peutLierAuSuivant", () => {
   it("vrai hors groupe, sauf sur le dernier exercice", () => {
     const xs = l("a b c");
     expect([0, 1, 2].map((i) => peutLierAuSuivant(xs, i))).toEqual([true, true, false]);

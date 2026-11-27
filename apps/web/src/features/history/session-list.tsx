@@ -40,8 +40,8 @@ function correspond(s: SeanceFil, saisie: string): boolean {
 }
 
 /**
- * L'historique (D263) : les séances, la plus récente d'abord, groupées par mois civil, lues page
- * par page ; une recherche et un filtre par routine sur ce qui est chargé. Quatre états (D303).
+ * L'historique : les séances, la plus récente d'abord, groupées par mois civil, lues page
+ * par page ; une recherche et un filtre par routine sur ce qui est chargé. Quatre états.
  */
 export function SessionList() {
   const force = useEtat();
@@ -142,7 +142,7 @@ export function SessionList() {
                 {plural(g.seances.length, "séance")} · {formatKg(Math.round(volume))}
               </span>
             </div>
-            {/* Une carte par séance, séparées (D258, comme les routines). */}
+            {/* Une carte par séance, séparées (comme les routines). */}
             <div className="flex flex-col gap-2">
               {g.seances.map((s) => (
                 <Card key={s.id} size="sm" className={listCardClass}>
@@ -226,7 +226,7 @@ function SessionListSkeleton() {
   );
 }
 
-/** Aucune séance : la liste le dit d'une ligne, le panneau de droite explique (D260). */
+/** Aucune séance : la liste le dit d'une ligne, le panneau de droite explique. */
 function SessionListEmpty() {
   return (
     <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">

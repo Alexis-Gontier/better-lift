@@ -6,7 +6,7 @@ import { formaterDuree } from "@/lib/temps";
 import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 
 /**
- * Le repos restant, collé en bas de l'écran comme chez Hevy (D317, D335) — là où
+ * Le repos restant, collé en bas de l'écran comme chez Hevy — là où
  * le pouce et l'œil tombent : une barre qui se vide, le décompte, −15 s / +15 s,
  * Passer. Il couvre le bas de la liste, qui lui garde de la marge.
  */
@@ -20,7 +20,7 @@ export function BandeauRepos({
   /** De 1 à 0, la barre ; `null` pour un brouillon sans durée (pas de barre). */
   part: number | null;
   onPasser: () => void;
-  /** −15 s / +15 s (D79). */
+  /** −15 s / +15 s. */
   onAjuster: (deltaSec: number) => void;
 }) {
   const fini = restant === 0;

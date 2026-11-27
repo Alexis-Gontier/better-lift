@@ -7,7 +7,7 @@ type SerieApercu = {
   faite: boolean;
 };
 
-/** Un exercice tel que le fil de l'Accueil le montre (D119). */
+/** Un exercice tel que le fil de l'Accueil le montre. */
 export type ApercuExercice = {
   slug: string;
   nom: string;
@@ -35,7 +35,7 @@ export function meilleureSerieComptee(series: readonly SerieApercu[]): ApercuExe
   return m;
 }
 
-/** Les `n` premiers exercices d'une séance, pour le fil (D119). */
+/** Les `n` premiers exercices d'une séance, pour le fil. */
 export function apercuExercices(
   exercices: readonly {
     slug: string;

@@ -2,7 +2,7 @@ import type { ElementFile, SeanceEnCours } from "@better-lift/shared";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
- * Le disque, et rien d'autre (D55).
+ * Le disque, et rien d'autre.
  *
  * Deux clés, chacune UNIQUE : le brouillon de la séance en cours, et la file des
  * séances terminées à envoyer. Ce qui n'est pas ici ne survit pas à un arrêt

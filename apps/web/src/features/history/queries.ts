@@ -10,7 +10,7 @@ import { api, lire } from "@/lib/api";
 import { exercicesKeys } from "@/lib/exercices";
 
 /**
- * Les séances (D300). `["seances"]` est leur racine. Supprimer une séance touche aussi ce qui en
+ * Les séances. `["seances"]` est leur racine. Supprimer une séance touche aussi ce qui en
  * dérive : les routines (dernière séance, stats) et les exercices (faits, historiques).
  */
 const seancesKeys = {
@@ -18,7 +18,7 @@ const seancesKeys = {
   detail: (id: string) => ["seances", "detail", id] as const,
 };
 
-/** Un appel qui survit au départ de la page (D302) ; `init` remplace celui du client. */
+/** Un appel qui survit au départ de la page ; `init` remplace celui du client. */
 const KEEPALIVE = { init: { keepalive: true, credentials: "include" as const } };
 
 type Page = { seances: SeanceFil[]; total: number; page: number; taille: number };
@@ -49,7 +49,7 @@ export const seanceQuery = (id: string) =>
     },
   });
 
-/** Supprimer une séance, avec « Annuler » (D302) ; elle sort de toutes les pages chargées. */
+/** Supprimer une séance, avec « Annuler » ; elle sort de toutes les pages chargées. */
 export function useSupprimerSeance() {
   const client = useQueryClient();
   return useSuppression<InfiniteData<Page>>({
@@ -70,7 +70,7 @@ export function useSupprimerSeance() {
       // Pas d'invalidation du détail : elle referait un GET de la séance partie, soit un 404.
       client.removeQueries({ queryKey: seancesKeys.detail(id) });
     },
-    // L'Accueil dérive aussi des séances (D330) : clé littérale, une feature n'en importe pas une autre.
+    // L'Accueil dérive aussi des séances : clé littérale, une feature n'en importe pas une autre.
     apres: [["routines"], exercicesKeys.all, ["tableau-de-bord"]],
   });
 }

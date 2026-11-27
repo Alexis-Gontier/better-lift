@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_auth")({
 
 /**
  * Hors coquille, à la façon des SaaS (ElevenLabs, Vercel) : pas de carte, le symbole et le nom
- * en haut de page, assemblés comme dans la barre latérale (D329), une colonne étroite centrée.
+ * en haut de page, assemblés comme dans la barre latérale, une colonne étroite centrée.
  */
 function AuthLayout() {
   return (

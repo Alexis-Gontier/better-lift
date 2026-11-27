@@ -45,7 +45,7 @@ describe("la file", () => {
     expect(apresReponse(file, "s1", { issue: "envoyee" }).map((e) => e.seance.id)).toEqual(["s2"]);
   });
 
-  // D10 : une séance refusée RESTE, avec son message — elle n'est ni perdue ni
+  // Une séance refusée RESTE, avec son message — elle n'est ni perdue ni
   // renvoyée en boucle.
   it("une séance refusée reste, avec son message, et n'est plus à envoyer", () => {
     const file = apresReponse(mettreEnFile([], s1, FIN), "s1", {

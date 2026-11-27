@@ -66,7 +66,7 @@ describe("marquerRecords", () => {
     ]);
   });
 
-  // D64 : le badge dit ce qui a été battu À CE MOMENT-LÀ, contre l'historique antérieur.
+  // Le badge dit ce qui a été battu À CE MOMENT-LÀ, contre l'historique antérieur.
   it("compare à l'historique antérieur, et une égalité ne bat rien", () => {
     const avant = recordsDe([avecDate(n(5, 100))]);
     expect(marquerRecords(avant, [n(5, 100), n(6, 100), n(3, 105)])).toEqual([

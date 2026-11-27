@@ -5,7 +5,7 @@ import { groupes, normaliserGroupes } from "./supersets.js";
 import type { UnitSystem } from "./units.js";
 
 /**
- * Mettre à jour la routine avec la séance du jour (D347), comme Hevy à la fin.
+ * Mettre à jour la routine avec la séance du jour, comme Hevy à la fin.
  *
  * La routine reprend la STRUCTURE de la séance — exercices, ordre, séries, types,
  * repos, supersets — et les VALEURS des séries faites. Une série non cochée garde
@@ -98,7 +98,7 @@ const charge = (v: number | null, systeme: UnitSystem) =>
 /**
  * La routine mise à jour et la liste des changements, ou `null` quand la séance a
  * suivi la routine — ou qu'elle donnerait une routine que l'API refuserait.
- * Le nom reste ; la note et le dossier ne partent pas, l'API les garde (D298).
+ * Le nom reste ; la note et le dossier ne partent pas, l'API les garde.
  */
 export function majRoutine(
   routine: RoutineDetail,

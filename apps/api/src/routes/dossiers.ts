@@ -7,7 +7,7 @@ import { type DepotDossiers, NomPris } from "../services/dossiers.js";
 const INTROUVABLE = { erreur: "Dossier introuvable." };
 
 /**
- * Les dossiers de routines (D297), derrière une session. Dépôt et lecteur de session sont
+ * Les dossiers de routines, derrière une session. Dépôt et lecteur de session sont
  * injectés, comme pour les routines. Le dossier d'autrui est introuvable (404).
  */
 export function routesDossiers(depot: DepotDossiers, lireSession: LireSession) {

@@ -50,7 +50,7 @@ export type SeanceASupprimer = { id: string; nom: string; debut: string };
 
 /**
  * Supprimer une séance, après confirmation : du menu ⋯ comme du clic droit dans la liste. Ouverte,
- * elle se referme. Le toast permet d'annuler (D302).
+ * elle se referme. Le toast permet d'annuler.
  */
 export function DeleteSessionDialog({
   session,
@@ -123,7 +123,7 @@ function SessionMenu({ seance }: { seance: SeanceDetail }) {
   );
 }
 
-/** Les chiffres de la séance en bandeau, en tête (D265). */
+/** Les chiffres de la séance en bandeau, en tête. */
 function SessionSummary({ seance }: { seance: SeanceDetail }) {
   const figures = [
     { label: "Durée", value: formatMinutes(minutesDe(seance)) },
@@ -145,7 +145,7 @@ function SessionSummary({ seance }: { seance: SeanceDetail }) {
   );
 }
 
-// Mêmes colonnes que l'éditeur de routine (D246) ; « Précédent » s'efface dans une carte étroite.
+// Mêmes colonnes que l'éditeur de routine ; « Précédent » s'efface dans une carte étroite.
 // La dernière colonne a une largeur fixe : chaque ligne est sa propre grille, une colonne `auto`
 // élargie par un trophée décalerait les autres.
 const SET_GRID =
@@ -155,8 +155,8 @@ const PREVIOUS_COL = "hidden @[30rem]/sets:block";
 type ExerciceFait = SeanceDetail["exercices"][number];
 
 /**
- * Un exercice fait, en lecture (D263, D294) : sa tête, puis ses séries face à sa dernière
- * occurrence antérieure, position par position, toutes les séries comprises (D123).
+ * Un exercice fait, en lecture : sa tête, puis ses séries face à sa dernière
+ * occurrence antérieure, position par position, toutes les séries comprises.
  */
 function DoneExerciseCard({
   exercise,
@@ -248,8 +248,8 @@ function DoneExerciseCard({
 }
 
 /**
- * La séance ouverte (D235), en lecture : ses chiffres en bandeau, ses exercices, sa note, sur
- * toute la largeur (D265). La corriger n'a pas d'API : elle se relit, elle se supprime (D294).
+ * La séance ouverte, en lecture : ses chiffres en bandeau, ses exercices, sa note, sur
+ * toute la largeur. La corriger n'a pas d'API : elle se relit, elle se supprime.
  */
 export function SessionPane({ id }: { id: string }) {
   const force = useEtat();

@@ -1,5 +1,5 @@
 /**
- * Où joindre l'API. En production, le web et l'API partagent l'origine (D18) : l'API sous
+ * Où joindre l'API. En production, le web et l'API partagent l'origine : l'API sous
  * `/api`, Better Auth sous `/api/auth`, que son client construit depuis l'origine. En
  * développement, l'API tourne à part, sur le 3001.
  */

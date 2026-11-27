@@ -3,8 +3,8 @@ import type { TypeSerie } from "./routines.js";
 import { estimate1RM } from "./training.js";
 
 /**
- * Les records, à la manière de Hevy (D63) — dérivés à la lecture, jamais
- * stockés (D13, D65) : corriger une séance ne demande aucun recalcul.
+ * Les records, à la manière de Hevy — dérivés à la lecture, jamais
+ * stockés : corriger une séance ne demande aucun recalcul.
  *
  * Avec charge : charge max (départagée aux reps), 1RM estimé (Epley, D4) et
  * meilleure série en volume. Au poids du corps : le maximum de reps.
@@ -88,7 +88,7 @@ export function recordsDe(series: (SerieHisto & { date: string })[]): RecordExer
 
 /**
  * Pour chaque série d'une séance, les records qu'elle a battus À CE MOMENT-LÀ
- * (D64) : contre l'historique antérieur, puis contre les séries précédentes de
+ * : contre l'historique antérieur, puis contre les séries précédentes de
  * la même séance.
  */
 export function marquerRecords(avant: RecordExercice[], series: SerieHisto[]): TypeRecord[][] {
@@ -112,18 +112,18 @@ export function marquerRecords(avant: RecordExercice[], series: SerieHisto[]): T
 export type SeanceResume = {
   id: string;
   nom: string;
-  /** La routine d'origine, `null` pour une séance vide : l'Accueil en déduit « À suivre » (D110). */
+  /** La routine d'origine, `null` pour une séance vide : l'Accueil en déduit « À suivre ». */
   routineId: string | null;
   /** ISO 8601 ; le jour s'en déduit dans le fuseau de l'utilisateur, jamais en UTC. */
   debut: string;
   fin: string;
   seriesFaites: number;
   volumeKg: number;
-  /** Les séries qui ont battu au moins un record, à ce moment-là (D64, D110). */
+  /** Les séries qui ont battu au moins un record, à ce moment-là. */
   nbRecords: number;
 };
 
-/** Une séance dans le fil de l'Accueil (D119) : son résumé et ses premiers exercices. */
+/** Une séance dans le fil de l'Accueil : son résumé et ses premiers exercices. */
 export type SeanceFil = SeanceResume & { nbExercices: number; apercu: ApercuExercice[] };
 
 type SerieLue = {
@@ -131,34 +131,34 @@ type SerieLue = {
   reps: number | null;
   chargeKg: number | null;
   faite: boolean;
-  /** Les records que cette série a battus à ce moment-là (D64). */
+  /** Les records que cette série a battus à ce moment-là. */
   records: TypeRecord[];
 };
 
 export type SeanceDetail = SeanceResume & {
-  /** La note de la séance (D130), `null` sans note. */
+  /** La note de la séance, `null` sans note. */
   note: string | null;
   /**
-   * `note` : la note libre de l'exercice (D90), `null` sans note. `precedentes` :
+   * `note` : la note libre de l'exercice, `null` sans note. `precedentes` :
    * TOUTES les séries de sa dernière occurrence antérieure, dans l'ordre — le
-   * détail les compare position par position (D123).
+   * détail les compare position par position.
    */
   exercices: {
     slug: string;
     nom: string;
     image: string | null;
-    /** Les muscles de la fiche (D345) : la carte des muscles du détail, sur le mobile. */
+    /** Les muscles de la fiche : la carte des muscles du détail, sur le mobile. */
     musclePrincipal: string;
     musclesSecondaires: string[];
     note: string | null;
-    /** Le groupe de superset (D153), `null` hors groupe ; absent d'un cache antérieur. */
+    /** Le groupe de superset, `null` hors groupe ; absent d'un cache antérieur. */
     supersetGroupe?: number | null;
     series: SerieLue[];
     precedentes: { reps: number | null; chargeKg: number | null }[];
   }[];
 };
 
-/** Les séances où figure un exercice, de la plus récente à la plus ancienne (D124). */
+/** Les séances où figure un exercice, de la plus récente à la plus ancienne. */
 export type HistoriqueExercice = {
   id: string;
   nom: string;

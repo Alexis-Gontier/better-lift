@@ -43,8 +43,8 @@ type Contexte = {
   demarrer: (s: SeanceEnCours) => Promise<boolean>;
   abandonner: () => Promise<void>;
   /**
-   * Brouillon → file → envoi. La séance quitte l'écran aussitôt (D10). `moment` :
-   * le début et la fin corrigés à la fin de séance (D343) ; sinon le début du
+   * Brouillon → file → envoi. La séance quitte l'écran aussitôt. `moment` :
+   * le début et la fin corrigés à la fin de séance ; sinon le début du
    * brouillon, et maintenant.
    */
   terminer: (moment?: { debut: string; fin: Date }) => Promise<void>;
@@ -140,7 +140,7 @@ export function SeanceProvider({ children }: { children: ReactNode }) {
     })();
   }, [synchroniser]);
 
-  // D99 : retenter dès que le réseau revient, et à chaque retour au premier plan
+  // Retenter dès que le réseau revient, et à chaque retour au premier plan
   // — jusqu'ici, une séance terminée en salle attendait le prochain lancement.
   // `synchroniser` est verrouillée : deux déclencheurs simultanés n'envoient
   // qu'une fois.

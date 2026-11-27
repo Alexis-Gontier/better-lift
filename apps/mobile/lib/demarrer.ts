@@ -8,7 +8,7 @@ import { useSeance } from "./seance";
 import { nouvelId } from "./temps";
 
 /**
- * Démarrer une séance, vide ou depuis une routine, depuis l'accueil (D316).
+ * Démarrer une séance, vide ou depuis une routine, depuis l'accueil.
  *
  * Démarrer ne doit JAMAIS écraser une séance en cours (§ 8) : la vérification
  * relit le DISQUE au moment de l'appui, pas l'état d'un écran.
@@ -42,10 +42,10 @@ export function useDemarrer() {
     // Le résumé ne porte pas les séries : le détail se charge à l'appui.
     setOuverture(id);
     try {
-      // Réseau d'abord, cache en repli (D98) : en salle, la routine de la veille
+      // Réseau d'abord, cache en repli : en salle, la routine de la veille
       // vaut mieux qu'un refus.
       const detail = await chargerRoutine(client, id);
-      // La dernière fois entre dans le brouillon AVANT son écriture (D67).
+      // La dernière fois entre dans le brouillon AVANT son écriture.
       const precedents = await chargerPrecedents(
         client,
         detail.exercices.map((e) => e.slug),

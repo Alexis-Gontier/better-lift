@@ -4,7 +4,7 @@ import { normaliserGroupes } from "./supersets.js";
 import type { UnitSystem } from "./units.js";
 
 /**
- * La copie de travail de l'éditeur de routine, commune au web et au mobile (D85).
+ * La copie de travail de l'éditeur de routine, commune au web et au mobile.
  *
  * Reps et charge y restent en TEXTE, tels que tapés : les convertir à la frappe
  * ferait disparaître « 82, » avant qu'on ait tapé le 5, et une saisie illisible
@@ -20,7 +20,7 @@ export type ExerciceBrouillon = {
   nom: string;
   image: string | null;
   repos: string;
-  /** Le groupe de superset (D145), `null` hors groupe. */
+  /** Le groupe de superset, `null` hors groupe. */
   supersetGroupe: number | null;
   series: SerieBrouillon[];
 };
@@ -32,7 +32,7 @@ export type Brouillon = {
    * la portait pas (cache d'une version antérieure) : on ne l'envoie pas, le serveur la garde.
    */
   note?: string;
-  /** Repris tel quel, l'éditeur ne le change pas ; absent : inconnu, non envoyé (D298). */
+  /** Repris tel quel, l'éditeur ne le change pas ; absent : inconnu, non envoyé. */
   dossierId?: string | null;
   exercices: ExerciceBrouillon[];
 };

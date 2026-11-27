@@ -3,7 +3,7 @@ import app from "./app.js";
 
 /**
  * Le point d'entrée de production : UNE fonction Vercel, sous `/api`, sur la
- * même origine que le web (D18) — donc aucun CORS.
+ * même origine que le web — donc aucun CORS.
  *
  * Le web occupe la racine (`/exercices`, `/routines` sont des PAGES), l'API est
  * donc servie sous `/api`. L'application Hono, elle, ne connaît pas ce préfixe :

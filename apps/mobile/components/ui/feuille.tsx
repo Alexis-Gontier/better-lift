@@ -9,7 +9,7 @@ import { FeuilleBasse } from "./feuille-basse";
 export type OptionFeuille = {
   libelle: string;
   icone?: LucideIcon;
-  /** Le danger a sa couleur (D36) — jamais l'action ni le record. */
+  /** Le danger a sa couleur — jamais l'action ni le record. */
   danger?: boolean;
   /** Visible mais inerte, avec sa raison (« bientôt »). */
   inactive?: string;
@@ -19,7 +19,7 @@ export type OptionFeuille = {
 };
 
 /**
- * Une feuille qui monte du bas (D89), à la Hevy : les actions rares d'un
+ * Une feuille qui monte du bas, à la Hevy : les actions rares d'un
  * élément, sous le pouce. Elle se ferme AVANT d'exécuter l'option : une
  * confirmation ouverte par l'option ne s'empile pas sur la feuille.
  */

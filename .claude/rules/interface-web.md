@@ -5,31 +5,31 @@ paths:
 
 # Interface web
 
-shadcn en direction A (D349, Geist), branché sur l'API. Décisions : `docs/decisions.md`, section
-« Interface web » (D221 et au-delà).
+shadcn, branché sur l'API. Ce fichier ne décrit pas les écrans (ils peuvent changer) :
+seulement l'organisation du code, les contraintes et les pièges.
 
-## Arborescence (D306)
+## Arborescence
 
 - `routes/` : la route seule — `validateSearch`, garde, loader, choix de l'état. Aucune logique,
   aucun JSX au-delà de l'appel au composant de la feature. Fichiers plats (`_app.routines.$id.tsx`).
 - `features/<x>/` : tout ce qui est propre à une page — `queries.ts`, ses composants, sa logique
   pure (`*.ts`) et ses tests à côté. **Une feature n'importe pas une autre feature** ; ce
   qu'elles partagent monte dans `components/` ou `lib/`.
-- `components/` : briques communes (`list-detail`, `editable`, `detail-columns`, `row-menu`,
-  `summary-card`, `body-map`, `exercise-media`…) ; `shell/` la coquille ; `states/` les quatre
-  états. `components/ui/`, `reui/`, `kibo-ui/` : code des registres, **non modifié** sauf
-  nécessité (D231).
+- `components/` : briques communes ; `shell/` la coquille ; `states/` les quatre états.
+  `components/ui/`, `reui/`, `kibo-ui/` : code des registres, **non modifié** sauf nécessité.
 - `lib/` : sans React ni feature — config, client d'API, auth, formatage, lecture, locale.
 - Le calcul métier commun au mobile vit dans `packages/shared` : le web ne réécrit jamais un
   calcul que `shared` a déjà (records, 1RM, volume, dates civiles).
 - Code et adresses en anglais (`/exercises`, `routine-editor.tsx`), textes en français.
-- Knip voit tout le web (D309) : seuls `components/ui/` et `lib/utils.ts` sont des entrées.
+- Knip voit tout le web : seuls `components/ui/` et `lib/utils.ts` sont des entrées.
+- Composants shadcn plutôt que maison. **Tout composant externe hors shadcn se fait valider
+  avant installation.**
 
-## Données (D299–D304, D313)
+## Données
 
 - **Une couche de requêtes par page** : `features/<x>/queries.ts` (clés, `queryOptions`,
-  mutations) ; ce que plusieurs pages lisent vit dans `lib/` (`catalogue.ts`, `exercices.ts`).
-  Les écrans consomment les types inférés par le RPC.
+  mutations) ; ce que plusieurs pages lisent vit dans `lib/`. Les écrans consomment les types
+  inférés par le RPC.
 - **Tout appel passe par `lire()`** (`lib/api.ts`) : une réponse non `ok` devient une `ErreurApi`
   (message de `{ erreur }`, statut ; 0 si le serveur est injoignable). Un 401 relit la session et
   la garde renvoie à la connexion (`main.tsx`).
@@ -38,37 +38,13 @@ shadcn en direction A (D349, Geist), branché sur l'API. Décisions : `docs/deci
   il rendrait `?etat=chargement` impossible.
 - **Les quatre états par l'URL** : `?etat=chargement|erreur|vide`, sur les pages qui déclarent
   `staticData.etats` ; la barre d'état ne s'affiche qu'en développement.
-- **Libellé d'une page de détail** dans le fil d'Ariane : `useCrumbLabel(nom)`.
 - **Supprimer** : `useSuppression` — l'élément sort du cache, l'appel part à la fin du toast
-  « Annuler » (`lib/differe.ts`, `keepalive`), D302.
-- **Modifier** (routines seulement) : `useEditable` (`components/editable.tsx`) — historique ↶ ↷
-  (`lib/draft-history.ts`), Ctrl Z / Ctrl Y / Ctrl S, garde de sortie, succès dit après la
-  réponse. Le brouillon de routine est celui de `shared` (charges en texte « 82,5 ») ; la version
-  enregistrée est gardée en état pour que ses clés suivent le brouillon. Séances et fiches
-  d'exercice sont en lecture seule (D294).
-- **Fuseau et kilos** : `lib/locale.ts` seul (`jourCivil`, `joursDepuis`, `SYSTEME`), D313.
-
-## Coquille et écrans
-
-- Barre latérale shadcn repliable en icônes, logo et nom en tête (D329), d'une seule liste (`components/shell/nav.ts`) : Accueil · Routines ·
-  Historique · Records · Exercices. Paramètres s'ouvre par le menu du compte ou la palette (Ctrl K).
-- **Accueil** (D330) : `features/home/`, une requête `tableauDeBordQuery(depuis)` qui lit les
-  faits des séances ; tout s'agrège dans `shared/tableau-de-bord.ts`, dans le fuseau du web. La
-  période vit dans `localStorage` (`features/home/periode.ts`). Supprimer une séance invalide
-  `["tableau-de-bord"]`.
-- Routines, Historique, Exercices : `ListDetailPage` (liste | détail redimensionnable, largeur
-  mémorisée). **L'élément ouvert vit dans le chemin** (`$id`, `$slug`, `new`), en route enfant
-  rendue par `<Outlet />` ; la liste reste montée et garde ses filtres. Une ligne est un `Link`
-  (`data-status="active"` marque la sélection).
-- Paramètres : navigation à gauche, chaque réglage s'enregistre dès qu'on le choisit (D273). Le
-  thème est un réglage d'appareil (`localStorage`, lu par le script de `index.html`).
-- Composants shadcn plutôt que maison. **Tout composant externe hors shadcn se fait valider avant
-  installation** (D228).
-- **Silhouette** (`BodyMap`, D331) : le dessin du mobile, tracés dans `body-map-traces.ts`
-  (données MIT, ne pas reformater à la main) ; elle prend des noms de muscles du catalogue
-  (principal / secondaire), ou sur l'Accueil une carte de chaleur `charge` (D332).
-- La seule couleur porteuse de sens est le type de série (`lib/series.ts`, `SetBadge`) : W
-  ambre, F rose (le rouge est au danger), D bleu.
+  « Annuler » (`lib/differe.ts`, `keepalive`).
+- **Modifier** : `useEditable` (`components/editable.tsx`) — historique, Ctrl Z / Ctrl Y /
+  Ctrl S, garde de sortie, succès dit après la réponse.
+- **Fuseau et kilos** : `lib/locale.ts` seul.
+- Le thème est un réglage d'appareil (`localStorage`, lu par le script de `index.html` avant le
+  rendu).
 
 ## Pièges
 
@@ -82,6 +58,8 @@ shadcn en direction A (D349, Geist), branché sur l'API. Décisions : `docs/deci
   déclaré n'émet aucune règle, en silence.
 - **Graphiques** : une bibliothèque qui anime en JavaScript échappe à `prefers-reduced-motion` ;
   couper ses animations explicitement.
+- **Silhouette** (`BodyMap`) : tracés dans `body-map-traces.ts`, données MIT, ne pas reformater
+  à la main.
 
 ## Vérifier
 

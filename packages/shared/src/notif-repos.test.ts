@@ -68,7 +68,7 @@ describe("contenuNotifRepos", () => {
     );
   });
 
-  it("ignore un précédent pas fait : la série du dessus s'indique (D339)", () => {
+  it("ignore un précédent pas fait : la série du dessus s'indique", () => {
     const e = exercice("Squat", {
       series: [
         { type: "NORMALE", reps: 5, chargeKg: 100, faite: true },
@@ -153,7 +153,7 @@ describe("appliquerActionRepos", () => {
   });
 });
 
-describe("série suivante (D340)", () => {
+describe("série suivante", () => {
   it("annonce la série qui attend, hors repos", () => {
     const s = { ...seance([exercice("Développé couché")]), repos: null };
     expect(contenuNotifSuivante(s, "metric")).toEqual({

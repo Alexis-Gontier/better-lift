@@ -16,7 +16,7 @@ import {
 import { SeanceProvider } from "../lib/seance";
 import { appliquerThemeGarde } from "../lib/theme-choix";
 
-// Le thème choisi dans le Profil (D128), appliqué dès le chargement : avant le
+// Le thème choisi dans le Profil, appliqué dès le chargement : avant le
 // premier écran, pas après un clignotement dans le thème du système.
 void appliquerThemeGarde();
 
@@ -27,14 +27,14 @@ export { EcranErreur as ErrorBoundary } from "../components/ui/ecran-erreur";
 brancherReseauEtPremierPlan();
 
 export default function RootLayout() {
-  // Le fond des écrans pendant les transitions : le token, lu par Uniwind (D316).
+  // Le fond des écrans pendant les transitions : le token, lu par Uniwind.
   const fond = useCSSVariable("--color-background") as string | undefined;
 
   return (
     // Le glisser-déposer (réorganiser la séance) exige la racine
     // de gestes au sommet de l'arbre.
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* Le cache des lectures survit à l'arrêt de l'app (D96) : routines,
+      {/* Le cache des lectures survit à l'arrêt de l'app : routines,
           catalogue et précédents restent lisibles sans réseau. `buster` se monte
           quand la forme d'une réponse change, pour jeter un cache incompatible. */}
       <PersistQueryClientProvider
@@ -59,7 +59,7 @@ export default function RootLayout() {
               premier pour route initiale — déclarée seule, la modale ouvrait
               l'application. */}
               <Stack.Screen name="(connecte)" />
-              {/* La séance reprise au démarrage s'ouvre sans glisser (D341). */}
+              {/* La séance reprise au démarrage s'ouvre sans glisser. */}
               <Stack.Screen
                 name="seance"
                 options={({ route }) => ({
@@ -68,18 +68,18 @@ export default function RootLayout() {
                     : "default",
                 })}
               />
-              {/* La page d'une routine (D321), par-dessus les onglets. */}
+              {/* La page d'une routine, par-dessus les onglets. */}
               <Stack.Screen name="routine/[id]" />
-              {/* Une séance passée (D345), par-dessus l'onglet Historique. */}
+              {/* Une séance passée, par-dessus l'onglet Historique. */}
               <Stack.Screen name="historique/[id]" />
-              {/* La page d'un exercice (D348), depuis la séance, une routine ou l'historique. */}
+              {/* La page d'un exercice, depuis la séance, une routine ou l'historique. */}
               <Stack.Screen name="exercice/[slug]" />
               {/* Le catalogue s'ouvre par-dessus la séance, et y revient. */}
               <Stack.Screen name="choisir-exercices" options={{ presentation: "modal" }} />
-              {/* L'ordre des exercices de la séance en cours (D89). */}
+              {/* L'ordre des exercices de la séance en cours. */}
               <Stack.Screen name="reorganiser" options={{ presentation: "modal" }} />
             </Stack>
-            {/* Les menus et fenêtres de Reusables s'y rendent (D316). */}
+            {/* Les menus et fenêtres de Reusables s'y rendent. */}
             <PortalHost />
           </ConfirmationProvider>
         </SeanceProvider>

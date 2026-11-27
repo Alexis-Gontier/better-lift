@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
 
-// Les identifiants du compte E2E (D304), hors du dépôt : `apps/web/.env.e2e`, ignoré par git.
+// Les identifiants du compte E2E, hors du dépôt : `apps/web/.env.e2e`, ignoré par git.
 if (existsSync(".env.e2e")) process.loadEnvFile(".env.e2e");
 
 /**
  * De bout en bout, en local, contre l'API de développement (branche Neon `dev`) et le compte
- * `e2e@better-lift.local` (D304) — jamais `controle@`, qui porte la démo. Pas dans la CI : elle
+ * `e2e@better-lift.local` — jamais `controle@`, qui porte la démo. Pas dans la CI : elle
  * n'a pas de base. Les serveurs déjà lancés (`pnpm dev`) sont repris tels quels.
  */
 export default defineConfig({

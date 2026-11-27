@@ -21,7 +21,7 @@ const MESSAGES: Record<GenreRefus, string> = {
 };
 
 /**
- * Le logo et le nom (D326), le formulaire en bas : le bouton
+ * Le logo et le nom, le formulaire en bas : le bouton
  * tombe sous le pouce, et le clavier remonte le tout plutôt que de le recouvrir.
  */
 export default function Connexion() {

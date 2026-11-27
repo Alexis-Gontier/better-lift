@@ -25,8 +25,8 @@ async function telecharger(): Promise<void> {
 }
 
 /**
- * Données (D271) : l'export seul, une ligne par série (`versCsv` de `shared`). L'import Hevy,
- * l'export JSON et l'effacement n'ont pas d'API derrière eux : ils ont quitté l'écran (D294).
+ * Données : l'export seul, une ligne par série (`versCsv` de `shared`). L'import Hevy,
+ * l'export JSON et l'effacement n'ont pas d'API derrière eux : ils ont quitté l'écran.
  */
 export function DataSettings() {
   const [pending, setPending] = useState(false);

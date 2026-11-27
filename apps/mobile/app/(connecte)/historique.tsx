@@ -17,10 +17,10 @@ import { SYSTEME_UNITES } from "@/lib/unites";
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * L'onglet Historique (D319, D345), comme celui du web : les séances, la plus récente en haut,
+ * L'onglet Historique, comme celui du web : les séances, la plus récente en haut,
  * groupées par mois, lues page par page en défilant. Une séance terminée qui attend le
  * réseau vient en tête, « En attente d'envoi ». La liste n'est pas gardée hors ligne
- * (D96 : elle grossit sans fin).
+ * (elle grossit sans fin).
  */
 export default function Historique() {
   const router = useRouter();

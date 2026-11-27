@@ -9,7 +9,7 @@ type Reponse =
 const reponse = (status: number, corps: unknown) =>
   ({ ok: status < 400, status, json: async () => corps }) as Reponse;
 
-describe("lire (D300)", () => {
+describe("lire", () => {
   it("rend la réponse ok telle quelle", async () => {
     const res = await lire(async () => reponse(200, { a: 1 }), "défaut");
     expect(await res.json()).toEqual({ a: 1 });

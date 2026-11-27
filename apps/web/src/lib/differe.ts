@@ -1,5 +1,5 @@
 /**
- * Les suppressions différées (D302) : la ligne quitte l'écran tout de suite, l'appel ne part qu'à
+ * Les suppressions différées : la ligne quitte l'écran tout de suite, l'appel ne part qu'à
  * l'échéance. « Annuler » n'a donc rien à défaire côté serveur. Sans React : le hook qui s'en sert
  * vit dans `components/use-suppression.ts`.
  */

@@ -45,7 +45,7 @@ export const auth = betterAuth({
     ...(process.env.NODE_ENV !== "production" ? ["exp://", "exp://**"] : []),
   ],
 
-  // LE garde (D30). Lié à la création d'un utilisateur, donc valable pour tout
+  // LE garde. Lié à la création d'un utilisateur, donc valable pour tout
   // chemin présent ou futur — y compris un fournisseur OAuth ajouté plus tard,
   // que le hook de route ci-dessous ne couvrirait pas.
   databaseHooks: {

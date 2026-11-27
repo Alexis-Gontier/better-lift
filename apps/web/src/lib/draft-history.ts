@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
 /**
- * L'historique d'un brouillon, pour annuler et rétablir pas à pas (D261). Des changements qui se
+ * L'historique d'un brouillon, pour annuler et rétablir pas à pas. Des changements qui se
  * suivent de près (une saisie, des clics répétés sur « + ») ne font qu'un pas.
  */
 export type History<T> = { past: T[]; present: T; future: T[]; at: number };

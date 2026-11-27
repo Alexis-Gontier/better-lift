@@ -161,7 +161,7 @@ function OneRmPercentages({ history }: { history: HistoriqueExercice }) {
 }
 
 /**
- * La colonne principale de la fiche (D264) : la progression, l'historique des séances, les
+ * La colonne principale de la fiche : la progression, l'historique des séances, les
  * pourcentages du 1RM et la meilleure charge par nombre de répétitions, d'un seul défilement.
  */
 export function ExerciseMain({ history }: { history: HistoriqueExercice }) {
@@ -176,7 +176,7 @@ export function ExerciseMain({ history }: { history: HistoriqueExercice }) {
 }
 
 /**
- * Les records en lignes, comme « En bref » d'une routine (D265), avec la date de chacun. Ce sont
+ * Les records en lignes, comme « En bref » d'une routine, avec la date de chacun. Ce sont
  * ceux de `shared` : le meilleur volume est celui d'une série.
  */
 export function ExerciseFigures({ history }: { history: HistoriqueExercice }) {

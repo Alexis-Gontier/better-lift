@@ -7,7 +7,7 @@ type Props =
   | { charge: readonly ChargeZone[]; primary?: never; secondary?: never };
 
 /**
- * Les quatre teintes de la carte de chaleur (D332), du ton du corps vers l'encre : mêlées par
+ * Les quatre teintes de la carte de chaleur, du ton du corps vers l'encre : mêlées par
  * `color-mix`, elles suivent le thème sans autre token.
  */
 export const TEINTE_CHARGE = [
@@ -23,10 +23,10 @@ const series = (n: number) =>
 type Teinte = { classe: string; titre?: string };
 
 /**
- * Silhouette face et dos (D331), le dessin du mobile, le reste du corps — tête, mains, pieds
+ * Silhouette face et dos, le dessin du mobile, le reste du corps — tête, mains, pieds
  * compris — au ton de la carte. Deux lectures : principaux à l'encre et secondaires en gris
  * (`primary`, `secondary` : des muscles du catalogue, par `zonesTravaillees` comme sur le
- * téléphone), ou une carte de chaleur des séries par zone (`charge`, D332). Les couleurs sont
+ * téléphone), ou une carte de chaleur des séries par zone (`charge`). Les couleurs sont
  * des classes de tokens : la silhouette suit le thème sans relire le DOM.
  */
 export function BodyMap(props: Props) {

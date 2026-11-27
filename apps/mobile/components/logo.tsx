@@ -2,9 +2,9 @@ import Svg, { G, Rect } from "react-native-svg";
 import { useCSSVariable } from "uniwind";
 
 /**
- * Le logo « La charge » (D322, D326) : la tuile de l'icône de l'app, dessinée aux couleurs du
+ * Le logo « La charge » : la tuile de l'icône de l'app, dessinée aux couleurs du
  * thème — `primary` pour la tuile, `primary-foreground` pour le symbole —, donc inversée en
- * sombre comme le favicon du web (D323). Mêmes cotes que `assets/logo.svg`.
+ * sombre comme le favicon du web. Mêmes cotes que `assets/logo.svg`.
  */
 export function Logo({ taille }: { taille: number }) {
   const tuile = useCSSVariable("--color-primary") as string;

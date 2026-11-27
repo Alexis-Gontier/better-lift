@@ -26,7 +26,7 @@ export type RequeteCatalogue = z.infer<typeof requeteCatalogue>;
 /** Ce qu'une ligne de liste montre — et rien de plus. */
 export type ExerciceResume = {
   slug: string;
-  /** Le nom français, affiché (D44). */
+  /** Le nom français, affiché. */
   nom: string;
   /** La clé de données, pas le libellé : le français vient de `LIBELLE_GROUPE`. */
   groupe: Groupe;
@@ -38,7 +38,7 @@ export type ExerciceResume = {
   image: string | null;
   /**
    * Les noms français et anglais normalisés (`nomRecherche`) : de quoi filtrer
-   * le catalogue sur le téléphone, hors ligne, sans refaire la normalisation (D97).
+   * le catalogue sur le téléphone, hors ligne, sans refaire la normalisation.
    */
   recherche: string;
 };
@@ -49,7 +49,7 @@ export type ExerciceDetail = ExerciceResume & {
   /**
    * Le nom d'origine, affiché en sous-titre : il explique pourquoi « bench » a
    * trouvé « Développé couché », et reste la référence si un nom français est
-   * maladroit (D44).
+   * maladroit.
    */
   nomAnglais: string;
   cible: string;
@@ -58,7 +58,7 @@ export type ExerciceDetail = ExerciceResume & {
 };
 
 /**
- * La mention que chaque animation doit porter (D46). Elle vit ici, et non dans
+ * La mention que chaque animation doit porter. Elle vit ici, et non dans
  * un composant, pour que le web et le mobile affichent exactement la même.
  */
 export const ATTRIBUTION_MEDIAS = "© Gym visual — https://gymvisual.com/";

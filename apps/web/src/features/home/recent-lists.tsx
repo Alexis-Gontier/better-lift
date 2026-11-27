@@ -41,7 +41,7 @@ function Bloc({
 const serie = (r: RecordSeance) =>
   r.chargeKg === null ? `${r.reps ?? "—"} rép.` : `${formatLoad(r.chargeKg)} × ${r.reps ?? "—"}`;
 
-/** Les derniers records battus sur la période (D330). */
+/** Les derniers records battus sur la période. */
 export function RecentRecords({ records }: { records: (RecordSeance & { date: string })[] }) {
   return (
     <Bloc titre="Records récents" lien="Tous les records" vers="/records">
@@ -77,7 +77,7 @@ export function RecentRecords({ records }: { records: (RecordSeance & { date: st
 
 const minutes = (s: FaitSeance) => Math.round((Date.parse(s.fin) - Date.parse(s.debut)) / 60_000);
 
-/** Les dernières séances (D330) ; chacune s'ouvre dans l'Historique. */
+/** Les dernières séances ; chacune s'ouvre dans l'Historique. */
 export function RecentSessions({ seances }: { seances: FaitSeance[] }) {
   return (
     <Bloc titre="Dernières séances" lien="Tout l'historique" vers="/history">

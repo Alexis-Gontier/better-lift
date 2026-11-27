@@ -17,7 +17,7 @@ import { optionsCatalogueComplet } from "@/lib/requetes";
 import { cn } from "@/lib/utils";
 
 /**
- * Choisir des exercices dans le catalogue (D93) : une recherche, et une
+ * Choisir des exercices dans le catalogue : une recherche, et une
  * sélection multiple — on coche tout ce qu'on veut, puis on ajoute d'un coup.
  * En `?mode=remplacer`, un seul choix, rendu dès l'appui.
  */
@@ -27,7 +27,7 @@ export default function ChoisirExercices() {
   const unique = mode === "remplacer";
   const [filtre, setFiltre] = useState("");
   const [choix, setChoix] = useState<ExerciceChoisi[]>([]);
-  // Le catalogue entier, filtré ici (D97) : la recherche marche hors ligne et
+  // Le catalogue entier, filtré ici : la recherche marche hors ligne et
   // répond à chaque lettre sans aller-retour.
   const catalogue = useQuery(optionsCatalogueComplet());
   const resultats = useMemo(
@@ -83,7 +83,7 @@ export default function ChoisirExercices() {
         </View>
       </View>
 
-      {/* Jamais chargé et hors ligne : la requête attend le réseau (D97). */}
+      {/* Jamais chargé et hors ligne : la requête attend le réseau. */}
       {catalogue.isPending && catalogue.fetchStatus === "paused" ? (
         <Vide
           titre="Hors ligne"

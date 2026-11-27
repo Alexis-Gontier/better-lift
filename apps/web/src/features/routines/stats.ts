@@ -6,7 +6,7 @@ import {
 } from "@better-lift/shared";
 import { SYSTEME } from "@/lib/locale";
 
-/** Les calculs propres aux Routines du web (D307), sur les types de l'API et du brouillon. */
+/** Les calculs propres aux Routines du web, sur les types de l'API et du brouillon. */
 
 /** La durée estimée d'un brouillon, en minutes, arrondie aux 5 supérieures ; `shared` la calcule. */
 export function minutesEstimees(b: Brouillon): number {
@@ -58,7 +58,7 @@ export function tendance(valeurs: readonly number[]): number | null {
 }
 
 /**
- * La routine dans le temps (D280, D311) : sur ses séances depuis `depuis` (ISO), le nombre, les
+ * La routine dans le temps : sur ses séances depuis `depuis` (ISO), le nombre, les
  * moyennes de volume et de durée, les records battus et la réalisation — séries faites sur
  * séries prévues hors échauffement, plafonnée à 1. `null` sans séance.
  */

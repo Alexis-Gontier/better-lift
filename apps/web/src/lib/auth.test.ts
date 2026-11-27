@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cibleApresConnexion } from "./auth";
 
-describe("cibleApresConnexion (D301)", () => {
+describe("cibleApresConnexion", () => {
   it("garde un chemin interne", () => {
     expect(cibleApresConnexion("/routines?x=1")).toBe("/routines?x=1");
   });

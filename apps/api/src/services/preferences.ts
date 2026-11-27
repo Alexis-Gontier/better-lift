@@ -1,7 +1,7 @@
 import { prisma } from "@better-lift/db";
 import { PREFERENCES_DEFAUT, type Preferences } from "@better-lift/shared";
 
-/** Les préférences du compte (D129), côté métier. Ce module ne connaît pas Hono. */
+/** Les préférences du compte, côté métier. Ce module ne connaît pas Hono. */
 export type DepotPreferences = {
   /** Celles de l'utilisateur, ou les valeurs par défaut s'il n'a encore rien réglé. */
   lire(userId: string): Promise<Preferences>;

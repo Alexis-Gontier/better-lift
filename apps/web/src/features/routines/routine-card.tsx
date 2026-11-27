@@ -83,8 +83,8 @@ function RowBody({ routine }: { routine: RoutineResume }) {
 }
 
 /**
- * Une routine dans la liste, en ligne compacte (D251) ; sa poignée la glisse dans un autre
- * dossier (D257).
+ * Une routine dans la liste, en ligne compacte ; sa poignée la glisse dans un autre
+ * dossier.
  */
 export function RoutineRow({ routine }: { routine: RoutineResume }) {
   const actions = useRoutineActions(routine);
@@ -129,7 +129,7 @@ export function RoutineRowPreview({ routine }: { routine: RoutineResume }) {
   );
 }
 
-/** La ligne de la routine en cours de création, en tête de liste (D238) : elle suit le nom tapé. */
+/** La ligne de la routine en cours de création, en tête de liste : elle suit le nom tapé. */
 export function DraftRoutineRow() {
   const name = nomBrouillon.use();
   return (

@@ -1,7 +1,7 @@
 /**
  * La liste blanche d'inscription, réduite à du calcul pur.
  *
- * C'est le point de sécurité du projet (D22) : dans l'ancien dépôt,
+ * C'est le point de sécurité du projet : dans l'ancien dépôt,
  * `/sign-up/email` est resté ouvert sur Internet. Le garde qui s'appuie sur ces
  * fonctions vit dans `apps/api/src/auth.ts`, sur la création d'utilisateur.
  */

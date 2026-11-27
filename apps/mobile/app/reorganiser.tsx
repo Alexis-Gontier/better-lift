@@ -21,7 +21,7 @@ function avecCles(exercices: ExerciceEnCours[]) {
 }
 
 /**
- * Réorganiser les exercices de la séance (D89) : une liste compacte, sans les
+ * Réorganiser les exercices de la séance : une liste compacte, sans les
  * séries, où l'on glisse un exercice par sa poignée — ou par un appui long.
  * Chaque dépôt s'écrit aussitôt dans le brouillon.
  */
@@ -29,7 +29,7 @@ export default function Reorganiser() {
   const router = useRouter();
   const { seance, modifier } = useSeance();
   if (!seance) return <Ecran className="flex-1 bg-background" />;
-  // La lettre du superset de chaque exercice (D151) ; le glisser suit D148.
+  // La lettre du superset de chaque exercice ; un exercice glissé rejoint le groupe où il tombe.
   const lettres = seance.exercices.map((_, i) => groupeDe(seance.exercices, i)?.lettre ?? null);
 
   return (

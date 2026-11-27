@@ -8,12 +8,12 @@ import { type DepotRoutines, DossierInconnu, SlugInconnu } from "../services/rou
 const INTROUVABLE = { erreur: "Routine introuvable." };
 
 /**
- * Les routes des routines, toutes derrière une session (D53).
+ * Les routes des routines, toutes derrière une session.
  *
  * Dépôt et lecteur de session sont INJECTÉS — `app.ts` branche les vrais : les
  * tests montent ces routes sans base ni Better Auth. La routine d'un autre est
  * introuvable (404), jamais interdite (403) : on ne révèle pas qu'elle existe. Un dossier
- * d'autrui aussi, même donné comme `dossierId` (D297).
+ * d'autrui aussi, même donné comme `dossierId`.
  */
 export function routesRoutines(
   depot: DepotRoutines,
@@ -23,7 +23,7 @@ export function routesRoutines(
   return (
     new Hono()
       .use(exigerSession(lireSession))
-      // Les routines et leurs dossiers en une lecture : la liste les range ensemble (D297).
+      // Les routines et leurs dossiers en une lecture : la liste les range ensemble.
       .get("/", async (c) => {
         const userId = c.get("userId");
         const [routines, listeDossiers] = await Promise.all([
@@ -62,7 +62,7 @@ export function routesRoutines(
           throw e;
         }
       })
-      // Ranger ailleurs, sans renvoyer toute la routine (D297).
+      // Ranger ailleurs, sans renvoyer toute la routine.
       .patch("/:id", zValidator("json", deplacementRoutine), async (c) => {
         const id = c.req.param("id");
         try {

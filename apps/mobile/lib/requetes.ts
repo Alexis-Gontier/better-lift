@@ -16,7 +16,7 @@ import { avantDelai, UNE_SEMAINE } from "./hors-ligne";
  * l'URL et la façon de joindre la session changent (voir `api.ts`).
  */
 
-/** Les routines et leurs dossiers (D297, D320). */
+/** Les routines et leurs dossiers. */
 export function optionsRoutines() {
   return queryOptions({
     queryKey: ["routines", "liste"],
@@ -41,7 +41,7 @@ export function optionsRoutine(id: string) {
 
 /**
  * Le catalogue ENTIER, pour le filtrer sur le téléphone, hors ligne compris
- * (D97). Pages de 100 : l'API plafonne la taille, et c'est voulu. ~1 300
+ *. Pages de 100 : l'API plafonne la taille, et c'est voulu. ~1 300
  * exercices, ~400 Ko, une fois par semaine au plus.
  */
 export function optionsCatalogueComplet() {
@@ -90,8 +90,8 @@ export function optionsSeances() {
 }
 
 /**
- * Une séance passée (D345), en lecture. `null` : elle n'existe pas, ou plus — la donnée
- * d'autrui répond 404 aussi (D53). Pas gardée hors ligne, comme la liste.
+ * Une séance passée, en lecture. `null` : elle n'existe pas, ou plus — la donnée
+ * d'autrui répond 404 aussi. Pas gardée hors ligne, comme la liste.
  */
 export function optionsSeance(id: string) {
   return queryOptions({
@@ -106,7 +106,7 @@ export function optionsSeance(id: string) {
 }
 
 /**
- * Les séances d'un exercice (D348), la plus récente d'abord. Rangé sous `["seances", …]` :
+ * Les séances d'un exercice, la plus récente d'abord. Rangé sous `["seances", …]` :
  * l'envoi d'une séance invalide `["seances"]`, donc aussi ceci. Pas gardé hors ligne.
  */
 export function optionsHistoriqueExercice(slug: string) {
@@ -123,7 +123,7 @@ export function optionsHistoriqueExercice(slug: string) {
 type PageSeances = { seances: SeanceFil[]; total: number; page: number; taille: number };
 
 /**
- * Supprimer une séance (D345). Elle sort aussitôt des pages chargées ; son détail est retiré
+ * Supprimer une séance. Elle sort aussitôt des pages chargées ; son détail est retiré
  * du cache, pas invalidé (il referait un GET, soit un 404). Les précédents, les séances
  * d'un exercice et les routines (« Il y a 3 j ») dérivent des séances : ils se relisent.
  */
@@ -161,7 +161,7 @@ type Precedents = Record<
 >;
 
 /**
- * Ce qui a été fait la dernière fois sur ces exercices (D67). Rangé sous
+ * Ce qui a été fait la dernière fois sur ces exercices. Rangé sous
  * `["seances", …]` : l'envoi d'une séance invalide `["seances"]`, donc aussi
  * ceci. La clé trie les slugs : le même ensemble donne la même entrée.
  */
@@ -178,7 +178,7 @@ function optionsPrecedents(slugs: string[]) {
 }
 
 // Réseau d'abord, sans tentative ni pause hors ligne : la décision de se
-// rabattre sur le cache est prise ici, pas par TanStack Query (D98).
+// rabattre sur le cache est prise ici, pas par TanStack Query.
 const SANS_ATTENTE = { retry: false, networkMode: "always", staleTime: 0 } as const;
 
 /**
@@ -220,7 +220,7 @@ export async function chargerPrecedents(client: QueryClient, slugs: string[]): P
 
 /**
  * Le détail d'une routine pour la démarrer : réseau sous 4 s, sinon le cache
- * (D98). Sans l'un ni l'autre, l'erreur remonte : l'appelant le dit.
+ *. Sans l'un ni l'autre, l'erreur remonte : l'appelant le dit.
  */
 export async function chargerRoutine(client: QueryClient, id: string) {
   const options = optionsRoutine(id);
@@ -234,7 +234,7 @@ export async function chargerRoutine(client: QueryClient, id: string) {
   return lue;
 }
 
-// --- Les écritures des routines (D82) -------------------------------------------
+// --- Les écritures des routines -------------------------------------------
 // LE PIÈGE DES CLÉS DE CACHE : chaque écriture invalide `["routines"]` EN ENTIER —
 // liste et détails —, jamais une clé plus étroite que celle qu'on lit.
 
@@ -256,7 +256,7 @@ async function joindre<T>(appel: () => Promise<T>): Promise<T> {
 }
 
 /**
- * La routine reprend la séance du jour (D347), depuis la fin. Invalide `["routines"]`
+ * La routine reprend la séance du jour, depuis la fin. Invalide `["routines"]`
  * en entier : la liste (nombre de séries, durée) comme le détail.
  */
 export function useMettreAJourRoutine() {
@@ -270,7 +270,7 @@ export function useMettreAJourRoutine() {
   });
 }
 
-/** Les préférences du compte (D129), gardées hors ligne : la séance lit le repos par défaut. */
+/** Les préférences du compte, gardées hors ligne : la séance lit le repos par défaut. */
 export function optionsPreferences() {
   return queryOptions({
     queryKey: ["preferences"],

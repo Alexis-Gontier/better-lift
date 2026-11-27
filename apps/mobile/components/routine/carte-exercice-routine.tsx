@@ -23,10 +23,10 @@ function numeros(series: Exercice["series"]): string[] {
 }
 
 /**
- * Un exercice de la page d'une routine (D321), replié comme dans l'éditeur du web (D253) :
+ * Un exercice de la page d'une routine, replié comme dans l'éditeur du web :
  * la tête dit ce qui attend (« Pectoraux · 1 É + 3 × 8 · 80 kg ») ; ouvert, le tableau des
  * séries et le repos. Lecture seule : la routine se modifie sur le web. Sa tête ouvre la
- * page de l'exercice (D348), comme Hevy ; le chevron seul déplie.
+ * page de l'exercice, comme Hevy ; le chevron seul déplie.
  */
 export function CarteExerciceRoutine({
   exercice,
@@ -48,7 +48,7 @@ export function CarteExerciceRoutine({
   const num = numeros(exercice.series);
   return (
     <View className="overflow-hidden rounded-lg border border-border bg-background">
-      {/* Deux gestes (D348) : le chevron déplie les séries, le reste ouvre la page de l'exercice. */}
+      {/* Deux gestes : le chevron déplie les séries, le reste ouvre la page de l'exercice. */}
       <View className="min-h-16 flex-row items-stretch">
         <Pressable
           onPress={onBasculer}

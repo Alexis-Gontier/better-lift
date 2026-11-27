@@ -10,7 +10,7 @@ import { nomLibre } from "./stats";
 
 /**
  * Le pied de la liste : créer une routine, ou un dossier — nommé « Nouveau dossier », puis
- * aussitôt en saisie pour qu'on le renomme (D257). Masqué hors de l'état nominal.
+ * aussitôt en saisie pour qu'on le renomme. Masqué hors de l'état nominal.
  */
 export function RoutinesFooter() {
   const force = useEtat();

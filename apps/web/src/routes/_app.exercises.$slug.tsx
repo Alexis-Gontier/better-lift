@@ -4,7 +4,7 @@ import { exerciceQuery, historiqueQuery } from "@/lib/exercices";
 
 export const Route = createFileRoute("/_app/exercises/$slug")({
   staticData: { crumb: "Détail" },
-  // Sans attendre : la fiche montre son squelette pendant ce temps (D300).
+  // Sans attendre : la fiche montre son squelette pendant ce temps.
   loader: ({ context, params }) => {
     void context.queryClient.prefetchQuery(exerciceQuery(params.slug));
     void context.queryClient.prefetchQuery(historiqueQuery(params.slug));
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_app/exercises/$slug")({
   component: ExerciseRoute,
 });
 
-/** La fiche ouverte, dans le panneau de droite (D235), en deux colonnes (D264). */
+/** La fiche ouverte, dans le panneau de droite, en deux colonnes. */
 function ExerciseRoute() {
   const { slug } = Route.useParams();
   return <ExerciseFiche slug={slug} />;

@@ -1,6 +1,6 @@
 import type { TypeSerie } from "./routines.js";
 
-/** Une série de l'export (D128) : une ligne du fichier. */
+/** Une série de l'export : une ligne du fichier. */
 export type LigneExport = {
   /** ISO 8601, le début de la séance. */
   date: string;

@@ -4,7 +4,7 @@ import { apercuExercices, meilleureSerieComptee } from "./apercu.js";
 const s = (reps: number | null, chargeKg: number | null, faite = true) =>
   ({ type: "NORMALE", reps, chargeKg, faite }) as const;
 
-describe("meilleureSerieComptee (D119)", () => {
+describe("meilleureSerieComptee", () => {
   it("garde la plus lourde, puis à charge égale la plus longue", () => {
     expect(meilleureSerieComptee([s(8, 80), s(5, 85), s(6, 85)])).toEqual({
       chargeKg: 85,
@@ -32,7 +32,7 @@ describe("meilleureSerieComptee (D119)", () => {
   });
 });
 
-describe("apercuExercices (D119)", () => {
+describe("apercuExercices", () => {
   const ex = (slug: string) => ({
     slug,
     nom: slug,

@@ -14,8 +14,8 @@ const JOURS = [
 ] as const;
 
 /**
- * La semaine en cours (D330), en bandeau en tête de page : les jours entraînés et l'objectif
- * hebdomadaire (D129). Elle ne dépend pas de la période choisie.
+ * La semaine en cours, en bandeau en tête de page : les jours entraînés et l'objectif
+ * hebdomadaire. Elle ne dépend pas de la période choisie.
  */
 export function ThisWeek({
   jours,

@@ -30,9 +30,9 @@ const tonnes = (kg: number) =>
   kg >= 1000 ? `${formatNumber(Math.round(kg / 1000))} t` : formatKg(kg);
 
 /**
- * La tendance (D330) : un point par semaine, ou par mois sur un an, en aire. L'aire lit
+ * La tendance : un point par semaine, ou par mois sur un an, en aire. L'aire lit
  * l'évolution d'un coup d'œil ; un intervalle vide tombe à zéro, il se voit. Le dernier
- * intervalle n'est pas fini : son segment est en pointillé (D333), pour qu'un début de semaine
+ * intervalle n'est pas fini : son segment est en pointillé, pour qu'un début de semaine
  * ne se lise pas comme une chute.
  */
 export function TrendChart({

@@ -31,7 +31,7 @@ const queryClient = new QueryClient({
 
 const router = createRouter({
   routeTree,
-  // L'application vit sous `/app`, la racine est à la landing (D292) ; Vite a le même `base`.
+  // L'application vit sous `/app`, la racine est à la landing ; Vite a le même `base`.
   basepath: "/app",
   context: { auth, queryClient },
   defaultNotFoundComponent: NotFoundPage,

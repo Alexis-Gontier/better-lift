@@ -33,7 +33,7 @@ const echec = (e: unknown) => toast.error(e instanceof Error ? e.message : "L'ac
 const jour = (d: Date | string) => formatShortDay(jourCivil(d));
 
 /**
- * Le profil (D272, D273) : le nom seul se modifie (`updateUser`), enregistré en quittant le champ ;
+ * Le profil : le nom seul se modifie (`updateUser`), enregistré en quittant le champ ;
  * vide, il reprend sa valeur. L'e-mail se lit : en changer demande `changeEmail` et l'envoi
  * d'e-mails, ni l'un ni l'autre en place.
  */
@@ -91,7 +91,7 @@ function ProfileSection() {
 }
 
 /**
- * Le mot de passe (D272), par `changePassword` : l'actuel, le nouveau deux fois, et la
+ * Le mot de passe, par `changePassword` : l'actuel, le nouveau deux fois, et la
  * déconnexion des autres appareils (`revokeOtherSessions`), cochée par défaut.
  */
 function PasswordSection() {
@@ -187,7 +187,7 @@ function PasswordSection() {
 }
 
 /**
- * Les sessions ouvertes (D272), par `listSessions` : l'appareil, l'ouverture et l'expiration.
+ * Les sessions ouvertes, par `listSessions` : l'appareil, l'ouverture et l'expiration.
  * Une se ferme par `revokeSession`, toutes les autres par `revokeOtherSessions`.
  */
 function SessionsSection() {
@@ -283,7 +283,7 @@ function SessionsSection() {
   );
 }
 
-/** Quitter la session de cet appareil (D301). */
+/** Quitter la session de cet appareil. */
 function SignOutSection() {
   const deconnecter = useDeconnexion();
   return (
@@ -296,8 +296,8 @@ function SignOutSection() {
 }
 
 /**
- * Compte (D271–D273) : chaque action agit seule ; le nom s'enregistre en quittant le champ. La
- * suppression du compte n'est pas activée côté API (`deleteUser`) : elle a quitté l'écran (D294).
+ * Compte : chaque action agit seule ; le nom s'enregistre en quittant le champ. La
+ * suppression du compte n'est pas activée côté API (`deleteUser`) : elle a quitté l'écran.
  */
 export function AccountSettings() {
   return (

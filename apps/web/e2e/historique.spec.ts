@@ -28,7 +28,7 @@ test.describe("l'historique", () => {
     await page.getByRole("menuitem", { name: "Supprimer" }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: "Supprimer" }).click();
     await expect(page).toHaveURL(/\/app\/history(\?|$)/);
-    // La suppression part à la fin du toast (D302).
+    // La suppression part à la fin du toast.
     await page.waitForTimeout(5500);
     expect((await api.get(`/seances/${id}`)).status()).toBe(404);
   });

@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 /**
- * Erreur de chargement d'une page ; « Réessayer » retire l'état forcé par l'URL (D303) et relance
+ * Erreur de chargement d'une page ; « Réessayer » retire l'état forcé par l'URL et relance
  * la requête quand la page en donne le moyen.
  */
 export function StateError({ title, reessayer }: { title: string; reessayer?: () => void }) {

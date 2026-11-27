@@ -21,7 +21,7 @@ const LIBELLES: Record<Etat | "auto", string> = {
 };
 
 /**
- * Forcer l'état d'une page, pour la revue (D303, D308). En développement seulement, et sur les
+ * Forcer l'état d'une page, pour la revue. En développement seulement, et sur les
  * pages qui répondent aux quatre états (`staticData.etats`). « Automatique » rend la page à sa
  * requête.
  */

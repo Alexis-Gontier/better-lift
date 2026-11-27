@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { creerDifferes } from "./differe";
 
-describe("creerDifferes (D302)", () => {
+describe("creerDifferes", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 

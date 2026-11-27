@@ -10,7 +10,7 @@ import {
 } from "./supersets.js";
 
 /**
- * La séance en cours — la logique, sans plateforme (D61).
+ * La séance en cours — la logique, sans plateforme.
  *
  * Tout ici est PUR et IMMUABLE : chaque fonction rend une nouvelle séance. Le
  * mobile réécrit le brouillon sur disque à chaque changement ; une mutation en
@@ -39,21 +39,21 @@ export type ExerciceEnCours = {
   slug: string;
   nom: string;
   reposSec: number | null;
-  /** La note libre de l'exercice (D90). Absente d'un brouillon antérieur : lue comme `null`. */
+  /** La note libre de l'exercice. Absente d'un brouillon antérieur : lue comme `null`. */
   note?: string | null;
-  /** Le groupe de superset (D145). Absent d'un brouillon antérieur : lu comme `null`. */
+  /** Le groupe de superset. Absent d'un brouillon antérieur : lu comme `null`. */
   supersetGroupe?: number | null;
   series: SerieEnCours[];
   /**
-   * Ce qui a été fait la dernière fois sur cet exercice (D67) — une INDICATION
-   * affichée sous chaque série, jamais une valeur des cases (D59). Copiée dans
+   * Ce qui a été fait la dernière fois sur cet exercice — une INDICATION
+   * affichée sous chaque série, jamais une valeur des cases. Copiée dans
    * le brouillon : elle survit hors ligne et à un arrêt forcé.
    */
   precedent?: { reps: number | null; chargeKg: number | null; faite: boolean }[];
 };
 
 export type SeanceEnCours = {
-  /** Généré par le client : c'est lui qui rend l'envoi rejouable (D56). */
+  /** Généré par le client : c'est lui qui rend l'envoi rejouable. */
   id: string;
   routineId: string | null;
   nom: string;
@@ -62,10 +62,10 @@ export type SeanceEnCours = {
   exercices: ExerciceEnCours[];
   /**
    * `signale` : la fin a déjà vibré — une seule fois par repos. `duree` (en
-   * secondes) dessine la barre qui se vide (D335) ; absente d'un brouillon antérieur.
+   * secondes) dessine la barre qui se vide ; absente d'un brouillon antérieur.
    */
   repos: { fin: string; signale: boolean; duree?: number } | null;
-  /** La note de la séance, écrite à la fin (D130). Absente d'un brouillon antérieur. */
+  /** La note de la séance, écrite à la fin. Absente d'un brouillon antérieur. */
   note?: string;
 };
 
@@ -79,7 +79,7 @@ export function demarrerDepuisRoutine(
     routineId: r.id,
     nom: r.nom,
     debut: maintenant.toISOString(),
-    // D59 : les cibles de la routine pré-remplissent les séries.
+    // Les cibles de la routine pré-remplissent les séries.
     exercices: normaliserGroupes(
       r.exercices.map((e) => ({
         slug: e.slug,
@@ -139,13 +139,13 @@ export function validerSerie(
   iE: number,
   iS: number,
   maintenant: Date,
-  /** Le repos par défaut du compte (D128), pour l'exercice qui n'a pas le sien. */
+  /** Le repos par défaut du compte, pour l'exercice qui n'a pas le sien. */
   reposDefautSec: number | null = null,
 ): SeanceEnCours {
   const e = s.exercices[iE];
   const etaitFaite = e?.series[iS]?.faite ?? false;
   if (etaitFaite) return avecSerie(s, iE, iS, (x) => ({ ...x, faite: false }));
-  // D339 : cocher sans rien taper valide ce que montrent les cases, gris compris.
+  // Cocher sans rien taper valide ce que montrent les cases, gris compris.
   // Les deux champs deviennent saisis : décochée, la série garde ses chiffres.
   const valeur = (c: Champ) => (e ? valeurAffichee(e, iS, c).valeur : null);
   const apres = avecSerie(s, iE, iS, (x) => ({
@@ -156,7 +156,7 @@ export function validerSerie(
     saisi: { chargeKg: true, reps: true },
   }));
 
-  // D149 : dans un superset, le repos attend la fin du tour — toutes les séries
+  // Dans un superset, le repos attend la fin du tour — toutes les séries
   // de ce rang cochées, dans n'importe quel ordre — et prend celui du dernier.
   const g = groupeDe(s.exercices, iE);
   if (g) {
@@ -192,7 +192,7 @@ export function modifierSerie(
   });
   const charge = patch.chargeKg;
   if (charge == null || !avant) return apres;
-  // D346 : comme Hevy et Strong, la charge tapée descend sur les séries
+  // Comme Hevy et Strong, la charge tapée descend sur les séries
   // suivantes de même type, non faites, que rien n'a fixées — ou qui portaient
   // la charge d'avant, recopiée d'ici.
   return avecExercice(apres, iE, (e) => ({
@@ -211,7 +211,7 @@ export function modifierSerie(
 type Champ = "chargeKg" | "reps";
 
 /**
- * Ce que montre une case d'une série (D339), comme Hevy : sa saisie, ou la série
+ * Ce que montre une case d'une série, comme Hevy : sa saisie, ou la série
  * faite, à l'encre ; sinon, en gris, ce qui a été fait la dernière fois à cette
  * position, puis la cible de la routine, puis la série du dessus de même type —
  * un poids tapé sur la série 1 d'un exercice neuf s'indique sur les suivantes.
@@ -263,13 +263,13 @@ export function retirerExercice(s: SeanceEnCours, iE: number): SeanceEnCours {
   return { ...s, exercices: normaliserGroupes(s.exercices.filter((_, i) => i !== iE)) };
 }
 
-/** D90 : une note faite d'espaces n'est pas une note. */
+/** Une note faite d'espaces n'est pas une note. */
 export function modifierNote(s: SeanceEnCours, iE: number, note: string): SeanceEnCours {
   const propre = note.trim();
   return avecExercice(s, iE, (e) => ({ ...e, note: propre === "" ? null : note }));
 }
 
-/** D91 : le repos se règle par exercice ; `null` le désactive. */
+/** Le repos se règle par exercice ; `null` le désactive. */
 export function modifierReposExercice(
   s: SeanceEnCours,
   iE: number,
@@ -281,16 +281,16 @@ export function modifierReposExercice(
 export function deplacerExercice(s: SeanceEnCours, de: number, vers: number): SeanceEnCours {
   const n = s.exercices.length;
   if (de < 0 || de >= n || vers < 0 || vers >= n || de === vers) return s;
-  // D148 : l'exercice déplacé quitte son groupe, ou rejoint celui où il tombe.
+  // L'exercice déplacé quitte son groupe, ou rejoint celui où il tombe.
   return { ...s, exercices: deplacerAvecGroupes(s.exercices, de, vers) };
 }
 
-/** D147 : superset avec l'exercice suivant. */
+/** Superset avec l'exercice suivant. */
 export function lierExercices(s: SeanceEnCours, iE: number): SeanceEnCours {
   return { ...s, exercices: lierAuSuivant(s.exercices, iE) };
 }
 
-/** D147 : retire l'exercice de son superset ; du milieu, il passe après le groupe. */
+/** Retire l'exercice de son superset ; du milieu, il passe après le groupe. */
 export function delierExercice(s: SeanceEnCours, iE: number): SeanceEnCours {
   return { ...s, exercices: retirerDuGroupe(s.exercices, iE) };
 }
@@ -300,7 +300,7 @@ export function defaireSuperset(s: SeanceEnCours, iE: number): SeanceEnCours {
 }
 
 /**
- * Un autre exercice à la même place (D89) : la forme des séries et le repos
+ * Un autre exercice à la même place : la forme des séries et le repos
  * restent, les valeurs partent — elles ne valaient que pour l'ancien mouvement.
  * La note et « la dernière fois » aussi : elles décrivaient l'exercice remplacé.
  */
@@ -325,7 +325,7 @@ export function arreterRepos(s: SeanceEnCours): SeanceEnCours {
 }
 
 /**
- * −15 s / +15 s sur le repos en cours (D79). La fin ne recule jamais avant
+ * −15 s / +15 s sur le repos en cours. La fin ne recule jamais avant
  * `maintenant` : un repos raccourci au-delà s'achève, il ne devient pas négatif.
  * Rallonger rouvre la vibration de fin : le repos n'est plus fini.
  */
@@ -357,7 +357,7 @@ export function secondesEcoulees(debutIso: string, maintenant: Date): number {
 
 /**
  * La part du repos qui reste, de 1 (il commence) à 0 (il est fini) : la barre du
- * bandeau (D335). `null` sans repos, ou pour un brouillon qui n'a pas sa durée.
+ * bandeau. `null` sans repos, ou pour un brouillon qui n'a pas sa durée.
  */
 export function partReposRestante(s: SeanceEnCours, maintenant: Date): number | null {
   if (!s.repos?.duree) return null;
@@ -378,7 +378,7 @@ export function reposRestant(s: SeanceEnCours, maintenant: Date): number | null 
 
 /**
  * L'ordre de passage des séries : exercice puis série, sauf dans un superset,
- * qui se parcourt tour par tour (D150) — A1, B1, A2, B2 — en sautant
+ * qui se parcourt tour par tour — A1, B1, A2, B2 — en sautant
  * l'exercice qui n'a plus de série à ce rang.
  */
 function ordreDePassage(s: SeanceEnCours): { iE: number; iS: number; faite: boolean }[] {
@@ -399,8 +399,8 @@ function ordreDePassage(s: SeanceEnCours): { iE: number; iS: number; faite: bool
 }
 
 /**
- * La prochaine série à faire (D105) : la première pas encore faite, dans
- * l'ordre de passage (D150). C'est la seule ✓ de l'écran en aplat
+ * La prochaine série à faire : la première pas encore faite, dans
+ * l'ordre de passage. C'est la seule ✓ de l'écran en aplat
  * lime ; une série sautée reste la prochaine tant qu'elle n'est pas faite.
  */
 export function prochaineSerie(s: SeanceEnCours): { iE: number; iS: number } | null {
@@ -409,7 +409,7 @@ export function prochaineSerie(s: SeanceEnCours): { iE: number; iS: number } | n
   ordre.forEach((p, i) => {
     if (p.faite) derniere = i;
   });
-  // D116 : la suite de la DERNIÈRE série faite — une série sautée ne retient pas
+  // La suite de la DERNIÈRE série faite — une série sautée ne retient pas
   // le repère en arrière (la fin de séance la signale). Rien après : la première
   // qui reste.
   const p = ordre.slice(derniere + 1).find((x) => !x.faite) ?? ordre.find((x) => !x.faite);
@@ -417,7 +417,7 @@ export function prochaineSerie(s: SeanceEnCours): { iE: number; iS: number } | n
 }
 
 /**
- * Le bilan d'une séance : séries faites et volume. Dérivé, jamais stocké (D58).
+ * Le bilan d'une séance : séries faites et volume. Dérivé, jamais stocké.
  * D5 : l'échauffement et les séries sans charge (poids du corps) ne comptent
  * pas dans le volume.
  */
@@ -437,7 +437,7 @@ export function bilanSeance(s: SeanceEnCours): { seriesFaites: number; volumeKg:
 
 // --- L'envoi -----------------------------------------------------------------
 // Ce que le mobile poste une fois la séance terminée. NON STRICT à tous les
-// niveaux (D57) : un champ inconnu est ignoré plutôt que de faire refuser — et
+// niveaux : un champ inconnu est ignoré plutôt que de faire refuser — et
 // donc perdre — un entraînement réel. Une version plus récente du mobile peut
 // ajouter des champs sans que l'API en place ne les rejette.
 
@@ -451,9 +451,9 @@ const serieEnvoyee = z.looseObject({
 const exerciceEnvoye = z.looseObject({
   slug: z.string().min(1).max(200),
   reposSec: z.number().int().min(0).max(3600).nullable(),
-  // Optionnelle : un mobile d'avant D90 ne l'envoie pas (D57).
+  // Optionnelle : un vieux mobile ne l'envoie pas.
   note: z.string().max(500).nullable().optional(),
-  // Facultatif (D145) : une séance en file d'avant les supersets ne l'a pas (D57).
+  // Facultatif : une séance en file d'avant les supersets ne l'a pas.
   supersetGroupe: z.number().int().min(1).max(100).nullable().optional(),
   series: z.array(serieEnvoyee).max(50),
 });
@@ -465,7 +465,7 @@ export const seanceSaisie = z
     nom: z.string().trim().min(1).max(120),
     debut: z.iso.datetime(),
     fin: z.iso.datetime(),
-    /** La note de la séance, écrite à la fin (D130). Absente des anciennes versions du mobile. */
+    /** La note de la séance, écrite à la fin. Absente des anciennes versions du mobile. */
     note: z.string().trim().max(1000).nullable().optional(),
     exercices: z.array(exerciceEnvoye).max(100),
   })

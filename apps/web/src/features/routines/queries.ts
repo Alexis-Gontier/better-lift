@@ -4,7 +4,7 @@ import { useSuppression } from "@/components/use-suppression";
 import { api, lire } from "@/lib/api";
 
 /**
- * Les routines et leurs dossiers (D300). LE PIÈGE DES CLÉS : lectures et écritures partagent la
+ * Les routines et leurs dossiers. LE PIÈGE DES CLÉS : lectures et écritures partagent la
  * racine `["routines"]`, et chaque écriture l'invalide EN ENTIER — liste, dossiers, détails.
  * Une clé plus étroite laisserait l'écran sur l'ancienne version après un enregistrement réussi.
  */
@@ -16,7 +16,7 @@ const routinesKeys = {
   precedentes: (slugs: readonly string[]) => ["routines", "precedentes", [...slugs]] as const,
 };
 
-/** Un appel qui survit au départ de la page (D302) ; `init` remplace celui du client. */
+/** Un appel qui survit au départ de la page ; `init` remplace celui du client. */
 const KEEPALIVE = { init: { keepalive: true, credentials: "include" as const } };
 
 type Liste = { routines: RoutineResume[]; dossiers: { id: string; nom: string }[] };
@@ -42,7 +42,7 @@ export const routineQuery = (id: string) =>
     },
   });
 
-/** Ses séances, pour ses stats (D311) : cent suffisent à trois mois. */
+/** Ses séances, pour ses stats : cent suffisent à trois mois. */
 export const seancesRoutineQuery = (id: string) =>
   queryOptions({
     queryKey: routinesKeys.seances(id),
@@ -101,7 +101,7 @@ export function useEnregistrerRoutine(id: string) {
   });
 }
 
-/** Ranger une routine (D297) : la liste bouge AVANT la réponse, et revient en cas d'échec. */
+/** Ranger une routine : la liste bouge AVANT la réponse, et revient en cas d'échec. */
 export function useDeplacerRoutine() {
   const client = useQueryClient();
   const cle = routinesKeys.liste();
@@ -158,7 +158,7 @@ export function useRenommerDossier() {
   });
 }
 
-/** Supprimer une routine, avec « Annuler » (D302) ; son détail sort du cache. */
+/** Supprimer une routine, avec « Annuler » ; son détail sort du cache. */
 export function useSupprimerRoutine() {
   const client = useQueryClient();
   return useSuppression<Liste>({

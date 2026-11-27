@@ -1,5 +1,5 @@
 /**
- * La routine qui vient ensuite, pour l'accueil (D110, D316). Pure et sans
+ * La routine qui vient ensuite, pour l'accueil. Pure et sans
  * plateforme.
  */
 

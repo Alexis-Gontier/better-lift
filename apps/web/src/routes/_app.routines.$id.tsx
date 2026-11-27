@@ -4,7 +4,7 @@ import { RoutinePane } from "@/features/routines/routine-pane";
 
 export const Route = createFileRoute("/_app/routines/$id")({
   staticData: { crumb: "Détail" },
-  // Sans attendre : le panneau montre son squelette pendant ce temps (D300).
+  // Sans attendre : le panneau montre son squelette pendant ce temps.
   loader: ({ context, params }) => {
     void context.queryClient.prefetchQuery(routineQuery(params.id));
     void context.queryClient.prefetchQuery(seancesRoutineQuery(params.id));
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_app/routines/$id")({
   component: RoutineRoute,
 });
 
-/** La routine ouverte, dans le panneau de droite (D235), modifiée là où on la lit (D243). */
+/** La routine ouverte, dans le panneau de droite, modifiée là où on la lit. */
 function RoutineRoute() {
   const { id } = Route.useParams();
   // `key` : d'une routine à l'autre, le brouillon repart de zéro.

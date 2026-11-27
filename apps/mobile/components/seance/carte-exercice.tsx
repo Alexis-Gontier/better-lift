@@ -39,7 +39,7 @@ import { type EtatSerie, LigneSerie } from "./ligne-serie";
 import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 
 /**
- * Les étiquettes des séries (D92) : les normales se numérotent entre elles, les
+ * Les étiquettes des séries : les normales se numérotent entre elles, les
  * autres portent leur lettre — l'échauffement ne décale pas « série 1 ».
  */
 export function etiquettes(series: readonly { type: TypeSerie }[]): string[] {
@@ -53,7 +53,7 @@ const etatDe = (faite: boolean, prochaine: boolean): EtatSerie =>
 type Feuilles = { quoi: "menu" } | { quoi: "repos" } | { quoi: "serie"; iS: number } | null;
 
 /**
- * Un exercice de la séance (D108, D317) : en-tête, deux puces (repos, note),
+ * Un exercice de la séance : en-tête, deux puces (repos, note),
  * tableau des séries ; les actions rares dans le menu ⋮.
  */
 export function CarteExercice({
@@ -78,16 +78,16 @@ export function CarteExercice({
   onDelier,
 }: {
   exercice: ExerciceEnCours;
-  /** D149 : masqué sur un membre non dernier d'un superset. */
+  /** Masqué sur un membre non dernier d'un superset. */
   repos: RoleRepos;
-  /** D152 : hors groupe ou au bout d'un groupe, et pas sur le dernier exercice. */
+  /** Hors groupe ou au bout d'un groupe, et pas sur le dernier exercice. */
   peutLier: boolean;
   /** Le dernier exercice de la liste : rien ne le suit. */
   dernier: boolean;
   dansGroupe: boolean;
   onLier: () => void;
   onDelier: () => void;
-  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice (D116). */
+  /** L'indice de la prochaine série de la séance, si elle est dans cet exercice. */
   prochaine: number | null;
   /** La position d'une ligne dans le bloc : l'écran y défile après une coche. */
   onPositionLigne: (iS: number, y: number) => void;
@@ -101,7 +101,7 @@ export function CarteExercice({
   onNote: (note: string) => void;
   onRepos: (reposSec: number | null) => void;
   onReorganiser: () => void;
-  /** La page de l'exercice (D348). */
+  /** La page de l'exercice. */
   onOuvrir: () => void;
   onRemplacer: () => void;
   onRetirer: () => void;
@@ -181,13 +181,13 @@ export function CarteExercice({
         : "Sans repos";
 
   return (
-    // Une carte par exercice (D325), comme les routines. L'écart vient de cette vue,
+    // Une carte par exercice, comme les routines. L'écart vient de cette vue,
     // DANS le repère de superset, pour que son filet relie les membres ; une marge
     // posée sur la carte elle-même mangeait sa bordure du bas sous Android.
     <View className="pb-3">
       <View className="gap-2 rounded-lg border border-border bg-background px-3 py-3">
         <View className="flex-row items-center gap-3">
-          {/* La vignette et le nom ouvrent la page de l'exercice (D348), comme Hevy :
+          {/* La vignette et le nom ouvrent la page de l'exercice, comme Hevy :
               l'animation s'y voit en grand. */}
           <Pressable
             onPress={onOuvrir}
@@ -226,7 +226,7 @@ export function CarteExercice({
           </Button>
         </View>
 
-        {/* Le repos et la note en deux puces (D108) ; la note saisie remplace le mot « Note ». */}
+        {/* Le repos et la note en deux puces ; la note saisie remplace le mot « Note ». */}
         <View className="flex-row flex-wrap gap-2">
           {repos === "masque" ? null : (
             <Puce
@@ -246,7 +246,7 @@ export function CarteExercice({
           />
         </View>
 
-        {/* D90 : la note s'écrit à chaque frappe, pas à la sortie du champ. */}
+        {/* La note s'écrit à chaque frappe, pas à la sortie du champ. */}
         {editionNote ? (
           <Input
             value={note}
@@ -313,7 +313,7 @@ export function CarteExercice({
           </View>
         ))}
 
-        {/* Pleine largeur, en gris plein (D337) : on le trouve sans le chercher, et
+        {/* Pleine largeur, en gris plein : on le trouve sans le chercher, et
             il reste moins fort que la coche. */}
         <Button variant="secondary" className="mt-1 h-12" onPress={onAjouterSerie}>
           <Icon as={Plus} className="size-4 text-foreground" />

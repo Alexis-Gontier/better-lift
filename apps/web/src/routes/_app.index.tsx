@@ -7,7 +7,7 @@ import { FUSEAU } from "@/lib/locale";
 
 export const Route = createFileRoute("/_app/")({
   staticData: { crumb: "Accueil" },
-  // Sans attendre : la page montre son squelette pendant ce temps (D300).
+  // Sans attendre : la page montre son squelette pendant ce temps.
   loader: ({ context }) =>
     void context.queryClient.prefetchQuery(
       tableauDeBordQuery(depuisPour(bornesPeriode(periodeRetenue(), new Date(), FUSEAU))),

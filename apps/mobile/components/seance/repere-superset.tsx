@@ -5,7 +5,7 @@ import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 
 /**
- * Le repère d'un superset (D151, D317) : un filet gris à gauche de chaque
+ * Le repère d'un superset : un filet gris à gauche de chaque
  * membre, continu d'un membre à l'autre, et l'étiquette « Superset A » au-dessus
  * du premier, qui ouvre les options du groupe.
  */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { routineASuivre } from "./accueil.js";
 
-describe("routineASuivre (D110)", () => {
+describe("routineASuivre", () => {
   const routines = [{ id: "push" }, { id: "pull" }, { id: "jambes" }];
 
   it("propose celle qui suit la dernière routine faite, dans l'ordre de la liste", () => {

@@ -11,13 +11,13 @@ import {
 import type { UnitSystem } from "./units.js";
 
 /**
- * La notification de repos du mobile (D338) : ce qu'elle affiche, et l'effet de
+ * La notification de repos du mobile : ce qu'elle affiche, et l'effet de
  * ses boutons. Pur : le mobile n'y ajoute que notify-kit et le disque.
  */
 
 /**
  * Les boutons des notifications : −15 s, +15 s, Passer pendant le repos ;
- * « Terminer la série » une fois le repos fini (D340).
+ * « Terminer la série » une fois le repos fini.
  */
 export type ActionRepos = "moins" | "plus" | "passer" | "terminer";
 
@@ -54,7 +54,7 @@ export function contenuNotifRepos(
   return { ...base, titre: `Repos · ${e.nom}`, texte: suite.filter(Boolean).join(" · ") };
 }
 
-/** Les valeurs que montrent les cases de la série (D339), gris compris. */
+/** Les valeurs que montrent les cases de la série, gris compris. */
 function valeurs(e: ExerciceEnCours, iS: number, systeme: UnitSystem): string | null {
   const kg = valeurAffichee(e, iS, "chargeKg").valeur;
   const reps = valeurAffichee(e, iS, "reps").valeur;
@@ -64,7 +64,7 @@ function valeurs(e: ExerciceEnCours, iS: number, systeme: UnitSystem): string | 
 }
 
 /**
- * Hors repos, la série qui attend (D340) : la notification « série suivante »,
+ * Hors repos, la série qui attend : la notification « série suivante »,
  * dont le bouton la coche et relance le repos. `null` avant la première série
  * faite (rien n'est engagé) et une fois tout fait.
  */
@@ -81,14 +81,14 @@ export function contenuNotifSuivante(
 }
 
 /**
- * Les mêmes effets que le bandeau de repos (D79) : ±15 s, ou l'arrêt ; et
+ * Les mêmes effets que le bandeau de repos : ±15 s, ou l'arrêt ; et
  * « Terminer la série », qui coche la suivante comme la ✓ de l'écran.
  */
 export function appliquerActionRepos(
   s: SeanceEnCours,
   action: ActionRepos,
   maintenant: Date,
-  /** Le repos par défaut du compte (D128), quand l'app le connaît. */
+  /** Le repos par défaut du compte, quand l'app le connaît. */
   reposDefautSec: number | null = null,
 ): SeanceEnCours {
   if (action === "terminer") {

@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 /**
  * Une ligne de liste est un `Link` vers son élément : le routeur pose `data-status="active"`
  * sur celle qui est ouverte. `search` garde l'état forcé et l'onglet d'une ligne
- * à l'autre ; la recherche n'entre pas dans la comparaison (D235).
+ * à l'autre ; la recherche n'entre pas dans la comparaison.
  */
 export const listLinkProps = {
   search: true,
@@ -27,7 +27,7 @@ export const listLinkProps = {
 } as const;
 
 /**
- * Un élément de liste est une carte à part (D258) ; ouvert, elle prend un contour d'encre et un
+ * Un élément de liste est une carte à part ; ouvert, elle prend un contour d'encre et un
  * fond léger, sans liseré : la carte entière dit la sélection. À poser sur la `Card` qui
  * contient le `Link` de l'élément.
  */
@@ -48,18 +48,18 @@ type Props = {
   detail: ReactNode;
   /** La liste, ou l'état qui la remplace (chargement, vide, erreur). */
   children: ReactNode;
-  /** Sous la liste, fixe et séparé d'un filet : les créations (Routines, D257). */
+  /** Sous la liste, fixe et séparé d'un filet : les créations (Routines). */
   footer?: ReactNode;
   /**
    * `panel` (défaut) : le panneau de détail défile d'un bloc, sa tête collée en haut.
    * `columns` : le panneau ne défile pas ; le détail découpe ses propres zones de défilement
-   * sous une tête fixe (l'éditeur de routine et sa colonne de droite, D255).
+   * sous une tête fixe (l'éditeur de routine et sa colonne de droite).
    */
   detailScroll?: "panel" | "columns";
 };
 
 /**
- * Page liste | détail sur toute la surface sous l'en-tête (D234, D235). Montée par la route
+ * Page liste | détail sur toute la surface sous l'en-tête. Montée par la route
  * parente : la liste reste en place d'un élément à l'autre, seul le détail change.
  */
 export function ListDetailPage({
@@ -83,7 +83,7 @@ export function ListDetailPage({
     list.current?.querySelector('[data-status="active"]')?.scrollIntoView({ block: "center" });
   }, []);
 
-  // Trop étroit pour deux panneaux (D262) : un seul, la liste ou l'élément ouvert ; le fil
+  // Trop étroit pour deux panneaux : un seul, la liste ou l'élément ouvert ; le fil
   // d'Ariane ramène à la liste.
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   const width = useWidth(box);
@@ -152,13 +152,13 @@ export function ListDetailPage({
 const NARROW = 760;
 
 type HeaderProps = {
-  /** Le nom, ou le champ qui le modifie (variante C, D239). */
+  /** Le nom, ou le champ qui le modifie (variante C). */
   title: ReactNode;
-  /** Une ligne de texte, ou des contrôles (le dossier d'une routine, D250). */
+  /** Une ligne de texte, ou des contrôles (le dossier d'une routine). */
   subtitle?: ReactNode;
   /** Actions à droite du titre ; l'action principale en dernier. */
   actions?: ReactNode;
-  /** Onglets de l'élément ouvert (D236). */
+  /** Onglets de l'élément ouvert. */
   tabs?: ReactNode;
 };
 
@@ -216,7 +216,7 @@ export function DetailEmpty({
 }
 
 /**
- * Le panneau quand rien n'est ouvert (D260) : un état vide franc, qui dit quoi faire et peut
+ * Le panneau quand rien n'est ouvert : un état vide franc, qui dit quoi faire et peut
  * porter une action (`children`). Pendant le chargement ou en erreur, la liste le dit déjà ;
  * sans aucun élément (`vide`), c'est à l'écran de dire quoi faire (ou rien).
  */

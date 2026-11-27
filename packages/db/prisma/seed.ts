@@ -7,7 +7,7 @@ import { prisma } from "../src/index.js";
 /**
  * Le semis du catalogue.
  *
- * Il ne traduit RIEN : il lit `noms-fr.json`, écrit et commité (D45). Corriger
+ * Il ne traduit RIEN : il lit `noms-fr.json`, écrit et commité. Corriger
  * un nom, c'est modifier une ligne de ce fichier et relancer le semis.
  *
  *     pnpm db:seed
@@ -16,7 +16,7 @@ import { prisma } from "../src/index.js";
  * nom anglais, qui ne bouge pas ; le relancer ne duplique rien et n'échoue pas.
  */
 
-// Les animations restent dans le dépôt du dataset (D46) : on n'en copie aucune.
+// Les animations restent dans le dépôt du dataset : on n'en copie aucune.
 // L'URL est FIGÉE sur un commit, pour qu'un renommage en amont ne casse rien.
 const BASE_MEDIAS =
   "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efae41b330c265e7cd4b78dfa848e7ce5ebd";

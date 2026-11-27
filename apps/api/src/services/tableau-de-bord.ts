@@ -9,7 +9,7 @@ export type DepotTableauDeBord = {
 };
 
 /**
- * Le tableau de bord (D330). Les records se rejouent sur TOUT l'historique des exercices (D64) —
+ * Le tableau de bord. Les records se rejouent sur TOUT l'historique des exercices —
  * un record se juge contre tout le passé, pas contre la seule période — par `versDetail`, comme
  * le détail d'une séance. Ce module ne connaît pas Hono.
  */
@@ -39,7 +39,7 @@ export const depotTableauDeBord: DepotTableauDeBord = {
       const muscles: FaitSeance["muscles"] = [];
       for (const e of l.exercices) {
         const m = parExercice.get(e.exerciseId);
-        // Seules les séries faites hors échauffement (D5) chauffent la silhouette (D332).
+        // Seules les séries faites hors échauffement (D5) chauffent la silhouette.
         const series = e.series.filter((s) => s.faite && s.type !== "ECHAUFFEMENT").length;
         if (!m || series === 0) continue;
         muscles.push({ principal: m.target, secondaires: m.secondary, series });

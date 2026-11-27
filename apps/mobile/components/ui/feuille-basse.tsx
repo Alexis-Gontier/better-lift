@@ -9,7 +9,7 @@ const SEUIL_FERMETURE = 80;
 const VITESSE_FERMETURE = 800;
 
 /**
- * Le conteneur de toute feuille basse (D89, D120) : voile, poignée, zone de
+ * Le conteneur de toute feuille basse : voile, poignée, zone de
  * geste. Le voile, le retour Android et un glissement vers le bas la ferment.
  */
 export function FeuilleBasse({

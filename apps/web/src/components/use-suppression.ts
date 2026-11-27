@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { DELAI_ANNULATION_MS, differes } from "@/lib/differe";
 
 /**
- * Supprimer avec « Annuler » (D302) : l'élément quitte le cache tout de suite, l'appel ne part
+ * Supprimer avec « Annuler » : l'élément quitte le cache tout de suite, l'appel ne part
  * qu'à la fin du toast. Annuler remet le cache tel quel ; un échec aussi, et le dit.
  * `supprimer` doit passer `keepalive` : un départ de page envoie ce qui attend (`pagehide`).
  */

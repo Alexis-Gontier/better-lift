@@ -4,7 +4,7 @@ import { exigerSession, type LireSession } from "../middlewares/session.js";
 import type { DepotLectureSeances } from "../services/seances.js";
 
 /**
- * L'export de toutes les séries du compte en CSV (D128), derrière une session :
+ * L'export de toutes les séries du compte en CSV, derrière une session :
  * l'utilisateur emporte ses données où il veut.
  */
 export function routesExport(lecture: DepotLectureSeances, lireSession: LireSession) {

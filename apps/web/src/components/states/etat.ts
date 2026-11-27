@@ -14,7 +14,7 @@ export function parseEtat(search: Record<string, unknown>): { etat?: Etat; ongle
 }
 
 /**
- * L'état qu'une page montre (D303) : celui que force l'URL (`?etat=`, pour la revue), sinon
+ * L'état qu'une page montre : celui que force l'URL (`?etat=`, pour la revue), sinon
  * celui de sa requête — chargement, puis erreur, puis vide ou nominal.
  */
 export function etatAffiche(

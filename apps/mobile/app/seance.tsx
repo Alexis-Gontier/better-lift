@@ -62,17 +62,17 @@ export default function Seance() {
     blocs: [],
     lignes: {},
   });
-  // Le repos du compte, pour l'exercice qui n'a pas le sien (D128) ; en cache hors ligne.
+  // Le repos du compte, pour l'exercice qui n'a pas le sien ; en cache hors ligne.
   const reposDefaut = useQuery(optionsPreferences()).data?.reposDefautSec ?? null;
   // Où en est le défilement, et la hauteur visible : de quoi savoir si la
   // prochaine série est à l'écran après une coche.
   const defilementY = useRef(0);
   const hauteurVue = useRef(0);
-  // L'écran s'ouvre sur la prochaine série (D336), une fois, dès qu'elle est mesurée.
+  // L'écran s'ouvre sur la prochaine série, une fois, dès qu'elle est mesurée.
   const arrive = useRef(false);
   const confirmer = useConfirmer();
   const feuille = useFeuille();
-  // L'écran reste allumé tant que la séance est affichée (D79) : le téléphone
+  // L'écran reste allumé tant que la séance est affichée : le téléphone
   // posé sur le banc ne doit pas se verrouiller entre deux séries.
   useKeepAwake();
 
@@ -136,7 +136,7 @@ export default function Seance() {
       },
     });
 
-  // D93 : ajouter et remplacer passent par la modale du catalogue.
+  // Ajouter et remplacer passent par la modale du catalogue.
   const ajouter = () => {
     attendreChoix(async (choix) => {
       const precedents = await chargerPrecedents(
@@ -176,7 +176,7 @@ export default function Seance() {
     defilement.current?.scrollTo({ y: Math.max(0, y - hauteurVue.current * 0.3), animated: true });
   };
 
-  // À l'ouverture, l'écran se place sur la prochaine série (D336) : la séance
+  // À l'ouverture, l'écran se place sur la prochaine série : la séance
   // reprise depuis l'accueil ou au démarrage ne repart pas du premier exercice.
   // Appelé à chaque mesure, il attend la position du bloc ET de la ligne.
   const arriver = () => {
@@ -199,8 +199,8 @@ export default function Seance() {
   const vide = seance.exercices.length === 0;
   const prochaine = prochaineSerie(seance);
   const blocs = groupes(seance.exercices);
-  // Replier la séance (D108) : retour à l'accueil, où le bandeau la garde à un
-  // geste (D107). Ouverte sans historique (reprise de l'app), on y va directement.
+  // Replier la séance : retour à l'accueil, où le bandeau la garde à un
+  // geste. Ouverte sans historique (reprise de l'app), on y va directement.
   const replier = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   return (
@@ -292,7 +292,7 @@ export default function Seance() {
           );
         })}
         <View className="gap-2">
-          {/* Sans exercice, il n'y a pas de ✓ : ajouter devient l'action pleine (D105). */}
+          {/* Sans exercice, il n'y a pas de ✓ : ajouter devient l'action pleine. */}
           <Button variant={vide ? "default" : "secondary"} className="h-12" onPress={ajouter}>
             <Icon
               as={Plus}
@@ -300,7 +300,7 @@ export default function Seance() {
             />
             <Text>Ajouter un exercice</Text>
           </Button>
-          {/* Visible sans crier (D335) : un contour à la couleur du danger, la
+          {/* Visible sans crier : un contour à la couleur du danger, la
               confirmation derrière. */}
           <Button variant="outline" className="h-12 border-destructive" onPress={abandonner}>
             <Icon as={Trash2} className="size-4 text-destructive" />

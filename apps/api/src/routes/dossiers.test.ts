@@ -62,7 +62,7 @@ function client() {
 const creer = async (envoyer: ReturnType<typeof client>, nom: string, user = "alice") =>
   ((await (await envoyer("POST", "/dossiers", user, { nom })).json()) as { id: string }).id;
 
-describe("routes des dossiers (D297)", () => {
+describe("routes des dossiers", () => {
   it("rend 401 sans session, sur chaque route", async () => {
     const envoyer = client();
     for (const [m, p, corps] of [
@@ -99,7 +99,7 @@ describe("routes des dossiers (D297)", () => {
     );
   });
 
-  // D53 : le dossier d'autrui est INTROUVABLE, pas interdit.
+  // Le dossier d'autrui est INTROUVABLE, pas interdit.
   it("rend 404, jamais 403, sur le dossier d'un autre", async () => {
     const envoyer = client();
     const id = await creer(envoyer, "PPL");

@@ -1,5 +1,5 @@
 /**
- * Les supersets (D145–D148) — sans plateforme, génériques : les mêmes règles
+ * Les supersets — sans plateforme, génériques : les mêmes règles
  * servent le brouillon de routine et la séance en cours.
  *
  * Un groupe est une suite CONSÉCUTIVE d'exercices portant le même numéro. Les
@@ -47,7 +47,7 @@ export function groupeDe(liste: readonly AvecGroupe[], i: number): GroupeSuperse
   return groupes(liste).find((g) => g.debut <= i && i <= g.fin) ?? null;
 }
 
-/** Lie `i` à `i + 1` (D147) ; fusionne leurs groupes s'ils en ont. */
+/** Lie `i` à `i + 1` ; fusionne leurs groupes s'ils en ont. */
 export function lierAuSuivant<T extends AvecGroupe>(liste: readonly T[], i: number): T[] {
   if (i < 0 || i + 1 >= liste.length) return [...liste];
   const propre = normaliserGroupes(liste);
@@ -64,7 +64,7 @@ export function lierAuSuivant<T extends AvecGroupe>(liste: readonly T[], i: numb
   );
 }
 
-/** Détache `i` (D147) ; du milieu, il se place juste après le groupe. */
+/** Détache `i` ; du milieu, il se place juste après le groupe. */
 export function retirerDuGroupe<T extends AvecGroupe>(liste: readonly T[], i: number): T[] {
   const propre = normaliserGroupes(liste);
   const g = groupeDe(propre, i);
@@ -86,7 +86,7 @@ export function defaireGroupe<T extends AvecGroupe>(liste: readonly T[], i: numb
 }
 
 /**
- * D148 : l'exercice déplacé quitte son groupe ; posé entre deux membres d'un
+ * L'exercice déplacé quitte son groupe ; posé entre deux membres d'un
  * même groupe, il le rejoint. Sur un bord, il reste seul.
  */
 export function deplacerAvecGroupes<T extends AvecGroupe>(
@@ -105,7 +105,7 @@ export function deplacerAvecGroupes<T extends AvecGroupe>(
   return normaliserGroupes(res);
 }
 
-/** Le repos d'un exercice (D149) : le sien, masqué dans un groupe, ou celui du groupe. */
+/** Le repos d'un exercice : le sien, masqué dans un groupe, ou celui du groupe. */
 export type RoleRepos = "propre" | "masque" | "groupe";
 
 export function roleRepos(liste: readonly AvecGroupe[], i: number): RoleRepos {
@@ -114,7 +114,7 @@ export function roleRepos(liste: readonly AvecGroupe[], i: number): RoleRepos {
   return i === g.fin ? "groupe" : "masque";
 }
 
-/** D152 : « Superset avec le suivant » a un sens hors groupe ou au bout d'un groupe. */
+/** « Superset avec le suivant » a un sens hors groupe ou au bout d'un groupe. */
 export function peutLierAuSuivant(liste: readonly AvecGroupe[], i: number): boolean {
   if (i < 0 || i + 1 >= liste.length) return false;
   const g = groupeDe(liste, i);

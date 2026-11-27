@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 
 /**
  * Une valeur en mémoire que plusieurs composants lisent sans passer par l'URL ni le serveur :
- * un état d'écran (D238 : la ligne brouillon suit le nom tapé dans le panneau).
+ * un état d'écran (la ligne brouillon suit le nom tapé dans le panneau).
  */
 export function signal<T>(initial: T) {
   let value = initial;

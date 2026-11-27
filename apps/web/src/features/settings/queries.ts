@@ -89,7 +89,7 @@ export function useDeconnecterLesAutres() {
 
 const PREFERENCES = ["preferences"] as const;
 
-/** Les préférences du compte (D129) : objectif par semaine et repos par défaut. */
+/** Les préférences du compte : objectif par semaine et repos par défaut. */
 export const preferencesQuery = () =>
   queryOptions({
     queryKey: PREFERENCES,

@@ -26,13 +26,13 @@ model Exercise {
   // Dérivé du nom ANGLAIS, qui ne bouge jamais : c'est la clé de l'`upsert` du
   // semis, et l'identifiant de l'URL. Corriger un nom français ne le change pas.
   slug         String    @unique
-  // Le nom anglais du dataset, conservé pour la recherche (D44).
+  // Le nom anglais du dataset, conservé pour la recherche.
   name         String
-  // Le nom français, affiché. Vient de `catalogue/noms-fr.json` (D45).
+  // Le nom français, affiché. Vient de `catalogue/noms-fr.json`.
   nomFr        String
   // Les deux noms dépouillés de leurs accents et de leur casse, remplis au semis
   // par `texteRecherche` de `shared` — qui passe par LA MÊME fonction que celle
-  // qui normalise la saisie à la lecture (D39, D40). Deux normalisations
+  // qui normalise la saisie à la lecture. Deux normalisations
   // différentes rendraient la colonne inutile sans la moindre erreur.
   nomRecherche String
   instructions String[]
@@ -41,7 +41,7 @@ model Exercise {
   equipment    String
   secondary    String[]
   // URL de l'animation dans le dépôt du dataset, figée sur un commit. Les médias
-  // appartiennent à Gym visual : affichés avec attribution, jamais copiés (D46)
+  // appartiennent à Gym visual : affichés avec attribution, jamais copiés
   // — voir catalogue/LICENSE-dataset.md.
   gifUrl       String?
   archivedAt   DateTime?
@@ -64,7 +64,7 @@ model Exercise {
 // configuration Prisma 7 du projet.
 //
 // `Verification` est conservé bien que la vérification d'adresse soit
-// désactivée (D15) : Better Auth s'en sert aussi pour la réinitialisation de
+// désactivée : Better Auth s'en sert aussi pour la réinitialisation de
 // mot de passe.
 
 model User {
@@ -148,8 +148,8 @@ model RateLimit {
 }
 
 // --- Routines (lot 5) --------------------------------------------------------
-// Des gabarits de séance, série par série (D47). Une routine est remplacée en
-// entier à chaque enregistrement (D50), et supprimée pour de bon (D51) : une
+// Des gabarits de séance, série par série. Une routine est remplacée en
+// entier à chaque enregistrement, et supprimée pour de bon : une
 // séance est un instantané indépendant, rien ne pointe vers elle.
 
 enum TypeSerie {
@@ -165,7 +165,7 @@ model Routine {
   nom       String   @db.VarChar(120)
   // Ordre dans la liste de l'utilisateur.
   position  Int      @default(0)
-  // D296 : supprimer un dossier range ses routines dans « Sans dossier ».
+  // Supprimer un dossier range ses routines dans « Sans dossier ».
   dossierId String?
   note      String?  @db.VarChar(1000)
   createdAt DateTime @default(now())
@@ -180,7 +180,7 @@ model Routine {
   @@index([dossierId])
 }
 
-/// Un dossier de routines (D296) : une table plutôt qu'un texte sur la routine, pour qu'un
+/// Un dossier de routines : une table plutôt qu'un texte sur la routine, pour qu'un
 /// dossier vide existe, se renomme en une écriture et garde sa place.
 model Dossier {
   id        String   @id @default(cuid())
@@ -203,7 +203,7 @@ model RoutineExercice {
   exerciseId     String
   position       Int
   reposSec       Int?
-  // D145 : le groupe de superset (D11 révisée : il entre dans l'interface).
+  // Le groupe de superset.
   supersetGroupe Int?
 
   routine  Routine        @relation(fields: [routineId], references: [id], onDelete: Cascade)
@@ -221,7 +221,7 @@ model RoutineSerie {
   position          Int
   type              TypeSerie @default(NORMALE)
   repsCible         Int?
-  // Toujours en kilos ; l'affichage passe par `formaterCharge` (D52).
+  // Toujours en kilos ; l'affichage passe par `formaterCharge`.
   chargeCibleKg     Decimal?  @db.Decimal(7, 2)
 
   exercice RoutineExercice @relation(fields: [routineExerciceId], references: [id], onDelete: Cascade)
@@ -231,11 +231,11 @@ model RoutineSerie {
 
 // --- Séances (lot 6) ---------------------------------------------------------
 // Un instantané de ce qui a été fait : exercices et séries y sont RECOPIÉS, et
-// la séance ne dépend plus de sa routine. Aucun total stocké (D58) : volume,
+// la séance ne dépend plus de sa routine. Aucun total stocké : volume,
 // séries et durée se dérivent à la lecture.
 
 model Seance {
-  // Fourni par le client (D56) : c'est ce qui rend l'envoi rejouable sans
+  // Fourni par le client : c'est ce qui rend l'envoi rejouable sans
   // doublon depuis la file du mobile.
   id        String   @id
   userId    String
@@ -244,7 +244,7 @@ model Seance {
   nom       String   @db.VarChar(120)
   debut     DateTime
   fin       DateTime
-  // D130 : la note libre de la séance, écrite à la fin.
+  // La note libre de la séance, écrite à la fin.
   note      String?  @db.VarChar(1000)
   createdAt DateTime @default(now())
 
@@ -262,9 +262,9 @@ model SeanceExercice {
   exerciseId     String
   position       Int
   reposSec       Int?
-  // D90 : la note libre de l'exercice pendant la séance (« siège cran 4 »).
+  // La note libre de l'exercice pendant la séance (« siège cran 4 »).
   note           String? @db.VarChar(500)
-  // D145 : le groupe de superset, recopié de la routine ou fait en séance.
+  // Le groupe de superset, recopié de la routine ou fait en séance.
   supersetGroupe Int?
 
   seance   Seance        @relation(fields: [seanceId], references: [id], onDelete: Cascade)
@@ -281,7 +281,7 @@ model SeanceSerie {
   position         Int
   type             TypeSerie @default(NORMALE)
   reps             Int?
-  // Toujours en kilos (D52).
+  // Toujours en kilos.
   chargeKg         Decimal?  @db.Decimal(7, 2)
   faite            Boolean   @default(false)
 
@@ -290,13 +290,13 @@ model SeanceSerie {
   @@unique([seanceExerciceId, position])
 }
 
-// --- Préférences (D129) -------------------------------------------------------
+// --- Préférences -------------------------------------------------------
 // Ce qui suit le compte d'un appareil à l'autre. Une ligne par utilisateur,
 // créée au premier enregistrement : sans ligne, les valeurs par défaut.
 
 model Preferences {
   userId         String   @id
-  // Séances visées par semaine, de 1 à 7 (D128).
+  // Séances visées par semaine, de 1 à 7.
   objectifHebdo  Int?
   // Repos des exercices sans repos propre, en secondes.
   reposDefautSec Int?

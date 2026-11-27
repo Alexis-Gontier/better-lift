@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-/** Une section de paramètres : un titre, une phrase, ses champs. L'enregistrement est celui de la page (D271). */
+/** Une section de paramètres : un titre, une phrase, ses champs. L'enregistrement est celui de la page. */
 export function SettingsSection({
   title,
   description,
@@ -22,7 +22,7 @@ export function SettingsSection({
   );
 }
 
-/** Une page de paramètres (D271, D273) : son titre et sa phrase ; ses réglages s'enregistrent seuls. */
+/** Une page de paramètres : son titre et sa phrase ; ses réglages s'enregistrent seuls. */
 export function SettingsPage({
   title,
   description,

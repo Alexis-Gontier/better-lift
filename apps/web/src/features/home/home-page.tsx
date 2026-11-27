@@ -44,7 +44,7 @@ import { TrendChart } from "./trend-chart";
 const rangDuJour = (maintenant: Date) => (new Date(jourCivil(maintenant)).getUTCDay() + 6) % 7;
 
 /**
- * L'Accueil (D330) : un tableau de bord, bilan d'abord — chiffres clés de la période, semaine en
+ * L'Accueil : un tableau de bord, bilan d'abord — chiffres clés de la période, semaine en
  * cours, tendance, muscles, puis records et séances récents. La période est le dernier choix
  * de ce navigateur.
  */

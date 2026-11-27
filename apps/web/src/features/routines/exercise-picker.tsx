@@ -80,7 +80,7 @@ function PickCard({
 }
 
 /**
- * Ajouter des exercices à une routine (D262) : le catalogue en cartes, la recherche (noms
+ * Ajouter des exercices à une routine : le catalogue en cartes, la recherche (noms
  * français et anglais, côté serveur) et un filtre par muscle ; on en coche plusieurs, ils
  * s'ajoutent dans l'ordre coché. Ceux déjà dans la routine n'y figurent pas.
  */

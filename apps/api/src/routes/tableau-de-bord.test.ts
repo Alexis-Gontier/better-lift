@@ -26,7 +26,7 @@ function monter() {
   return { lire, appels };
 }
 
-describe("GET /tableau-de-bord (D330)", () => {
+describe("GET /tableau-de-bord", () => {
   it("exige une session", async () => {
     const { lire } = monter();
     expect((await lire("?depuis=2026-08-23T00:00:00.000Z", null)).status).toBe(401);

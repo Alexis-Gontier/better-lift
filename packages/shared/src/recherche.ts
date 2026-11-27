@@ -24,7 +24,7 @@ export function normaliserRecherche(valeur: string): string {
 
 /**
  * Le contenu de `Exercise.nomRecherche` : le nom français PUIS le nom anglais,
- * normalisés ensemble (D44). « developpe couche » et « bench press » trouvent
+ * normalisés ensemble. « developpe couche » et « bench press » trouvent
  * donc le même exercice. Le français vient en tête pour que trier sur cette
  * colonne revienne à trier sur le nom affiché.
  */
@@ -46,7 +46,7 @@ export function slugifier(nom: string): string {
 }
 
 /**
- * Le catalogue filtré SUR LE TÉLÉPHONE (D97), hors ligne compris. Même
+ * Le catalogue filtré SUR LE TÉLÉPHONE, hors ligne compris. Même
  * normalisation que l'API, même sémantique (« contient ») : une saisie trouve
  * en ligne et hors ligne exactement les mêmes exercices. L'ordre reçu est gardé
  * — l'API trie déjà sur `nomRecherche`, donc sur le nom français.

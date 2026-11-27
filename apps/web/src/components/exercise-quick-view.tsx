@@ -18,9 +18,9 @@ import { exerciceQuery, historiqueQuery } from "@/lib/exercices";
 import { formatLoad } from "@/lib/format";
 
 /**
- * La fiche d'un exercice sans quitter la page (D262) : l'animation, les muscles et la dernière
+ * La fiche d'un exercice sans quitter la page : l'animation, les muscles et la dernière
  * fois. « Fiche complète » mène à la page de l'exercice ; une routine modifiée demande alors s'il
- * faut l'enregistrer (D261). Commune aux routines et à l'historique.
+ * faut l'enregistrer. Commune aux routines et à l'historique.
  */
 export function ExerciseQuickView({
   slug,

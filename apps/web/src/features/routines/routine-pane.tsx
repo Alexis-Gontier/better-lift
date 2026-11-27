@@ -143,7 +143,7 @@ function RoutineMenu({
 }
 
 /**
- * La routine ouverte (D235) : ses requêtes et ses quatre états, puis l'éditeur. Une routine
+ * La routine ouverte : ses requêtes et ses quatre états, puis l'éditeur. Une routine
  * d'autrui ou supprimée est introuvable (404).
  */
 export function RoutinePane({ id }: { id: string }) {
@@ -186,8 +186,8 @@ export function RoutinePane({ id }: { id: string }) {
 }
 
 /**
- * La routine ouverte, toujours modifiable (D243, D250) : le détail EST l'éditeur ; le nom se
- * modifie dans la tête, le dossier et les chiffres dessous. Modifiée (D261), la tête montre
+ * La routine ouverte, toujours modifiable : le détail EST l'éditeur ; le nom se
+ * modifie dans la tête, le dossier et les chiffres dessous. Modifiée, la tête montre
  * l'historique, le nombre de modifications, « Tout annuler » et « Enregistrer » ; les cartes
  * touchées portent « Modifié » ou « Nouveau », les chiffres leur écart.
  */
@@ -258,7 +258,7 @@ function RoutineEditorPane({
 }
 
 /**
- * Création (D238) : le même éditeur, vide, le curseur dans le nom. Rien n'est créé avant
+ * Création : le même éditeur, vide, le curseur dans le nom. Rien n'est créé avant
  * *Créer* : il faut un nom et au moins un exercice. `dossier` : « Nouvelle routine ici ».
  */
 export function RoutinePaneNew({ dossier }: { dossier?: string }) {

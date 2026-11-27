@@ -53,9 +53,9 @@ const dernierRecord = (e: ExerciceFait) =>
   e.records.reduce((d, r) => (r.date > d ? r.date : d), "");
 
 /**
- * Les records (D314) : une ligne par exercice fait, ses records actuels, chacun daté de la séance
- * qui l'a établi. Le dernier battu d'abord, et en grand au-dessus du tableau (D350) ; une ligne
- * mène à la fiche. Tout vient des exercices faits (D312), dérivés à la lecture (D65).
+ * Les records : une ligne par exercice fait, ses records actuels, chacun daté de la séance
+ * qui l'a établi. Le dernier battu d'abord, et en grand au-dessus du tableau ; une ligne
+ * mène à la fiche. Tout vient des exercices faits, dérivés à la lecture.
  */
 export function RecordsPage() {
   const force = useEtat();
@@ -159,7 +159,7 @@ const enumerer = (mots: string[]) =>
   mots.length < 2 ? (mots[0] ?? "") : `${mots.slice(0, -1).join(", ")} et ${mots.at(-1)}`;
 
 /**
- * Le dernier record battu, en tête (D350) : son chiffre en grand, au contour du record (D28),
+ * Le dernier record battu, en tête : son chiffre en grand, au contour du record,
  * et ce que la séance a battu ce jour-là. Il mène à la fiche, comme la ligne du tableau.
  */
 function DernierRecord({ exercice }: { exercice: ExerciceFait }) {

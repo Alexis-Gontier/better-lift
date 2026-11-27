@@ -8,7 +8,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 export const Route = createFileRoute("/_app")({
   // Toutes les pages de l'application répondent aux quatre états.
   staticData: { etats: true },
-  // Sans session, la connexion, qui ramènera ici (D301).
+  // Sans session, la connexion, qui ramènera ici.
   beforeLoad: ({ context, location }) => {
     if (!context.auth.session) {
       throw redirect({ to: "/login", search: { redirect: location.href } });
