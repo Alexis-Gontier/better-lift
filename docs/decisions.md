@@ -546,3 +546,10 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   page Records (D314) : le dernier record battu au-dessus du tableau, avec ce que la séance a
   battu ce jour-là ; le tableau reste pour parcourir. La courbe reste hors du mobile (D348).
   Date courte « 3 oct. » par `formatJourCourt` (`shared`).
+- **D351** — Révise D349 sur l'outillage : **plus d'OpenPencil ni de dossier `design/`**. Les
+  valeurs vivent dans `apps/mobile/global.css` et `apps/web/src/styles/globals.css`, seules
+  sources ; `scripts/contrastes.mjs`, lancé par `pnpm lint` (donc en CI), échoue si une paire
+  texte / fond passe sous 4,5:1 (D251) ou si un rôle diffère entre web et mobile. Un écran se
+  maquette **dans le code** : deux variantes, captures (`?etat=` et Playwright sur le web,
+  émulateur sur le mobile), choix de l'utilisateur, puis la PR. Moins d'outils, un seul endroit
+  où une couleur peut être fausse.

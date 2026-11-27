@@ -7,7 +7,7 @@ paths:
 
 Écrans (D316–D319) : trois onglets (Routines, Historique, Profil), la séance (avec choix et
 réorganisation des exercices), la fin, la connexion (seul écran à porter le logo, `Logo`, D326).
-Direction A, « Instrument sobre » (D349) : valeurs dans `global.css`, maquettes dans `design/`. Décisions : `docs/decisions.md`.
+Direction A, « Instrument sobre » (D349) : valeurs dans `global.css` (D351). Décisions : `docs/decisions.md`.
 
 ## Lancer (Expo Go)
 

@@ -6,8 +6,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Direction A, « Instrument sobre » (D349) : valeurs de design/tokens/better-lift/, contrastes
-   vérifiés par design/scripts/tokens.mjs. L'action est un aplat de primary, le record un contour
+/* Direction A, « Instrument sobre » (D349) : mêmes valeurs que le mobile, contrastes
+   vérifiés par scripts/contrastes.mjs (D351). L'action est un aplat de primary, le record un contour
    de record (même bleu, D28) ; le danger garde destructive (D36). */
 :root {
   --radius: 0.625rem;

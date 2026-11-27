@@ -52,7 +52,8 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 - Une couleur pour l'action et le record, distinguées par la forme : l'action est un aplat, le
   record un contour. Le danger a la sienne. Un token par rôle, deux valeurs (sombre / clair),
   jamais de couleur en dur. Direction A, « Instrument sobre » (D349) : mêmes valeurs dans
-  `apps/mobile/global.css` et `apps/web/src/styles/globals.css`, tirées de `design/tokens/`.
+  `apps/mobile/global.css` et `apps/web/src/styles/globals.css`, seules sources des valeurs (D351) ;
+  `pnpm lint` vérifie qu'elles restent identiques et au contraste AA (`scripts/contrastes.mjs`).
 
 ## Git et PR
 

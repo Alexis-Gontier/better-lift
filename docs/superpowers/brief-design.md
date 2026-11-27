@@ -1,6 +1,6 @@
 # Brief de design — redesign web et mobile
 
-Document de chantier (2026-11-01), étape 2 de `methodologie-redesign.md`. Il fixe le problème,
+Document de chantier (2026-11-01), étape 2 du redesign (méthode OpenPencil abandonnée, D351). Il fixe le problème,
 pas la solution : aucune couleur ni police ici, elles viennent à l'étape 4.
 
 ## Qui, où, pour quoi faire

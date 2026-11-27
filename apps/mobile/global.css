@@ -2,7 +2,7 @@
 @import "uniwind";
 
 /* Tokens du mobile : direction A, « Instrument sobre » (D349), mêmes valeurs que le web
-   (design/tokens/better-lift/). L'action est un aplat de primary, le record un contour de
+   (vérifiées par scripts/contrastes.mjs, D351). L'action est un aplat de primary, le record un contour de
    record (même bleu, D28) ; le danger garde destructive (D36). */
 @layer theme {
   :root {
