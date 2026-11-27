@@ -1,8 +1,13 @@
 # better-lift
 
-Tracker de musculation personnel pour deux ou trois comptes : web (préparer, relire) et mobile
-(la salle). **Tout est en français** : interface, commentaires, commits, docs, réponses. Le but de
-chaque arbitrage : moins de code, pas un SaaS.
+Tracker de musculation pour une dizaine de comptes au plus, Android seulement : web (préparer,
+relire) et mobile (la salle, et préparer aussi). **Tout est en français** : interface,
+commentaires, commits, docs, réponses. Le but de chaque arbitrage : moins de code, pas un SaaS
+(ni paiement, ni social). Mais l'app doit se suffire : quelqu'un qui arrive par le dépôt doit
+pouvoir l'installer, s'inscrire et s'en servir sans aide.
+
+- **Inscription** : `SIGNUP_ALLOWLIST` reste en place tant que la vérification d'e-mail et les
+  limites d'inscription ne sont pas livrées. L'ouvrir avant expose le quota Neon aux robots.
 
 - Pas de registre de décisions : le pourquoi d'un choix vit dans son commit et sa PR. Les docs
   ne gardent que ce qui évite une erreur (contraintes techniques, pièges), jamais la description
