@@ -83,7 +83,7 @@ const seance = (
   ...extra,
 });
 
-describe("statsRoutine (D311)", () => {
+describe("statsRoutine", () => {
   it("rien sans séance dans la fenêtre", () => {
     expect(
       statsRoutine(2, [seance("2026-01-01T10:00:00.000Z", 60, 1000)], "2026-07-01"),

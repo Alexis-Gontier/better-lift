@@ -46,7 +46,7 @@ const app = new Hono().route("/exercices", routesRecords(lecture, lireSession));
 const lire = (chemin: string, user: string | null = "alice") =>
   app.request(chemin, { headers: user ? { "x-test-user": user } : {} });
 
-describe("GET /exercices/faits (D312)", () => {
+describe("GET /exercices/faits", () => {
   it("exige une session, puis rend les exercices de l'utilisateur, et seulement les siens", async () => {
     expect((await lire("/exercices/faits", null)).status).toBe(401);
     const res = await lire("/exercices/faits");
@@ -56,7 +56,7 @@ describe("GET /exercices/faits (D312)", () => {
   });
 });
 
-describe("GET /exercices/:slug/historique (D124)", () => {
+describe("GET /exercices/:slug/historique", () => {
   it("exige une session", async () => {
     expect((await lire("/exercices/bench/historique", null)).status).toBe(401);
   });

@@ -23,7 +23,7 @@ import { SlugInconnu } from "./routines.js";
 /**
  * Les séances, côté métier. Ce module ne connaît pas Hono.
  *
- * Une seule écriture, et elle doit être REJOUABLE (D56) : la file du mobile
+ * Une seule écriture, et elle doit être REJOUABLE : la file du mobile
  * renvoie une séance tant qu'elle n'a pas de réponse, y compris quand la
  * première tentative a abouti mais que la réponse s'est perdue en route.
  */
@@ -49,7 +49,7 @@ export function versEcriture(
   saisie: SeanceSaisie,
   idsParSlug: Map<string, string>,
 ): ExerciceEcrit[] {
-  // D146 : un groupe mal formé se corrige ; il ne fait jamais perdre une séance.
+  // Un groupe mal formé se corrige ; il ne fait jamais perdre une séance.
   return normaliserGroupes(saisie.exercices).map((e, position) => {
     const exerciseId = idsParSlug.get(e.slug);
     if (!exerciseId) throw new SlugInconnu(e.slug);
@@ -59,7 +59,7 @@ export function versEcriture(
       reposSec: e.reposSec,
       note: e.note ?? null,
       supersetGroupe: e.supersetGroupe ?? null,
-      // Seuls les champs connus sont retenus : la saisie est non stricte (D57),
+      // Seuls les champs connus sont retenus : la saisie est non stricte,
       // elle peut en porter d'autres, qui n'ont rien à faire en base.
       series: e.series.map((s, i) => ({
         position: i,
@@ -80,7 +80,7 @@ export type DepotSeances = {
    * rien n'est réécrit. `conflit` : il appartient à un autre. Lève `SlugInconnu`.
    */
   enregistrer(userId: string, saisie: SeanceSaisie): Promise<IssueEnregistrement>;
-  /** Supprime la séance ; `false` si elle n'existe pas ou n'est pas à lui (D123). */
+  /** Supprime la séance ; `false` si elle n'existe pas ou n'est pas à lui. */
   supprimer(userId: string, id: string): Promise<boolean>;
 };
 
@@ -100,7 +100,7 @@ export const depotPrisma: DepotSeances = {
     const deja = await proprietaire(saisie.id);
     if (deja) return deja === userId ? "existante" : "conflit";
 
-    // Les archivés se résolvent AUSSI (D57) : un exercice archivé entre le
+    // Les archivés se résolvent AUSSI : un exercice archivé entre le
     // début de la séance et son envoi ne doit pas faire perdre la séance.
     const slugs = [...new Set(saisie.exercices.map((e) => e.slug))];
     const lignes = await prisma.exercise.findMany({
@@ -154,7 +154,7 @@ export const depotPrisma: DepotSeances = {
 };
 
 // --- La lecture (lot 7) -------------------------------------------------------
-// Tout est DÉRIVÉ ici (D58, D65) : volume, séries faites, records. Rien n'est
+// Tout est DÉRIVÉ ici : volume, séries faites, records. Rien n'est
 // stocké, donc rien n'est à recalculer quand une séance change.
 
 /** Ce qu'on lit d'une série. `chargeKg` est un `Decimal` Prisma, ramené ici à un nombre. */
@@ -173,7 +173,7 @@ export type LigneSeance = {
   routineId: string | null;
   debut: Date;
   fin: Date;
-  /** La note de la séance (D130). */
+  /** La note de la séance. */
   note: string | null;
   exercices: {
     exerciseId: string;
@@ -219,7 +219,7 @@ export function versResume(l: LigneSeance): Omit<SeanceResume, "nbRecords"> {
 
 /**
  * Le détail, chaque série portant les records qu'elle a battus À CE MOMENT-LÀ
- * (D64). `anterieur` : par exercice, l'historique chronologique d'AVANT cette
+ *. `anterieur` : par exercice, l'historique chronologique d'AVANT cette
  * séance. Un exercice présent deux fois dans la séance est jugé d'un seul
  * tenant, dans l'ordre : la seconde occurrence se mesure à la première.
  */
@@ -266,7 +266,7 @@ export function versDetail(
 
 /**
  * Les séries de la dernière occurrence d'un exercice dans un historique
- * chronologique : toutes celles de la date la plus récente, dans l'ordre (D123).
+ * chronologique : toutes celles de la date la plus récente, dans l'ordre.
  */
 function derniereOccurrence(
   h: readonly (SerieHisto & { date: string })[] | undefined,
@@ -276,7 +276,7 @@ function derniereOccurrence(
   return h.filter((s) => s.date === date).map((s) => ({ reps: s.reps, chargeKg: s.chargeKg }));
 }
 
-/** Ce que le fil de l'Accueil montre d'une séance, au-delà de son résumé (D119). */
+/** Ce que le fil de l'Accueil montre d'une séance, au-delà de son résumé. */
 export function versFil(l: LigneSeance): Pick<SeanceFil, "nbExercices" | "apercu"> {
   return {
     nbExercices: l.exercices.length,
@@ -293,7 +293,7 @@ export function versFil(l: LigneSeance): Pick<SeanceFil, "nbExercices" | "apercu
 
 type Historique = Map<string, (SerieHisto & { date: string })[]>;
 
-/** L'historique d'AVANT une séance : chacune se juge contre ce qui la précède (D64). */
+/** L'historique d'AVANT une séance : chacune se juge contre ce qui la précède. */
 export function anterieurA(h: Historique, debut: Date): Historique {
   const limite = debut.getTime();
   return new Map(
@@ -302,7 +302,7 @@ export function anterieurA(h: Historique, debut: Date): Historique {
 }
 
 export type DepotLectureSeances = {
-  /** La plus récente d'abord ; avec `routineId`, celles de cette routine seulement (D311). */
+  /** La plus récente d'abord ; avec `routineId`, celles de cette routine seulement. */
   lister(
     userId: string,
     page: number,
@@ -310,9 +310,9 @@ export type DepotLectureSeances = {
     routineId?: string,
   ): Promise<{ seances: SeanceFil[]; total: number }>;
   lire(userId: string, id: string): Promise<SeanceDetail | null>;
-  /** Toutes les séries du compte, pour l'export (D128), dans l'ordre des séances. */
+  /** Toutes les séries du compte, pour l'export, dans l'ordre des séances. */
   exporter(userId: string): Promise<LigneExport[]>;
-  /** Les séances où figure l'exercice, la plus récente d'abord ; `null` s'il n'existe pas (D124). */
+  /** Les séances où figure l'exercice, la plus récente d'abord ; `null` s'il n'existe pas. */
   historiqueExercice(userId: string, slug: string): Promise<HistoriqueExercice | null>;
   /**
    * Par slug, TOUTES les séries de la dernière séance qui contenait l'exercice,
@@ -326,7 +326,7 @@ export type DepotLectureSeances = {
   ): Promise<Record<string, { reps: number | null; chargeKg: number | null; faite: boolean }[]>>;
   /** Les records actuels ; `null` si l'exercice n'existe pas. */
   records(userId: string, slug: string): Promise<RecordExercice[] | null>;
-  /** Les exercices qu'il a faits : dernière fois et meilleur 1RM (D312). */
+  /** Les exercices qu'il a faits : dernière fois et meilleur 1RM. */
   exercicesFaits(userId: string): Promise<ExerciceFait[]>;
 };
 

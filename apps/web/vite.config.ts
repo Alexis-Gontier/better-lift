@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * L'application vit sous `/app` : la racine du site est laissée à la landing (D292). Le routeur
+ * L'application vit sous `/app` : la racine du site est laissée à la landing. Le routeur
  * porte le même préfixe (`basepath` dans `main.tsx`).
  */
 const BASE = "/app/";

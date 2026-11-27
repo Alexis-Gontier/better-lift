@@ -3,7 +3,7 @@ import { formaterCharge } from "./charge.js";
 import type { UnitSystem } from "./units.js";
 
 /**
- * Les routines : des gabarits de séance, décrits série par série (D47).
+ * Les routines : des gabarits de séance, décrits série par série.
  *
  * Ces types sont ceux que l'API rendra : les données factices du dessin ont
  * déjà leur forme, pour que le branchement ne change que la source.
@@ -31,7 +31,7 @@ export const ABREGE_TYPE_SERIE: Record<TypeSerie, string> = {
 export type SerieRoutine = {
   type: TypeSerie;
   repsCible: number | null;
-  /** Toujours en kilos ; l'affichage passe par `formaterCharge` (D52). */
+  /** Toujours en kilos ; l'affichage passe par `formaterCharge`. */
   chargeCibleKg: number | null;
 };
 
@@ -41,12 +41,12 @@ type ExerciceRoutine = {
   nom: string;
   /** L'image fixe du catalogue (`imageDe`), ou `null`. */
   image: string | null;
-  /** Les muscles du catalogue, en français : la carte des muscles en dérive (D83). */
+  /** Les muscles du catalogue, en français : la carte des muscles en dérive. */
   musclePrincipal: string;
   musclesSecondaires: string[];
   reposSec: number | null;
   /**
-   * Le groupe de superset (D145), `null` hors groupe. Facultatif : une routine
+   * Le groupe de superset, `null` hors groupe. Facultatif : une routine
    * gardée hors ligne par une version antérieure du mobile ne l'a pas.
    */
   supersetGroupe?: number | null;
@@ -57,9 +57,9 @@ export type RoutineDetail = {
   id: string;
   nom: string;
   /**
-   * La note de la routine (D296), `null` sans note. Facultative, comme son dossier : une
+   * La note de la routine, `null` sans note. Facultative, comme son dossier : une
    * routine gardée hors ligne par une version antérieure du mobile ne les a pas — et ce qu'on
-   * ne connaît pas, on ne le renvoie pas (D298).
+   * ne connaît pas, on ne le renvoie pas.
    */
   note?: string | null;
   /** Son dossier, `null` : « Sans dossier ». */
@@ -73,20 +73,20 @@ export type RoutineResume = {
   nbExercices: number;
   nbSeries: number;
   dossierId: string | null;
-  /** ISO de la dernière séance faite depuis cette routine, `null` si jamais (D310). */
+  /** ISO de la dernière séance faite depuis cette routine, `null` si jamais. */
   derniereSeance: string | null;
-  /** Ses exercices, dans l'ordre : la liste du web les cherche et en montre les muscles (D310). */
+  /** Ses exercices, dans l'ordre : la liste du web les cherche et en montre les muscles. */
   exercices: { nom: string; musclePrincipal: string }[];
   /** `dureeEstimeeSec` de ses exercices : la liste l'affiche sans lire chaque routine. */
   dureeEstimeeSec: number;
 };
 
-/** Un dossier de routines (D296). */
+/** Un dossier de routines. */
 export type Dossier = { id: string; nom: string };
 
 // --- Le contrat d'écriture ---------------------------------------------------
 // Ce que l'éditeur envoie. L'ordre des tableaux EST la position : le client
-// n'envoie aucune position, le serveur la déduit de l'index (D50).
+// n'envoie aucune position, le serveur la déduit de l'index.
 
 const serieSaisie = z.object({
   type: z.enum(TYPES_SERIE),
@@ -97,7 +97,7 @@ const serieSaisie = z.object({
 const exerciceSaisi = z.object({
   slug: z.string().min(1).max(200),
   reposSec: z.number().int().min(0).max(3600).nullable(),
-  // Facultatif (D145) : un éditeur d'avant les supersets ne l'envoie pas.
+  // Facultatif : un éditeur d'avant les supersets ne l'envoie pas.
   supersetGroupe: z.number().int().min(1).max(100).nullable().optional(),
   series: z.array(serieSaisie).min(1).max(20),
 });
@@ -111,7 +111,7 @@ const note = z
 
 export const routineSaisie = z.object({
   nom: z.string().trim().min(1).max(120),
-  // D298 : ABSENTS, ils restent tels quels en base — un client qui ne les connaît pas (une
+  // ABSENTS, ils restent tels quels en base — un client qui ne les connaît pas (une
   // version du mobile d'avant les dossiers) ne les efface pas en enregistrant.
   note: note.optional(),
   dossierId: z.string().min(1).max(40).nullable().optional(),
@@ -127,7 +127,7 @@ export const ordreRoutines = z.object({
     .refine((ids) => new Set(ids).size === ids.length, "Un identifiant apparaît deux fois."),
 });
 
-// --- Les dossiers (D297) ----------------------------------------------------
+// --- Les dossiers ----------------------------------------------------
 
 export const dossierSaisi = z.object({ nom: z.string().trim().min(1).max(60) });
 

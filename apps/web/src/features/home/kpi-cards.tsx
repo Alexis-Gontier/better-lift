@@ -12,7 +12,7 @@ type Chiffre = {
 };
 
 /**
- * Les quatre chiffres clés de la période (D330), chacun comparé à la période précédente. L'écart
+ * Les quatre chiffres clés de la période, chacun comparé à la période précédente. L'écart
  * se lit par une flèche et un signe, jamais par une couleur : la hausse du volume n'est ni
  * « bien » ni « mal ».
  */

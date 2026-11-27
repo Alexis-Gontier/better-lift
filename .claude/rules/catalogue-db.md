@@ -20,7 +20,7 @@ paths:
 - **Clés numériques en JSON** : un objet JavaScript range les clés numériques canoniques
   (« 1000 ») avant les autres (« 0001 »). `JSON.stringify` réordonne donc `noms-fr.json` en
   silence : l'écrire ligne à ligne, et vérifier l'ordre sur le texte.
-- **Les médias sont affichés, jamais copiés** (D46). Les données du dataset sont MIT, les GIF
+- **Les médias sont affichés, jamais copiés.** Les données du dataset sont MIT, les GIF
   appartiennent à **Gym visual** : `gifUrl` pointe vers le dépôt du dataset, figé sur un commit,
   et « © Gym visual » accompagne chaque animation. Aucun média n'entre dans le dépôt.
 - Requêtes MCP Neon : toujours `database_name: "betterlift"` (voir CLAUDE.md).

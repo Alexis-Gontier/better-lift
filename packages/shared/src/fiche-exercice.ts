@@ -2,9 +2,9 @@ import { type HistoriqueExercice, type RecordExercice, recordsDe } from "./recor
 
 /**
  * Les calculs de la fiche d'un exercice, sur l'historique que rend l'API — web et mobile
- * (D348). Les records viennent
+ *. Les records viennent
  * de `shared` (`recordsDe`) : mêmes règles que partout — séries faites, hors échauffement, une
- * répétition au moins, 1RM au-delà de 12 répétitions ignoré (D307).
+ * répétition au moins, 1RM au-delà de 12 répétitions ignoré.
  */
 
 type Seance = HistoriqueExercice[number];

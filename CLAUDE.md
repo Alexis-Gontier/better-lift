@@ -4,8 +4,9 @@ Tracker de musculation personnel pour deux ou trois comptes : web (préparer, re
 (la salle). **Tout est en français** : interface, commentaires, commits, docs, réponses. Le but de
 chaque arbitrage : moins de code, pas un SaaS.
 
-- Conception : `docs/conception.md`. Décisions en vigueur : `docs/decisions.md` — le code les
-  cite (« D57 ») ; une décision qui gêne se révise par une nouvelle, écrite dans ce registre.
+- Pas de registre de décisions : le pourquoi d'un choix vit dans son commit et sa PR. Les docs
+  ne gardent que ce qui évite une erreur (contraintes techniques, pièges), jamais la description
+  des écrans : l'interface doit pouvoir changer sans document à réécrire.
 - Consignes par zone, chargées avec leurs fichiers : `.claude/rules/` — `interface-web.md`,
   `mobile.md`, `catalogue-db.md`, `deploiement-ci.md`.
 - Déploiement : `docs/deploiement.md`.
@@ -48,11 +49,10 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 ## Interface
 
 - Chaque écran porte **quatre états** (vide, chargement, erreur, nominal) dès son dessin ; sur le
-  web, `?etat=` force chacun. On dessine et valide un écran avant de brancher ses données.
-- Une couleur pour l'action et le record, distinguées par la forme : l'action est un aplat, le
-  record un contour. Le danger a la sienne. Un token par rôle, deux valeurs (sombre / clair),
-  jamais de couleur en dur. Direction A, « Instrument sobre » (D349) : mêmes valeurs dans
-  `apps/mobile/global.css` et `apps/web/src/styles/globals.css`, seules sources des valeurs (D351) ;
+  web, `?etat=` force chacun. Un écran se maquette dans le code (variantes, captures) et se
+  valide avant de brancher ses données.
+- Un token par rôle, deux valeurs (sombre / clair), jamais de couleur en dur. Les valeurs vivent
+  dans `apps/mobile/global.css` et `apps/web/src/styles/globals.css`, seules sources ;
   `pnpm lint` vérifie qu'elles restent identiques et au contraste AA (`scripts/contrastes.mjs`).
 
 ## Git et PR
@@ -71,10 +71,8 @@ pnpm --filter @better-lift/web e2e   # Playwright contre l'API de dev
 ## Specs et plans
 
 Les skills superpowers écrivent leurs specs et plans dans `docs/superpowers/` : ce sont des
-documents de chantier. **Une fois le chantier fusionné**, reporter ses décisions dans
-`docs/decisions.md` (et ce qui change dans `docs/conception.md` ou `.claude/rules/`), puis
-supprimer la spec et le plan. Un numéro de décision suit le plus haut déjà pris, dans le
-registre **et** dans les PR ouvertes (`gh pr list`) : une branche non fusionnée a pu en réserver.
+documents de chantier. **Une fois le chantier fusionné**, les supprimer ; n'en reporter dans
+CLAUDE.md ou `.claude/rules/` que ce qui évite une erreur future (contrainte, piège).
 
 ## Environnement
 

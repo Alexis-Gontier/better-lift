@@ -19,8 +19,8 @@ import { optionsRoutine, optionsRoutines } from "@/lib/requetes";
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /**
- * La page d'une routine (D321), en lecture seule : on la regarde avant de la lancer, comme
- * dans Hevy. Les exercices sont repliés (D253) ; la routine se modifie sur le web.
+ * La page d'une routine, en lecture seule : on la regarde avant de la lancer, comme
+ * dans Hevy. Les exercices sont repliés ; la routine se modifie sur le web.
  */
 export default function PageRoutine() {
   const router = useRouter();

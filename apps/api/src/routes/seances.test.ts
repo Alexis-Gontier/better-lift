@@ -44,7 +44,7 @@ describe("versEcriture", () => {
     ]);
   });
 
-  it("écrit la note de l'exercice (D90), vide quand un vieux mobile ne l'envoie pas", () => {
+  it("écrit la note de l'exercice, vide quand un vieux mobile ne l'envoie pas", () => {
     const ids = new Map([["barbell-bench-press", "ex-1"]]);
     const avecNote = {
       ...saisie,
@@ -54,7 +54,7 @@ describe("versEcriture", () => {
     expect(versEcriture(saisie, ids)[0]?.note).toBeNull();
   });
 
-  it("normalise les groupes de superset, absents = null (D145, D146)", () => {
+  it("normalise les groupes de superset, absents = null", () => {
     const exo = saisie.exercices[0];
     if (!exo) throw new Error("exercice manquant");
     const avecGroupes = {
@@ -210,7 +210,7 @@ describe("POST /seances", () => {
     expect(JSON.stringify(await res.json())).toContain("inconnu");
   });
 
-  // D57 : un champ en trop ne fait pas perdre une séance.
+  // Un champ en trop ne fait pas perdre une séance.
   it("tolère un champ inconnu", async () => {
     expect((await monter().poster({ ...saisie, appareil: "pixel" })).status).toBe(201);
   });
@@ -233,7 +233,7 @@ describe("la lecture des séances", () => {
     expect(((await (await lire("/seances", "bob")).json()) as { total: number }).total).toBe(0);
   });
 
-  it("filtre par routine quand `routine` est donné (D311)", async () => {
+  it("filtre par routine quand `routine` est donné", async () => {
     const { lire } = monter();
     expect((await lire("/seances?routine=r1&taille=100")).status).toBe(200);
     expect(appelsLister.at(-1)).toEqual(["alice", 1, 100, "r1"]);
@@ -259,7 +259,7 @@ describe("la lecture des séances", () => {
   });
 });
 
-describe("DELETE /seances/:id (D123)", () => {
+describe("DELETE /seances/:id", () => {
   it("rend 401 sans session", async () => {
     expect((await monter().supprimer("s-1", null)).status).toBe(401);
   });

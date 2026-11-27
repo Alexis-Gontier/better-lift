@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 /**
- * Quitter un élément modifié et non enregistré demande confirmation (D239). `release` lève le
+ * Quitter un élément modifié et non enregistré demande confirmation. `release` lève le
  * garde avant une navigation voulue (après une suppression ou une création, par exemple).
  */
 export function useUnsavedGuard(

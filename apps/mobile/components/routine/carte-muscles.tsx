@@ -93,8 +93,8 @@ function Pastilles({ zones }: { zones: ZoneTravaillee[] }) {
 }
 
 /**
- * Les muscles qu'une liste d'exercices travaille (D83, D321), face et dos, comme la carte
- * d'opengym, puis leurs noms. Sans cadre ni titre (`nu`) dans une feuille qui a le sien (D344).
+ * Les muscles qu'une liste d'exercices travaille, face et dos, comme la carte
+ * d'opengym, puis leurs noms. Sans cadre ni titre (`nu`) dans une feuille qui a le sien.
  */
 export function CarteMuscles({ exercices, nu = false }: { exercices: Exercices; nu?: boolean }) {
   const [largeur, setLargeur] = useState(0);

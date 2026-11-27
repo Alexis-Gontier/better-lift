@@ -5,7 +5,7 @@ import * as Network from "expo-network";
 import { AppState } from "react-native";
 
 /**
- * Ce qui permet de s'entraîner sans réseau (D96–D99).
+ * Ce qui permet de s'entraîner sans réseau.
  *
  * Le BROUILLON et la FILE d'envoi ne passent pas par ici : ils ont leur propre
  * disque (`stockage.ts`, § 8). Ce module ne garde que des LECTURES, pour que
@@ -26,7 +26,7 @@ export const persister = createAsyncStoragePersister({
 });
 
 /**
- * Ce qui entre dans le cache persistant (D96) : les routines, le catalogue
+ * Ce qui entre dans le cache persistant : les routines, le catalogue
  * complet, les précédents. Pas l'historique : il grossit sans fin, et une
  * ligne AsyncStorage Android plafonne vers 2 Mo.
  */
@@ -38,17 +38,17 @@ export function gardeHorsLigne(query: Query): boolean {
   const [domaine, sorte] = query.queryKey as unknown[];
   return (
     domaine === "routines" ||
-    // Le repos par défaut sert en salle, hors ligne compris (D129).
+    // Le repos par défaut sert en salle, hors ligne compris.
     domaine === "preferences" ||
     (domaine === "exercices" && sorte === "complet") ||
-    // La fiche d'un exercice : ses muscles peignent l'en-tête de la séance (D344).
+    // La fiche d'un exercice : ses muscles peignent l'en-tête de la séance.
     (domaine === "exercices" && sorte === "detail") ||
     (domaine === "seances" && sorte === "precedents")
   );
 }
 
 /**
- * Le réseau et le premier plan, branchés sur TanStack Query (D99). Sans le
+ * Le réseau et le premier plan, branchés sur TanStack Query. Sans le
  * premier, `onlineManager` croit toujours être en ligne sous React Native ;
  * sans le second, `focusManager` ne sait jamais que l'app revient au premier
  * plan. `isConnected` plutôt que `isInternetReachable`, qui vaut souvent
@@ -74,7 +74,7 @@ export function brancherReseauEtPremierPlan(): void {
 }
 
 /**
- * Une promesse qui abandonne au bout de `ms` (D98) : un réseau de salle
+ * Une promesse qui abandonne au bout de `ms` : un réseau de salle
  * « connecté mais lent » ne doit pas figer un appui. La requête sous-jacente
  * continue ; si elle aboutit, elle remplit le cache pour la fois suivante.
  */

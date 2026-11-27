@@ -30,7 +30,7 @@ test.describe("les records", () => {
     });
 
     await page.goto("records");
-    // En tête, le dernier record battu en grand (D350).
+    // En tête, le dernier record battu en grand.
     await expect(page.getByRole("link", { name: /^Dernier record/ })).toBeVisible();
     // Charge du 8 ; 1RM du 1er (80 × 5 → 93 kg) ; meilleure série du 8 (75 × 6 = 450 kg).
     // La série non faite ne compte pas.

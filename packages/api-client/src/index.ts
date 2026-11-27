@@ -2,7 +2,7 @@ import type { AppType } from "@better-lift/api";
 import { hc } from "hono/client";
 
 /**
- * Le client RPC de l'API, pour les DEUX surfaces (D42).
+ * Le client RPC de l'API, pour les DEUX surfaces.
  *
  * Il vivait dans `apps/web/src/lib/api.ts` jusqu'ici : la conception principale
  * avait reporté ce paquet faute d'un second consommateur, et le lot 4 en fournit

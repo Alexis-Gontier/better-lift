@@ -1,7 +1,7 @@
 import type { UnitSystem } from "@better-lift/shared";
 
 /**
- * Le système d'unités du mobile — l'unique endroit où il est fixé (D52), comme
+ * Le système d'unités du mobile — l'unique endroit où il est fixé, comme
  * `apps/web/src/lib/unites.ts` côté web. Le jour où un profil existe, les deux
  * deviennent une lecture du profil.
  */

@@ -15,7 +15,7 @@ import { imageDe } from "./exercices.js";
  * Même découpage qu'au catalogue : des fonctions PURES pour tout ce qui peut se
  * tromper — positions, résolution des slugs, conversion des charges — testées
  * sans base, parce que la CI n'en a pas ; et un DÉPÔT qui ne fait que Prisma.
- * Chaque méthode du dépôt reçoit `userId` et filtre par lui (D53).
+ * Chaque méthode du dépôt reçoit `userId` et filtre par lui.
  */
 
 export class SlugInconnu extends Error {
@@ -24,7 +24,7 @@ export class SlugInconnu extends Error {
   }
 }
 
-/** Le dossier donné n'existe pas ou n'est pas à lui : introuvable, comme sa routine (D297). */
+/** Le dossier donné n'existe pas ou n'est pas à lui : introuvable, comme sa routine. */
 export class DossierInconnu extends Error {
   constructor() {
     super("Dossier introuvable.");
@@ -45,17 +45,17 @@ type ExerciceEcrit = {
   series: SerieEcrite[];
 };
 
-/** La saisie, prête à écrire. L'ordre des tableaux devient la position (D50). */
+/** La saisie, prête à écrire. L'ordre des tableaux devient la position. */
 export function versEcriture(
   saisie: RoutineSaisie,
   idsParSlug: Map<string, string>,
 ): { nom: string; note?: string | null; dossierId?: string | null; exercices: ExerciceEcrit[] } {
   return {
     nom: saisie.nom,
-    // D298 : absents de la saisie, ils restent absents — donc inchangés en base.
+    // Absents de la saisie, ils restent absents — donc inchangés en base.
     ...(saisie.note !== undefined && { note: saisie.note }),
     ...(saisie.dossierId !== undefined && { dossierId: saisie.dossierId }),
-    // D146 : un groupe mal formé se corrige, il ne fait pas refuser la routine.
+    // Un groupe mal formé se corrige, il ne fait pas refuser la routine.
     exercices: normaliserGroupes(saisie.exercices).map((e, position) => {
       const exerciseId = idsParSlug.get(e.slug);
       if (!exerciseId) throw new SlugInconnu(e.slug);
@@ -79,7 +79,7 @@ export type LigneRoutine = {
   nom: string;
   note: string | null;
   dossierId: string | null;
-  /** La dernière séance faite depuis la routine, au plus une (D310). */
+  /** La dernière séance faite depuis la routine, au plus une. */
   seances: { debut: Date }[];
   exercices: {
     reposSec: number | null;
@@ -185,7 +185,7 @@ async function resoudre(saisie: RoutineSaisie): Promise<Map<string, string>> {
 }
 
 /**
- * Un dossier donné doit être à lui : celui d'autrui est introuvable (D297). Vérifié DANS la
+ * Un dossier donné doit être à lui : celui d'autrui est introuvable. Vérifié DANS la
  * transaction de l'écriture, pour qu'il ne disparaisse pas entre-temps.
  */
 async function verifierDossier(
@@ -261,8 +261,8 @@ export const depotPrisma: DepotRoutines = {
       const existe = await tx.routine.findFirst({ where: { id, userId }, select: { id: true } });
       if (!existe) return false;
       await verifierDossier(tx, userId, ecriture.dossierId);
-      // Remplacement complet (D50) : les séries partent en cascade. Note et dossier ne
-      // changent que s'ils sont donnés (D298).
+      // Remplacement complet : les séries partent en cascade. Note et dossier ne
+      // changent que s'ils sont donnés.
       await tx.routineExercice.deleteMany({ where: { routineId: id } });
       await tx.routine.update({
         where: { id },

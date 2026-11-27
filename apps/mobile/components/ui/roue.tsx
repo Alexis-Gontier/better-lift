@@ -9,7 +9,7 @@ const HAUTEUR = 44;
 const VISIBLES = 5;
 
 /**
- * Une roue à la iOS (D343) : on la fait tourner, la ligne du milieu est choisie.
+ * Une roue à la iOS : on la fait tourner, la ligne du milieu est choisie.
  * Un `ScrollView` aimanté sur la hauteur d'une ligne, sans module natif : un
  * sélecteur natif n'est pas dans l'APK déjà installé, et `eas update` ne livre
  * que du JS.

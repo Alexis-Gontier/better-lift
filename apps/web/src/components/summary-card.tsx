@@ -11,7 +11,7 @@ export type SummaryRow = {
 };
 
 /**
- * Des chiffres en lignes dans une seule carte (D265) : le libellé à gauche, la valeur à droite.
+ * Des chiffres en lignes dans une seule carte : le libellé à gauche, la valeur à droite.
  * Lisible à toute largeur de colonne, là où des mini-cartes s'empilaient une par ligne.
  */
 export function SummaryCard({ title, rows }: { title: string; rows: SummaryRow[] }) {

@@ -56,12 +56,12 @@ function libelleJour(ilYa: number, maintenant: Date): string {
 }
 
 /**
- * La fin de séance (D130, D318, D342, D343) : trois chiffres, une note, puis
+ * La fin de séance : trois chiffres, une note, puis
  * enregistrer, reprendre ou abandonner. La date et la durée se corrigent d'un
  * appui, sur des roues : une séance saisie le lendemain, ou terminée bien après
  * la dernière série, garde son vrai jour et ne compte pas l'attente. Une
  * séance sans série validée ne s'enregistre pas, elle se reprend. Une séance
- * partie d'une routine peut la mettre à jour (D347).
+ * partie d'une routine peut la mettre à jour.
  */
 export default function Fin() {
   const router = useRouter();
@@ -76,7 +76,7 @@ export default function Fin() {
   const [feuille, setFeuille] = useState<"duree" | "date" | null>(null);
   // Un second appui pendant l'enregistrement mettrait la séance deux fois en file.
   const [enregistrement, setEnregistrement] = useState(false);
-  // D347 : la routine d'origine, déjà en cache depuis le démarrage, relue si possible.
+  // La routine d'origine, déjà en cache depuis le démarrage, relue si possible.
   const routineId = seance?.routineId ?? null;
   const routine = useQuery({ ...optionsRoutine(routineId ?? ""), enabled: routineId !== null });
   const majRoutineSeance = useMettreAJourRoutine();
@@ -154,7 +154,7 @@ export default function Fin() {
     <Ecran className="flex-1 bg-background">
       <ScrollView contentContainerClassName="gap-4 p-4">
         <View className="gap-1">
-          {/* Rien n'est encore enregistré : l'écran relit avant d'enregistrer (D324). */}
+          {/* Rien n'est encore enregistré : l'écran relit avant d'enregistrer. */}
           <Text className="font-semibold text-2xl" accessibilityRole="header">
             Fin de séance
           </Text>
@@ -215,7 +215,7 @@ export default function Fin() {
               : `${nonValidees} séries non validées : elles ne compteront pas.`}
           </Encart>
         ) : null}
-        {/* Hors ligne, un fait et pas une alerte : la séance part seule au retour du réseau (D99). */}
+        {/* Hors ligne, un fait et pas une alerte : la séance part seule au retour du réseau. */}
         {horsLigne ? (
           <Encart icone={CloudOff}>
             Pas de réseau. La séance reste sur ton téléphone et partira seule au retour du réseau.
@@ -260,7 +260,7 @@ export default function Fin() {
 }
 
 /**
- * Mettre à jour la routine (D347) : un interrupteur, éteint par défaut, et le
+ * Mettre à jour la routine : un interrupteur, éteint par défaut, et le
  * détail des changements, replié.
  */
 function MajRoutine({
@@ -421,7 +421,7 @@ function FeuilleDate({
   );
 }
 
-/** Le danger en contour (D335), la confirmation derrière. */
+/** Le danger en contour, la confirmation derrière. */
 function Abandonner({ onPress }: { onPress: () => void }) {
   return (
     <Button variant="outline" className="h-12 flex-1 border-destructive" onPress={onPress}>

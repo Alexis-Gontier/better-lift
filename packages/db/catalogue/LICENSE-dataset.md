@@ -21,7 +21,7 @@ groupes, équipements, cibles, instructions multilingues — sont sous licence M
 > DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Les médias : affichés, jamais copiés (D46)
+## Les médias : affichés, jamais copiés
 
 La MIT ci-dessus **ne couvre pas** les images et les GIF du dataset. Ils appartiennent à
 **Gym visual — https://gymvisual.com/**, et n'y sont redistribués qu'en vertu d'une permission

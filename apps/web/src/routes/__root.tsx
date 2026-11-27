@@ -10,12 +10,12 @@ declare module "@tanstack/react-router" {
   interface StaticDataRouteOption {
     /** Libellé de la route dans le fil d'Ariane. */
     crumb?: string;
-    /** La page répond aux quatre états, que `?etat=` peut forcer (D303). */
+    /** La page répond aux quatre états, que `?etat=` peut forcer. */
     etats?: boolean;
   }
 }
 
-/** Ce que chaque route reçoit : la session (D301) et le cache des requêtes (D300). */
+/** Ce que chaque route reçoit : la session et le cache des requêtes. */
 type ContexteRouteur = { auth: { session: Session }; queryClient: QueryClient };
 
 export const Route = createRootRouteWithContext<ContexteRouteur>()({

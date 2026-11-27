@@ -78,7 +78,7 @@ import {
 type OnChange = (update: (d: Brouillon) => Brouillon) => void;
 
 /**
- * La marque d'un champ modifiable dans l'éditeur (D250) : un fond teinté, sans contour. On voit
+ * La marque d'un champ modifiable dans l'éditeur : un fond teinté, sans contour. On voit
  * d'emblée ce qui se modifie, sans le mur de bordures ; le focus pose l'anneau.
  */
 export const filled =
@@ -113,7 +113,7 @@ export function stepValue(value: string, delta: number, min: number, max = Infin
   return String(Math.min(max, Math.max(min, Math.round((n + delta) * 100) / 100)));
 }
 
-/** Une valeur de série : − / + autour du champ, l'unité à côté du nombre (D246). */
+/** Une valeur de série : − / + autour du champ, l'unité à côté du nombre. */
 function SetField({
   value,
   unit,
@@ -176,7 +176,7 @@ function SetField({
   );
 }
 
-/** Le type d'une série, choisi sur son étiquette, comme dans Hevy (D248, D249). */
+/** Le type d'une série, choisi sur son étiquette, comme dans Hevy. */
 function SetTypeButton({
   set,
   label,
@@ -220,7 +220,7 @@ function SetTypeButton({
 }
 
 /**
- * Une carte d'exercice de l'éditeur (D246) : la poignée sur toute la hauteur à gauche ; en tête
+ * Une carte d'exercice de l'éditeur : la poignée sur toute la hauteur à gauche ; en tête
  * la vignette, le nom, le repos et le menu ⋯ ; un filet ; les séries, face à la dernière fois ;
  * un filet ; *Ajouter une série*. Les champs et les boutons se voient d'emblée : on lit la
  * carte comme un formulaire.
@@ -250,11 +250,11 @@ function ExerciseEditor({
   letter: string | null;
   /** Les séries de la dernière séance qui le contenait. */
   precedentes?: readonly SeriePrecedente[];
-  /** Ce que l'exercice a de différent de la routine enregistrée (D261). */
+  /** Ce que l'exercice a de différent de la routine enregistrée. */
   mark?: "Modifié" | "Nouveau";
   /** Enchaîné au suivant dans un superset : son repos ne compte pas. */
   chains: boolean;
-  /** Replié, la carte ne montre que sa tête et le résumé de ses séries (D253). */
+  /** Replié, la carte ne montre que sa tête et le résumé de ses séries. */
   open: boolean;
   onToggle: () => void;
   onChange: (next: ExerciceBrouillon) => void;
@@ -262,7 +262,7 @@ function ExerciseEditor({
   /** Absent quand il n'y a pas de suivant à lier. */
   onLink?: () => void;
   onUnlink: () => void;
-  /** Ouvre la fiche de l'exercice dans une fenêtre (D262). */
+  /** Ouvre la fiche de l'exercice dans une fenêtre. */
   onView: () => void;
 }) {
   const name = exercise.nom;
@@ -490,7 +490,7 @@ function ExerciseEditor({
   );
 }
 
-/** Le nom de la routine, modifiable dans la tête du panneau (D250) : pas de champ en double. */
+/** Le nom de la routine, modifiable dans la tête du panneau : pas de champ en double. */
 export function RoutineNameInput({
   draft,
   onChange,
@@ -517,9 +517,9 @@ export function RoutineNameInput({
 }
 
 /**
- * Le corps de l'éditeur : les exercices à réordonner, repliés par défaut (D253). Le nom vit dans
+ * Le corps de l'éditeur : les exercices à réordonner, repliés par défaut. Le nom vit dans
  * la tête du panneau, le dossier et la note dans sa colonne de droite ; le panneau décide quand
- * on enregistre (D243).
+ * on enregistre.
  */
 export function RoutineFields({
   draft,

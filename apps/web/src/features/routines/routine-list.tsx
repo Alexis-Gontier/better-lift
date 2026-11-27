@@ -122,7 +122,7 @@ function FolderMenu({ dossier }: { dossier: Dossier }) {
 
 /**
  * Un dossier : sa tête (replier, nombre, menu ⋯) et ses routines. Tout le dossier, tête comprise
- * et même replié, reçoit une routine glissée (D257).
+ * et même replié, reçoit une routine glissée.
  */
 function FolderSection({
   dossier,
@@ -175,7 +175,7 @@ function FolderSection({
             Glissez une routine ici
           </div>
         ) : (
-          // Une carte par routine, séparées (D258).
+          // Une carte par routine, séparées.
           <div className="flex flex-col gap-2">
             {routines.map((r) => (
               <RoutineRow key={r.id} routine={r} />
@@ -187,9 +187,9 @@ function FolderSection({
 }
 
 /**
- * Les routines rangées par dossier (D257) : des sections repliables, une recherche qui ne montre
+ * Les routines rangées par dossier : des sections repliables, une recherche qui ne montre
  * que les dossiers ayant un résultat (dépliés), et la poignée de chaque ligne pour changer une
- * routine de dossier. Ses quatre états viennent de `GET /routines` (D303).
+ * routine de dossier. Ses quatre états viennent de `GET /routines`.
  */
 export function RoutineList() {
   const force = useEtat();
@@ -329,7 +329,7 @@ function RoutineListSkeleton() {
   );
 }
 
-/** Aucune routine : la liste le dit d'une ligne, le panneau de droite guide la création (D260). */
+/** Aucune routine : la liste le dit d'une ligne, le panneau de droite guide la création. */
 function RoutineListEmpty() {
   return (
     <p className="rounded-xl border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">

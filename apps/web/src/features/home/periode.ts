@@ -1,7 +1,7 @@
 import { PERIODES, type Periode } from "@better-lift/shared";
 
 /**
- * La période de l'Accueil (D330) : le dernier choix, gardé dans ce navigateur, sinon trois mois.
+ * La période de l'Accueil : le dernier choix, gardé dans ce navigateur, sinon trois mois.
  * Pas dans l'URL : pour deux ou trois comptes, le lien partagé et le retour arrière sur une
  * période n'ont pas d'usage, et une seule source vaut mieux que deux.
  */

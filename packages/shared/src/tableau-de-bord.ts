@@ -4,9 +4,9 @@ import { type Zone, zoneDuMuscle } from "./muscles.js";
 import type { TypeRecord } from "./records.js";
 
 /**
- * Le tableau de bord de l'Accueil du web (D330). L'API rend les FAITS de chaque séance depuis
+ * Le tableau de bord de l'Accueil du web. L'API rend les FAITS de chaque séance depuis
  * une date ; ce module les agrège dans le fuseau de l'appelant — le samedi 21 h à Paris est
- * déjà dimanche en UTC. Tout se dérive à la lecture (D58).
+ * déjà dimanche en UTC. Tout se dérive à la lecture.
  */
 
 export const PERIODES = ["4s", "3m", "1a"] as const;
@@ -19,7 +19,7 @@ export const LIBELLE_PERIODE: Record<Periode, string> = {
 
 export const requeteTableauDeBord = z.object({ depuis: z.iso.datetime() });
 
-/** Une série qui a battu au moins un record, à ce moment-là (D64). */
+/** Une série qui a battu au moins un record, à ce moment-là. */
 export type RecordSeance = {
   slug: string;
   nom: string;
@@ -37,7 +37,7 @@ export type FaitSeance = {
   volumeKg: number;
   /**
    * Un élément par exercice fait : ses muscles du catalogue et ses séries faites hors
-   * échauffement (D5), pour la carte de chaleur du web (D332).
+   * échauffement (D5), pour la carte de chaleur du web.
    */
   muscles: { principal: string; secondaires: string[]; series: number }[];
   records: RecordSeance[];
@@ -169,7 +169,7 @@ export function tendance(seances: readonly FaitSeance[], b: Bornes, fuseau: stri
 export type ChargeZone = { zone: Zone; series: number; niveau: 1 | 2 | 3 | 4 };
 
 /**
- * La carte de chaleur des muscles (D332), comme Hevy : une série compte 1 pour la zone du muscle
+ * La carte de chaleur des muscles, comme Hevy : une série compte 1 pour la zone du muscle
  * principal, ½ pour chaque zone secondaire — une zone ne compte qu'une fois par exercice, au plus
  * fort de ses rôles. Les niveaux se rapportent à la zone la plus travaillée, pour que la carte
  * reste lisible sur 4 semaines comme sur un an. La plus travaillée d'abord.

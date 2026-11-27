@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Le symbole « La charge » (D322, D329), sans sa tuile : trois disques sur une barre courte, en
+ * Le symbole « La charge », sans sa tuile : trois disques sur une barre courte, en
  * diagonale, à la couleur du texte (`currentColor`). Mêmes cotes que `public/favicon.svg`, la
  * tuile en moins. Le `viewBox` est recadré sur le symbole tourné : la boîte SVG est le dessin,
  * sans marge, pour que l'écart avec le nom soit l'écart voulu. Décoratif : le nom l'accompagne.

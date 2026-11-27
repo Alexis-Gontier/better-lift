@@ -10,7 +10,7 @@ const s = (slug: string, date: string, chargeKg: number | null, reps: number, fa
   type: "NORMALE" as const,
 });
 
-describe("resumerExercicesFaits (D312)", () => {
+describe("resumerExercicesFaits", () => {
   it("rend, par exercice, la dernière date et le meilleur 1RM estimé", () => {
     const r = resumerExercicesFaits([
       s("bench", "2026-10-08T08:00:00.000Z", 82.5, 3),

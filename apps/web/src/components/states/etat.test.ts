@@ -3,7 +3,7 @@ import { etatAffiche, parseEtat } from "./etat";
 
 const q = (isPending: boolean, isError: boolean) => ({ isPending, isError });
 
-describe("etatAffiche (D303)", () => {
+describe("etatAffiche", () => {
   it("l'URL l'emporte sur la requête", () => {
     expect(etatAffiche("vide", q(false, false), false)).toBe("vide");
     expect(etatAffiche("chargement", q(false, true), false)).toBe("chargement");

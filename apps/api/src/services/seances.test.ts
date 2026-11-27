@@ -101,7 +101,7 @@ describe("versDetail", () => {
     ],
   ]);
 
-  it("marque les records battus contre l'historique antérieur (D64)", () => {
+  it("marque les records battus contre l'historique antérieur", () => {
     const detail = versDetail(ligne, anterieur);
     // 100 × 5 égale l'ancien record : rien de battu.
     expect(detail.exercices[0]?.series.map((s) => s.records)).toEqual([[], []]);
@@ -109,7 +109,7 @@ describe("versDetail", () => {
     expect(detail.exercices[1]?.series[0]?.records).toEqual([]);
     // 100 × 6, dans la seconde occurrence : bat charge (plus de reps), 1RM et volume.
     expect(detail.exercices[2]?.series[0]?.records).toEqual(["CHARGE", "UN_RM", "VOLUME"]);
-    // D110 : le résumé compte les séries qui ont battu au moins un record.
+    // Le résumé compte les séries qui ont battu au moins un record.
     expect(detail.nbRecords).toBe(1);
   });
 
@@ -119,7 +119,7 @@ describe("versDetail", () => {
       slug: "barbell-bench-press",
       nom: "Développé couché à la barre",
       note: "siège cran 4",
-      // Les muscles de la fiche : la carte des muscles du mobile (D345).
+      // Les muscles de la fiche : la carte des muscles du mobile.
       musclePrincipal: "pectoraux",
       musclesSecondaires: ["triceps"],
     });
@@ -133,11 +133,11 @@ describe("versDetail", () => {
     expect(detail.exercices[1]?.series[0]?.records).toEqual(["REPS"]);
     expect(detail.nbRecords).toBe(3);
   });
-  it("rend la note de la séance (D130), null sans note", () => {
+  it("rend la note de la séance, null sans note", () => {
     expect(versDetail({ ...ligne, note: "Bonne séance." }, new Map()).note).toBe("Bonne séance.");
     expect(versDetail(ligne, new Map()).note).toBeNull();
   });
-  it("rend la dernière occurrence antérieure de chaque exercice, toutes ses séries (D123)", () => {
+  it("rend la dernière occurrence antérieure de chaque exercice, toutes ses séries", () => {
     const h = (date: string, reps: number) => ({
       type: "NORMALE" as const,
       reps,
@@ -168,7 +168,7 @@ describe("versDetail", () => {
 });
 
 describe("anterieurA", () => {
-  // La liste juge chaque séance contre ce qui la PRÉCÈDE, comme le détail (D64).
+  // La liste juge chaque séance contre ce qui la PRÉCÈDE, comme le détail.
   it("ne garde que l'historique strictement antérieur à une date", () => {
     const serie = (date: string) => ({
       type: "NORMALE" as const,
@@ -185,7 +185,7 @@ describe("anterieurA", () => {
   });
 });
 
-describe("versFil (D119)", () => {
+describe("versFil", () => {
   it("compte les exercices et rend leur aperçu, charges en nombres", () => {
     const f = versFil(ligne);
     expect(f.nbExercices).toBe(3);
@@ -199,7 +199,7 @@ describe("versFil (D119)", () => {
   });
 });
 
-describe("supersets dans le détail (D153)", () => {
+describe("supersets dans le détail", () => {
   it("rend le groupe de superset de chaque exercice", () => {
     const l = {
       ...ligne,

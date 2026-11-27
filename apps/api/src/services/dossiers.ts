@@ -2,8 +2,8 @@ import { prisma } from "@better-lift/db";
 import type { Dossier } from "@better-lift/shared";
 
 /**
- * Les dossiers de routines (D296), côté métier. Ce module ne connaît pas Hono. Chaque méthode
- * reçoit `userId` et filtre par lui (D53).
+ * Les dossiers de routines, côté métier. Ce module ne connaît pas Hono. Chaque méthode
+ * reçoit `userId` et filtre par lui.
  */
 
 export class NomPris extends Error {

@@ -11,7 +11,7 @@ const scrollBlock =
 
 /**
  * Sous la tête fixe d'un détail, deux panneaux redimensionnables qui défilent chacun dans sa
- * `ScrollArea` (D255) : le contenu principal, et à droite les chiffres et les réglages. La
+ * `ScrollArea` : le contenu principal, et à droite les chiffres et les réglages. La
  * largeur est mémorisée par `id`. Trop étroit (moins de 720 px), la colonne de droite passe
  * dessous, dans un seul défilement. Le détail se monte avec `detailScroll="columns"`.
  */

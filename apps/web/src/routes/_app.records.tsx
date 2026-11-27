@@ -5,7 +5,7 @@ import { faitsQuery } from "@/lib/exercices";
 
 export const Route = createFileRoute("/_app/records")({
   staticData: { crumb: "Records" },
-  // Sans attendre : la page montre son squelette pendant ce temps (D300).
+  // Sans attendre : la page montre son squelette pendant ce temps.
   loader: ({ context }) => void context.queryClient.prefetchQuery(faitsQuery()),
   component: () => (
     <Page title="Records">

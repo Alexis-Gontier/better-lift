@@ -158,7 +158,7 @@ describe("routes des routines", () => {
     expect((await envoyer("GET", `/routines/${id}`, "alice")).status).toBe(404);
   });
 
-  // D53 : la routine d'autrui est INTROUVABLE, pas interdite — on ne révèle
+  // La routine d'autrui est INTROUVABLE, pas interdite — on ne révèle
   // pas qu'elle existe.
   it("rend 404, jamais 403, sur la routine d'un autre", async () => {
     const envoyer = client();
@@ -204,7 +204,7 @@ describe("routes des routines", () => {
     expect((await envoyer("PUT", "/routines/ordre", "alice", { ids: [a, a] })).status).toBe(400);
   });
 
-  it("PATCH /:id range la routine ; 404 sur un dossier ou une routine d'autrui (D297)", async () => {
+  it("PATCH /:id range la routine ; 404 sur un dossier ou une routine d'autrui", async () => {
     const envoyer = client();
     const { id } = (await (await envoyer("POST", "/routines", "alice", saisie)).json()) as {
       id: string;

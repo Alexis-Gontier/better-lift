@@ -14,7 +14,7 @@ import { FUSEAU } from "@/lib/fuseau";
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 /**
- * Une routine de l'onglet Routines (D320, D321) : une carte à deux actions, comme Hevy. La
+ * Une routine de l'onglet Routines : une carte à deux actions, comme Hevy. La
  * carte ouvre la page de la routine ; le segment de droite, en aplat, la LANCE d'un appui.
  */
 export function LigneRoutine({
@@ -60,7 +60,7 @@ export function LigneRoutine({
         disabled={enOuverture}
         accessibilityRole="button"
         accessibilityLabel={`Lancer ${routine.nom}`}
-        // Gris, pas un aplat noir (D336) : huit cartes, huit blocs noirs pesaient sur l'accueil.
+        // Gris, pas un aplat noir : huit cartes, huit blocs noirs pesaient sur l'accueil.
         className="w-20 items-center justify-center gap-1 border-border border-l bg-secondary active:bg-accent"
       >
         {enOuverture ? (

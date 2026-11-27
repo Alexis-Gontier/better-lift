@@ -4,7 +4,7 @@ import { ABREGE_TYPE_SERIE, type RoutineResume, type TypeSerie } from "./routine
 import type { UnitSystem } from "./units.js";
 
 /**
- * La liste des routines, la même sur le web et le mobile (D320) : rangement par
+ * La liste des routines, la même sur le web et le mobile : rangement par
  * dossier, muscles, durée estimée et dernière fois.
  */
 
@@ -61,7 +61,7 @@ const plage = (valeurs: readonly number[], format: (min: number, max: number) =>
   format(Math.min(...valeurs), Math.max(...valeurs));
 
 /**
- * Le résumé d'un exercice replié (D253, D321) : « 3 × 12 · 10 kg », des plages quand les séries
+ * Le résumé d'un exercice replié : « 3 × 12 · 10 kg », des plages quand les séries
  * varient (« 3 × 10–12 · 8–10,5 kg »), les échauffements devant (« 1 É + 3 × 12 »). Le web
  * passe « W », son abréviation de l'échauffement.
  */

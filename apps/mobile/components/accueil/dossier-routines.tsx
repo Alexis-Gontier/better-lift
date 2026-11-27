@@ -6,7 +6,7 @@ import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 
 /**
- * Un dossier de routines, repliable comme sur le web (D257, D320) : sa tête
+ * Un dossier de routines, repliable comme sur le web : sa tête
  * (chevron, nom, nombre) puis ses cartes. Les dossiers se rangent sur le web :
  * ni glisser, ni menu ici.
  */

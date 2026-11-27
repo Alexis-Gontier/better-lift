@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/client";
 import { URL_AUTH } from "./config";
 
 /**
- * Le client de Better Auth, sans React (D306). `credentials: "include"` : en développement, le
+ * Le client de Better Auth, sans React. `credentials: "include"` : en développement, le
  * web (3000) et l'API (3001) sont deux origines.
  */
 export const authClient = createAuthClient({
@@ -13,7 +13,7 @@ export const authClient = createAuthClient({
 export type Session = typeof authClient.$Infer.Session | null;
 
 /**
- * L'objet passé au contexte du routeur (D301). Il est MUTÉ puis le routeur invalidé, ce qui
+ * L'objet passé au contexte du routeur. Il est MUTÉ puis le routeur invalidé, ce qui
  * fait relire `beforeLoad` sans recréer le routeur.
  */
 export const auth: { session: Session } = { session: null };

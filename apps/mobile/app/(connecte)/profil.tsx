@@ -25,8 +25,8 @@ import { useVibrations } from "@/lib/vibrations";
 const THEMES: Record<ChoixTheme, string> = { systeme: "Système", sombre: "Sombre", clair: "Clair" };
 
 /**
- * Le Profil, au minimum (D318) : ce qui sert en salle — thème, repos par défaut
- * (sur le compte, D129), vibrations — et la déconnexion. Le bilan, l'objectif et
+ * Le Profil, au minimum : ce qui sert en salle — thème, repos par défaut
+ * (sur le compte), vibrations — et la déconnexion. Le bilan, l'objectif et
  * l'export vivent sur le web. Une séance pas encore envoyée passe avant tout.
  */
 export default function Profil() {
@@ -67,7 +67,7 @@ export default function Profil() {
     // Les clés de cache ne portent pas l'utilisateur : sans ce vidage, le
     // compte suivant verrait un instant les données du précédent.
     client.clear();
-    // Le cache gardé sur le disque (D96) part aussi : le compte suivant ne doit
+    // Le cache gardé sur le disque part aussi : le compte suivant ne doit
     // jamais voir les routines du précédent, même hors ligne.
     await persister.removeClient();
     router.replace("/connexion");
@@ -91,7 +91,7 @@ export default function Profil() {
     <Ecran className="flex-1 bg-background" edges={["top"]}>
       <TitreOnglet titre="Profil" />
       <ScrollView contentContainerClassName="gap-4 px-4 pb-8">
-        {/* Rien en attente : la section n'existe pas (D175). */}
+        {/* Rien en attente : la section n'existe pas. */}
         <FileEnvoi />
 
         <View className="overflow-hidden rounded-lg border border-border">

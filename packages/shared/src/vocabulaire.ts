@@ -1,7 +1,7 @@
 /**
  * Les groupes musculaires, et eux seuls.
  *
- * D41 : `bodyPart` reste une enum anglaise en base — c'est une clé de données,
+ * `bodyPart` reste une enum anglaise en base — c'est une clé de données,
  * elle sert aux filtres, aux index et aux URL, et elle ne doit pas bouger parce
  * qu'un libellé bouge. Seul l'affichage est français.
  *

@@ -1,7 +1,7 @@
 import { kgToLb, lbToKg, type UnitSystem } from "./units.js";
 
 /**
- * La charge, à l'affichage et à la saisie (D52).
+ * La charge, à l'affichage et à la saisie.
  *
  * Elle est STOCKÉE en kilos, toujours. Tout ce qui l'affiche ou la lit passe par
  * ces deux fonctions avec le système d'unités du profil : un écran qui écrirait

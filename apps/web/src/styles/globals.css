@@ -6,9 +6,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Direction A, « Instrument sobre » (D349) : mêmes valeurs que le mobile, contrastes
-   vérifiés par scripts/contrastes.mjs (D351). L'action est un aplat de primary, le record un contour
-   de record (même bleu, D28) ; le danger garde destructive (D36). */
+/* Direction A, « Instrument sobre » : mêmes valeurs que le mobile, contrastes
+   vérifiés par scripts/contrastes.mjs. L'action est un aplat de primary, le record un contour
+   de record (même bleu) ; le danger garde destructive. */
 :root {
   --radius: 0.625rem;
   --background: #f4f4f2;
@@ -22,7 +22,7 @@
   --secondary: #ecece9;
   --secondary-foreground: #0b0b0c;
   --muted: #ecece9;
-  /* ≥ 4,5:1 sur tout fond clair, muted compris (D251). */
+  /* ≥ 4,5:1 sur tout fond clair, muted compris. */
   --muted-foreground: #636366;
   /* La silhouette des muscles : un corps qui se détache de la carte. */
   --body-map: #d9d9d6;

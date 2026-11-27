@@ -63,7 +63,7 @@ export function LoginForm() {
             />
           </Field>
           <Field>
-            {/* Pas de « Mot de passe oublié ? » : l'API n'envoie aucun e-mail (D294). */}
+            {/* Pas de « Mot de passe oublié ? » : l'API n'envoie aucun e-mail. */}
             <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
             <PasswordInput
               id="password"

@@ -65,7 +65,7 @@ const routine: RoutineDetail = {
 };
 
 describe("démarrer", () => {
-  it("recopie la routine, cibles comprises, séries non faites (D59)", () => {
+  it("recopie la routine, cibles comprises, séries non faites", () => {
     const s = demarrerDepuisRoutine(routine, "s1", T0);
     expect(s).toMatchObject({
       id: "s1",
@@ -109,7 +109,7 @@ describe("valider une série", () => {
     expect(validerSerie(s, 1, 0, plus(30), null).repos).toBeNull();
   });
 
-  it("prend le repos par défaut du compte quand l'exercice n'en a pas (D128)", () => {
+  it("prend le repos par défaut du compte quand l'exercice n'en a pas", () => {
     expect(validerSerie(s, 1, 0, plus(30), 90).repos).toEqual({
       fin: plus(120).toISOString(),
       signale: false,
@@ -148,7 +148,7 @@ describe("le temps, toujours depuis une heure stockée", () => {
     expect(reposRestant(arreterRepos(s), plus(20))).toBeNull();
   });
 
-  it("la barre du repos part pleine et se vide (D335)", () => {
+  it("la barre du repos part pleine et se vide", () => {
     const s = validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 0, T0);
     expect(s.repos?.duree).toBe(120);
     expect(partReposRestante(s, T0)).toBe(1);
@@ -259,7 +259,7 @@ describe("versEnvoi et seanceSaisie", () => {
     expect(seanceSaisie.parse(e)).toEqual(e);
   });
 
-  // D57 : perdre un entraînement réel envoyé par la file est pire qu'accepter
+  // Perdre un entraînement réel envoyé par la file est pire qu'accepter
   // un champ ignoré. Une version plus récente du mobile peut en ajouter.
   it("tolère les champs inconnus, à tous les niveaux", () => {
     const e = envoi() as Record<string, unknown> & ReturnType<typeof envoi>;
@@ -295,7 +295,7 @@ describe("versEnvoi et seanceSaisie", () => {
     expect(() => seanceSaisie.parse(serie({ type: "SUPER" }))).toThrow();
   });
 
-  it("accepte une note de séance (D130), rognée, ou son absence", () => {
+  it("accepte une note de séance, rognée, ou son absence", () => {
     expect(seanceSaisie.parse({ ...envoi(), note: "  Bonne séance.  " }).note).toBe(
       "Bonne séance.",
     );
@@ -303,7 +303,7 @@ describe("versEnvoi et seanceSaisie", () => {
     expect(seanceSaisie.parse(envoi())).not.toHaveProperty("note");
   });
 
-  it("envoie la note de séance rognée, et pas une note vide (D130)", () => {
+  it("envoie la note de séance rognée, et pas une note vide", () => {
     const base = validerSerie(demarrerDepuisRoutine(routine, "s1", T0), 0, 1, T0);
     expect(versEnvoi({ ...base, note: "  Bonne séance. " }, fin).note).toBe("Bonne séance.");
     expect(versEnvoi({ ...base, note: "   " }, fin)).not.toHaveProperty("note");
@@ -317,7 +317,7 @@ describe("versEnvoi et seanceSaisie", () => {
 describe("avecPrecedents", () => {
   const s = demarrerDepuisRoutine(routine, "s1", T0);
 
-  // D67 : copiées DANS le brouillon, elles survivent hors ligne et à un arrêt forcé.
+  // Copiées DANS le brouillon, elles survivent hors ligne et à un arrêt forcé.
   it("attache à chaque exercice les séries de la dernière fois", () => {
     const avec = avecPrecedents(s, {
       "barbell-bench-press": [{ reps: 6, chargeKg: 80, faite: true }],
@@ -328,7 +328,7 @@ describe("avecPrecedents", () => {
     expect(avec.exercices[1]?.precedent).toBeUndefined();
   });
 
-  it("ne touche ni aux cibles ni à la séance d'origine (D59)", () => {
+  it("ne touche ni aux cibles ni à la séance d'origine", () => {
     const avec = avecPrecedents(s, {
       "barbell-bench-press": [{ reps: 6, chargeKg: 80, faite: true }],
     });
@@ -385,7 +385,7 @@ describe("ajusterRepos", () => {
   });
 });
 
-describe("la carte d'exercice (D89–D92)", () => {
+describe("la carte d'exercice", () => {
   const depart = () => demarrerDepuisRoutine(routine, "s", T0);
 
   it("écrit une note, et une note vide redevient null", () => {
@@ -437,7 +437,7 @@ describe("la carte d'exercice (D89–D92)", () => {
     expect(seanceSaisie.parse(e)).toEqual(e);
   });
 
-  it("refuse une note trop longue, accepte un envoi sans note (vieux mobile, D57)", () => {
+  it("refuse une note trop longue, accepte un envoi sans note (vieux mobile)", () => {
     const e = versEnvoi(depart(), plus(60));
     const longue = { ...e, exercices: [{ ...e.exercices[0], note: "x".repeat(501) }] };
     expect(() => seanceSaisie.parse(longue)).toThrow();
@@ -446,7 +446,7 @@ describe("la carte d'exercice (D89–D92)", () => {
   });
 });
 
-describe("prochaineSerie (D116)", () => {
+describe("prochaineSerie", () => {
   // Le repère de la ligne à faire : la série qui suit la dernière faite, dans
   // l'ordre des exercices puis des séries.
   it("désigne la première série non faite, dans l'ordre", () => {
@@ -478,7 +478,7 @@ describe("prochaineSerie (D116)", () => {
   });
 });
 
-// --- Supersets (D145–D150) ---------------------------------------------------
+// --- Supersets ---------------------------------------------------
 
 const exoEnCours = (
   slug: string,
@@ -503,7 +503,7 @@ const seanceAvec = (...exercices: ExerciceEnCours[]): SeanceEnCours => ({
 });
 const groupesDe = (s: SeanceEnCours) => s.exercices.map((e) => e.supersetGroupe);
 
-describe("supersets en séance (D145, D147, D148)", () => {
+describe("supersets en séance", () => {
   it("demarrerDepuisRoutine recopie les groupes, absents = null", () => {
     const r: RoutineDetail = {
       id: "r",
@@ -549,7 +549,7 @@ describe("supersets en séance (D145, D147, D148)", () => {
     expect(ajouterExercice(s, "c", "C").exercices[2]?.supersetGroupe).toBeNull();
   });
 
-  it("deplacerExercice suit D148", () => {
+  it("deplacerExercice : l'exercice rejoint le groupe où il tombe", () => {
     const s = seanceAvec(exoEnCours("a", 1), exoEnCours("b", 1), exoEnCours("c", null));
     expect(deplacerExercice(s, 2, 1).exercices.map((e) => [e.slug, e.supersetGroupe])).toEqual([
       ["a", 1],
@@ -581,7 +581,7 @@ describe("supersets en séance (D145, D147, D148)", () => {
   });
 });
 
-describe("repos d'un superset (D149)", () => {
+describe("repos d'un superset", () => {
   // a et b en superset, repos 60 sur a, 120 sur b (le dernier) ; c seul, 90.
   const s0 = () =>
     seanceAvec(exoEnCours("a", 1, 2, 60), exoEnCours("b", 1, 2, 120), exoEnCours("c", null, 1, 90));
@@ -615,7 +615,7 @@ describe("repos d'un superset (D149)", () => {
   });
 });
 
-describe("prochaine série dans un superset (D150)", () => {
+describe("prochaine série dans un superset", () => {
   const parcours = (depart: SeanceEnCours) => {
     let s = depart;
     const ordre: string[] = [];
@@ -640,7 +640,7 @@ describe("prochaine série dans un superset (D150)", () => {
   });
 });
 
-describe("valeur affichée d'une case (D339)", () => {
+describe("valeur affichée d'une case", () => {
   const serie = (chargeKg: number | null, reps: number | null, type: TypeSerie = "NORMALE") => ({
     type,
     chargeKg,
@@ -709,7 +709,7 @@ describe("valeur affichée d'une case (D339)", () => {
   });
 });
 
-describe("recopie de la charge tapée (D346)", () => {
+describe("recopie de la charge tapée", () => {
   const serie = (
     chargeKg: number | null,
     type: TypeSerie = "NORMALE",

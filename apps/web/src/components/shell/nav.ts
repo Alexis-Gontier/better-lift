@@ -10,7 +10,7 @@ import type { FileRouteTypes } from "@/routeTree.gen";
 
 type NavItem = { title: string; to: FileRouteTypes["to"]; icon: LucideIcon };
 
-/** La barre latérale, d'une seule liste sans intitulé de groupe (D290, D314). */
+/** La barre latérale, d'une seule liste sans intitulé de groupe. */
 export const NAV_ITEMS: NavItem[] = [
   { title: "Accueil", to: "/", icon: LayoutDashboard },
   { title: "Routines", to: "/routines", icon: ListChecks },

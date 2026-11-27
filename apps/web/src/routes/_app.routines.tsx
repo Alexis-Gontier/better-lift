@@ -6,19 +6,19 @@ import { RoutinesFooter } from "@/features/routines/routines-footer";
 
 export const Route = createFileRoute("/_app/routines")({
   staticData: { crumb: "Routines" },
-  // Sans attendre : la liste montre son squelette pendant ce temps (D300).
+  // Sans attendre : la liste montre son squelette pendant ce temps.
   loader: ({ context }) => void context.queryClient.prefetchQuery(routinesQuery()),
   component: RoutinesPage,
 });
 
-/** La liste reste montée ; la routine ouverte est la route enfant (D235). */
+/** La liste reste montée ; la routine ouverte est la route enfant. */
 function RoutinesPage() {
   return (
     <ListDetailPage
       title="Routines"
       footer={<RoutinesFooter />}
       storageId="routines"
-      // L'éditeur et sa colonne de droite défilent chacun de leur côté (D255).
+      // L'éditeur et sa colonne de droite défilent chacun de leur côté.
       detailScroll="columns"
       detail={<Outlet />}
     >

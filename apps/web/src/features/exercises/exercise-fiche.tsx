@@ -11,7 +11,7 @@ import { exerciceQuery, historiqueQuery } from "@/lib/exercices";
 import { ExerciseFigures, ExerciseLook, ExerciseMain } from "./exercise-detail";
 
 /**
- * La fiche d'un exercice, en lecture seule (D264, D294) : sa progression à gauche, ses records,
+ * La fiche d'un exercice, en lecture seule : sa progression à gauche, ses records,
  * son animation et ses muscles à droite. `?etat=vide` montre un exercice jamais fait.
  */
 export function ExerciseFiche({ slug }: { slug: string }) {

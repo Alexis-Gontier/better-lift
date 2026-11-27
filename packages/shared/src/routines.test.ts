@@ -161,7 +161,7 @@ describe("résumés d'une routine", () => {
   });
 });
 
-describe("routineSaisie et les supersets (D145)", () => {
+describe("routineSaisie et les supersets", () => {
   const exo = {
     slug: "a",
     reposSec: null,
@@ -183,7 +183,7 @@ describe("routineSaisie et les supersets (D145)", () => {
   });
 });
 
-describe("routineSaisie : note et dossier (D298)", () => {
+describe("routineSaisie : note et dossier", () => {
   const base = {
     nom: "Push",
     exercices: [{ slug: "a", reposSec: null, series: [serie] }],
@@ -211,7 +211,7 @@ describe("routineSaisie : note et dossier (D298)", () => {
   });
 });
 
-describe("dossierSaisi (D297)", () => {
+describe("dossierSaisi", () => {
   it("rogne le nom, et refuse le vide ou plus de 60 caractères", () => {
     expect(dossierSaisi.parse({ nom: "  PPL " }).nom).toBe("PPL");
     expect(dossierSaisi.safeParse({ nom: " " }).success).toBe(false);

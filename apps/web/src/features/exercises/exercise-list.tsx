@@ -41,7 +41,7 @@ type Tri = "nom" | "recent";
 type Ligne = ExerciceResume & Partial<Pick<ExerciceFait, "derniereFois" | "meilleur1Rm">>;
 
 /**
- * Le catalogue (D312) : par nom, il se lit page par page, recherche et filtres côté serveur, et
+ * Le catalogue : par nom, il se lit page par page, recherche et filtres côté serveur, et
  * chaque ligne reçoit ses chiffres des exercices faits ; « Faits récemment » ne liste que ceux-là,
  * filtrés sur place.
  */
@@ -155,7 +155,7 @@ export function ExerciseList() {
           </EmptyHeader>
         </Empty>
       ) : (
-        // Une carte par exercice, séparées (D258, comme les routines).
+        // Une carte par exercice, séparées (comme les routines).
         <div className="flex flex-col gap-2">
           {lignes.map((e) => (
             <ExerciseRow key={e.slug} ligne={e} />

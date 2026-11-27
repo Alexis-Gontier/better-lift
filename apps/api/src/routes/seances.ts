@@ -9,7 +9,7 @@ import type { DepotLectureSeances, DepotSeances } from "../services/seances.js";
 const pagination = z.object({
   page: z.coerce.number().int().min(1).default(1),
   taille: z.coerce.number().int().min(1).max(100).default(30),
-  // Les séances d'une routine (D311) : ses stats se calculent dessus.
+  // Les séances d'une routine : ses stats se calculent dessus.
   routine: z.string().min(1).max(40).optional(),
 });
 
@@ -29,11 +29,11 @@ const listeSlugs = z.object({
 });
 
 /**
- * Les séances, derrière une session (D53).
+ * Les séances, derrière une session.
  *
- * `POST /` est IDEMPOTENT (D56) : rejouer le même identifiant rend 200 sans rien
+ * `POST /` est IDEMPOTENT : rejouer le même identifiant rend 200 sans rien
  * réécrire — la file du mobile compte là-dessus. La lecture (lot 7) dérive tout
- * — volume, séries, records — à chaque appel (D58, D65).
+ * — volume, séries, records — à chaque appel.
  */
 export function routesSeances(
   depot: DepotSeances,

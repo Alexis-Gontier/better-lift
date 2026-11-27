@@ -104,7 +104,7 @@ export function SubmitButton({
 /**
  * L'envoi d'un formulaire d'auth. `envoyer` rend un message d'erreur, ou `null` en cas de
  * succès ; `apres` suit un succès (relire la session, naviguer). `?etat=chargement` fige le
- * formulaire en attente, `?etat=erreur` montre l'échec propre à la page (D303).
+ * formulaire en attente, `?etat=erreur` montre l'échec propre à la page.
  */
 export function useEnvoi(
   envoyer: () => Promise<string | null>,

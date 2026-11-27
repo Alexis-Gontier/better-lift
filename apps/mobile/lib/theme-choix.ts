@@ -4,9 +4,9 @@ import { Appearance } from "react-native";
 import { Uniwind } from "uniwind";
 
 /**
- * Le thème choisi (D128, D129) : celui du système par défaut, ou forcé — en
+ * Le thème choisi : celui du système par défaut, ou forcé — en
  * salle on veut souvent le sombre. Gardé sur le téléphone : c'est un réglage
- * d'appareil. Uniwind sert les classes (D316) ; `Appearance` fait suivre
+ * d'appareil. Uniwind sert les classes ; `Appearance` fait suivre
  * `useColorScheme`, donc l'ancien `useCouleurs`, au même choix.
  */
 export type ChoixTheme = "systeme" | "sombre" | "clair";

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
  * l'écran lui-même). Une seule implémentation : un écran qui les dessinerait à
  * sa façon finirait par en oublier un.
  *
- * Le chargement d'une page (D176, D327) : un squelette à la forme de l'écran
+ * Le chargement d'une page : un squelette à la forme de l'écran
  * attendu — les cartes de Routines, la page d'une routine, l'historique, une
  * séance passée, les lignes du catalogue —, pas un indicateur au milieu du contenu. Il pulse doucement,
  * immobile si le téléphone demande moins d'animations.
@@ -104,7 +104,7 @@ function SqueletteRoutine() {
   );
 }
 
-/** L'historique (D345) : la tête d'un mois, puis des cartes — nom, date, volume. */
+/** L'historique : la tête d'un mois, puis des cartes — nom, date, volume. */
 function SqueletteHistorique() {
   return (
     <View className="gap-2 px-4">

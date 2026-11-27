@@ -18,7 +18,7 @@ const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
  * Une séance terminée qui attend dans la file d'envoi, à la forme d'une séance du serveur :
- * la carte la montre en tête de l'historique avant qu'elle n'y arrive (D345).
+ * la carte la montre en tête de l'historique avant qu'elle n'y arrive.
  */
 export function filEnAttente(e: ElementFile): SeanceFil {
   const { seriesFaites, volumeKg } = bilanSeance(e.seance);
@@ -33,14 +33,14 @@ export function filEnAttente(e: ElementFile): SeanceFil {
     // Les records se jugent contre l'historique du serveur : pas avant l'envoi.
     nbRecords: 0,
     nbExercices: e.seance.exercices.length,
-    // La carte ne montre pas les exercices (D345).
+    // La carte ne montre pas les exercices.
     apercu: [],
   };
 }
 
 /**
- * Une séance de l'historique (D345), comme la ligne du web (D263) et la carte d'une routine
- * (D320) : le nom et ses records (contour, D28), le jour et la durée, le volume à droite. Une
+ * Une séance de l'historique, comme la ligne du web et la carte d'une routine
+ * : le nom et ses records (contour), le jour et la durée, le volume à droite. Une
  * séance encore dans la file d'envoi ne s'ouvre pas : le serveur ne la connaît pas encore.
  */
 export function CarteSeance({

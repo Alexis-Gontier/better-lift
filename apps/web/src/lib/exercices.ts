@@ -4,7 +4,7 @@ import { api, lire } from "./api";
 /**
  * Les lectures d'un exercice que plusieurs pages partagent — la fiche, l'aperçu rapide des
  * routines et de l'historique, le fil d'Ariane, les exercices faits des pages Exercices et
- * Records (D306). `["exercices"]` est la racine que la
+ * Records. `["exercices"]` est la racine que la
  * suppression d'une séance invalide : les faits et les historiques en dépendent.
  */
 export const exercicesKeys = {
@@ -41,7 +41,7 @@ export const historiqueQuery = (slug: string) =>
     },
   });
 
-/** Les exercices que l'utilisateur a faits, la plus récente d'abord, avec leurs records (D312). */
+/** Les exercices que l'utilisateur a faits, la plus récente d'abord, avec leurs records. */
 export const faitsQuery = () =>
   queryOptions({
     queryKey: exercicesKeys.faits(),

@@ -136,7 +136,7 @@ describe("projections", () => {
   });
 });
 
-describe("supersets (D146)", () => {
+describe("supersets", () => {
   it("versEcriture normalise les groupes", () => {
     const s: RoutineSaisie = {
       ...saisie,
@@ -159,8 +159,8 @@ describe("supersets (D146)", () => {
   });
 });
 
-describe("note, dossier, dernière séance (D296, D310)", () => {
-  it("versEcriture garde l'absence : rien à écrire (D298)", () => {
+describe("note, dossier, dernière séance", () => {
+  it("versEcriture garde l'absence : rien à écrire", () => {
     const e = versEcriture(saisie, ids);
     expect("note" in e).toBe(false);
     expect("dossierId" in e).toBe(false);

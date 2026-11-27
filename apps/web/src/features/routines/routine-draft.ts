@@ -11,7 +11,7 @@ import {
 import { SYSTEME } from "@/lib/locale";
 
 /**
- * L'éditeur de routine du web travaille sur le `Brouillon` de `shared` (D85) : la copie de
+ * L'éditeur de routine du web travaille sur le `Brouillon` de `shared` : la copie de
  * travail commune au mobile, charges et répétitions en texte, supersets et validation compris.
  * Ce module ne garde que ce que l'éditeur du web montre à sa façon.
  */
@@ -22,7 +22,7 @@ export function isDirty(draft: Brouillon, saved: Brouillon): boolean {
   return empreinte(propre(draft)) !== empreinte(propre(saved));
 }
 
-/** Pourquoi la routine ne s'enregistre pas encore, ou `null` si elle le peut (D252). */
+/** Pourquoi la routine ne s'enregistre pas encore, ou `null` si elle le peut. */
 export function saveBlocker(draft: Brouillon): string | null {
   if (draft.nom.trim() === "") return "Donnez-lui un nom";
   if (draft.exercices.length === 0) return "Ajoutez au moins un exercice";
@@ -71,7 +71,7 @@ export function fromLastTime(
 }
 
 /**
- * Le résumé d'un exercice replié (D253) : le calcul vit dans `shared` (D321), le web y garde
+ * Le résumé d'un exercice replié : le calcul vit dans `shared`, le web y garde
  * « W » pour l'échauffement. Une cible illisible compte comme absente.
  */
 export function setsSummary(series: readonly SerieBrouillon[]): string {
@@ -89,7 +89,7 @@ export function setsSummary(series: readonly SerieBrouillon[]): string {
   );
 }
 
-/** Ce que le brouillon change à la version enregistrée (D261) : de quoi marquer et compter. */
+/** Ce que le brouillon change à la version enregistrée : de quoi marquer et compter. */
 export type ChangeSummary = {
   /** Exercices déjà là, dont un réglage a bougé (par clé). */
   changed: ReadonlySet<string>;

@@ -1,5 +1,5 @@
 /**
- * La carte des muscles (D83) : des noms de muscles du catalogue, en français,
+ * La carte des muscles : des noms de muscles du catalogue, en français,
  * aux zones du dessin du corps.
  *
  * Les identifiants de zone sont ceux de `react-native-body-highlighter` ; ils

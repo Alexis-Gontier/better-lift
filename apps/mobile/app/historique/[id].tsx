@@ -36,9 +36,9 @@ const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const charge = (kg: number | null) => (kg === null ? "—" : formaterCharge(kg, SYSTEME_UNITES));
 
 /**
- * Une séance passée (D345), en lecture, comme le détail du web (D263, D265) : ses chiffres,
+ * Une séance passée, en lecture, comme le détail du web : ses chiffres,
  * les muscles travaillés, chaque exercice et ses séries face à la dernière fois, la note. Le
- * menu ⋮ mène à la routine d'origine ou supprime la séance ; elle ne se corrige pas (D293).
+ * menu ⋮ mène à la routine d'origine ou supprime la séance ; elle ne se corrige pas.
  */
 export default function PageSeancePassee() {
   const router = useRouter();
@@ -153,7 +153,7 @@ export default function PageSeancePassee() {
           <Chiffre libelle="Records" valeur={String(seance.nbRecords)} />
         </View>
 
-        {/* Les muscles des exercices faits, comme l'en-tête de la séance (D344). */}
+        {/* Les muscles des exercices faits, comme l'en-tête de la séance. */}
         <CarteMuscles exercices={exercices.filter((e) => e.series.some((s) => s.faite))} />
 
         {exercices.length === 0 ? (
@@ -200,16 +200,16 @@ function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   );
 }
 
-// Les colonnes du web (D246) : étiquette, Précédent, Charge, Répétitions, puis le record ou
+// Les colonnes du web : étiquette, Précédent, Charge, Répétitions, puis le record ou
 // « Non faite » dans une largeur fixe — chaque ligne est sa propre rangée, une colonne
 // élargie par un trophée décalerait les autres.
 const COL_SERIE = "w-10";
 const COL_FIN = "w-16 items-end";
 
 /**
- * Un exercice fait, en lecture, comme le web (D263, D294) : sa vignette, son nom, son
+ * Un exercice fait, en lecture, comme le web : sa vignette, son nom, son
  * superset et sa note, ses records ; puis ses séries face à sa dernière occurrence
- * antérieure, position par position (D123). Une série non faite reste, en retrait.
+ * antérieure, position par position. Une série non faite reste, en retrait.
  */
 function ExerciceFait({
   exercice,

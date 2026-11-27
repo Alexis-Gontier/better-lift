@@ -26,7 +26,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
-// Uniwind (D316) : les classes Tailwind compilées à la construction. Doit rester
+// Uniwind : les classes Tailwind compilées à la construction. Doit rester
 // l'enveloppe la plus externe.
 module.exports = withUniwindConfig(config, {
   cssEntryFile: "./global.css",

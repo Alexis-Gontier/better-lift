@@ -21,7 +21,7 @@ type Reponse = { ok: boolean; status: number; json(): Promise<unknown> };
 
 /**
  * Lance l'appel et rend la réponse si elle est `ok`, rétrécie au type du succès ; lève une
- * `ErreurApi` sinon (D300). Générique pour garder le typage RPC : un `Response` nu ferait de
+ * `ErreurApi` sinon. Générique pour garder le typage RPC : un `Response` nu ferait de
  * `res.json()` un `any`.
  */
 export async function lire<R extends Reponse>(

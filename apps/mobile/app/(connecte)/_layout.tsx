@@ -11,10 +11,10 @@ import { useSeance } from "@/lib/seance";
 let repriseFaite = false;
 
 /**
- * L'application rouverte pendant une séance revient sur la séance (D336), pas
+ * L'application rouverte pendant une séance revient sur la séance, pas
  * sur l'accueil : en salle, c'est l'écran qu'on cherche. Le retour mène aux onglets.
  *
- * Sans flash de l'accueil (D341) : la séance s'ouvre sans animation, et un fond
+ * Sans flash de l'accueil : la séance s'ouvre sans animation, et un fond
  * uni couvre les onglets jusqu'à ce qu'on y revienne — le disque se lit après
  * leur premier rendu, et ils se voyaient le temps que la séance se dessine.
  */
@@ -56,8 +56,8 @@ function RepriseAuDemarrage() {
 }
 
 /**
- * La garde de session (D316) : les onglets exigent un compte, et un seul
- * endroit le vérifie. Trois onglets, Routines · Historique · Profil (D319) ; la
+ * La garde de session : les onglets exigent un compte, et un seul
+ * endroit le vérifie. Trois onglets, Routines · Historique · Profil ; la
  * séance et ses modales vivent sur la pile racine, par-dessus la barre.
  */
 export default function Connecte() {
@@ -73,7 +73,7 @@ export default function Connecte() {
   if (isPending || (error && cookieGarde === null)) {
     return <View className="flex-1 bg-background" />;
   }
-  // D100 : une erreur de lecture (hors ligne) ne renvoie pas à la connexion
+  // Une erreur de lecture (hors ligne) ne renvoie pas à la connexion
   // QUAND un cookie de session est gardé sur le téléphone : la séance en cours
   // doit rester joignable en salle. Sans cookie, il n'y a jamais eu de compte
   // ici — une installation neuve ouverte hors ligne va à la connexion.
@@ -81,7 +81,7 @@ export default function Connecte() {
 
   return (
     <>
-      {/* Hors ligne (D96) : remplir le cache tant qu'il y a du réseau. */}
+      {/* Hors ligne : remplir le cache tant qu'il y a du réseau. */}
       <PreparerHorsLigne />
       <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <BarreOnglets {...props} />}>
         {/* L'ordre des onglets est celui de la barre. */}

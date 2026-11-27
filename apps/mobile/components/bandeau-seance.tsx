@@ -10,7 +10,7 @@ import { useSeance } from "@/lib/seance";
 import { formaterDuree, useMaintenant } from "@/lib/temps";
 
 /**
- * La séance en cours, en bas de l'accueil (D107, D316, D336, D337). Le
+ * La séance en cours, en bas de l'accueil. Le
  * bandeau, chevron vers le haut, reprend la séance ; la corbeille l'abandonne,
  * après confirmation. Il dit l'exercice en cours et le repos qui tourne s'il y
  * en a un, le chrono sinon — les deux se déduisent d'heures stockées, jamais
@@ -57,7 +57,7 @@ function Contenu() {
         accessibilityLabel={`Reprendre la séance ${seance.nom}, ${detail}`}
         className="min-h-14 flex-1 flex-row items-center gap-3 rounded-l-lg py-2 pl-3 active:bg-accent"
       >
-        {/* Le pendant du chevron qui replie la séance (D337) : on déplie ce qu'on a replié. */}
+        {/* Le pendant du chevron qui replie la séance : on déplie ce qu'on a replié. */}
         <Icon as={ChevronUp} className="size-5 text-muted-foreground" />
         <View className="flex-1 gap-0.5">
           <Text className="font-semibold" numberOfLines={1}>

@@ -5,7 +5,7 @@ import type { SeanceEnCours } from "./seance.js";
  *
  * Elle garde la séance COMPLÈTE, noms d'exercices compris, et non le seul corps
  * à poster : une séance refusée doit pouvoir revenir à l'écran telle qu'elle
- * était (D10), et le corps envoyé ne porte pas les noms.
+ * était, et le corps envoyé ne porte pas les noms.
  *
  * La règle qui prime : une séance ne quitte la file que lorsque le serveur l'a
  * ENREGISTRÉE. Tout échec qui n'est pas de son fait se retente.

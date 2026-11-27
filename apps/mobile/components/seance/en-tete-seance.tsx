@@ -24,7 +24,7 @@ import { PLAFOND_TEXTE_DENSE } from "./texte-dense";
 const ECHELLE_MINI = 0.12;
 
 /**
- * L'en-tête de la séance (D344), comme Hevy : replier, le nom, Terminer ; dessous
+ * L'en-tête de la séance, comme Hevy : replier, le nom, Terminer ; dessous
  * la durée, le volume, les séries, et les muscles déjà travaillés en petit, qui
  * s'ouvrent en grand d'un appui. Les muscles viennent de la fiche de chaque
  * exercice (gardée hors ligne) : la séance n'en porte pas.
@@ -68,7 +68,7 @@ export function EnTeteSeance({
         <Text className="flex-1 font-semibold text-xl" numberOfLines={1} accessibilityRole="header">
           {seance.nom}
         </Text>
-        {/* Secondaire (D105) : terminer n'est pas l'action courante d'une séance. */}
+        {/* Secondaire : terminer n'est pas l'action courante d'une séance. */}
         <Button variant="outline" onPress={onTerminer}>
           <Text>Terminer</Text>
         </Button>

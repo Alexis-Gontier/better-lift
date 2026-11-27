@@ -3,7 +3,7 @@ import { BodyMap, TEINTE_CHARGE } from "@/components/body-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
- * Les muscles de la période en carte de chaleur (D332) : plus la teinte est forte, plus la zone a
+ * Les muscles de la période en carte de chaleur : plus la teinte est forte, plus la zone a
  * reçu de séries. Le survol d'une zone en donne le compte.
  */
 export function MusclesCard({ charge }: { charge: readonly ChargeZone[] }) {

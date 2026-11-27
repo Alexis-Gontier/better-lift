@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Le squelette de l'Accueil, à la forme de ses blocs (D176). */
+/** Le squelette de l'Accueil, à la forme de ses blocs. */
 export function HomeSkeleton() {
   return (
     <div className="flex flex-col gap-4" aria-busy>

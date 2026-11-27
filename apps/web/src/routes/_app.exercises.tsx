@@ -6,7 +6,7 @@ import { faitsQuery } from "@/lib/exercices";
 
 export const Route = createFileRoute("/_app/exercises")({
   staticData: { crumb: "Exercices" },
-  // Sans attendre : la liste montre son squelette pendant ce temps (D300).
+  // Sans attendre : la liste montre son squelette pendant ce temps.
   loader: ({ context }) => {
     void context.queryClient.prefetchInfiniteQuery(catalogueQuery({ q: "" }));
     void context.queryClient.prefetchQuery(faitsQuery());
@@ -15,15 +15,15 @@ export const Route = createFileRoute("/_app/exercises")({
 });
 
 /**
- * La liste reste montée ; la fiche ouverte est la route enfant (D235). Le catalogue seul : pas
- * d'exercice personnel, donc ni onglets ni création (D286).
+ * La liste reste montée ; la fiche ouverte est la route enfant. Le catalogue seul : pas
+ * d'exercice personnel, donc ni onglets ni création.
  */
 function ExercisesPage() {
   return (
     <ListDetailPage
       title="Exercices"
       storageId="exercices"
-      // La fiche et sa colonne de droite défilent chacune de leur côté (D264).
+      // La fiche et sa colonne de droite défilent chacune de leur côté.
       detailScroll="columns"
       detail={<Outlet />}
     >

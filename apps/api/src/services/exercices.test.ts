@@ -41,7 +41,7 @@ describe("filtreCatalogue", () => {
     expect(trouve("Développé Couché")).toBe(true);
   });
 
-  it("trouve le même exercice par son nom anglais (D44)", () => {
+  it("trouve le même exercice par son nom anglais", () => {
     expect(trouve("bench press")).toBe(true);
     expect(trouve("Barbell Bench")).toBe(true);
   });

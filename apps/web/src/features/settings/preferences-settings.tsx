@@ -53,7 +53,7 @@ function AppearanceSection() {
 
 /**
  * Préférences : l'apparence, réglage d'appareil. Fuseau, unités et formats n'ont pas de champ
- * en base : le web prend le fuseau du navigateur et les kilos (D294, D313).
+ * en base : le web prend le fuseau du navigateur et les kilos.
  */
 export function PreferencesSettings() {
   return (

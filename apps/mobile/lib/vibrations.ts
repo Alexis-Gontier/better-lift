@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useSyncExternalStore } from "react";
 
 /**
- * Les vibrations (D113) : on vibre pour CONFIRMER une action faite sans
+ * Les vibrations : on vibre pour CONFIRMER une action faite sans
  * regarder l'écran, jamais pour décorer ni pour la navigation. Un seul endroit
  * les déclenche, et le réglage « Vibrations » du Profil les coupe toutes.
  *

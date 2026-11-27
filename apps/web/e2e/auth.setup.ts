@@ -1,6 +1,6 @@
 import { expect, test as setup } from "@playwright/test";
 
-/** Se connecte une fois et garde la session pour tous les tests (D304). */
+/** Se connecte une fois et garde la session pour tous les tests. */
 setup("connexion du compte E2E", async ({ page }) => {
   const email = process.env.E2E_EMAIL;
   const password = process.env.E2E_PASSWORD;

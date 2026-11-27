@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { authClient, chargerSession } from "@/lib/auth";
 
-/** La déconnexion, partagée par le menu du compte et la page Compte (D301). */
+/** La déconnexion, partagée par le menu du compte et la page Compte. */
 export function useDeconnexion() {
   const navigate = useNavigate();
   const router = useRouter();

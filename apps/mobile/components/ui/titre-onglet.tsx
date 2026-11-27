@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 
-/** L'en-tête d'un onglet (D319). */
+/** L'en-tête d'un onglet. */
 export function TitreOnglet({ titre }: { titre: string }) {
   return (
     <View className="h-14 justify-center px-4">

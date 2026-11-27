@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { versCsv } from "./export.js";
 
-describe("versCsv (D128)", () => {
+describe("versCsv", () => {
   it("écrit l'en-tête puis une ligne par série, valeurs absentes vides", () => {
     const csv = versCsv([
       {

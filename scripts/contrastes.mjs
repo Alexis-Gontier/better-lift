@@ -1,5 +1,5 @@
-// Garde-fou des couleurs (D349, D351) : lit les tokens dans les deux CSS, seuls sources des
-// valeurs, et échoue si une paire texte / fond passe sous 4,5:1 (D251) ou si le web et le
+// Garde-fou des couleurs : lit les tokens dans les deux CSS, seuls sources des
+// valeurs, et échoue si une paire texte / fond passe sous 4,5:1 ou si le web et le
 // mobile ne portent plus les mêmes valeurs pour un même rôle. Lancé par `pnpm lint`.
 
 import { readFileSync } from "node:fs";

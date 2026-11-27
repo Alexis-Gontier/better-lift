@@ -5,7 +5,7 @@ import { exigerSession, type LireSession } from "../middlewares/session.js";
 import type { DepotPreferences } from "../services/preferences.js";
 
 /**
- * Les préférences du compte (D129), derrière une session. L'utilisateur vient
+ * Les préférences du compte, derrière une session. L'utilisateur vient
  * de la session, jamais de l'URL : chacun ne lit et n'écrit que les siennes.
  * `PUT` remplace le tout — le client envoie toujours les deux champs.
  */

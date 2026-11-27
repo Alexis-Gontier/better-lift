@@ -73,7 +73,7 @@ describe("noms-fr.json", () => {
 describe("vocabulaire.json", () => {
   /**
    * L'exhaustivité que le typage ne tient pas. Pour `bodyPart`, c'est
-   * `Record<Groupe, string>` qui refuse de compiler (D41) ; pour les trois
+   * `Record<Groupe, string>` qui refuse de compiler ; pour les trois
    * vocabulaires restants, c'est ce test — et il porte sur les valeurs
    * RÉELLEMENT présentes dans la source, ce qui est plus fort qu'une liste
    * recopiée à la main.

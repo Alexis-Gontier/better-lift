@@ -8,7 +8,7 @@ import {
 } from "../lib/requetes";
 
 /**
- * Remplit le cache persistant pendant qu'il y a du réseau (D96) : la liste et
+ * Remplit le cache persistant pendant qu'il y a du réseau : la liste et
  * le détail de chaque routine, leurs précédents, le catalogue complet. Monté
  * sous la garde de session, il ne s'exécute que connecté. Ne rend rien.
  */

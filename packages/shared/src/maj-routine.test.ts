@@ -80,7 +80,7 @@ describe("majRoutine", () => {
     expect(majRoutine(routine, s, "metric")).toBeNull();
   });
 
-  it("garde le nom, et n'envoie ni note ni dossier (D298)", () => {
+  it("garde le nom, et n'envoie ni note ni dossier", () => {
     const s = toutValider(modifierSerie(depart(), 1, 0, { reps: 15 }));
     const maj = majRoutine(routine, s, "metric");
     expect(maj?.saisie.nom).toBe("Push A");

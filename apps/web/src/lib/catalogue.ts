@@ -4,7 +4,7 @@ import { api, lire } from "./api";
 
 /**
  * Le catalogue d'exercices, lu page par page avec recherche et filtres côté serveur. Commun à
- * la page Exercices et au sélecteur de l'éditeur de routine : il vit hors des features (D306).
+ * la page Exercices et au sélecteur de l'éditeur de routine : il vit hors des features.
  */
 
 export type FiltresCatalogue = { q?: string; groupe?: Groupe; equipement?: string };

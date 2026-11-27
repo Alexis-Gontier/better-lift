@@ -17,7 +17,7 @@ import { useTirerPourRafraichir } from "@/lib/rafraichir";
 import { optionsRoutines, optionsSeances } from "@/lib/requetes";
 
 /**
- * L'onglet Routines (D316, D319, D320) : la séance vide, puis les routines
+ * L'onglet Routines : la séance vide, puis les routines
  * rangées par dossier, qui se lancent d'un appui. La séance en cours s'affiche
  * au-dessus de la barre d'onglets.
  */

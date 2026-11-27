@@ -55,7 +55,7 @@ describe("texteRecherche", () => {
     expect(colonne).toContain(normaliserRecherche("Développé Couché"));
   });
 
-  it("porte aussi le nom anglais d'origine (D44)", () => {
+  it("porte aussi le nom anglais d'origine", () => {
     expect(colonne).toContain(normaliserRecherche("Bench Press"));
     expect(colonne).toContain(normaliserRecherche("dumbbell"));
   });
@@ -110,7 +110,7 @@ describe("filtrerCatalogue", () => {
     ]);
   });
 
-  it("trouve en anglais (D44)", () => {
+  it("trouve en anglais", () => {
     expect(filtrerCatalogue(liste, "bench press").map((e) => e.slug)).toEqual([
       "barbell-bench-press",
     ]);

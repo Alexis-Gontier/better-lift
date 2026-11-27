@@ -18,7 +18,7 @@ const ONGLETS: Record<string, { libelle: string; icone: LucideIcon }> = {
 };
 
 /**
- * La barre d'onglets (D319) : la séance en cours au-dessus, puis les trois
+ * La barre d'onglets : la séance en cours au-dessus, puis les trois
  * onglets. L'onglet actif se marque par la forme — une pilule derrière l'icône,
  * le libellé en gras —, pas par la couleur (Material 3).
  */

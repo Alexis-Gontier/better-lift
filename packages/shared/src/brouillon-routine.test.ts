@@ -120,7 +120,7 @@ describe("nouvelExercice et empreinte", () => {
   });
 });
 
-describe("supersets dans le brouillon (D145)", () => {
+describe("supersets dans le brouillon", () => {
   const exo = (slug: string, g?: number | null): RoutineDetail["exercices"][number] => ({
     slug,
     nom: slug,
@@ -155,7 +155,7 @@ describe("supersets dans le brouillon (D145)", () => {
   });
 });
 
-describe("note et dossier (D298)", () => {
+describe("note et dossier", () => {
   it("font l'aller-retour, la note blanche devenant null", () => {
     const b = versBrouillon({ ...routine, note: "Lent en excentrique", dossierId: "d1" }, "metric");
     expect(b.note).toBe("Lent en excentrique");

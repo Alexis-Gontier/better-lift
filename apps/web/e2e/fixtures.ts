@@ -1,6 +1,6 @@
 import { type APIRequestContext, test as base } from "@playwright/test";
 
-/** Le préfixe de tout ce qu'un test crée : on le retrouve et on l'efface (D304). */
+/** Le préfixe de tout ce qu'un test crée : on le retrouve et on l'efface. */
 export const PREFIXE = "e2e-";
 
 /** Un client d'API sur la session du compte E2E, pour préparer et nettoyer. */

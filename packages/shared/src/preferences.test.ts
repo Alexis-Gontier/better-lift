@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PREFERENCES_DEFAUT, preferences } from "./preferences.js";
 
-describe("preferences (D129)", () => {
+describe("preferences", () => {
   it("accepte des préférences réglées, et celles d'un compte qui n'a rien réglé", () => {
     const p = { objectifHebdo: 3, reposDefautSec: 90 };
     expect(preferences.parse(p)).toEqual(p);

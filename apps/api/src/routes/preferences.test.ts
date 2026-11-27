@@ -35,7 +35,7 @@ function monter() {
   return { appel };
 }
 
-describe("/preferences (D129)", () => {
+describe("/preferences", () => {
   it("exige une session", async () => {
     const { appel } = monter();
     expect((await appel("GET", null)).status).toBe(401);

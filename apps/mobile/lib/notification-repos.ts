@@ -16,10 +16,10 @@ import { SYSTEME_UNITES } from "./unites";
 import { vibrationsActives } from "./vibrations";
 
 /**
- * La notification de repos (D338) : tenue au premier plan tant qu'un repos
+ * La notification de repos : tenue au premier plan tant qu'un repos
  * court, avec le chrono, une barre qui se vide, la série qui suit et trois
  * boutons (−15 s, +15 s, Passer) qui agissent sur la séance même app fermée.
- * À la fin, elle laisse place à la série suivante (D340), qui sonne — sauf app
+ * À la fin, elle laisse place à la série suivante, qui sonne — sauf app
  * au premier plan, où l'écran vibre déjà — et dont « Terminer la série » coche
  * la série et relance le repos : on enchaîne sans ouvrir l'app.
  *
@@ -42,7 +42,7 @@ const ID_REPOS = "repos";
 const ID_SUIVANTE = "fin-repos";
 const CANAL_REPOS = "repos-en-cours";
 // Deux canaux pour la fin : sous Android, la vibration d'un canal est figée à
-// sa création. Le réglage « Vibrations » du Profil (D113) choisit le canal.
+// sa création. Le réglage « Vibrations » du Profil choisit le canal.
 const CANAL_FIN = "repos";
 const CANAL_FIN_SANS_VIBRATION = "repos-sans-vibration";
 // Générée par le plugin de notify-kit (`app.json`) depuis le logo recadré.
@@ -105,7 +105,7 @@ async function afficher(k: Module, c: ContenuNotifRepos) {
       showChronometer: true,
       chronometerDirection: "down",
       timestamp: c.fin,
-      // La barre se vide, comme celle du bandeau (D335), en millisecondes : en
+      // La barre se vide, comme celle du bandeau, en millisecondes : en
       // secondes arrondies au-dessus, elle restait d'une case en retard sur le
       // chrono d'Android, pas vide à 0:00.
       ...(c.duree
@@ -132,7 +132,7 @@ async function retirer(k: Module) {
 }
 
 /**
- * La série qui attend (D340). Elle sonne quand un repos vient de finir, app
+ * La série qui attend. Elle sonne quand un repos vient de finir, app
  * hors du premier plan ; sinon elle se met à jour sans bruit. `onlyAlertOnce` :
  * la redessiner ne resonne pas.
  */
@@ -221,7 +221,7 @@ async function surEvenement(k: Module, { type, detail }: NotifyKit.Event) {
   if (type !== k.EventType.ACTION_PRESS) return;
   const action = ACTIONS[detail.pressAction?.id ?? ""];
   if (!action) return;
-  // Le repos par défaut du compte (D128), s'il est en mémoire : app tuée, le
+  // Le repos par défaut du compte, s'il est en mémoire : app tuée, le
   // cache n'est pas relu, et un exercice sans repos propre n'en lance pas.
   const defaut =
     queryClient.getQueryData<{ reposDefautSec: number | null }>(["preferences"])?.reposDefautSec ??
