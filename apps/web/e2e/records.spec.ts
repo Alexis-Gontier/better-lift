@@ -30,6 +30,8 @@ test.describe("les records", () => {
     });
 
     await page.goto("records");
+    // En tête, le dernier record battu en grand (D350).
+    await expect(page.getByRole("link", { name: /^Dernier record/ })).toBeVisible();
     // Charge du 8 ; 1RM du 1er (80 × 5 → 93 kg) ; meilleure série du 8 (75 × 6 = 450 kg).
     // La série non faite ne compte pas.
     const ligne = page.getByRole("row", { name: /Développé couché/ });
@@ -45,7 +47,10 @@ test.describe("les records", () => {
     await page.screenshot({ path: "test-results/captures/seance-records.png", fullPage: true });
 
     await page.goto("records");
-    await page.getByRole("link", { name: /Développé couché/ }).click();
+    await page
+      .getByRole("table")
+      .getByRole("link", { name: /Développé couché/ })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/exercises/${slug}`));
   });
 });
