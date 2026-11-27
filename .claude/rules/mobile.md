@@ -7,7 +7,7 @@ paths:
 
 Écrans (D316–D319) : trois onglets (Routines, Historique, Profil), la séance (avec choix et
 réorganisation des exercices), la fin, la connexion (seul écran à porter le logo, `Logo`, D326).
-Style wireframe en gris, la direction artistique viendra après l'épreuve. Décisions : `docs/decisions.md`.
+Direction A, « Instrument sobre » (D349) : valeurs dans `global.css`, maquettes dans `design/`. Décisions : `docs/decisions.md`.
 
 ## Lancer (Expo Go)
 
@@ -37,7 +37,7 @@ adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.
   `components/ui/` (ajoutés par `npx @react-native-reusables/cli@latest add <nom>
   --styling-library uniwind`), `cn` de `lib/utils.ts`, classes de tokens (`bg-background`,
   `text-muted-foreground`, `border-border`…). Les tokens vivent dans `global.css` (palette
-  `neutral`, `@variant light` / `@variant dark`) : **jamais de couleur en dur**. Police système.
+  `@variant light` / `@variant dark`, D349) : **jamais de couleur en dur**. Police système (Geist viendra par son lot).
 - **`className` ne marche que sur les composants de React Native.** Un composant tiers passe
   par `withUniwind` (`Ecran` = `SafeAreaView` de `components/ui/ecran.tsx`). Une couleur hors
   `style` (`placeholderTextColor`, `color` d'un `ActivityIndicator`…) passe par

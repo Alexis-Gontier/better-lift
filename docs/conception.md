@@ -113,9 +113,10 @@ accepté. Perdre un entraînement réel est pire qu'un champ ignoré.
 
 - **Une couleur pour l'action et le record, distinguées par la forme** : l'action est un aplat,
   le record un contour (texte coloré sur fond teinté, flèche montante). Le danger a sa couleur,
-  qui ne porte ni l'un ni l'autre. Sur le mobile, cette couleur est l'**orange** (D161).
-- **Le web est un wireframe shadcn en gris** (Inter, thème neutre) : son style sera décidé
-  après l'épreuve. La seule couleur porteuse de sens y est le type de série, comme dans Hevy.
+  qui ne porte ni l'un ni l'autre. Cette couleur est le **bleu** de la direction A (D349).
+- **Direction A, « Instrument sobre »** (D349) sur les deux surfaces : gris chaud, cartes
+  blanches, Geist sur le web. Valeurs dans `design/tokens/`, maquettes dans
+  `design/better-lift.fig`. Les types de série gardent leurs couleurs, comme dans Hevy.
 - **Un token par rôle, deux valeurs** (sombre / clair) ; contraste AA (4,5:1, 3:1 dès 24 px).
 - **Quatre états par écran** (vide, chargement, erreur, nominal), dessinés dès le départ. Sur le
   web, `?etat=` force chacun.

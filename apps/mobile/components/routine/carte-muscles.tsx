@@ -45,7 +45,7 @@ type Exercices = readonly { musclePrincipal: string; musclesSecondaires: readonl
  */
 export function Silhouettes({ zones, echelle }: { zones: ZoneTravaillee[]; echelle: number }) {
   const encre = useCSSVariable("--color-foreground") as string;
-  const gris = useCSSVariable("--color-ring") as string;
+  const gris = useCSSVariable("--color-muscle-secondaire") as string;
   const corps = useCSSVariable("--color-border") as string;
   // `intensity` indexe `colors` : 1 → secondaire, 2 → principal. Un `styles.fill` passerait
   // devant `intensity`, d'où les deux cas.

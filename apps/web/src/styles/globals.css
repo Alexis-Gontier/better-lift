@@ -1,81 +1,89 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:is(.dark *));
 
+/* Direction A, « Instrument sobre » (D349) : valeurs de design/tokens/better-lift/, contrastes
+   vérifiés par design/scripts/tokens.mjs. L'action est un aplat de primary, le record un contour
+   de record (même bleu, D28) ; le danger garde destructive (D36). */
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  /* Plus foncé que le défaut shadcn (0,556) : 4,3:1 sur --muted ; ici ≥ 4,5:1 sur tout fond gris clair (D251). */
-  --muted-foreground: oklch(0.52 0 0);
+  --background: #f4f4f2;
+  --foreground: #0b0b0c;
+  --card: #ffffff;
+  --card-foreground: #0b0b0c;
+  --popover: #ffffff;
+  --popover-foreground: #0b0b0c;
+  --primary: #2440f0;
+  --primary-foreground: #ffffff;
+  --secondary: #ecece9;
+  --secondary-foreground: #0b0b0c;
+  --muted: #ecece9;
+  /* ≥ 4,5:1 sur tout fond clair, muted compris (D251). */
+  --muted-foreground: #636366;
   /* La silhouette des muscles : un corps qui se détache de la carte. */
-  --body-map: oklch(0.88 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --body-map: #d9d9d6;
+  --accent: #ecece9;
+  --accent-foreground: #0b0b0c;
+  --destructive: #c8281e;
+  --border: #e2e2df;
+  --input: #e2e2df;
+  --ring: #2440f0;
+  --record: #2440f0;
+  --record-surface: #e8ecfe;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #ecece9;
+  --sidebar-foreground: #0b0b0c;
+  --sidebar-primary: #2440f0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #0b0b0c;
+  --sidebar-border: #e2e2df;
+  --sidebar-ring: #2440f0;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --body-map: oklch(0.38 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #0e0e10;
+  --foreground: #f2f2f0;
+  --card: #17171a;
+  --card-foreground: #f2f2f0;
+  --popover: #17171a;
+  --popover-foreground: #f2f2f0;
+  --primary: #7088ff;
+  --primary-foreground: #0b0b0c;
+  --secondary: #1f1f23;
+  --secondary-foreground: #f2f2f0;
+  --muted: #1f1f23;
+  --muted-foreground: #9a9aa0;
+  --body-map: #3a3a40;
+  --accent: #1f1f23;
+  --accent-foreground: #f2f2f0;
+  --destructive: #f2554a;
+  --border: #2a2a2f;
+  --input: #2a2a2f;
+  --ring: #7088ff;
+  --record: #7088ff;
+  --record-surface: #1c2147;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #131316;
+  --sidebar-foreground: #f2f2f0;
+  --sidebar-primary: #7088ff;
+  --sidebar-primary-foreground: #0b0b0c;
+  --sidebar-accent: #1f1f23;
+  --sidebar-accent-foreground: #f2f2f0;
+  --sidebar-border: #2a2a2f;
+  --sidebar-ring: #7088ff;
 }
 
 @theme inline {
@@ -101,6 +109,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-record: var(--record);
+  --color-record-surface: var(--record-surface);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -115,7 +125,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-heading: var(--font-sans);
-  --font-sans: "Inter Variable", sans-serif;
+  --font-sans: "Geist Variable", sans-serif;
+  --font-mono: "Geist Mono Variable", monospace;
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
