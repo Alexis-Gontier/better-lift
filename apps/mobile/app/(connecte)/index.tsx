@@ -13,6 +13,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { TitreOnglet } from "@/components/ui/titre-onglet";
 import { useDemarrer } from "@/lib/demarrer";
+import { useTirerPourRafraichir } from "@/lib/rafraichir";
 import { optionsRoutines, optionsSeances } from "@/lib/requetes";
 
 /**
@@ -48,6 +49,7 @@ function ListeRoutines({
   const seances = useInfiniteQuery(optionsSeances());
   // Les dossiers repliés, le temps que l'app reste ouverte : tout s'ouvre déplié.
   const [replies, setReplies] = useState<ReadonlySet<string>>(() => new Set());
+  const tirer = useTirerPourRafraichir(() => requete.refetch());
 
   if (requete.isPending && requete.fetchStatus === "paused") {
     return <Vide titre="Hors ligne" message="Les routines apparaîtront au retour du réseau." />;
@@ -97,8 +99,8 @@ function ListeRoutines({
       contentContainerClassName="gap-3 px-4 pb-4"
       data={groupes}
       keyExtractor={(g) => g.dossier?.id ?? "-"}
-      refreshing={requete.isRefetching}
-      onRefresh={() => requete.refetch()}
+      refreshing={tirer.refreshing}
+      onRefresh={tirer.onRefresh}
       renderItem={({ item }) => {
         if (sansDossiers) return cartes(item.routines);
         const cle = item.dossier?.id ?? "-";
