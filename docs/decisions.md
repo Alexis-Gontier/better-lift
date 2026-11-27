@@ -385,6 +385,11 @@ Les décisions D179 à D220 vivent sur des branches non fusionnées (`feat/mobil
   Répétitions · 🏆 (séries non faites en retrait) ; la note. Le menu ⋮ : « Voir la routine »,
   « Supprimer » (danger, confirmé, refusé hors ligne). En lecture seule (D293) : ni correction,
   ni calendrier, ni recherche ni filtre par routine.
+- **D346** — Complète D339, comme Hevy et Strong : **une charge tapée descend sur les séries
+  suivantes** du même exercice et du même type, non faites, à l'encre (saisies), devant la
+  dernière fois et la cible. Sont épargnées les séries faites et celles dont la charge a été
+  tapée — sauf si elle était celle d'avant, recopiée d'ici : une nouvelle charge les suit.
+  Une case vidée ne se recopie pas, ni les reps. Dans `modifierSerie` (`shared/seance.ts`).
 - **D347** — La fin de séance propose de **mettre à jour la routine** d'origine, comme Hevy
   (complète D342) : un interrupteur « Mettre à jour « Push A » », éteint par défaut, et
   « N changements » qui se déplie (« + Dips », « Curl : 3 → 4 séries, 60 kg → 62,5 kg »).

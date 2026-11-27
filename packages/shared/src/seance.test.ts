@@ -25,6 +25,7 @@ import {
   retirerExercice,
   retirerSerie,
   type SeanceEnCours,
+  type SerieEnCours,
   seanceSaisie,
   secondesEcoulees,
   valeurAffichee,
@@ -705,5 +706,62 @@ describe("valeur affichée d'une case (D339)", () => {
       valeur: 85,
       saisie: true,
     });
+  });
+});
+
+describe("recopie de la charge tapée (D346)", () => {
+  const serie = (
+    chargeKg: number | null,
+    type: TypeSerie = "NORMALE",
+    reste: Partial<SerieEnCours> = {},
+  ): SerieEnCours => ({ type, chargeKg, reps: 8, faite: false, ...reste });
+  const seance = (series: SerieEnCours[]): SeanceEnCours => ({
+    ...demarrerVide("s1", T0),
+    exercices: [
+      {
+        slug: "squat",
+        nom: "Squat",
+        reposSec: null,
+        series,
+        precedent: series.map(() => ({ chargeKg: 70, reps: 8, faite: true })),
+      },
+    ],
+  });
+  const charges = (s: SeanceEnCours) =>
+    (s.exercices[0] as ExerciceEnCours).series.map(
+      (_, i) => valeurAffichee(s.exercices[0] as ExerciceEnCours, i, "chargeKg").valeur,
+    );
+
+  it("recopie la charge sur les séries suivantes de même type, à l'encre", () => {
+    const s = modifierSerie(seance([serie(null), serie(null), serie(null)]), 0, 0, {
+      chargeKg: 100,
+    });
+    expect(charges(s)).toEqual([100, 100, 100]);
+    expect(valeurAffichee(s.exercices[0] as ExerciceEnCours, 2, "chargeKg").saisie).toBe(true);
+  });
+
+  it("épargne les séries faites, tapées autrement, d'un autre type ou au-dessus", () => {
+    const depart = seance([
+      serie(null),
+      serie(null, "ECHAUFFEMENT"),
+      serie(null),
+      serie(90, "NORMALE", { faite: true, saisi: { chargeKg: true, reps: true } }),
+      serie(95, "NORMALE", { saisi: { chargeKg: true } }),
+      serie(null),
+    ]);
+    const s = modifierSerie(depart, 0, 2, { chargeKg: 100 });
+    expect(charges(s)).toEqual([70, 70, 100, 90, 95, 100]);
+  });
+
+  it("une nouvelle charge suit sur les séries qui portaient la recopie", () => {
+    const une = modifierSerie(seance([serie(null), serie(null)]), 0, 0, { chargeKg: 100 });
+    expect(charges(modifierSerie(une, 0, 0, { chargeKg: 105 }))).toEqual([105, 105]);
+  });
+
+  it("ne recopie ni une case vidée, ni les reps", () => {
+    const s = seance([serie(null), serie(null)]);
+    expect(charges(modifierSerie(s, 0, 0, { chargeKg: null }))).toEqual([null, 70]);
+    const reps = modifierSerie(s, 0, 0, { reps: 12 });
+    expect(reps.exercices[0]?.series[1]?.saisi).toBeUndefined();
   });
 });
